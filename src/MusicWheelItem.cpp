@@ -34,10 +34,10 @@ static const char *MusicWheelItemTypeNames[] = {
 XToString( MusicWheelItemType );
 
 MusicWheelItemData::MusicWheelItemData( WheelItemDataType type, Song* pSong, 
-				       RString sSectionName, Course* pCourse, 
+				       RString sSectionName, Course* pCourse, Group* pGroup,
 				       RageColor color, int iSectionCount ):
 	WheelItemBaseData(type, sSectionName, color),
-	m_pCourse(pCourse), m_pSong(pSong), m_Flags(WheelNotifyIcon::Flags()),
+	m_pCourse(pCourse), m_pSong(pSong), m_pGroup(pGroup), m_Flags(WheelNotifyIcon::Flags()),
 	m_iSectionCount(iSectionCount), m_sLabel(""), m_pAction() {}
 
 MusicWheelItem::MusicWheelItem( RString sType ):
@@ -222,8 +222,21 @@ void MusicWheelItem::LoadFromWheelItemData( const WheelItemBaseData *pData, int 
 		break;
 	case WheelItemDataType_Section:
 		{
-			sDisplayName = SONGMAN->ShortenGroupName(pWID->m_sText);
-
+			if ( pWID->m_pGroup == nullptr ) {
+				sDisplayName = SONGMAN->ShortenGroupName(pWID->m_sText);
+			}
+			else {
+				if ( pWID->m_pGroup->GetSeries().empty() ) {
+					sDisplayName = SONGMAN->ShortenGroupName(pWID->m_pGroup->GetDisplayTitle());
+					sTranslitName = SONGMAN->ShortenGroupName(pWID->m_pGroup->GetTranslitTitle());
+				}
+				else {
+					// This will eventually do something different when we eventually implement nested folders
+					// for now, use the same behavior.
+					sDisplayName = SONGMAN->ShortenGroupName(pWID->m_pGroup->GetDisplayTitle());
+					sTranslitName = SONGMAN->ShortenGroupName(pWID->m_pGroup->GetTranslitTitle());
+				}
+			}
 			if( GAMESTATE->sExpandedSectionName == pWID->m_sText )
 				type = MusicWheelItemType_SectionExpanded;
 			else
