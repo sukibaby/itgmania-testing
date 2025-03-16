@@ -9,7 +9,6 @@
 static size_t size_in_bytes_ = 104857;
 
 RageSoundMixBuffer::RageSoundMixBuffer() {
-	GetBufferSizeFromPreference();
 	m_iBufSize = size_in_bytes_;
 	m_iBufUsed = 0;
 	m_iOffset = 0;

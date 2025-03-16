@@ -3,6 +3,7 @@
 #ifndef RAGE_SOUND_MIX_BUFFER_H
 #define RAGE_SOUND_MIX_BUFFER_H
 
+#include <cmath>
 #include <cstdint>
 
 class RageSoundMixBuffer
