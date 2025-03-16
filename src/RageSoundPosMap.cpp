@@ -1,6 +1,5 @@
 #include "global.h"
 #include "RageSoundPosMap.h"
-#include "RageLog.h"
 #include "RageUtil.h"
 #include "RageTimer.h"
 
@@ -144,23 +143,6 @@ int64_t pos_map_queue::Search( int64_t iSourceFrame ) const
 			iClosestPositionDist = dist;
 			iClosestPosition = pm.m_iDestFrame + static_cast<int64_t>((pm.m_iFrames * pm.m_fSourceToDestRatio) + 0.5 );
 		}
-	}
-
-	/*
-	 * The frame is out of the range of data we've actually sent.
-	 * Return the closest position.
-	 *
-	 * There are three cases when this happens:
-	 * 1. Before the first CommitPlayingPosition call.
-	 * 2. After GetDataToPlay returns EOF and the sound has flushed, but before
-	 *    SoundStopped has been called.
-	 * 3. Underflow; we'll be given a larger frame number than we know about.
-	 */
-	static RageTimer last;
-	if( last.PeekDeltaTime() >= 1.0f )
-	{
-		last.Touch();
-		LOG->Trace("Audio frame (%lld) was out of range of the data sent - possible buffer underflow? This is not always an error, however if you see it frequently there could be sound buffer problems.", iSourceFrame);
 	}
 
 	return iClosestPosition;
