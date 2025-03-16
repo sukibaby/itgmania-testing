@@ -1018,7 +1018,9 @@ RString StepMania::SaveScreenshot( RString Dir, bool SaveCompressed, bool MakeSi
 	 * index. This was causing naming issues for some unknown reason, so we have
 	 * changed the screenshot names to a non-blocking format: date and time.
 	 * As before, we ignore the extension. -aj */
-	RString FileNameNoExtension = NamePrefix + DateTime::GetNowDateTime().GetString() + NameSuffix;
+	RString FileNameNoExtension = NamePrefix + DateTime::GetNowDateTime().GetString();
+	if (!NameSuffix.empty())
+		FileNameNoExtension += "_" + NameSuffix;
 	// replace space with underscore.
 	FileNameNoExtension.Replace(" ","_");
 	// colons are illegal in filenames.
@@ -1027,21 +1029,20 @@ RString StepMania::SaveScreenshot( RString Dir, bool SaveCompressed, bool MakeSi
 	// Save the screenshot. If writing lossy to a memcard, use
 	// SAVE_LOSSY_LOW_QUAL, so we don't eat up lots of space.
 	RageDisplay::GraphicsFileFormat fmt;
-	if( SaveCompressed )
-		fmt = RageDisplay::SAVE_LOSSY_HIGH_QUAL;
-	else
-		fmt = RageDisplay::SAVE_LOSSLESS_SENSIBLE;
+	fmt = RageDisplay::SAVE_LOSSLESS_SENSIBLE;
 
-	RString FileName = FileNameNoExtension + "." + (SaveCompressed ? "jpg" : "png");
+	RString FileName = FileNameNoExtension + ".png";
 	RString Path = Dir+FileName;
 	bool Result = DISPLAY->SaveScreenshot( Path, fmt );
-	if( !Result )
+	if (DISPLAY->SaveScreenshot(Path, fmt))
+	{
+		SCREENMAN->PlayScreenshotSound();
+	}
+	else
 	{
 		SCREENMAN->PlayInvalidSound();
 		return RString();
 	}
-
-	SCREENMAN->PlayScreenshotSound();
 
 	if( PREFSMAN->m_bSignProfileData && MakeSignature )
 		CryptManager::SignFileToFile( Path );
