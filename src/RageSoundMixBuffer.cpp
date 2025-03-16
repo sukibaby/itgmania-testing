@@ -1,43 +1,52 @@
 #include "global.h"
 #include "RageSoundMixBuffer.h"
+#include "RageUtil.h"
+#include "PrefsManager.h"
 
-#include <cmath>
 #include <cstdint>
-#include <algorithm>
-#include <vector>
+#include <cstdlib>
 
-RageSoundMixBuffer::RageSoundMixBuffer() : m_iOffset(0) {}
-RageSoundMixBuffer::~RageSoundMixBuffer() {}
+static size_t size_in_bytes_ = 104857;
 
-/* write() will start mixing iOffset samples into the buffer.  Be careful; this is
- * measured in samples, not frames, so if the data is stereo, multiply by two. */
-void RageSoundMixBuffer::SetWriteOffset( int iOffset )
-{
-	m_iOffset = static_cast<int>(iOffset);
+RageSoundMixBuffer::RageSoundMixBuffer() {
+	GetBufferSizeFromPreference();
+	m_iBufSize = size_in_bytes_;
+	m_iBufUsed = 0;
+	m_iOffset = 0;
+	m_pMixbuf = static_cast<float*>(std::malloc(size_in_bytes_));
+	if (!(m_pMixbuf)) {
+		FAIL_M("Failed to allocate memory for the audio mix buffer");
+	}
+	std::memset(m_pMixbuf, 0, size_in_bytes_);
 }
 
-void RageSoundMixBuffer::Extend(unsigned iSamples)
-{
-	const unsigned realsize = iSamples + m_iOffset;
-	if (m_pMixbuf.size() < realsize)
+RageSoundMixBuffer::~RageSoundMixBuffer() {
+	std::free(m_pMixbuf);
+}
+
+// Initialize any unused part of the buffer with zeroes, if it exists.
+void RageSoundMixBuffer::Extend(unsigned iSamples) noexcept {
+	const int_fast64_t realsize = iSamples + m_iOffset;
+
+	if (m_iBufUsed < realsize)
 	{
-		m_pMixbuf.resize(realsize, 0.0f);
+		std::memset(m_pMixbuf + m_iBufUsed, 0, (realsize - m_iBufUsed) * sizeof(float));
+		m_iBufUsed = realsize;
 	}
 }
 
-void RageSoundMixBuffer::write( const float *pBuf, unsigned iSize, int iSourceStride, int iDestStride )
-{
-	if( iSize == 0 )
+void RageSoundMixBuffer::write(const float* pBuf, unsigned iSize, int iSourceStride, int iDestStride) noexcept {
+	if (iSize == 0) {
 		return;
+	}
 
 	// iSize = 3, iDestStride = 2 uses 4 frames.  Don't allocate the stride of the last sample.
-	Extend( iSize * iDestStride - (iDestStride-1) );
+	Extend(iSize * iDestStride - (iDestStride - 1));
 
-	// Load the audio at m_iOffset into the buffer.
-	float *pDestBuf = &m_pMixbuf[m_iOffset];
+	// Scale volume and add.
+	float* pDestBuf = m_pMixbuf + m_iOffset;
 
-	while( iSize )
-	{
+	while (iSize) {
 		*pDestBuf += *pBuf;
 		pBuf += iSourceStride;
 		pDestBuf += iDestStride;
@@ -45,37 +54,16 @@ void RageSoundMixBuffer::write( const float *pBuf, unsigned iSize, int iSourceSt
 	}
 }
 
-void RageSoundMixBuffer::read( int16_t *pBuf )
-{
-	for (unsigned iPos = 0; iPos < m_pMixbuf.size(); ++iPos)
-	{
-		// do the read
-		float iOut = m_pMixbuf[iPos];
-		// ensure volume is within expected levels to prevent clipping
-		iOut = std::clamp( iOut, -1.0f, +1.0f );
-		// round rather than truncate to minimize distortion
-		pBuf[iPos] = static_cast<int16_t>(std::round(iOut * INT16_MAX));
-	}
-	m_pMixbuf.clear();
-}
-
-void RageSoundMixBuffer::read( float *pBuf )
-{
-	std::copy(m_pMixbuf.begin(), m_pMixbuf.end(), pBuf);
-	m_pMixbuf.clear();
-}
-
-void RageSoundMixBuffer::read_deinterlace( float **pBufs, int channels )
-{
-	for (unsigned i = 0; i < m_pMixbuf.size() / channels; ++i)
-	{	
-		for (int ch = 0; ch < channels; ++ch)
-		{
+void RageSoundMixBuffer::read_deinterlace(float** pBufs, int channels) noexcept {
+	for (unsigned i = 0; i < m_iBufUsed / channels; ++i) {
+		for (int ch = 0; ch < channels; ++ch) {
 			pBufs[ch][i] = m_pMixbuf[channels * i + ch];
 		}
 	}
-	m_pMixbuf.clear();
+	m_iBufUsed = 0;
 }
+
+/* New code by sukibaby, 2024 - rewritten for fixed buffer size. */
 
 /*
  * Copyright (c) 2002-2004 Glenn Maynard
