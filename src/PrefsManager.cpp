@@ -179,7 +179,7 @@ PrefsManager::PrefsManager() :
 	m_bShowMouseCursor		( "ShowMouseCursor",		false ),
 
 	m_bHiddenSongs			( "HiddenSongs",		false ),
-	m_bVsync			( "Vsync",			true ),
+	m_bVsync			( "Vsync",			false ),
 	m_FastNoteRendering		( "FastNoteRendering",		false),
 	m_bInterlaced			( "Interlaced",			false ),
 	m_bPAL				( "PAL",			false ),
