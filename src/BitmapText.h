@@ -136,6 +136,9 @@ protected:
 	std::map<size_t, Attribute>	m_mAttributes;
 	bool								m_bHasGlowAttribute;
 
+	std::pair<size_t, int> AdjustPositionForNewLines(size_t iPos) const;
+	std::pair<size_t, size_t> FixupLengthForNewLines(size_t iAdjustedPos, size_t length) const;
+
 	TextGlowMode	m_TextGlowMode;
 
 	// recalculate the items in SetText()

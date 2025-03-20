@@ -911,40 +911,62 @@ BitmapText::Attribute BitmapText::GetDefaultAttribute() const
 	return attr;
 }
 
-void BitmapText::AddAttribute( size_t iPos, const Attribute &attr )
+std::pair<size_t, int> BitmapText::AdjustPositionForNewLines(size_t iPos) const
 {
-	// Fixup position for new lines.
-	Attribute newAttr = attr;
 	auto lineIter = m_wTextLines.cbegin();
-
 	int iLines = 0;
 	size_t iAdjustedPos = iPos;
 
 	for( ; lineIter != m_wTextLines.cend(); ++lineIter )
 	{
 		size_t length = lineIter->length() + 1; // +1 to account for implicit newline at the end
-		if( length > iAdjustedPos )
+		if (length > iAdjustedPos)
+		{
 			break;
+		}
 		iAdjustedPos -= length;
 		++iLines;
 	}
 
-	if( newAttr.length > 0 )
+	return { iAdjustedPos, iLines };
+}
+
+std::pair<size_t, size_t> BitmapText::FixupLengthForNewLines(size_t iAdjustedPos, size_t length) const
+{
+	auto lineIter = m_wTextLines.cbegin();
+	size_t iAdjustedEndPos = iAdjustedPos + length;
+
+	for (; lineIter != m_wTextLines.cend(); ++lineIter)
+	{
+		size_t length = lineIter->length() + 1; // +1 to account for implicit newline at the end
+		if (length > iAdjustedEndPos || length == 0)
+		{
+			break;
+		}
+		iAdjustedEndPos -= length;
+		length -= 1;
+	}
+
+	return { iAdjustedEndPos, length };
+}
+
+void BitmapText::AddAttribute( size_t iPos, const Attribute &attr )
+{
+	// Fixup position for new lines.
+	Attribute newAttr = attr;
+	auto [iAdjustedPos, iLines] = AdjustPositionForNewLines(iPos);
+
+	if (newAttr.length > 0)
 	{
 		// Fixup length for new lines.
-		size_t iAdjustedEndPos = iAdjustedPos + newAttr.length;
-		for( ; lineIter != m_wTextLines.cend(); ++lineIter )
-		{
-			size_t length = lineIter->length() + 1; // +1 to account for implicit newline at the end
-			if( length > iAdjustedEndPos || newAttr.length == 0 )
-				break;
-			iAdjustedEndPos -= length;
-			newAttr.length -= 1;
-		}
+		auto [iAdjustedEndPos, remainingLength] = FixupLengthForNewLines(iAdjustedPos, newAttr.length);
+		newAttr.length = remainingLength;
 	}
 
 	if( newAttr.length == 0 ) // Attribute doesn't cover any printable characters
+	{
 		return;
+	}
 
 	// Check if there are existing attributes overlapping this one. We might need to remove or fix them up.
 	const size_t iStartPos = iPos - iLines;
@@ -973,7 +995,9 @@ void BitmapText::AddAttribute( size_t iPos, const Attribute &attr )
 		auto iterEraseEnd = iterLastBeforeEnd;
 		// If it's overlapping completely, erase it as well
 		if( lastAttrOverlappingCompletely )
+		{
 			++iterEraseEnd;
+		}
 		m_mAttributes.erase( iterFirstAfterStart, iterEraseEnd );
 
 		// Otherwise it's only overlapping partially so fix it up
