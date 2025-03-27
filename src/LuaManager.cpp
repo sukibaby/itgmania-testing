@@ -1040,14 +1040,17 @@ void LuaHelpers::PushValueFunc( lua_State *L, int iArgs )
 }
 
 #include "ProductInfo.h"
-LuaFunction( ProductFamily, (RString) PRODUCT_FAMILY );
-LuaFunction( ProductVersion, (RString) product_version );
-LuaFunction( ProductID, (RString) PRODUCT_ID );
+const RString modified_version = RString(product_version) + "-jmod";
+const RString product_family = RString(PRODUCT_FAMILY);
+const RString product_id = RString(PRODUCT_ID);
+LuaFunction(ProductFamily, product_family);
+LuaFunction(ProductVersion, modified_version);
+LuaFunction(ProductID, product_id);
 
-extern char const * const version_date;
-extern char const * const version_time;
-LuaFunction( VersionDate, (RString) version_date );
-LuaFunction( VersionTime, (RString) version_time );
+extern const char* const version_date;
+extern const char* const version_time;
+LuaFunction(VersionDate, RString(version_date));
+LuaFunction(VersionTime, RString(version_time));
 
 static float scale( float x, float l1, float h1, float l2, float h2 )
 {
