@@ -1,3 +1,5 @@
+# This is an unofficial fork of ITGmania, but it is stable & focused on sync stability & reliability.  Pack.ini does not exist in this build so I recommend using Simply Love 5.5.0 or Digital Dance as Simply Love 5.6.1 will fill the log with warnings about nonexistent functions. This build has better compatibility with DDR themes (like the A3 theme or WAIEI) than mainline ITGmania as well.
+
 ITGmania
 ========
 
