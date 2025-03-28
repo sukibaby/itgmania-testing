@@ -938,13 +938,13 @@ std::pair<size_t, size_t> BitmapText::FixupLengthForNewLines(size_t iAdjustedPos
 
 	for (; lineIter != m_wTextLines.cend(); ++lineIter)
 	{
-		size_t length = lineIter->length() + 1; // +1 to account for implicit newline at the end
-		if (length > iAdjustedEndPos || length == 0)
+		size_t line_length = lineIter->length() + 1; // +1 to account for implicit newline at the end
+		if (line_length > iAdjustedEndPos || line_length == 0)
 		{
 			break;
 		}
-		iAdjustedEndPos -= length;
-		length -= 1;
+		iAdjustedEndPos -= line_length;
+		line_length -= 1;
 	}
 
 	return { iAdjustedEndPos, length };
