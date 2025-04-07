@@ -44,7 +44,6 @@ bool MapFunctions()
 	}
 	__except (smx_filter(GetExceptionCode(), GetExceptionInformation()))
 	{
-		MessageBox(nullptr, "Could not map functions in SMX.dll", "ERROR", MB_OK);
 		FreeLibrary(hSMXdll);
 		return false;
 	}
@@ -63,7 +62,6 @@ bool Attempt_SMX_DLL_Load()
 
 	if (hSMXdll == nullptr)
 	{
-		MessageBox(nullptr, "Could not load SMX.dll. Ensure it is in the Program directory, the proper C++ Visual C++ Redistributable Runtimes dependencies are installed, you have matched your architectures (x86/x64), and any additional dll dependencies of SMX.dll are available.", "ERROR", MB_OK);
 		return false;
 	}
 
@@ -72,7 +70,9 @@ bool Attempt_SMX_DLL_Load()
 
 void InputHandler_Win32_SMX::GetDevicesAndDescriptions( std::vector<InputDeviceInfo>& vDevicesOut )
 {
-	vDevicesOut.push_back(InputDeviceInfo(InputDevice(DEVICE_SMX), "SMX"));
+	if (Attempt_SMX_DLL_Load()) {
+		vDevicesOut.push_back(InputDeviceInfo(InputDevice(DEVICE_SMX), "SMX"));
+	}
 }
 
 InputHandler_Win32_SMX::InputHandler_Win32_SMX() {
