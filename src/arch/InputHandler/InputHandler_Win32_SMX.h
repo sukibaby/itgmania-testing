@@ -7,6 +7,8 @@
 static bool _smxdll_loaded = false;
 static const int SMX_PAD_COUNT = 2;
 
+bool Attempt_SMX_DLL_Load();
+
 enum SMXUpdateCallbackReason {
 	SMXUpdateCallback_Updated,
 	SMXUpdateCallback_FactoryResetCommandComplete
@@ -24,8 +26,6 @@ public:
 private:
 	uint16_t m_padInputStates[SMX_PAD_COUNT];
 
-	bool LoadDLL();
-	bool MapFunctions();
 	void SMX_Start( SMXUpdateCallback UpdateCallback, void *pUser );
     uint16_t SMX_GetInputState( int pad );
 };

@@ -31,45 +31,16 @@ int smx_filter(unsigned int, struct _EXCEPTION_POINTERS*)
 	return EXCEPTION_EXECUTE_HANDLER;
 }
 
-void InputHandler_Win32_SMX::GetDevicesAndDescriptions( std::vector<InputDeviceInfo>& vDevicesOut )
+bool MapFunctions()
 {
-	vDevicesOut.push_back(InputDeviceInfo(InputDevice(DEVICE_SMX), "SMX"));
-}
-
-InputHandler_Win32_SMX::InputHandler_Win32_SMX() {
-	std::fill(std::begin(m_padInputStates), std::end(m_padInputStates), 0);
-
-    if (!_smxdll_loaded && LoadDLL())
-	{
-		_smxdll_loaded = MapFunctions();
+	if (_smxdll_loaded) {
+		return true;
 	}
 
-    if (_smxdll_loaded) {
-        SMX_Start(&SmxCallback, this);
-    }
-}
-
-bool InputHandler_Win32_SMX::LoadDLL()
-{
-	hSMXdll = LoadLibrary("SMX.dll");
-
-	if (hSMXdll == nullptr)
-	{
-		MessageBox(nullptr, "Could not load SMX.dll. Ensure it is in the Program directory, the proper C++ Visual C++ Redistributable Runtimes dependencies are installed, you have matched your architectures (x86/x64), and any additional dll dependencies of SMX.dll are available.", "ERROR", MB_OK);
-		return false;
-	}
-
-	_smxdll_loaded = true;
-
-	return true;
-}
-
-bool InputHandler_Win32_SMX::MapFunctions()
-{
 	__try
 	{
-        pSMX_Start = (SMX_Start_t)GetProcAddress(hSMXdll, "SMX_Start");
-        pSMX_GetInputState = (SMX_GetInputState_t)GetProcAddress(hSMXdll, "SMX_GetInputState");
+		pSMX_Start = (SMX_Start_t)GetProcAddress(hSMXdll, "SMX_Start");
+		pSMX_GetInputState = (SMX_GetInputState_t)GetProcAddress(hSMXdll, "SMX_GetInputState");
 	}
 	__except (smx_filter(GetExceptionCode(), GetExceptionInformation()))
 	{
@@ -78,7 +49,38 @@ bool InputHandler_Win32_SMX::MapFunctions()
 		return false;
 	}
 
+	_smxdll_loaded = true;
 	return true;
+}
+
+bool Attempt_SMX_DLL_Load()
+{
+	if (_smxdll_loaded) {
+		return true;
+	}
+
+	hSMXdll = LoadLibrary("SMX.dll");
+
+	if (hSMXdll == nullptr)
+	{
+		MessageBox(nullptr, "Could not load SMX.dll. Ensure it is in the Program directory, the proper C++ Visual C++ Redistributable Runtimes dependencies are installed, you have matched your architectures (x86/x64), and any additional dll dependencies of SMX.dll are available.", "ERROR", MB_OK);
+		return false;
+	}
+
+	return MapFunctions();
+}
+
+void InputHandler_Win32_SMX::GetDevicesAndDescriptions( std::vector<InputDeviceInfo>& vDevicesOut )
+{
+	vDevicesOut.push_back(InputDeviceInfo(InputDevice(DEVICE_SMX), "SMX"));
+}
+
+InputHandler_Win32_SMX::InputHandler_Win32_SMX() {
+	std::fill(std::begin(m_padInputStates), std::end(m_padInputStates), 0);
+
+    if (Attempt_SMX_DLL_Load()) {
+        SMX_Start(&SmxCallback, this);
+    }
 }
 
 void InputHandler_Win32_SMX::ProcessPoll(int pad) {

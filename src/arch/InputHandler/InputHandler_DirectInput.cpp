@@ -13,6 +13,7 @@
 #include "GamePreferences.h" //needed for Axis Fix
 
 #include "InputHandler_DirectInputHelper.h"
+#include "InputHandler_Win32_SMX.h"
 
 #ifdef NTDDI_WIN8 // Link to Xinput9_1_0.lib on Windows 8 SDK and above to ensure linkage to Xinput9_1_0.dll
 #pragma comment(lib, "Xinput9_1_0.lib")
@@ -164,12 +165,6 @@ static BOOL CALLBACK EnumDevicesCallback( const DIDEVICEINSTANCE *pdidInstance, 
 
 	LOG->Info( "DInput: Enumerating device - Type: 0x%08X Instance Name: \"%s\" Product Name: \"%s\"", pdidInstance->dwDevType, pdidInstance->tszInstanceName, pdidInstance->tszProductName );
 
-	// Ignore if product name contains "StepManiaX" (TODO: Make it so this only happens if the DLL is loaded)
-	const char *output = strstr(pdidInstance->tszProductName, "StepManiaX");
-	if (output) {
-		return DIENUM_CONTINUE;
-	}
-
 	switch( GET_DIDEVICE_TYPE(pdidInstance->dwDevType) )
 	{
 		case DI8DEVTYPE_JOYSTICK:
@@ -189,6 +184,12 @@ static BOOL CALLBACK EnumDevicesCallback( const DIDEVICEINSTANCE *pdidInstance, 
 		case DI8DEVTYPE_KEYBOARD: device.type = device.KEYBOARD; break;
 		case DI8DEVTYPE_MOUSE: device.type = device.MOUSE; break;
 		default: LOG->Info( "DInput: Unrecognized device ignored." ); return DIENUM_CONTINUE;
+	}
+
+	// Check for SMX.dll upon encountering a StepManiaX platform.
+	const char* is_smx_platform = strstr(pdidInstance->tszProductName, "StepManiaX");
+	if (is_smx_platform && Attempt_SMX_DLL_Load()) {
+		return DIENUM_CONTINUE; // Ignore smx pad if SMX.DLL successfully loaded.
 	}
 
 	device.JoystickInst = *pdidInstance;
