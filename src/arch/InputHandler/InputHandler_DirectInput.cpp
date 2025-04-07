@@ -187,8 +187,8 @@ static BOOL CALLBACK EnumDevicesCallback( const DIDEVICEINSTANCE *pdidInstance, 
 	}
 
 	// Check for SMX.dll upon encountering a StepManiaX platform.
-	const char* is_smx_platform = strstr(pdidInstance->tszProductName, "StepManiaX");
-	if (is_smx_platform && Is_SMX_DLL_Available()) {
+	bool is_smx_platform = (bool)strstr(pdidInstance->tszProductName, "StepManiaX");
+	if (is_smx_platform && InputHandler_Win32_SMX_Is_SMX_DLL_Available()) {
 		return DIENUM_CONTINUE; // Ignore SMX platform HID device if SMX.dll is available
 	}
 

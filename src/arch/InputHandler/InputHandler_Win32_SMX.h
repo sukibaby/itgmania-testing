@@ -3,10 +3,9 @@
 
 #include "InputHandler.h"
 
-static bool _smxdll_loaded = false;
 static const int SMX_PAD_COUNT = 2;
 
-bool Is_SMX_DLL_Available();
+bool InputHandler_Win32_SMX_Is_SMX_DLL_Available();
 
 enum SMXUpdateCallbackReason {
 	SMXUpdateCallback_Updated,

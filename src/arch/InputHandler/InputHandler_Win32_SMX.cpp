@@ -33,12 +33,11 @@ int smx_filter(unsigned int, struct _EXCEPTION_POINTERS*)
 	return EXCEPTION_EXECUTE_HANDLER;
 }
 
+static bool _smxdll_loaded = false;
+static bool _smxdll_attempted_load = false;
+
 bool MapFunctions()
 {
-	if (_smxdll_loaded) {
-		return true;
-	}
-
 	__try
 	{
 		pSMX_Start = (SMX_Start_t)GetProcAddress(hSMXdll, "SMX_Start");
@@ -55,11 +54,12 @@ bool MapFunctions()
 	return true;
 }
 
-bool Is_SMX_DLL_Available()
+bool InputHandler_Win32_SMX_Is_SMX_DLL_Available()
 {
-	if (_smxdll_loaded) {
-		return true;
+	if (_smxdll_attempted_load) {
+		return _smxdll_loaded;
 	}
+	_smxdll_attempted_load = true;
 
 	hSMXdll = LoadLibrary("SMX.dll");
 
@@ -74,7 +74,7 @@ bool Is_SMX_DLL_Available()
 InputHandler_Win32_SMX::InputHandler_Win32_SMX() {
 	std::fill(std::begin(m_padInputStates), std::end(m_padInputStates), 0);
 
-    if (Is_SMX_DLL_Available()) {
+    if (InputHandler_Win32_SMX_Is_SMX_DLL_Available()) {
         SMX_Start(&SmxCallback, this);
     }
 }
@@ -85,7 +85,7 @@ InputHandler_Win32_SMX::~InputHandler_Win32_SMX() {
 
 void InputHandler_Win32_SMX::GetDevicesAndDescriptions(std::vector<InputDeviceInfo>& vDevicesOut)
 {
-	if (Is_SMX_DLL_Available()) {
+	if (InputHandler_Win32_SMX_Is_SMX_DLL_Available()) {
 		vDevicesOut.push_back(InputDeviceInfo(InputDevice(DEVICE_SMX), "SMX"));
 	}
 }
