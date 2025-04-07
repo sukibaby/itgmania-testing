@@ -23,8 +23,8 @@ REGISTER_INPUT_HANDLER_CLASS2(SMX, Win32_SMX);
 
 namespace {
 	static void SmxCallback(int pad, SMXUpdateCallbackReason reason, void* pUser) {
-		InputHandler_Win32_SMX* stage_info = static_cast<InputHandler_Win32_SMX*>(pUser);
-		stage_info->ProcessPoll(pad);
+		InputHandler_Win32_SMX* inputHandler = static_cast<InputHandler_Win32_SMX*>(pUser);
+		inputHandler->ProcessInputEvent(pad);
 	};
 }
 
@@ -55,7 +55,7 @@ bool MapFunctions()
 	return true;
 }
 
-bool Attempt_SMX_DLL_Load()
+bool Is_SMX_DLL_Available()
 {
 	if (_smxdll_loaded) {
 		return true;
@@ -74,7 +74,7 @@ bool Attempt_SMX_DLL_Load()
 InputHandler_Win32_SMX::InputHandler_Win32_SMX() {
 	std::fill(std::begin(m_padInputStates), std::end(m_padInputStates), 0);
 
-    if (Attempt_SMX_DLL_Load()) {
+    if (Is_SMX_DLL_Available()) {
         SMX_Start(&SmxCallback, this);
     }
 }
@@ -85,12 +85,12 @@ InputHandler_Win32_SMX::~InputHandler_Win32_SMX() {
 
 void InputHandler_Win32_SMX::GetDevicesAndDescriptions(std::vector<InputDeviceInfo>& vDevicesOut)
 {
-	if (Attempt_SMX_DLL_Load()) {
+	if (Is_SMX_DLL_Available()) {
 		vDevicesOut.push_back(InputDeviceInfo(InputDevice(DEVICE_SMX), "SMX"));
 	}
 }
 
-void InputHandler_Win32_SMX::ProcessPoll(int pad) {
+void InputHandler_Win32_SMX::ProcessInputEvent(int pad) {
     if (pad >= SMX_PAD_COUNT) {
         return;
     }

@@ -6,7 +6,7 @@
 static bool _smxdll_loaded = false;
 static const int SMX_PAD_COUNT = 2;
 
-bool Attempt_SMX_DLL_Load();
+bool Is_SMX_DLL_Available();
 
 enum SMXUpdateCallbackReason {
 	SMXUpdateCallback_Updated,
@@ -21,7 +21,7 @@ public:
 	~InputHandler_Win32_SMX();
 	void GetDevicesAndDescriptions( std::vector<InputDeviceInfo>& vDevicesOut );
 	RString GetDeviceSpecificInputString( const DeviceInput &di );
-	void ProcessPoll( int pad );
+	void ProcessInputEvent( int pad );
 
 private:
 	uint16_t m_padInputStates[SMX_PAD_COUNT];
