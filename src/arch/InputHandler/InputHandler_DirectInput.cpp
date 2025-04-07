@@ -164,6 +164,12 @@ static BOOL CALLBACK EnumDevicesCallback( const DIDEVICEINSTANCE *pdidInstance, 
 
 	LOG->Info( "DInput: Enumerating device - Type: 0x%08X Instance Name: \"%s\" Product Name: \"%s\"", pdidInstance->dwDevType, pdidInstance->tszInstanceName, pdidInstance->tszProductName );
 
+	// Ignore if product name contains "StepManiaX" (TODO: Make it so this only happens if the DLL is loaded)
+	const char *output = strstr(pdidInstance->tszProductName, "StepManiaX");
+	if (output) {
+		return DIENUM_CONTINUE;
+	}
+
 	switch( GET_DIDEVICE_TYPE(pdidInstance->dwDevType) )
 	{
 		case DI8DEVTYPE_JOYSTICK:
