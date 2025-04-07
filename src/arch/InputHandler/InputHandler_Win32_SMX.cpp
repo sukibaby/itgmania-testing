@@ -14,6 +14,9 @@ typedef uint16_t(__stdcall* SMX_GetInputState_t)(
 );
 static SMX_GetInputState_t pSMX_GetInputState = nullptr;
 
+typedef VOID(__stdcall* SMX_Stop_t)();
+static SMX_Stop_t pSMX_Stop = nullptr;
+
 static HINSTANCE hSMXdll = nullptr;
 
 REGISTER_INPUT_HANDLER_CLASS2(SMX, Win32_SMX);
@@ -40,6 +43,7 @@ bool MapFunctions()
 	{
 		pSMX_Start = (SMX_Start_t)GetProcAddress(hSMXdll, "SMX_Start");
 		pSMX_GetInputState = (SMX_GetInputState_t)GetProcAddress(hSMXdll, "SMX_GetInputState");
+		pSMX_Stop = (SMX_Stop_t)GetProcAddress(hSMXdll, "SMX_Stop");
 	}
 	__except (smx_filter(GetExceptionCode(), GetExceptionInformation()))
 	{
@@ -67,19 +71,23 @@ bool Attempt_SMX_DLL_Load()
 	return MapFunctions();
 }
 
-void InputHandler_Win32_SMX::GetDevicesAndDescriptions( std::vector<InputDeviceInfo>& vDevicesOut )
-{
-	if (Attempt_SMX_DLL_Load()) {
-		vDevicesOut.push_back(InputDeviceInfo(InputDevice(DEVICE_SMX), "SMX"));
-	}
-}
-
 InputHandler_Win32_SMX::InputHandler_Win32_SMX() {
 	std::fill(std::begin(m_padInputStates), std::end(m_padInputStates), 0);
 
     if (Attempt_SMX_DLL_Load()) {
         SMX_Start(&SmxCallback, this);
     }
+}
+
+InputHandler_Win32_SMX::~InputHandler_Win32_SMX() {
+	SMX_Stop();
+}
+
+void InputHandler_Win32_SMX::GetDevicesAndDescriptions(std::vector<InputDeviceInfo>& vDevicesOut)
+{
+	if (Attempt_SMX_DLL_Load()) {
+		vDevicesOut.push_back(InputDeviceInfo(InputDevice(DEVICE_SMX), "SMX"));
+	}
 }
 
 void InputHandler_Win32_SMX::ProcessPoll(int pad) {
@@ -145,6 +153,12 @@ uint16_t InputHandler_Win32_SMX::SMX_GetInputState(int pad) {
     }
 	
 	return 0;
+}
+
+void InputHandler_Win32_SMX::SMX_Stop() {
+	if (pSMX_Stop != nullptr) {
+		pSMX_Stop();
+	}
 }
 
 /*

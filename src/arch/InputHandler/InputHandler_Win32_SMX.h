@@ -18,6 +18,7 @@ class InputHandler_Win32_SMX: public InputHandler
 {
 public:
 	InputHandler_Win32_SMX();
+	~InputHandler_Win32_SMX();
 	void GetDevicesAndDescriptions( std::vector<InputDeviceInfo>& vDevicesOut );
 	RString GetDeviceSpecificInputString( const DeviceInput &di );
 	void ProcessPoll( int pad );
@@ -27,6 +28,7 @@ private:
 
 	void SMX_Start( SMXUpdateCallback UpdateCallback, void *pUser );
     uint16_t SMX_GetInputState( int pad );
+	void SMX_Stop();
 };
 
 /*
