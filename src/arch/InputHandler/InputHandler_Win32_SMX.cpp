@@ -75,6 +75,7 @@ bool InputHandler_Win32_SMX::MapFunctions()
 	{
 		MessageBox(nullptr, "Could not map functions in SMX.dll", "ERROR", MB_OK);
 		FreeLibrary(hSMXdll);
+		return false;
 	}
 
 	return true;
