@@ -11,9 +11,9 @@
 #include "InputFilter.h"
 #include "PrefsManager.h"
 #include "GamePreferences.h" //needed for Axis Fix
+#include "InputHandler_Win32_SMX.h" // needed to check conditions around if SMX platforms should be loaded as HID devices
 
 #include "InputHandler_DirectInputHelper.h"
-#include "InputHandler_Win32_SMX.h"
 
 #ifdef NTDDI_WIN8 // Link to Xinput9_1_0.lib on Windows 8 SDK and above to ensure linkage to Xinput9_1_0.dll
 #pragma comment(lib, "Xinput9_1_0.lib")
@@ -187,6 +187,7 @@ static BOOL CALLBACK EnumDevicesCallback( const DIDEVICEINSTANCE *pdidInstance, 
 	}
 
 	// Check for SMX.dll upon encountering a StepManiaX platform.
+	// If SMX.dll is available and usable, the SMX InputHandler should be used instead of DirectInput for SMX platforms.
 	bool is_smx_platform = (bool)strstr(pdidInstance->tszProductName, "StepManiaX");
 	if (is_smx_platform && InputHandler_Win32_SMX_Is_SMX_DLL_Available()) {
 		return DIENUM_CONTINUE; // Ignore SMX platform HID device if SMX.dll is available

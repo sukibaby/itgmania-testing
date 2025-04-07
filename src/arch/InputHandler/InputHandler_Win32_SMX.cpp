@@ -54,6 +54,8 @@ bool MapFunctions()
 	return true;
 }
 
+// The only way to know for-sure if the DLL is available is to actually load it, so this method attempts to load the DLL the first time it is run.
+// Note: This is meant to fail silently - most people will not be using SMX.dll.
 bool InputHandler_Win32_SMX_Is_SMX_DLL_Available()
 {
 	if (_smxdll_attempted_load) {
@@ -91,30 +93,42 @@ void InputHandler_Win32_SMX::GetDevicesAndDescriptions(std::vector<InputDeviceIn
 }
 
 void InputHandler_Win32_SMX::ProcessInputEvent(int pad) {
-    if (pad >= SMX_PAD_COUNT) {
+	/*
+	The SMX SDK always sends callback events over the same thread, so thread safety is not a worry.
+	*/
+
+	// Fast-fail if somehow the pad is outside of range
+    if (pad < 0 || pad >= SMX_PAD_COUNT) {
         return;
     }
 
-    uint16_t inputState = SMX_GetInputState(pad);
-    uint16_t changedInputs = inputState ^ m_padInputStates[pad];
+	// Get new input state and compare with the old
+    uint16_t newInputState = SMX_GetInputState(pad);
+    uint16_t changedInputs = newInputState ^ m_padInputStates[pad];
 
+	// If inputs weren't updated, report the end of an empty poll and return
     if (changedInputs == 0) {
         InputHandler::UpdateTimer();
         return;
     }
 
-    DeviceButton startButton = enum_add2(JOY_BUTTON_1, pad * SMX_PANEL_COUNT);
+	// SMX events come in for multiple pads, but get translated into one device from SM's POV.
+	// Ensure P2's buttons begin from the correct `JOY_BUTTON`.
+    DeviceButton beginButton = enum_add2(JOY_BUTTON_1, pad * SMX_PANEL_COUNT);
 
+	// Process inputs
     for (int i = 0; i < SMX_PANEL_COUNT; i++) {
-        if ((changedInputs & (1 << i)) != 0) {
-            bool pressed = inputState & (1 << i);
-            DeviceInput di(DEVICE_SMX, enum_add2(startButton, i), pressed);
-			di.ts.Touch(); // SMX surfaces an input immediately when it occurs, so don't adjust for error
-            ButtonPressed(di);
+		bool didButtonStateChange = (changedInputs & (1 << i)) != 0;
+        if (didButtonStateChange) {
+            bool pressed = newInputState & (1 << i); // Get pressed state
+            DeviceInput di(DEVICE_SMX, enum_add2(beginButton, i), pressed); // Make input event with pressed state for this button
+			di.ts.Touch(); // Touch the timestamp timer to indicate the input happened *now*
+            ButtonPressed(di); // Report the input event
         }
     }
 
-    m_padInputStates[pad] = inputState;
+	// Save the new input state for later, and report the end of a poll.
+    m_padInputStates[pad] = newInputState;
     InputHandler::UpdateTimer();
 }
 
