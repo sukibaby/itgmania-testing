@@ -9,6 +9,11 @@ typedef VOID(__stdcall* SMX_Start_t)(
 );
 static SMX_Start_t pSMX_Start = nullptr;
 
+typedef VOID(__stdcall* SMX_GetInfo_t)(
+	int pad, struct SMXInfo *info
+);
+static SMX_GetInfo_t pSMX_GetInfo = nullptr;
+
 typedef uint16_t(__stdcall* SMX_GetInputState_t)(
     int pad
 );
@@ -41,6 +46,7 @@ bool MapFunctions()
 	__try
 	{
 		pSMX_Start = (SMX_Start_t)GetProcAddress(hSMXdll, "SMX_Start");
+		pSMX_GetInfo = (SMX_GetInfo_t)GetProcAddress(hSMXdll, "SMX_GetInfo");
 		pSMX_GetInputState = (SMX_GetInputState_t)GetProcAddress(hSMXdll, "SMX_GetInputState");
 		pSMX_Stop = (SMX_Stop_t)GetProcAddress(hSMXdll, "SMX_Stop");
 	}
@@ -87,7 +93,8 @@ InputHandler_Win32_SMX::~InputHandler_Win32_SMX() {
 
 void InputHandler_Win32_SMX::GetDevicesAndDescriptions(std::vector<InputDeviceInfo>& vDevicesOut)
 {
-	if (InputHandler_Win32_SMX_Is_SMX_DLL_Available()) {
+	// Only register this as a device if SMX.dll is available, and if a pad is connected.
+	if (InputHandler_Win32_SMX_Is_SMX_DLL_Available() && IsPadConnected()) {
 		vDevicesOut.push_back(InputDeviceInfo(InputDevice(DEVICE_SMX), "SMX"));
 	}
 }
@@ -155,10 +162,36 @@ RString InputHandler_Win32_SMX::GetDeviceSpecificInputString(const DeviceInput &
     return ssprintf("SMX P%d, %s", pad, buttonString.c_str());
 }
 
+bool InputHandler_Win32_SMX::IsPadConnected() {
+	if (!InputHandler_Win32_SMX_Is_SMX_DLL_Available()) {
+		return false;
+	}
+
+	for (int i = 0; i < SMX_PAD_COUNT; i++) {
+		struct SMXInfo info;
+		SMX_GetInfo(i, &info);
+
+		if (info.m_bConnected) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
 void InputHandler_Win32_SMX::SMX_Start(SMXUpdateCallback UpdateCallback, void *pUser) {
     if (pSMX_Start != nullptr) {
         pSMX_Start(UpdateCallback, pUser);
     }
+}
+
+void InputHandler_Win32_SMX::SMX_GetInfo(int pad, struct SMXInfo *info) {
+	if (pSMX_GetInfo != nullptr) {
+		pSMX_GetInfo(pad, info);
+	}
+	else {
+		info->m_bConnected = false;
+	}
 }
 
 uint16_t InputHandler_Win32_SMX::SMX_GetInputState(int pad) {

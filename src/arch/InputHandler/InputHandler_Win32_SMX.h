@@ -12,6 +12,11 @@ enum SMXUpdateCallbackReason {
 	SMXUpdateCallback_FactoryResetCommandComplete
 };
 typedef void SMXUpdateCallback(int pad, SMXUpdateCallbackReason reason, void* pUser);
+struct SMXInfo {
+    bool m_bConnected = false;
+	char m_Serial[33];
+	uint16_t m_iFirmwareVersion;
+};
 
 class InputHandler_Win32_SMX: public InputHandler
 {
@@ -24,8 +29,10 @@ public:
 
 private:
 	uint16_t m_padInputStates[SMX_PAD_COUNT];
+	bool IsPadConnected();
 
 	void SMX_Start( SMXUpdateCallback UpdateCallback, void *pUser );
+	void SMX_GetInfo( int pad, struct SMXInfo *info );
     uint16_t SMX_GetInputState( int pad );
 	void SMX_Stop();
 };
