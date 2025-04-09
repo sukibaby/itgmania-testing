@@ -536,6 +536,15 @@ install(DIRECTORY "${SM_ROOT_DIR}/NoteSkins"
 install(FILES "${SM_ROOT_DIR}/Songs/instructions.txt"
         DESTINATION "${SM_INSTALL_DESTINATION}/Songs")
 
+if(WIN32)
+   add_custom_command(
+       TARGET "${SM_EXE_NAME}" POST_BUILD
+       COMMAND ${CMAKE_COMMAND} -E copy
+               "${CMAKE_CURRENT_SOURCE_DIR}/archutils/Win32/smx/SMX.dll"
+               "${SM_PROGRAM_DIR}"
+   )
+endif()
+
 if(WITH_CLUB_FANTASTIC)
   # Fetch ClubFantastic packs
   include(FetchContent)
