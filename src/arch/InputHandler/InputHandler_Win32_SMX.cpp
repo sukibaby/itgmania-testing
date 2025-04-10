@@ -81,16 +81,39 @@ bool InputHandler_Win32_SMX_Is_SMX_DLL_Available()
 	return _smxdll_loaded;
 }
 
+static bool __detected_pad = false;
+static InputHandler_Win32_SMX *__current_instance = nullptr;
+void InputHandler_Win32_SMX_Register_Pad() {
+	if (__detected_pad) {
+		return;
+	}
+	__detected_pad = true;
+
+	// Start the SMX SDK if a pad is being registered for the first time after the driver instance had already been initialized.
+	if (__current_instance != nullptr) {
+		__current_instance->SMX_Start();
+	}
+}
+
 InputHandler_Win32_SMX::InputHandler_Win32_SMX() {
 	std::fill(std::begin(m_padInputStates), std::end(m_padInputStates), 0);
 
-    if (InputHandler_Win32_SMX_Is_SMX_DLL_Available()) {
-        SMX_Start(&SmxCallback, this);
+	// Only start the SMX SDK if a pad has been detected already.
+	// The SDK can also be started on `__current_instance` if a pad gets registered after this point.
+    if (__detected_pad) {
+        SMX_Start();
+		return; // No need to hold `__current_instance` if SMX_Start has been called.
     }
+
+	// Hold onto this instance so static methods can call `SMX_Start` if need be
+	if (__current_instance == nullptr) {
+		__current_instance = this;
+	}
 }
 
 InputHandler_Win32_SMX::~InputHandler_Win32_SMX() {
 	SMX_Stop();
+	__current_instance = nullptr;
 }
 
 void InputHandler_Win32_SMX::GetDevicesAndDescriptions(std::vector<InputDeviceInfo>& vDevicesOut)
@@ -165,6 +188,10 @@ RString InputHandler_Win32_SMX::GetDeviceSpecificInputString(const DeviceInput &
 }
 
 bool InputHandler_Win32_SMX::IsPadConnected() {
+	if (!__detected_pad) {
+		return false;
+	}
+
 	if (!InputHandler_Win32_SMX_Is_SMX_DLL_Available()) {
 		return false;
 	}
@@ -181,14 +208,20 @@ bool InputHandler_Win32_SMX::IsPadConnected() {
 	return false;
 }
 
-void InputHandler_Win32_SMX::SMX_Start(SMXUpdateCallback UpdateCallback, void *pUser) {
+static bool Is_SMX_Started = false;
+void InputHandler_Win32_SMX::SMX_Start() {
+	if (Is_SMX_Started) {
+		return;
+	}
+
     if (pSMX_Start != nullptr) {
-        pSMX_Start(UpdateCallback, pUser);
+        pSMX_Start(&SmxCallback, this);
+		Is_SMX_Started = true;
     }
 }
 
 void InputHandler_Win32_SMX::SMX_GetInfo(int pad, struct SMXInfo *info) {
-	if (pSMX_GetInfo != nullptr) {
+	if (Is_SMX_Started && pSMX_GetInfo != nullptr) {
 		pSMX_GetInfo(pad, info);
 	}
 	else {
@@ -197,7 +230,7 @@ void InputHandler_Win32_SMX::SMX_GetInfo(int pad, struct SMXInfo *info) {
 }
 
 uint16_t InputHandler_Win32_SMX::SMX_GetInputState(int pad) {
-    if (pSMX_GetInputState != nullptr) {
+    if (Is_SMX_Started && pSMX_GetInputState != nullptr) {
         return pSMX_GetInputState(pad);
     }
 	
@@ -205,7 +238,12 @@ uint16_t InputHandler_Win32_SMX::SMX_GetInputState(int pad) {
 }
 
 void InputHandler_Win32_SMX::SMX_Stop() {
+	if (!Is_SMX_Started) {
+		return;
+	}
+
 	if (pSMX_Stop != nullptr) {
 		pSMX_Stop();
+		Is_SMX_Started = false;
 	}
 }
