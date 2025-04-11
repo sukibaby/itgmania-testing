@@ -21,6 +21,11 @@ typedef uint16_t(__stdcall* SMX_GetInputState_t)(
 );
 static SMX_GetInputState_t pSMX_GetInputState = nullptr;
 
+typedef VOID(__stdcall* SMX_SetLogCallback_t)(
+	SMXLogCallback callback
+);
+static SMX_SetLogCallback_t pSMX_SetLogCallback = nullptr;
+
 typedef VOID(__stdcall* SMX_Stop_t)();
 static SMX_Stop_t pSMX_Stop = nullptr;
 
@@ -32,6 +37,10 @@ namespace {
 	static void SmxCallback(int pad, SMXUpdateCallbackReason reason, void* pUser) {
 		InputHandler_Win32_SMX* inputHandler = static_cast<InputHandler_Win32_SMX*>(pUser);
 		inputHandler->ProcessInputEvent(pad);
+	};
+
+	static void LogCallback(const char *log) {
+		LOG->Info("SMX SDK Log: %s", log);
 	};
 }
 
@@ -50,6 +59,7 @@ bool MapFunctions()
 		pSMX_Start = (SMX_Start_t)GetProcAddress(hSMXdll, "SMX_Start");
 		pSMX_GetInfo = (SMX_GetInfo_t)GetProcAddress(hSMXdll, "SMX_GetInfo");
 		pSMX_GetInputState = (SMX_GetInputState_t)GetProcAddress(hSMXdll, "SMX_GetInputState");
+		pSMX_SetLogCallback = (SMX_SetLogCallback_t)GetProcAddress(hSMXdll, "SMX_SetLogCallback");
 		pSMX_Stop = (SMX_Stop_t)GetProcAddress(hSMXdll, "SMX_Stop");
 	}
 	__except (smx_filter(GetExceptionCode(), GetExceptionInformation()))
@@ -92,6 +102,7 @@ void InputHandler_Win32_SMX_Register_Pad() {
 
 InputHandler_Win32_SMX::InputHandler_Win32_SMX() {
 	std::fill(std::begin(m_padInputStates), std::end(m_padInputStates), 0);
+	SMX_SetLogCallback();
 }
 
 InputHandler_Win32_SMX::~InputHandler_Win32_SMX() {
@@ -182,7 +193,7 @@ bool InputHandler_Win32_SMX::IsPadConnected() {
 
 	// Lazy start the SMX SDK when the DLL is loaded and a pad has been detected
 	if (!Is_SMX_Started) {
-		this->SMX_Start();
+		SMX_Start();
 	}
 
 	for (int i = 0; i < SMX_PAD_COUNT; i++) {
@@ -223,6 +234,12 @@ uint16_t InputHandler_Win32_SMX::SMX_GetInputState(int pad) {
     }
 	
 	return 0;
+}
+
+void InputHandler_Win32_SMX::SMX_SetLogCallback() {
+	if (pSMX_SetLogCallback != nullptr) {
+		pSMX_SetLogCallback(&LogCallback);
+	}
 }
 
 void InputHandler_Win32_SMX::SMX_Stop() {

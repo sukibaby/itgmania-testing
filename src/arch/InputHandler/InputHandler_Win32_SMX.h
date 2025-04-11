@@ -18,6 +18,7 @@ struct SMXInfo {
 	char m_Serial[33];
 	uint16_t m_iFirmwareVersion;
 };
+typedef void SMXLogCallback(const char *log);
 
 class InputHandler_Win32_SMX: public InputHandler
 {
@@ -36,6 +37,7 @@ private:
 
 	void SMX_GetInfo( int pad, struct SMXInfo *info );
     uint16_t SMX_GetInputState( int pad );
+	void SMX_SetLogCallback();
 	void SMX_Stop();
 };
 
