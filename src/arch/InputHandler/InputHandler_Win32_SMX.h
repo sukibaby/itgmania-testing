@@ -41,4 +41,4 @@ private:
 	void SMX_Stop();
 };
 
- #endif
+#endif
