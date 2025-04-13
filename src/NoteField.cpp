@@ -757,7 +757,7 @@ void NoteField::CalcPixelsBeforeAndAfterTargets()
 		curr_options.m_fScrolls[PlayerOptions::SCROLL_CENTERED] *
 		curr_options.m_fAccels[PlayerOptions::ACCEL_BOOMERANG];
 	m_FieldRenderArgs.draw_pixels_after_targets +=
-		int(SCALE(centered_times_boomerang, 0.f, 1.f, 0.f, -SCREEN_HEIGHT/2));
+		static_cast<int>(centered_times_boomerang * (-ScreenDimensions::GetScreenHeight() / 2));
 	m_FieldRenderArgs.draw_pixels_before_targets =
 		m_iDrawDistanceBeforeTargetsPixels * (1.f + curr_options.m_fDrawSize);
 
