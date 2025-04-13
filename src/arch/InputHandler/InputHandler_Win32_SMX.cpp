@@ -4,16 +4,6 @@
 
 #include <windows.h>
 
-/*
-
-
-TODO:
-
-remove excessive logging and relegate some of it to debug only.
-
-
-*/
-
 // Typedefs for the SMX SDK functions
 typedef VOID(__stdcall* SMX_Start_t)(
     SMXUpdateCallback UpdateCallback, void *pUser
@@ -55,6 +45,8 @@ static bool __detected_pad = false;
 static bool Is_SMX_Started = false;
 static bool smx_scanning_complete = false;
 
+static CRITICAL_SECTION smxCriticalSection;
+
 namespace {
 	static void SmxCallback(int pad, SMXUpdateCallbackReason reason, void* pUser) {
 		if (reason == SMXUpdateCallback_Updated) {
@@ -67,7 +59,19 @@ namespace {
 	static void LogCallback(const char *log) {
 		LOG->Info("SMX SDK Log: %s", log);
 	};
-}
+
+	class CriticalSectionGuard {
+	public:
+		explicit CriticalSectionGuard(CRITICAL_SECTION& cs) : m_cs(cs) {
+			EnterCriticalSection(&m_cs);
+		}
+		~CriticalSectionGuard() {
+			LeaveCriticalSection(&m_cs);
+		}
+	private:
+		CRITICAL_SECTION& m_cs;
+	};
+}  // namespace
 
 int smx_filter(unsigned int, struct _EXCEPTION_POINTERS*)
 {
@@ -93,6 +97,15 @@ bool MapFunctions()
 
 	_smxdll_loaded = true;
 	return true;
+}
+
+// Thread safety.
+void InitializeSMXCriticalSection() {
+	static bool WasCriticalSectionInit = false;
+	if (!WasCriticalSectionInit) {
+		InitializeCriticalSection(&smxCriticalSection);
+		WasCriticalSectionInit = true;
+	}
 }
 
 // The only way to know for-sure if the DLL is available is to actually load it, so this method attempts to load the DLL the first time it is run.
@@ -132,11 +145,19 @@ InputHandler_Win32_SMX::InputHandler_Win32_SMX() {
 
 	if (InputHandler_Win32_SMX_Is_SMX_DLL_Available()) {
 		LOG->Trace("SMX: SMX.dll loaded successfully.");
-	} else {
+	}
+	else {
 		LOG->Warn("SMX: Failed to load SMX.dll. InputHandler_Win32_SMX will not be used.");
 		return;
 	}
-	SMX_SetLogCallback();
+
+	LOG->Trace("Initializing SMX Critical Section...");
+	InitializeSMXCriticalSection();
+
+	{
+		CriticalSectionGuard guard(smxCriticalSection);
+		SMX_SetLogCallback();
+	}
 
 	if (!Is_SMX_Started) {
 		int connection_status = IsPadConnected();
@@ -169,6 +190,7 @@ InputHandler_Win32_SMX::InputHandler_Win32_SMX() {
 		}
 	}
 }
+
 
 InputHandler_Win32_SMX::~InputHandler_Win32_SMX() {
 	SMX_Stop();
@@ -255,6 +277,8 @@ void WaitForScanningToComplete() {
 }
 
 int InputHandler_Win32_SMX::GetStageStatus() {
+	CriticalSectionGuard guard(smxCriticalSection);
+
 	struct SMXInfo info;
 	int connected_stages = 0;
 
@@ -282,6 +306,8 @@ int InputHandler_Win32_SMX::GetStageStatus() {
 }
 
 int InputHandler_Win32_SMX::InitializeSMX() {
+	CriticalSectionGuard guard(smxCriticalSection);
+
 	if (Is_SMX_Started) {
 		LOG->Info("SMX: StepManiaX SDK already started.");
 		return SMX_AMBIGUOUS;
@@ -297,6 +323,8 @@ int InputHandler_Win32_SMX::InitializeSMX() {
 }
 
 int InputHandler_Win32_SMX::IsPadConnected() {
+	CriticalSectionGuard guard(smxCriticalSection);
+
 	if (!__detected_pad) {
 		LOG->Warn("SMX: No pad detected (__detected_pad is false).");
 		return SMX_FAILURE;
@@ -319,6 +347,8 @@ int InputHandler_Win32_SMX::IsPadConnected() {
 }
 
 void InputHandler_Win32_SMX::SMX_Start() {
+	CriticalSectionGuard guard(smxCriticalSection);
+
 	if (Is_SMX_Started) {
 		LOG->Trace("SMX: SMX SDK was asked to start up, but it was already started.");
 		return;
@@ -331,6 +361,8 @@ void InputHandler_Win32_SMX::SMX_Start() {
 }
 
 void InputHandler_Win32_SMX::SMX_GetInfo(int pad, struct SMXInfo* info) {
+	CriticalSectionGuard guard(smxCriticalSection);
+
 	if (pSMX_GetInfo == nullptr) {
 		LOG->Warn("SMX: SMX_GetInfo is null. The SMX driver will not be used.");
 		info->m_bConnected = false;
@@ -355,6 +387,8 @@ void InputHandler_Win32_SMX::SMX_SetLogCallback() {
 }
 
 void InputHandler_Win32_SMX::SMX_Stop() {
+	CriticalSectionGuard guard(smxCriticalSection);
+
 	if (!Is_SMX_Started) {
 		return;
 	}
