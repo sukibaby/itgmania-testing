@@ -34,6 +34,7 @@ public:
 private:
 	uint16_t m_padInputStates[SMX_PAD_COUNT];
 	int IsPadConnected();
+	int GetStageStatus();
 
 	void SMX_GetInfo( int pad, struct SMXInfo *info );
     uint16_t SMX_GetInputState( int pad );
