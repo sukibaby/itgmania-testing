@@ -77,6 +77,7 @@ bool InputHandler_Win32_SMX_Is_SMX_DLL_Available()
 {
 	static bool dll_load_attempted = false;
 	if (dll_load_attempted) {
+		LOG->Trace("SMX: SMX DLL already loaded, skipping load attempt.");
 		return _smxdll_loaded;
 	}
 
