@@ -3,6 +3,7 @@
 #include "RageLog.h"
 
 #include <windows.h>
+#include <thread> // for loading the DLL in a separate thread
 
 // Typedefs for the SMX SDK functions
 typedef VOID(__stdcall* SMX_Start_t)(
@@ -117,18 +118,19 @@ bool InputHandler_Win32_SMX_Is_SMX_DLL_Available()
 		return _smxdll_loaded;
 	}
 
-	hSMXdll = LoadLibrary("SMX.dll");
-	dll_load_attempted = true;
+	// Make a thread to load the DLL
+	std::thread([]() {
+		hSMXdll = LoadLibrary("SMX.dll");
+		if (hSMXdll == nullptr) {
+			LOG->Warn("SMX.dll not found. The SMX driver will not be used.");
+			_smxdll_loaded = false;
+		}
+		else {
+			LOG->Trace("SMX.dll loaded successfully.");
+			_smxdll_loaded = MapFunctions();
+		}
+		}).detach();
 
-	if (hSMXdll == nullptr) {
-		LOG->Warn("SMX.dll not found. The SMX driver will not be used.");
-		_smxdll_loaded = false;
-		return false;
-	}
-	else {
-		LOG->Trace("SMX.dll loaded successfully.");
-	}
-	_smxdll_loaded = MapFunctions();
 	return _smxdll_loaded;
 }
 
