@@ -113,12 +113,21 @@ InputHandler_Win32_SMX::InputHandler_Win32_SMX() {
 	LOG->Trace("SMX: InputHandler_Win32_SMX constructor called. Attempting to load SMX.dll...");
 	std::fill(std::begin(m_padInputStates), std::end(m_padInputStates), 0);
 	SMX_SetLogCallback();
-	if (IsPadConnected()) {
-		// TODO make sure this doesn't log multiple times if called repeatedly
-		LOG->Trace("SMX: InputHandler_Win32_SMX created. SMX SDK functions mapped and log callback set.");
-	}
-	else {
-		LOG->Warn("SMX: SMX DLL loaded, but no pads detected.");
+
+	int connectionStatus = IsPadConnected();
+	switch (connectionStatus) {
+	case 1:
+		LOG->Info("SMX: Pad is connected and ready.");
+		break;
+	case 0:
+		LOG->Warn("SMX: SMX started, but info.m_bConnected returned 0. Are pads connected?");
+		break;
+	case -1:
+		LOG->Warn("SMX: Failed to detect pad or load SMX DLL.");
+		break;
+	default:
+		LOG->Warn("SMX: Unknown connection status: %d", connectionStatus);
+		break;
 	}
 }
 
@@ -188,13 +197,15 @@ RString InputHandler_Win32_SMX::GetDeviceSpecificInputString(const DeviceInput &
     return ssprintf("SMX P%d %s", pad, buttonString);
 }
 
-bool InputHandler_Win32_SMX::IsPadConnected() {
+int InputHandler_Win32_SMX::IsPadConnected() {
 	if (!__detected_pad) {
-		return false;
+		LOG->Warn("SMX: No pad detected (__detected_pad is false).");
+		return -1; // Pad not detected
 	}
 
 	if (!InputHandler_Win32_SMX_Is_SMX_DLL_Available()) {
-		return false;
+		LOG->Warn("SMX: SMX DLL is not available.");
+		return -1; // DLL loading failure
 	}
 
 	// Lazy start the SMX SDK when the DLL is loaded and a pad has been detected
@@ -216,11 +227,13 @@ bool InputHandler_Win32_SMX::IsPadConnected() {
 		SMX_GetInfo(i, &info);
 
 		if (info.m_bConnected) {
-			return true;
+			LOG->Trace("SMX: Pad %d is connected.", i);
+			return 1; // Pad connected and m_bConnected is true
 		}
 	}
 
-	return false;
+	LOG->Warn("SMX: SMX started, but no pads are connected (info.m_bConnected is false).");
+	return 0; // Pad may or may not be connected, but SMX SDK is running.
 }
 
 void InputHandler_Win32_SMX::SMX_Start() {
