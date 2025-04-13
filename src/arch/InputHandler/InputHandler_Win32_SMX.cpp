@@ -124,6 +124,10 @@ InputHandler_Win32_SMX::InputHandler_Win32_SMX() {
 		break;
 	case -1:
 		LOG->Warn("SMX: Failed to detect pad or load SMX DLL.");
+		if (Is_SMX_Started) {
+			SMX_Stop();
+			LOG->Info("SMX: Stopping SMX SDK.");
+		}
 		break;
 	default:
 		LOG->Warn("SMX: Unknown connection status: %d", connectionStatus);
