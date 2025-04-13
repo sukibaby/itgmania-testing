@@ -648,7 +648,7 @@ RageSoundReader_Resample_Good::~RageSoundReader_Resample_Good()
 int RageSoundReader_Resample_Good::SetPosition( int iFrame )
 {
 	Reset();
-	iFrame = (int) SCALE( iFrame, 0, (int64_t) m_iSampleRate, 0, (int64_t) m_pSource->GetSampleRate() );
+	iFrame = static_cast<int>(iFrame * static_cast<int64_t>(m_pSource->GetSampleRate()) / static_cast<int64_t>(m_iSampleRate));
 	return m_pSource->SetPosition( iFrame );
 }
 
