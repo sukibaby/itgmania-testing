@@ -241,8 +241,12 @@ int InputHandler_Win32_SMX::InitializeSMX() {
 	}
 
 	SMX_Start();
-	LOG->Info("SMX: StepManiaX SDK started.");
-	return SMX_SUCCESS;
+	if (Is_SMX_Started) {
+		LOG->Info("SMX: StepManiaX SDK started.");
+		return SMX_SUCCESS;
+	}
+	LOG->Warn("SMX: Attempted to start StepManiaX SDK, but it doesn't seem to be running.");
+	return SMX_FAILURE;
 }
 
 int InputHandler_Win32_SMX::IsPadConnected() {
