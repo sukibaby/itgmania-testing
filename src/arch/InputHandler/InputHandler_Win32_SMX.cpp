@@ -261,6 +261,7 @@ int InputHandler_Win32_SMX::IsPadConnected() {
 
 void InputHandler_Win32_SMX::SMX_Start() {
 	if (Is_SMX_Started) {
+		LOG->Trace("SMX: SMX SDK was asked to start up, but it was already started.");
 		return;
 	}
 
