@@ -113,7 +113,7 @@ bool InputHandler_Win32_SMX_Is_SMX_DLL_Available()
 		return false;
 	}
 	else {
-		LOG->Trace("SMX.dll loaded successfully! :D");
+		LOG->Trace("SMX.dll loaded successfully.");
 	}
 	_smxdll_loaded = MapFunctions();
 	return _smxdll_loaded;
@@ -127,28 +127,46 @@ void InputHandler_Win32_SMX_Register_Pad() {
 }
 
 InputHandler_Win32_SMX::InputHandler_Win32_SMX() {
-	LOG->Trace("SMX: InputHandler_Win32_SMX constructor called. Attempting to load SMX.dll...");
+	LOG->Trace("Checking if a SMX.dll exists in the Program directory...");
 	std::fill(std::begin(m_padInputStates), std::end(m_padInputStates), 0);
+
+	if (InputHandler_Win32_SMX_Is_SMX_DLL_Available()) {
+		LOG->Trace("SMX: SMX.dll loaded successfully.");
+	} else {
+		LOG->Warn("SMX: Failed to load SMX.dll. InputHandler_Win32_SMX will not be used.");
+		return;
+	}
 	SMX_SetLogCallback();
 
-	int connection_status = IsPadConnected();
-	switch (connection_status) {
-	case SMX_SUCCESS:
-		LOG->Info("SMX: Pad is connected and ready.");
-		break;
-	case SMX_AMBIGUOUS:
-		LOG->Warn("SMX: SMX started, but info.m_bConnected returned 0. Are pads connected?");
-		break;
-	case SMX_FAILURE:
-		LOG->Warn("SMX: Failed to detect pad or load SMX DLL.");
-		if (Is_SMX_Started) {
-			SMX_Stop();
-			LOG->Info("SMX: Stopping SMX SDK.");
+	if (!Is_SMX_Started) {
+		int connection_status = IsPadConnected();
+		switch (connection_status) {
+		case SMX_SUCCESS:
+			LOG->Info("SMX: Pad is connected and ready.");
+			break;
+		case SMX_AMBIGUOUS:
+			LOG->Warn("SMX: SMX started, but pad connection status is ambiguous.");
+			break;
+		case SMX_FAILURE:
+			LOG->Warn("SMX: Failed to detect pad or load SMX SDK.");
+			break;
+		default:
+			LOG->Warn("SMX: Unknown connection status: %d", connection_status);
+			break;
 		}
-		break;
-	default:
-		LOG->Warn("SMX: Unknown connection status: %d", connection_status);
-		break;
+	}
+	else {
+		LOG->Info("SMX: SMX SDK already started. Restarting...");
+		SMX_Stop();
+		if (!Is_SMX_Started) {
+			SMX_Start();
+			if (Is_SMX_Started) {
+				LOG->Info("SMX: SMX SDK restarted successfully.");
+			}
+			else {
+				LOG->Warn("SMX: Failed to restart SMX SDK.");
+			}
+		}
 	}
 }
 
