@@ -1098,6 +1098,7 @@ void NoteField::DrawPrimitives()
 
 	cur->m_GhostArrowRow.Draw();
 }
+#undef IS_ON_SCREEN
 
 void NoteField::DrawBoardPrimitive()
 {
