@@ -4,34 +4,42 @@
 
 #include <windows.h>
 
-constexpr int SMX_PANEL_COUNT = 9;
-
+// Typedefs for the SMX SDK functions
 typedef VOID(__stdcall* SMX_Start_t)(
     SMXUpdateCallback UpdateCallback, void *pUser
 );
-static SMX_Start_t pSMX_Start = nullptr;
 
 typedef VOID(__stdcall* SMX_GetInfo_t)(
 	int pad, struct SMXInfo *info
 );
-static SMX_GetInfo_t pSMX_GetInfo = nullptr;
 
 typedef uint16_t(__stdcall* SMX_GetInputState_t)(
     int pad
 );
-static SMX_GetInputState_t pSMX_GetInputState = nullptr;
 
 typedef VOID(__stdcall* SMX_SetLogCallback_t)(
 	SMXLogCallback callback
 );
-static SMX_SetLogCallback_t pSMX_SetLogCallback = nullptr;
 
 typedef VOID(__stdcall* SMX_Stop_t)();
+
+REGISTER_INPUT_HANDLER_CLASS2(SMX, Win32_SMX);
+
+// Constants
+constexpr int SMX_PANEL_COUNT = 9;
+
+// Static variables
+static SMX_Start_t pSMX_Start = nullptr;
+static SMX_GetInfo_t pSMX_GetInfo = nullptr;
+static SMX_GetInputState_t pSMX_GetInputState = nullptr;
+static SMX_SetLogCallback_t pSMX_SetLogCallback = nullptr;
 static SMX_Stop_t pSMX_Stop = nullptr;
 
 static HINSTANCE hSMXdll = nullptr;
 
-REGISTER_INPUT_HANDLER_CLASS2(SMX, Win32_SMX);
+static bool _smxdll_loaded = false;
+static bool __detected_pad = false;
+static bool Is_SMX_Started = false;
 
 namespace {
 	static void SmxCallback(int pad, SMXUpdateCallbackReason reason, void* pUser) {
@@ -48,8 +56,6 @@ int smx_filter(unsigned int, struct _EXCEPTION_POINTERS*)
 {
 	return EXCEPTION_EXECUTE_HANDLER;
 }
-
-static bool _smxdll_loaded = false;
 
 bool MapFunctions()
 {
@@ -96,7 +102,6 @@ bool InputHandler_Win32_SMX_Is_SMX_DLL_Available()
 	return _smxdll_loaded;
 }
 
-static bool __detected_pad = false;
 void InputHandler_Win32_SMX_Register_Pad() {
 	if (__detected_pad) {
 		return;
@@ -182,8 +187,6 @@ RString InputHandler_Win32_SMX::GetDeviceSpecificInputString(const DeviceInput &
 
     return ssprintf("SMX P%d %s", pad, buttonString);
 }
-
-static bool Is_SMX_Started = false;
 
 bool InputHandler_Win32_SMX::IsPadConnected() {
 	if (!__detected_pad) {
