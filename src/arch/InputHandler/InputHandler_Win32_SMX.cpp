@@ -27,6 +27,9 @@ REGISTER_INPUT_HANDLER_CLASS2(SMX, Win32_SMX);
 
 // Constants
 constexpr int SMX_PANEL_COUNT = 9;
+constexpr int SMX_SUCCESS = 1;
+constexpr int SMX_AMBIGUOUS = 0;
+constexpr int SMX_FAILURE = -1;
 
 // Static variables
 static SMX_Start_t pSMX_Start = nullptr;
@@ -114,15 +117,15 @@ InputHandler_Win32_SMX::InputHandler_Win32_SMX() {
 	std::fill(std::begin(m_padInputStates), std::end(m_padInputStates), 0);
 	SMX_SetLogCallback();
 
-	int connectionStatus = IsPadConnected();
-	switch (connectionStatus) {
-	case 1:
+	int connection_status = IsPadConnected();
+	switch (connection_status) {
+	case SMX_SUCCESS:
 		LOG->Info("SMX: Pad is connected and ready.");
 		break;
-	case 0:
+	case SMX_AMBIGUOUS:
 		LOG->Warn("SMX: SMX started, but info.m_bConnected returned 0. Are pads connected?");
 		break;
-	case -1:
+	case SMX_FAILURE:
 		LOG->Warn("SMX: Failed to detect pad or load SMX DLL.");
 		if (Is_SMX_Started) {
 			SMX_Stop();
@@ -130,7 +133,7 @@ InputHandler_Win32_SMX::InputHandler_Win32_SMX() {
 		}
 		break;
 	default:
-		LOG->Warn("SMX: Unknown connection status: %d", connectionStatus);
+		LOG->Warn("SMX: Unknown connection status: %d", connection_status);
 		break;
 	}
 }
@@ -224,39 +227,44 @@ int InputHandler_Win32_SMX::GetStageStatus() {
 
 	if (connected_stages > 0) {
 		LOG->Info("SMX: %d stage(s) are connected.", connected_stages);
-		return 1;
+		return SMX_SUCCESS;
 	}
 
 	LOG->Warn("SMX: No stages were detected.");
-	return 0; // doesn't necessarily mean the pad is not connected.
+	return SMX_AMBIGUOUS; // doesn't necessarily mean the pad is not connected. everything might be ok but we failed to get m_bConnected
+}
+
+int InputHandler_Win32_SMX::InitializeSMX() {
+	if (Is_SMX_Started) {
+		LOG->Info("SMX: StepManiaX SDK already started.");
+		return SMX_AMBIGUOUS;
+	}
+
+	SMX_Start();
+	LOG->Info("SMX: StepManiaX SDK started.");
+	return SMX_SUCCESS;
 }
 
 int InputHandler_Win32_SMX::IsPadConnected() {
 	if (!__detected_pad) {
 		LOG->Warn("SMX: No pad detected (__detected_pad is false).");
-		return -1; // Pad not detected
+		return SMX_FAILURE;
 	}
 
 	if (!InputHandler_Win32_SMX_Is_SMX_DLL_Available()) {
 		LOG->Warn("SMX: SMX DLL is not available.");
-		return -1; // DLL loading failure
+		return SMX_FAILURE;
 	}
 
-	// Lazy start the SMX SDK when the DLL is loaded and a pad has been detected
-	if (!Is_SMX_Started) {
-		SMX_Start();
-		LOG->Info("SMX: StepManiaX SDK started.");
-	}
-	else {
-		LOG->Info("SMX: StepManiaX SDK already started.");
-	}
-
-	int stage_status = GetStageStatus();
-	if (stage_status == 1) {
-		LOG->Info("SMX: Pad is connected and ready.");
+	if (InitializeSMX() == SMX_SUCCESS) {
+		int stage_status = GetStageStatus();
+		if (stage_status == SMX_SUCCESS) {
+			LOG->Info("SMX: Pad is connected and ready.");
+		}
+		return stage_status;
 	}
 
-	return stage_status; // Pad may or may not be connected, but SMX SDK is running.
+	return SMX_FAILURE;
 }
 
 void InputHandler_Win32_SMX::SMX_Start() {
@@ -285,7 +293,7 @@ uint16_t InputHandler_Win32_SMX::SMX_GetInputState(int pad) {
         return pSMX_GetInputState(pad);
     }
 	
-	return 0;
+	return SMX_AMBIGUOUS;
 }
 
 void InputHandler_Win32_SMX::SMX_SetLogCallback() {
