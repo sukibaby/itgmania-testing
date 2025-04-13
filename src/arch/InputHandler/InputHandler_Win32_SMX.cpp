@@ -43,9 +43,13 @@ static HINSTANCE hSMXdll = nullptr;
 static bool _smxdll_loaded = false;
 static bool __detected_pad = false;
 static bool Is_SMX_Started = false;
+static bool smx_scanning_complete = false;
 
 namespace {
 	static void SmxCallback(int pad, SMXUpdateCallbackReason reason, void* pUser) {
+		if (reason == SMXUpdateCallback_Updated) {
+			smx_scanning_complete = true;
+		}
 		InputHandler_Win32_SMX* inputHandler = static_cast<InputHandler_Win32_SMX*>(pUser);
 		inputHandler->ProcessInputEvent(pad);
 	};
@@ -204,6 +208,21 @@ RString InputHandler_Win32_SMX::GetDeviceSpecificInputString(const DeviceInput &
     return ssprintf("SMX P%d %s", pad, buttonString);
 }
 
+void WaitForScanningToComplete() {
+	constexpr int max_wait_time_ms = 5000;
+	constexpr int poll_interval_ms = 100;
+	int elapsed_time = 0;
+
+	while (!smx_scanning_complete && elapsed_time < max_wait_time_ms) {
+		Sleep(poll_interval_ms);
+		elapsed_time += poll_interval_ms;
+	}
+
+	if (!smx_scanning_complete) {
+		LOG->Warn("SMX: Scanning did not complete within the expected time.");
+	}
+}
+
 int InputHandler_Win32_SMX::GetStageStatus() {
 	// Not sure if this works. Seems like we are failing to return true
 	// here when we have a valid pad connected that the game will map.
@@ -213,6 +232,8 @@ int InputHandler_Win32_SMX::GetStageStatus() {
 	// Check stage 0
 	struct SMXInfo info;
 	int connected_stages = 0;
+
+	WaitForScanningToComplete();
 
 	// Check stages 0 and 1
 	for (int stage = 0; stage <= 1; ++stage) {
@@ -283,13 +304,14 @@ void InputHandler_Win32_SMX::SMX_Start() {
     }
 }
 
-void InputHandler_Win32_SMX::SMX_GetInfo(int pad, struct SMXInfo *info) {
-	if (Is_SMX_Started && pSMX_GetInfo != nullptr) {
-		pSMX_GetInfo(pad, info);
-	}
-	else {
+void InputHandler_Win32_SMX::SMX_GetInfo(int pad, struct SMXInfo* info) {
+	if (pSMX_GetInfo == nullptr) {
+		LOG->Warn("SMX: SMX_GetInfo is null. The SMX driver will not be used.");
 		info->m_bConnected = false;
+		return;
 	}
+
+	pSMX_GetInfo(pad, info);
 }
 
 uint16_t InputHandler_Win32_SMX::SMX_GetInputState(int pad) {
