@@ -4,6 +4,16 @@
 
 #include <windows.h>
 
+/*
+
+
+TODO:
+
+remove excessive logging and relegate some of it to debug only.
+
+
+*/
+
 // Typedefs for the SMX SDK functions
 typedef VOID(__stdcall* SMX_Start_t)(
     SMXUpdateCallback UpdateCallback, void *pUser
@@ -235,10 +245,9 @@ int InputHandler_Win32_SMX::GetStageStatus() {
 
 	WaitForScanningToComplete();
 
-	// Check stages 0 and 1
-	for (int stage = 0; stage <= 1; ++stage) {
+	for (int stage = 0; stage < SMX_PAD_COUNT; ++stage) {
 		SMX_GetInfo(stage, &info);
-		LOG->Trace("SMX: Stage %d connection status: %d", stage, info.m_bConnected);
+		LOG->Trace("SMX: Stage %d: %d", stage, info.m_bConnected);
 
 		if (info.m_bConnected) {
 			LOG->Trace("SMX: Stage %d is connected.", stage);
