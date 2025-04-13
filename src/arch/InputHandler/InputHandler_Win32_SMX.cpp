@@ -223,26 +223,25 @@ void WaitForScanningToComplete() {
 	constexpr int poll_interval_ms = 100;
 	int elapsed_time = 0;
 
+	RageTimer timer;
+	timer.Touch();
 	while (!smx_scanning_complete && elapsed_time < max_wait_time_ms) {
 		Sleep(poll_interval_ms);
 		elapsed_time += poll_interval_ms;
 	}
-
+	float i = timer.Ago();
+	LOG->Trace("SMX: Scanning took %f seconds to complete.", i);
 	if (!smx_scanning_complete) {
 		LOG->Warn("SMX: Scanning did not complete within the expected time.");
 	}
 }
 
 int InputHandler_Win32_SMX::GetStageStatus() {
-	// Not sure if this works. Seems like we are failing to return true
-	// here when we have a valid pad connected that the game will map.
-	// As a result this function is returning false despite the pad being
-	// connected. The game will be able to poll the pad anyway since
-	// SMX_Start() was called. So we might not be populating m_bConnected properly.
-	// Check stage 0
 	struct SMXInfo info;
 	int connected_stages = 0;
 
+	// We need around 2 seconds to scan for pads to prevent this
+	// from failing before the SDK can finish checking for pads.
 	WaitForScanningToComplete();
 
 	for (int stage = 0; stage < SMX_PAD_COUNT; ++stage) {
