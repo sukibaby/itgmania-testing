@@ -1,0 +1,43 @@
+OpenGL Windowed 1280x720 32 color 32 texture 60Hz Vsync SmoothLines
+RageInput::RageInput()
+InputHandler_DInput::InputHandler_DInput()
+Found 0 XInput devices.
+InputHandler_DInput: IDirectInput::EnumDevices(DIDEVTYPE_KEYBOARD)
+DInput: Enumerating device - Type: 0x00000413 Instance Name: "Keyboard" Product Name: "Keyboard"
+InputHandler_DInput: IDirectInput::EnumDevices(DIDEVTYPE_JOYSTICK)
+DInput: Enumerating device - Type: 0x00010114 Instance Name: "StepManiaX" Product Name: "StepManiaX"
+SMX.dll loaded successfully! :D
+DInput: Ignoring SMX Stage HID device in favor of the SMX driver.
+InputHandler_DInput: IDirectInput::EnumDevices(DIDEVTYPE_MOUSE)
+DInput: Enumerating device - Type: 0x00000112 Instance Name: "Mouse" Product Name: "Mouse"
+Opening device 'Keyboard'
+Opening device 'Mouse'
+Found 2 DirectInput devices:
+   0: 'Keyboard' axes: 0, hats: 0, buttons: 256 (buffered)
+   1: 'Mouse' axes: 3, hats: 0, buttons: 5 (buffered)
+Starting thread: DirectInput thread
+SMX: InputHandler_Win32_SMX constructor called. Attempting to load SMX.dll...
+SMX: SMX DLL already loaded, skipping load attempt.
+SMX: StepManiaX SDK started.
+SMX: Stage 0 connection status: 0
+SMX: Stage 1 connection status: 0
+/////////////////////////////////////////
+WARNING: SMX: No stages were detected.
+/////////////////////////////////////////
+/////////////////////////////////////////
+WARNING: SMX: SMX started, but info.m_bConnected returned false. Are pads connected?
+/////////////////////////////////////////
+SMX SDK Log: Device \\?\hid#vid_08bb&pid_2902&mi_03#9&8bd2295&0&0000#{4d1e55b2-f16f-11cf-88cb-001111000030}: not our device (ID 08bb:2902)
+SMX SDK Log: Error opening device \\?\hid#vid_1a2c&pid_4c5e&mi_00#9&1c34aef&0&0000#{4d1e55b2-f16f-11cf-88cb-001111000030}\kbd: Access is denied.
+SMX SDK Log: Device \\?\hid#vid_1a2c&pid_4c5e&mi_01&col01#9&259a88b1&0&0000#{4d1e55b2-f16f-11cf-88cb-001111000030}: not our device (ID 1a2c:4c5e)
+LoadNoteSkinDataRecursive: athletes (NoteSkins/dance/athletes/)
+SMX SDK Log: Device \\?\hid#vid_1a2c&pid_4c5e&mi_01&col02#9&259a88b1&0&0001#{4d1e55b2-f16f-11cf-88cb-001111000030}: not our device (ID 1a2c:4c5e)
+SMX SDK Log: Device \\?\hid#vid_1a2c&pid_4c5e&mi_01&col03#9&259a88b1&0&0002#{4d1e55b2-f16f-11cf-88cb-001111000030}: not our device (ID 1a2c:4c5e)
+SMX SDK Log: Error opening device \\?\hid#vid_1a2c&pid_4c5e&mi_01&col04#9&259a88b1&0&0003#{4d1e55b2-f16f-11cf-88cb-001111000030}\kbd: Access is denied.
+SMX SDK Log: Error opening device \\?\hid#vid_1a2c&pid_4c5e&mi_01&col05#9&259a88b1&0&0004#{4d1e55b2-f16f-11cf-88cb-001111000030}\kbd: Access is denied.
+SMX SDK Log: Error opening device \\?\hid#vid_1a2c&pid_4c5e&mi_01&col06#9&259a88b1&0&0005#{4d1e55b2-f16f-11cf-88cb-001111000030}\kbd: Access is denied.
+LoadNoteSkinDataRecursive: common (NoteSkins/common/common/)
+LoadNoteSkinDataRecursive: default (NoteSkins/dance/default/)
+LoadNoteSkinDataRecursive: common (NoteSkins/common/common/)
+SMX SDK Log: Device added: \\?\hid#vid_2341&pid_8037&mi_02#8&331cb1ed&0&0000#{4d1e55b2-f16f-11cf-88cb-001111000030}
+SMX SDK Log: Error opening device \\?\hid#vid_30fa&pid_0400#8&4319fe6&0&0000#{4d1e55b2-f16f-11cf-88cb-001111000030}: Access is denied.
