@@ -197,6 +197,36 @@ RString InputHandler_Win32_SMX::GetDeviceSpecificInputString(const DeviceInput &
     return ssprintf("SMX P%d %s", pad, buttonString);
 }
 
+int InputHandler_Win32_SMX::GetStageStatus() {
+	// Not sure if this works. Seems like we are failing to return true
+	// here when we have a valid pad connected that the game will map.
+	// As a result this function is returning false despite the pad being
+	// connected. The game will be able to poll the pad anyway since
+	// SMX_Start() was called. So we might not be populating m_bConnected properly.
+	// Check stage 0
+	struct SMXInfo info;
+	int connected_stages = 0;
+
+	// Check stages 0 and 1
+	for (int stage = 0; stage <= 1; ++stage) {
+		SMX_GetInfo(stage, &info);
+		LOG->Trace("SMX: Stage %d connection status: %d", stage, info.m_bConnected);
+
+		if (info.m_bConnected) {
+			LOG->Trace("SMX: Stage %d is connected.", stage);
+			++connected_stages;
+		}
+	}
+
+	if (connected_stages > 0) {
+		LOG->Info("SMX: %d stage(s) are connected.", connected_stages);
+		return 1;
+	}
+
+	LOG->Warn("SMX: No stages were detected.");
+	return 0; // doesn't necessarily mean the pad is not connected.
+}
+
 int InputHandler_Win32_SMX::IsPadConnected() {
 	if (!__detected_pad) {
 		LOG->Warn("SMX: No pad detected (__detected_pad is false).");
@@ -217,23 +247,12 @@ int InputHandler_Win32_SMX::IsPadConnected() {
 		LOG->Info("SMX: StepManiaX SDK already started.");
 	}
 
-	// Not sure if this works. Seems like we are failing to return true
-	// here when we have a valid pad connected that the game will map.
-	// As a result this function is returning false despite the pad being
-	// connected. The game will be able to poll the pad anyway since
-	// SMX_Start() was called.
-	for (int i = 0; i < SMX_PAD_COUNT; i++) {
-		struct SMXInfo info;
-		SMX_GetInfo(i, &info);
-
-		if (info.m_bConnected) {
-			LOG->Trace("SMX: Pad %d is connected.", i);
-			return 1; // Pad connected and m_bConnected is true
-		}
+	int stage_status = GetStageStatus();
+	if (stage_status == 1) {
+		LOG->Info("SMX: Pad is connected and ready.");
 	}
 
-	LOG->Warn("SMX: SMX started, but no pads are connected (info.m_bConnected is false).");
-	return 0; // Pad may or may not be connected, but SMX SDK is running.
+	return stage_status; // Pad may or may not be connected, but SMX SDK is running.
 }
 
 void InputHandler_Win32_SMX::SMX_Start() {
