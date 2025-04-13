@@ -1061,8 +1061,8 @@ void NoteField::DrawPrimitives()
 	if(*m_FieldRenderArgs.selection_begin_marker != -1 &&
 		*m_FieldRenderArgs.selection_end_marker != -1)
 	{
-		m_FieldRenderArgs.selection_glow= SCALE(
-			std::cos(RageTimer::GetTimeSinceStartFast()*2), -1, 1, 0.1f, 0.3f);
+		float cosValue = std::cos(RageTimer::GetTimeSinceStartFast() * 2);
+		m_FieldRenderArgs.selection_glow = 0.1f + (cosValue + 1.0f) * 0.1f;
 	}
 	m_FieldRenderArgs.fade_before_targets= FADE_BEFORE_TARGETS_PERCENT;
 
