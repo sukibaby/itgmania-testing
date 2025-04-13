@@ -5,22 +5,10 @@
 #include <windows.h>
 
 // Typedefs for the SMX SDK functions
-typedef VOID(__stdcall* SMX_Start_t)(
-    SMXUpdateCallback UpdateCallback, void *pUser
-);
-
-typedef VOID(__stdcall* SMX_GetInfo_t)(
-	int pad, struct SMXInfo *info
-);
-
-typedef uint16_t(__stdcall* SMX_GetInputState_t)(
-    int pad
-);
-
-typedef VOID(__stdcall* SMX_SetLogCallback_t)(
-	SMXLogCallback callback
-);
-
+typedef VOID(__stdcall* SMX_Start_t)(SMXUpdateCallback UpdateCallback, void* pUser);
+typedef VOID(__stdcall* SMX_GetInfo_t)(int pad, struct SMXInfo* info);
+typedef uint16_t(__stdcall* SMX_GetInputState_t)(int pad);
+typedef VOID(__stdcall* SMX_SetLogCallback_t)(SMXLogCallback callback);
 typedef VOID(__stdcall* SMX_Stop_t)();
 
 REGISTER_INPUT_HANDLER_CLASS2(SMX, Win32_SMX);
@@ -52,13 +40,12 @@ namespace {
 		if (reason == SMXUpdateCallback_Updated) {
 			smx_scanning_complete = true;
 		}
-		InputHandler_Win32_SMX* inputHandler = static_cast<InputHandler_Win32_SMX*>(pUser);
-		inputHandler->ProcessInputEvent(pad);
-	};
+		static_cast<InputHandler_Win32_SMX*>(pUser)->ProcessInputEvent(pad);
+	}
 
-	static void LogCallback(const char *log) {
+	static void LogCallback(const char* log) {
 		LOG->Info("SMX SDK Log: %s", log);
-	};
+	}
 
 	class CriticalSectionGuard {
 	public:
@@ -73,23 +60,19 @@ namespace {
 	};
 }  // namespace
 
-int smx_filter(unsigned int, struct _EXCEPTION_POINTERS*)
-{
+int smx_filter(unsigned int, struct _EXCEPTION_POINTERS*) {
 	return EXCEPTION_EXECUTE_HANDLER;
 }
 
-bool MapFunctions()
-{
-	__try
-	{
-		pSMX_Start = (SMX_Start_t)GetProcAddress(hSMXdll, "SMX_Start");
-		pSMX_GetInfo = (SMX_GetInfo_t)GetProcAddress(hSMXdll, "SMX_GetInfo");
-		pSMX_GetInputState = (SMX_GetInputState_t)GetProcAddress(hSMXdll, "SMX_GetInputState");
-		pSMX_SetLogCallback = (SMX_SetLogCallback_t)GetProcAddress(hSMXdll, "SMX_SetLogCallback");
-		pSMX_Stop = (SMX_Stop_t)GetProcAddress(hSMXdll, "SMX_Stop");
+bool MapFunctions() {
+	__try {
+		pSMX_Start = reinterpret_cast<SMX_Start_t>(GetProcAddress(hSMXdll, "SMX_Start"));
+		pSMX_GetInfo = reinterpret_cast<SMX_GetInfo_t>(GetProcAddress(hSMXdll, "SMX_GetInfo"));
+		pSMX_GetInputState = reinterpret_cast<SMX_GetInputState_t>(GetProcAddress(hSMXdll, "SMX_GetInputState"));
+		pSMX_SetLogCallback = reinterpret_cast<SMX_SetLogCallback_t>(GetProcAddress(hSMXdll, "SMX_SetLogCallback"));
+		pSMX_Stop = reinterpret_cast<SMX_Stop_t>(GetProcAddress(hSMXdll, "SMX_Stop"));
 	}
-	__except (smx_filter(GetExceptionCode(), GetExceptionInformation()))
-	{
+	__except (smx_filter(GetExceptionCode(), GetExceptionInformation())) {
 		LOG->Warn("SMX.dll is not valid. The SMX driver will not be used.");
 		FreeLibrary(hSMXdll);
 		return false;
@@ -99,7 +82,6 @@ bool MapFunctions()
 	return true;
 }
 
-// Thread safety.
 void InitializeSMXCriticalSection() {
 	static bool WasCriticalSectionInit = false;
 	if (!WasCriticalSectionInit) {
@@ -108,45 +90,35 @@ void InitializeSMXCriticalSection() {
 	}
 }
 
-// The only way to know for-sure if the DLL is available is to actually load it, so this method attempts to load the DLL the first time it is run.
-bool InputHandler_Win32_SMX_Is_SMX_DLL_Available()
-{
+bool InputHandler_Win32_SMX_Is_SMX_DLL_Available() {
 	static bool dll_load_attempted = false;
 	if (dll_load_attempted) {
-		LOG->Trace("SMX: SMX DLL already loaded, skipping load attempt.");
 		return _smxdll_loaded;
 	}
 
 	hSMXdll = LoadLibrary("SMX.dll");
 	dll_load_attempted = true;
 
-	if (hSMXdll == nullptr) {
+	if (!hSMXdll) {
 		LOG->Warn("SMX.dll not found. The SMX driver will not be used.");
-		_smxdll_loaded = false;
 		return false;
 	}
-	else {
-		LOG->Trace("SMX.dll loaded successfully.");
-	}
-	_smxdll_loaded = MapFunctions();
-	return _smxdll_loaded;
+
+	LOG->Trace("SMX.dll loaded successfully.");
+	return (_smxdll_loaded = MapFunctions());
 }
 
 void InputHandler_Win32_SMX_Register_Pad() {
-	if (__detected_pad) {
-		return;
+	if (!__detected_pad) {
+		__detected_pad = true;
 	}
-	__detected_pad = true;
 }
 
 InputHandler_Win32_SMX::InputHandler_Win32_SMX() {
 	LOG->Trace("Checking if a SMX.dll exists in the Program directory...");
 	std::fill(std::begin(m_padInputStates), std::end(m_padInputStates), 0);
 
-	if (InputHandler_Win32_SMX_Is_SMX_DLL_Available()) {
-		LOG->Trace("SMX: SMX.dll loaded successfully.");
-	}
-	else {
+	if (!InputHandler_Win32_SMX_Is_SMX_DLL_Available()) {
 		LOG->Warn("SMX: Failed to load SMX.dll. InputHandler_Win32_SMX will not be used.");
 		return;
 	}
@@ -160,37 +132,30 @@ InputHandler_Win32_SMX::InputHandler_Win32_SMX() {
 	}
 
 	if (!Is_SMX_Started) {
-		int connection_status = IsPadConnected();
-		switch (connection_status) {
+		switch (IsPadConnected()) {
 		case SMX_SUCCESS:
 			LOG->Info("SMX: Pad is connected and ready.");
 			break;
 		case SMX_AMBIGUOUS:
 			LOG->Warn("SMX: SMX started, but pad connection status is ambiguous.");
 			break;
-		case SMX_FAILURE:
-			LOG->Warn("SMX: Failed to detect pad or load SMX SDK.");
-			break;
 		default:
-			LOG->Warn("SMX: Unknown connection status: %d", connection_status);
+			LOG->Warn("SMX: Failed to detect pad or load SMX SDK.");
 			break;
 		}
 	}
 	else {
 		LOG->Info("SMX: SMX SDK already started. Restarting...");
 		SMX_Stop();
-		if (!Is_SMX_Started) {
-			SMX_Start();
-			if (Is_SMX_Started) {
-				LOG->Info("SMX: SMX SDK restarted successfully.");
-			}
-			else {
-				LOG->Warn("SMX: Failed to restart SMX SDK.");
-			}
+		SMX_Start();
+		if (Is_SMX_Started) {
+			LOG->Info("SMX: SMX SDK restarted successfully.");
+		}
+		else {
+			LOG->Warn("SMX: Failed to restart SMX SDK.");
 		}
 	}
 }
-
 
 InputHandler_Win32_SMX::~InputHandler_Win32_SMX() {
 	SMX_Stop();
