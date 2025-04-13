@@ -450,7 +450,7 @@ void NoteField::DrawBeatBar( const float fBeat, BeatBarType type, int iMeasureIn
 	m_sprBeatBars.SetY( fYPos );
 	m_sprBeatBars.SetDiffuse( RageColor(1,1,1,fAlpha) );
 	m_sprBeatBars.SetState( iState );
-	m_sprBeatBars.SetCustomTextureRect( RectF(0,SCALE(iState,0.f,4.f,0.f,1.f), fWidth/fFrameWidth, SCALE(iState+1,0.f,4.f,0.f,1.f)) );
+	m_sprBeatBars.SetCustomTextureRect(RectF(0, iState / 4.0f, fWidth / fFrameWidth, (iState + 1) / 4.0f));
 	m_sprBeatBars.SetZoomX( fWidth/m_sprBeatBars.GetUnzoomedWidth() );
 	m_sprBeatBars.Draw();
 
