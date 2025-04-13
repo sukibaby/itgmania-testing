@@ -432,11 +432,11 @@ void NoteField::DrawBeatBar( const float fBeat, BeatBarType type, int iMeasureIn
 				iState = 1;
 				break;
 			case half_beat:
-				fAlpha = SCALE(fScrollSpeed,1.0f,2.0f,0.0f,m_fBar8thAlpha);
+				fAlpha = (fScrollSpeed - 1.0f) * (m_fBar8thAlpha / 1.0f);
 				iState = 2;
 				break;
 			case quarter_beat:
-				fAlpha = SCALE(fScrollSpeed,2.0f,4.0f,0.0f,m_fBar16thAlpha);
+				fAlpha = (fScrollSpeed - 2.0f) * (m_fBar16thAlpha / 2.0f);
 				iState = 3;
 				break;
 		}
