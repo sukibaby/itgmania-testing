@@ -4,7 +4,7 @@
 
 #include <windows.h>
 
-static const int SMX_PANEL_COUNT = 9;
+constexpr int SMX_PANEL_COUNT = 9;
 
 typedef VOID(__stdcall* SMX_Start_t)(
     SMXUpdateCallback UpdateCallback, void *pUser
@@ -50,7 +50,6 @@ int smx_filter(unsigned int, struct _EXCEPTION_POINTERS*)
 }
 
 static bool _smxdll_loaded = false;
-static bool _smxdll_attempted_load = false;
 
 bool MapFunctions()
 {
@@ -76,17 +75,21 @@ bool MapFunctions()
 // The only way to know for-sure if the DLL is available is to actually load it, so this method attempts to load the DLL the first time it is run.
 bool InputHandler_Win32_SMX_Is_SMX_DLL_Available()
 {
-	if (_smxdll_attempted_load) {
+	static bool dll_load_attempted = false;
+	if (dll_load_attempted) {
 		return _smxdll_loaded;
 	}
-	_smxdll_attempted_load = true;
 
 	hSMXdll = LoadLibrary("SMX.dll");
+	dll_load_attempted = true;
 
 	if (hSMXdll == nullptr) {
 		LOG->Warn("SMX.dll not found. The SMX driver will not be used.");
 		_smxdll_loaded = false;
 		return false;
+	}
+	else {
+		LOG->Trace("SMX.dll loaded successfully! :D");
 	}
 	_smxdll_loaded = MapFunctions();
 	return _smxdll_loaded;
@@ -101,8 +104,16 @@ void InputHandler_Win32_SMX_Register_Pad() {
 }
 
 InputHandler_Win32_SMX::InputHandler_Win32_SMX() {
+	LOG->Trace("SMX: InputHandler_Win32_SMX constructor called. Attempting to load SMX.dll...");
 	std::fill(std::begin(m_padInputStates), std::end(m_padInputStates), 0);
 	SMX_SetLogCallback();
+	if (IsPadConnected()) {
+		// TODO make sure this doesn't log multiple times if called repeatedly
+		LOG->Trace("SMX: InputHandler_Win32_SMX created. SMX SDK functions mapped and log callback set.");
+	}
+	else {
+		LOG->Warn("SMX: SMX DLL loaded, but no pads detected.");
+	}
 }
 
 InputHandler_Win32_SMX::~InputHandler_Win32_SMX() {
@@ -111,10 +122,7 @@ InputHandler_Win32_SMX::~InputHandler_Win32_SMX() {
 
 void InputHandler_Win32_SMX::GetDevicesAndDescriptions(std::vector<InputDeviceInfo>& vDevicesOut)
 {
-	// Ensure that the SMX device is not registered unless a pad is connected.
-	if (IsPadConnected()) {
-		vDevicesOut.push_back(InputDeviceInfo(InputDevice(DEVICE_SMX), "SMX"));
-	}
+	vDevicesOut.push_back(InputDeviceInfo(InputDevice(DEVICE_SMX), "SMX"));
 }
 
 void InputHandler_Win32_SMX::ProcessInputEvent(int pad) {
@@ -165,13 +173,13 @@ RString InputHandler_Win32_SMX::GetDeviceSpecificInputString(const DeviceInput &
 
     static const char* buttonStrings[SMX_PANEL_COUNT] =
     {
-        "up left", "up", "up right", "left", "center",
-        "right", "down left", "down", "down right"
+		"UpLeft", "Up", "Up Right", "Left", "Center",
+		"Right", "DownLeft", "Down", "DownRight"
     };
 
     const char* buttonString = (padRemovedButton >= 0 && padRemovedButton < SMX_PANEL_COUNT) ? buttonStrings[padRemovedButton] : "unknown";
 
-    return ssprintf("SMX P%d, %s", pad, buttonString);
+    return ssprintf("SMX P%d %s", pad, buttonString);
 }
 
 static bool Is_SMX_Started = false;
@@ -188,8 +196,17 @@ bool InputHandler_Win32_SMX::IsPadConnected() {
 	// Lazy start the SMX SDK when the DLL is loaded and a pad has been detected
 	if (!Is_SMX_Started) {
 		SMX_Start();
+		LOG->Info("SMX: StepManiaX SDK started.");
+	}
+	else {
+		LOG->Info("SMX: StepManiaX SDK already started.");
 	}
 
+	// Not sure if this works. Seems like we are failing to return true
+	// here when we have a valid pad connected that the game will map.
+	// As a result this function is returning false despite the pad being
+	// connected. The game will be able to poll the pad anyway since
+	// SMX_Start() was called.
 	for (int i = 0; i < SMX_PAD_COUNT; i++) {
 		struct SMXInfo info;
 		SMX_GetInfo(i, &info);
