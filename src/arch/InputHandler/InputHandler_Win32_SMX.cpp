@@ -4,37 +4,62 @@
 
 #include <windows.h>
 
-static const int SMX_PANEL_COUNT = 9;
+/*
 
+
+TODO:
+
+remove excessive logging and relegate some of it to debug only.
+
+
+*/
+
+// Typedefs for the SMX SDK functions
 typedef VOID(__stdcall* SMX_Start_t)(
     SMXUpdateCallback UpdateCallback, void *pUser
 );
-static SMX_Start_t pSMX_Start = nullptr;
 
 typedef VOID(__stdcall* SMX_GetInfo_t)(
 	int pad, struct SMXInfo *info
 );
-static SMX_GetInfo_t pSMX_GetInfo = nullptr;
 
 typedef uint16_t(__stdcall* SMX_GetInputState_t)(
     int pad
 );
-static SMX_GetInputState_t pSMX_GetInputState = nullptr;
 
 typedef VOID(__stdcall* SMX_SetLogCallback_t)(
 	SMXLogCallback callback
 );
-static SMX_SetLogCallback_t pSMX_SetLogCallback = nullptr;
 
 typedef VOID(__stdcall* SMX_Stop_t)();
+
+REGISTER_INPUT_HANDLER_CLASS2(SMX, Win32_SMX);
+
+// Constants
+constexpr int SMX_PANEL_COUNT = 9;
+constexpr int SMX_SUCCESS = 1;
+constexpr int SMX_AMBIGUOUS = 0;
+constexpr int SMX_FAILURE = -1;
+
+// Static variables
+static SMX_Start_t pSMX_Start = nullptr;
+static SMX_GetInfo_t pSMX_GetInfo = nullptr;
+static SMX_GetInputState_t pSMX_GetInputState = nullptr;
+static SMX_SetLogCallback_t pSMX_SetLogCallback = nullptr;
 static SMX_Stop_t pSMX_Stop = nullptr;
 
 static HINSTANCE hSMXdll = nullptr;
 
-REGISTER_INPUT_HANDLER_CLASS2(SMX, Win32_SMX);
+static bool _smxdll_loaded = false;
+static bool __detected_pad = false;
+static bool Is_SMX_Started = false;
+static bool smx_scanning_complete = false;
 
 namespace {
 	static void SmxCallback(int pad, SMXUpdateCallbackReason reason, void* pUser) {
+		if (reason == SMXUpdateCallback_Updated) {
+			smx_scanning_complete = true;
+		}
 		InputHandler_Win32_SMX* inputHandler = static_cast<InputHandler_Win32_SMX*>(pUser);
 		inputHandler->ProcessInputEvent(pad);
 	};
@@ -48,9 +73,6 @@ int smx_filter(unsigned int, struct _EXCEPTION_POINTERS*)
 {
 	return EXCEPTION_EXECUTE_HANDLER;
 }
-
-static bool _smxdll_loaded = false;
-static bool _smxdll_attempted_load = false;
 
 bool MapFunctions()
 {
@@ -76,23 +98,27 @@ bool MapFunctions()
 // The only way to know for-sure if the DLL is available is to actually load it, so this method attempts to load the DLL the first time it is run.
 bool InputHandler_Win32_SMX_Is_SMX_DLL_Available()
 {
-	if (_smxdll_attempted_load) {
+	static bool dll_load_attempted = false;
+	if (dll_load_attempted) {
+		LOG->Trace("SMX: SMX DLL already loaded, skipping load attempt.");
 		return _smxdll_loaded;
 	}
-	_smxdll_attempted_load = true;
 
 	hSMXdll = LoadLibrary("SMX.dll");
+	dll_load_attempted = true;
 
 	if (hSMXdll == nullptr) {
 		LOG->Warn("SMX.dll not found. The SMX driver will not be used.");
 		_smxdll_loaded = false;
 		return false;
 	}
+	else {
+		LOG->Trace("SMX.dll loaded successfully! :D");
+	}
 	_smxdll_loaded = MapFunctions();
 	return _smxdll_loaded;
 }
 
-static bool __detected_pad = false;
 void InputHandler_Win32_SMX_Register_Pad() {
 	if (__detected_pad) {
 		return;
@@ -101,8 +127,29 @@ void InputHandler_Win32_SMX_Register_Pad() {
 }
 
 InputHandler_Win32_SMX::InputHandler_Win32_SMX() {
+	LOG->Trace("SMX: InputHandler_Win32_SMX constructor called. Attempting to load SMX.dll...");
 	std::fill(std::begin(m_padInputStates), std::end(m_padInputStates), 0);
 	SMX_SetLogCallback();
+
+	int connection_status = IsPadConnected();
+	switch (connection_status) {
+	case SMX_SUCCESS:
+		LOG->Info("SMX: Pad is connected and ready.");
+		break;
+	case SMX_AMBIGUOUS:
+		LOG->Warn("SMX: SMX started, but info.m_bConnected returned 0. Are pads connected?");
+		break;
+	case SMX_FAILURE:
+		LOG->Warn("SMX: Failed to detect pad or load SMX DLL.");
+		if (Is_SMX_Started) {
+			SMX_Stop();
+			LOG->Info("SMX: Stopping SMX SDK.");
+		}
+		break;
+	default:
+		LOG->Warn("SMX: Unknown connection status: %d", connection_status);
+		break;
+	}
 }
 
 InputHandler_Win32_SMX::~InputHandler_Win32_SMX() {
@@ -111,10 +158,7 @@ InputHandler_Win32_SMX::~InputHandler_Win32_SMX() {
 
 void InputHandler_Win32_SMX::GetDevicesAndDescriptions(std::vector<InputDeviceInfo>& vDevicesOut)
 {
-	// Ensure that the SMX device is not registered unless a pad is connected.
-	if (IsPadConnected()) {
-		vDevicesOut.push_back(InputDeviceInfo(InputDevice(DEVICE_SMX), "SMX"));
-	}
+	vDevicesOut.push_back(InputDeviceInfo(InputDevice(DEVICE_SMX), "SMX"));
 }
 
 void InputHandler_Win32_SMX::ProcessInputEvent(int pad) {
@@ -165,45 +209,100 @@ RString InputHandler_Win32_SMX::GetDeviceSpecificInputString(const DeviceInput &
 
     static const char* buttonStrings[SMX_PANEL_COUNT] =
     {
-        "up left", "up", "up right", "left", "center",
-        "right", "down left", "down", "down right"
+		"UpLeft", "Up", "Up Right", "Left", "Center",
+		"Right", "DownLeft", "Down", "DownRight"
     };
 
     const char* buttonString = (padRemovedButton >= 0 && padRemovedButton < SMX_PANEL_COUNT) ? buttonStrings[padRemovedButton] : "unknown";
 
-    return ssprintf("SMX P%d, %s", pad, buttonString);
+    return ssprintf("SMX P%d %s", pad, buttonString);
 }
 
-static bool Is_SMX_Started = false;
+void WaitForScanningToComplete() {
+	constexpr int max_wait_time_ms = 5000;
+	constexpr int poll_interval_ms = 100;
+	int elapsed_time = 0;
 
-bool InputHandler_Win32_SMX::IsPadConnected() {
-	if (!__detected_pad) {
-		return false;
+	RageTimer timer;
+	timer.Touch();
+	while (!smx_scanning_complete && elapsed_time < max_wait_time_ms) {
+		Sleep(poll_interval_ms);
+		elapsed_time += poll_interval_ms;
 	}
-
-	if (!InputHandler_Win32_SMX_Is_SMX_DLL_Available()) {
-		return false;
+	float i = timer.Ago();
+	LOG->Trace("SMX: Scanning took %f seconds to complete.", i);
+	if (!smx_scanning_complete) {
+		LOG->Warn("SMX: Scanning did not complete within the expected time.");
 	}
+}
 
-	// Lazy start the SMX SDK when the DLL is loaded and a pad has been detected
-	if (!Is_SMX_Started) {
-		SMX_Start();
-	}
+int InputHandler_Win32_SMX::GetStageStatus() {
+	struct SMXInfo info;
+	int connected_stages = 0;
 
-	for (int i = 0; i < SMX_PAD_COUNT; i++) {
-		struct SMXInfo info;
-		SMX_GetInfo(i, &info);
+	// We need around 2 seconds to scan for pads to prevent this
+	// from failing before the SDK can finish checking for pads.
+	WaitForScanningToComplete();
+
+	for (int stage = 0; stage < SMX_PAD_COUNT; ++stage) {
+		SMX_GetInfo(stage, &info);
+		LOG->Trace("SMX: Stage %d: %d", stage, info.m_bConnected);
 
 		if (info.m_bConnected) {
-			return true;
+			LOG->Trace("SMX: Stage %d is connected.", stage);
+			++connected_stages;
 		}
 	}
 
-	return false;
+	if (connected_stages > 0) {
+		LOG->Info("SMX: %d stage(s) are connected.", connected_stages);
+		return SMX_SUCCESS;
+	}
+
+	LOG->Warn("SMX: No stages were detected.");
+	return SMX_AMBIGUOUS; // doesn't necessarily mean the pad is not connected. everything might be ok but we failed to get m_bConnected
+}
+
+int InputHandler_Win32_SMX::InitializeSMX() {
+	if (Is_SMX_Started) {
+		LOG->Info("SMX: StepManiaX SDK already started.");
+		return SMX_AMBIGUOUS;
+	}
+
+	SMX_Start();
+	if (Is_SMX_Started) {
+		LOG->Info("SMX: StepManiaX SDK started.");
+		return SMX_SUCCESS;
+	}
+	LOG->Warn("SMX: Attempted to start StepManiaX SDK, but it doesn't seem to be running.");
+	return SMX_FAILURE;
+}
+
+int InputHandler_Win32_SMX::IsPadConnected() {
+	if (!__detected_pad) {
+		LOG->Warn("SMX: No pad detected (__detected_pad is false).");
+		return SMX_FAILURE;
+	}
+
+	if (!InputHandler_Win32_SMX_Is_SMX_DLL_Available()) {
+		LOG->Warn("SMX: SMX DLL is not available.");
+		return SMX_FAILURE;
+	}
+
+	if (InitializeSMX() == SMX_SUCCESS) {
+		int stage_status = GetStageStatus();
+		if (stage_status == SMX_SUCCESS) {
+			LOG->Info("SMX: Pad is connected and ready.");
+		}
+		return stage_status;
+	}
+
+	return SMX_FAILURE;
 }
 
 void InputHandler_Win32_SMX::SMX_Start() {
 	if (Is_SMX_Started) {
+		LOG->Trace("SMX: SMX SDK was asked to start up, but it was already started.");
 		return;
 	}
 
@@ -213,13 +312,14 @@ void InputHandler_Win32_SMX::SMX_Start() {
     }
 }
 
-void InputHandler_Win32_SMX::SMX_GetInfo(int pad, struct SMXInfo *info) {
-	if (Is_SMX_Started && pSMX_GetInfo != nullptr) {
-		pSMX_GetInfo(pad, info);
-	}
-	else {
+void InputHandler_Win32_SMX::SMX_GetInfo(int pad, struct SMXInfo* info) {
+	if (pSMX_GetInfo == nullptr) {
+		LOG->Warn("SMX: SMX_GetInfo is null. The SMX driver will not be used.");
 		info->m_bConnected = false;
+		return;
 	}
+
+	pSMX_GetInfo(pad, info);
 }
 
 uint16_t InputHandler_Win32_SMX::SMX_GetInputState(int pad) {
@@ -227,7 +327,7 @@ uint16_t InputHandler_Win32_SMX::SMX_GetInputState(int pad) {
         return pSMX_GetInputState(pad);
     }
 	
-	return 0;
+	return SMX_AMBIGUOUS;
 }
 
 void InputHandler_Win32_SMX::SMX_SetLogCallback() {

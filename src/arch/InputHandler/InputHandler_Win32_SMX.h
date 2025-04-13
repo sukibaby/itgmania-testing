@@ -3,7 +3,7 @@
 
 #include "InputHandler.h"
 
-static const int SMX_PAD_COUNT = 2;
+static constexpr int SMX_PAD_COUNT = 2;
 
 bool InputHandler_Win32_SMX_Is_SMX_DLL_Available();
 void InputHandler_Win32_SMX_Register_Pad();
@@ -33,7 +33,9 @@ public:
 
 private:
 	uint16_t m_padInputStates[SMX_PAD_COUNT];
-	bool IsPadConnected();
+	int IsPadConnected();
+	int GetStageStatus();
+	int InitializeSMX();
 
 	void SMX_GetInfo( int pad, struct SMXInfo *info );
     uint16_t SMX_GetInputState( int pad );
