@@ -40,9 +40,9 @@ static CRITICAL_SECTION smxCriticalSection;
 
 namespace {
 	static void SmxCallback(int pad, SMXUpdateCallbackReason reason, void* pUser) {
-		if (reason == SMXUpdateCallback_Updated) {
-			__smx_scanning_complete = true;
-		}
+		//if (reason == SMXUpdateCallback_Updated) {
+		//	__smx_scanning_complete = true;
+		//}
 		static_cast<InputHandler_Win32_SMX*>(pUser)->ProcessInputEvent(pad);
 	}
 
@@ -126,6 +126,11 @@ void InputHandler_Win32_SMX::LaunchSDK() {
 		case SMX_AMBIGUOUS:
 			break;
 		case SMX_FAILURE:
+			/*   TODO :
+			 *    As long as we sleep for ~1.5 seconds, the pad will be detected.
+			 *    If we don't wait long enough, we will get SMX_FAILURE because we don't wait long enough for the SDK to finish its scan.
+			 *    This SHOULD block if the check fails, but it doesn't for now, because this driver is still in testing stages.
+			 */
 			LOG->Info("SMX: Stage detection failed.");
 			break;
 		default:
@@ -234,22 +239,22 @@ RString InputHandler_Win32_SMX::GetDeviceSpecificInputString(const DeviceInput &
     return ssprintf("SMX P%d %s", pad, buttonString);
 }
 
-void WaitForScanningToComplete() {
-	constexpr int max_wait_time_ms = 5000;
-	constexpr int poll_interval_ms = 100;
-	int elapsed_time = 0;
-
-	while (!__smx_scanning_complete && elapsed_time < max_wait_time_ms) {
-		Sleep(poll_interval_ms);
-		elapsed_time += poll_interval_ms;
-		SHOWVAR(elapsed_time);
-		SHOWVAR(__smx_scanning_complete);
-	}
-
-	if (!__smx_scanning_complete) {
-		LOG->Warn("SMX: Scanning did not complete within the expected time.");
-	}
-}
+//void WaitForScanningToComplete() {
+//	constexpr int max_wait_time_ms = 5000;
+//	constexpr int poll_interval_ms = 100;
+//	int elapsed_time = 0;
+//
+//	while (!__smx_scanning_complete && elapsed_time < max_wait_time_ms) {
+//		Sleep(poll_interval_ms);
+//		elapsed_time += poll_interval_ms;
+//		SHOWVAR(elapsed_time);
+//		SHOWVAR(__smx_scanning_complete);
+//	}
+//
+//	if (!__smx_scanning_complete) {
+//		LOG->Warn("SMX: Scanning did not complete within the expected time.");
+//	}
+//}
 
 int InputHandler_Win32_SMX::GetStageStatus() {
 	CriticalSectionGuard guard(smxCriticalSection);
@@ -259,7 +264,10 @@ int InputHandler_Win32_SMX::GetStageStatus() {
 
 	// We need around 2 seconds to scan for pads to prevent this
 	// from failing before the SDK can finish checking for pads.
-	WaitForScanningToComplete();
+	//WaitForScanningToComplete();
+	Sleep(1500);  // the problem with WaitForScanningToComplete is that if the pad is reconnected
+	// after disconnecting, then __smx_scanning_complete is already true, so the stage check fails
+	// because the delay for the stage check doesn't take place. So this is ugly, but it works.
 
 	for (int stage = 0; stage < SMX_PAD_COUNT; ++stage) {
 		SMX_GetInfo(stage, &info);
@@ -269,6 +277,7 @@ int InputHandler_Win32_SMX::GetStageStatus() {
 		}
 		SHOWVAR(stage);
 		SHOWVAR(connected_stages);
+		SHOWVAR(info.m_bConnected);
 	}
 
 	if (connected_stages > 0) {
