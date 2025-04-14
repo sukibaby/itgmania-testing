@@ -3,7 +3,11 @@
 
 #include "InputHandler.h"
 
-static constexpr int SMX_PAD_COUNT = 2;
+constexpr int SMX_FAILURE = -1;
+constexpr int SMX_AMBIGUOUS = 0;
+constexpr int SMX_SUCCESS = 1;
+constexpr int SMX_PAD_COUNT = 2;
+constexpr int SMX_PANEL_COUNT = 9;
 
 bool InputHandler_Win32_SMX_Is_SMX_DLL_Available();
 void InputHandler_Win32_SMX_Register_Pad();
@@ -36,6 +40,7 @@ private:
 	int IsPadConnected();
 	int GetStageStatus();
 	int InitializeSMX();
+	void LaunchSDK();
 
 	void SMX_GetInfo( int pad, struct SMXInfo *info );
     uint16_t SMX_GetInputState( int pad );
