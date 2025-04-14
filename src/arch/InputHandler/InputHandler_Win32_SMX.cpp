@@ -184,59 +184,59 @@ void InputHandler_Win32_SMX::ProcessInputEvent(int pad) {
 	*/
 
 	// Fast-fail if somehow the pad is outside of range
-    if (pad < 0 || pad >= SMX_PAD_COUNT) {
-        return;
-    }
+	if (pad < 0 || pad >= SMX_PAD_COUNT) {
+		return;
+	}
 
 	// Get new input state and compare with the old
-    uint16_t newInputState = SMX_GetInputState(pad);
-    uint16_t changedInputs = newInputState ^ m_padInputStates[pad];
+	uint16_t newInputState = SMX_GetInputState(pad);
+	uint16_t changedInputs = newInputState ^ m_padInputStates[pad];
 
 	// If inputs weren't updated, report the end of an empty poll and return
-    if (changedInputs == 0) {
-        InputHandler::UpdateTimer();
-        return;
-    }
+	if (changedInputs == 0) {
+		InputHandler::UpdateTimer();
+		return;
+	}
 
 	// SMX events come in for multiple pads, but get translated into one device from SM's POV.
 	// Ensure P2's buttons begin from the correct `JOY_BUTTON`.
-    DeviceButton beginButton = enum_add2(JOY_BUTTON_1, pad * SMX_PANEL_COUNT);
+	DeviceButton beginButton = enum_add2(JOY_BUTTON_1, pad * SMX_PANEL_COUNT);
 
 	// Process inputs
-    for (int i = 0; i < SMX_PANEL_COUNT; i++) {
+	for (int i = 0; i < SMX_PANEL_COUNT; i++) {
 		bool didButtonStateChange = (changedInputs & (1 << i)) != 0;
-        if (didButtonStateChange) {
-            bool pressed = newInputState & (1 << i); // Get pressed state
-            DeviceInput di(DEVICE_SMX, enum_add2(beginButton, i), pressed); // Make input event with pressed state for this button
+		if (didButtonStateChange) {
+			bool pressed = newInputState & (1 << i); // Get pressed state
+			DeviceInput di(DEVICE_SMX, enum_add2(beginButton, i), pressed); // Make input event with pressed state for this button
 			di.ts.Touch(); // Touch the timestamp timer to indicate the input happened *now*
-            ButtonPressed(di); // Report the input event
-        }
-    }
+			ButtonPressed(di); // Report the input event
+		}
+	}
 
 	// Save the new input state for later, and report the end of a poll.
-    m_padInputStates[pad] = newInputState;
-    InputHandler::UpdateTimer();
+	m_padInputStates[pad] = newInputState;
+	InputHandler::UpdateTimer();
 }
 
-RString InputHandler_Win32_SMX::GetDeviceSpecificInputString(const DeviceInput &di)
+RString InputHandler_Win32_SMX::GetDeviceSpecificInputString(const DeviceInput& di)
 {
-    int zeroIndexedButton = di.button - JOY_BUTTON_1;
-    int pad = (zeroIndexedButton / SMX_PANEL_COUNT) + 1;
-    int padRemovedButton = zeroIndexedButton % SMX_PANEL_COUNT;
+	int zeroIndexedButton = di.button - JOY_BUTTON_1;
+	int pad = (zeroIndexedButton / SMX_PANEL_COUNT) + 1;
+	int padRemovedButton = zeroIndexedButton % SMX_PANEL_COUNT;
 
 	SHOWVAR(zeroIndexedButton);
 	SHOWVAR(pad);
 	SHOWVAR(padRemovedButton);
 
-    static const char* buttonStrings[SMX_PANEL_COUNT] =
-    {
+	static const char* buttonStrings[SMX_PANEL_COUNT] =
+	{
 		"UpLeft", "Up", "Up Right", "Left", "Center",
 		"Right", "DownLeft", "Down", "DownRight"
-    };
+	};
 
-    const char* buttonString = (padRemovedButton >= 0 && padRemovedButton < SMX_PANEL_COUNT) ? buttonStrings[padRemovedButton] : "unknown";
+	const char* buttonString = (padRemovedButton >= 0 && padRemovedButton < SMX_PANEL_COUNT) ? buttonStrings[padRemovedButton] : "unknown";
 
-    return ssprintf("SMX P%d %s", pad, buttonString);
+	return ssprintf("SMX P%d %s", pad, buttonString);
 }
 
 //void WaitForScanningToComplete() {
@@ -262,31 +262,47 @@ int InputHandler_Win32_SMX::GetStageStatus() {
 	struct SMXInfo info;
 	int connected_stages = 0;
 
-	// We need around 2 seconds to scan for pads to prevent this
-	// from failing before the SDK can finish checking for pads.
-	//WaitForScanningToComplete();
-	Sleep(1500);  // the problem with WaitForScanningToComplete is that if the pad is reconnected
-	// after disconnecting, then __smx_scanning_complete is already true, so the stage check fails
-	// because the delay for the stage check doesn't take place. So this is ugly, but it works.
+	// We need to delay the SMX_GetInfo call so SMXInfo has time to scan devices.
+	// This may get called after the SDK has already initialized, so we can't depend
+	// on the callback status here.
+	// Sleep for half of a second, and retry up to 10 times (so try for 5 seconds).
+	// If we use a flag set to 'false' going into the while loop, and set it to 'true'
+	// at the start of each iteration, but set it back to 'false' every time we find
+	// a stage, we can know when we can break out of the while loop when the for loop
+	// completes while the flag is 'true'.
 
-	for (int stage = 0; stage < SMX_PAD_COUNT; ++stage) {
-		SMX_GetInfo(stage, &info);
+	unsigned int stage_detection_retry_counter = 10;
+	//bool for_loop_completed = false;
+	while (stage_detection_retry_counter-- > 0 && connected_stages == 0)
+	{
+		SHOWVAR(stage_detection_retry_counter);
+		Sleep(500);
+		//for_loop_completed = true;
+		for (int stage = 0; stage < SMX_PAD_COUNT; ++stage) {
+			SMX_GetInfo(stage, &info);
 
-		if (info.m_bConnected) {
-			++connected_stages;
+			if (info.m_bConnected) {
+				++connected_stages;
+				//for_loop_completed = false;
+				break;
+			}
+
+			SHOWVAR(stage);
+			SHOWVAR(connected_stages);
+			SHOWVAR(info.m_bConnected);
 		}
-		SHOWVAR(stage);
-		SHOWVAR(connected_stages);
-		SHOWVAR(info.m_bConnected);
 	}
 
-	if (connected_stages > 0) {
+	if (connected_stages >= 1) {
 		LOG->Info("SMX: %d stage(s) are connected.", connected_stages);
 		return SMX_SUCCESS;
 	}
 
-	LOG->Warn("SMX: No stages were detected.");
-	return SMX_FAILURE; // could happen if the scan times out
+	if (connected_stages == 0) {
+		LOG->Warn("SMX: No stages were detected.");
+	}
+
+	return SMX_FAILURE;
 }
 
 int InputHandler_Win32_SMX::InitializeSMX() {
@@ -352,10 +368,10 @@ void InputHandler_Win32_SMX::SMX_Start() {
 		return;
 	}
 
-    if (pSMX_Start != nullptr) {
-        pSMX_Start(&SmxCallback, this);
+	if (pSMX_Start != nullptr) {
+		pSMX_Start(&SmxCallback, this);
 		__sdk_started = true;
-    }
+	}
 }
 
 void InputHandler_Win32_SMX::SMX_GetInfo(int pad, struct SMXInfo* info) {
@@ -371,10 +387,10 @@ void InputHandler_Win32_SMX::SMX_GetInfo(int pad, struct SMXInfo* info) {
 }
 
 uint16_t InputHandler_Win32_SMX::SMX_GetInputState(int pad) {
-    if (__sdk_started && pSMX_GetInputState != nullptr) {
-        return pSMX_GetInputState(pad);
-    }
-	
+	if (__sdk_started && pSMX_GetInputState != nullptr) {
+		return pSMX_GetInputState(pad);
+	}
+
 	return SMX_AMBIGUOUS;
 }
 
