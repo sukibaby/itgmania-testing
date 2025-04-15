@@ -276,7 +276,7 @@ int InputHandler_Win32_SMX::GetStageStatus() {
 	while (stage_detection_retry_counter-- > 0 && connected_stages == 0)
 	{
 		SHOWVAR(stage_detection_retry_counter);
-		Sleep(500);
+		Sleep(1500);
 		//for_loop_completed = true;
 		for (int stage = 0; stage < SMX_PAD_COUNT; ++stage) {
 			SMX_GetInfo(stage, &info);
