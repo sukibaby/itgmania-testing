@@ -23,7 +23,6 @@
 #include "ActorUtil.h"
 #include "ArrowEffects.h"
 #include "Game.h"
-#include "DancingCharacters.h"
 #include "ScreenDimensions.h"
 #include "RageSoundManager.h"
 #include "ThemeMetric.h"
