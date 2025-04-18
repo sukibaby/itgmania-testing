@@ -3,7 +3,6 @@
 
 #include "GameConstantsAndTypes.h"
 #include "Grade.h"
-#include "Group.h"
 #include "HighScore.h"
 #include "DateTime.h"
 #include "SongUtil.h"	// for SongID
@@ -205,7 +204,6 @@ public:
 	std::map<RString,RString> m_sDefaultModifiers;
 	SortOrder m_SortOrder;
 	std::vector<Song*> m_songs;
-	Group* m_group;
 	Difficulty m_LastDifficulty;
 	CourseDifficulty m_LastCourseDifficulty;
 	StepsType m_LastStepsType;
@@ -404,7 +402,7 @@ public:
 	void HandleStatsPrefixChange(RString dir, bool require_signature);
 	ProfileLoadResult LoadAllFromDir( RString sDir, bool bRequireSignature );
 	ProfileLoadResult LoadStatsFromDir(RString dir, bool require_signature);
-	void LoadSongsFromDir(RString const& dir, ProfileSlot prof_slot, bool isMemoryCard = true);
+	void LoadSongsFromDir(RString const& dir, ProfileSlot prof_slot);
 	void LoadTypeFromDir(RString dir);
 	void LoadCustomFunction(RString sDir, PlayerNumber pn);
 	bool SaveAllToDir( RString sDir, bool bSignData ) const;
