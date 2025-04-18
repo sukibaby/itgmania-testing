@@ -18,7 +18,7 @@ static const int INVALID_INDEX = -1;
 
 TimingSegment* GetSegmentAtRow( int iNoteRow, TimingSegmentType tst );
 
-TimingData::TimingData(float fOffset) : m_fBeat0OffsetInSeconds(fOffset), m_fBeat0PackOffsetInSeconds(0.0f)
+TimingData::TimingData(float fOffset) : m_fBeat0OffsetInSeconds(fOffset)
 {
 }
 
@@ -28,7 +28,6 @@ void TimingData::Copy( const TimingData& cpy )
 	Clear();
 
 	m_fBeat0OffsetInSeconds = cpy.m_fBeat0OffsetInSeconds;
-	m_fBeat0PackOffsetInSeconds = cpy.m_fBeat0PackOffsetInSeconds;
 	m_sFile = cpy.m_sFile;
 
 	FOREACH_TimingSegmentType( tst )
@@ -103,14 +102,14 @@ void TimingData::PrepareLookup()
 			curr_segment < total_segments; curr_segment+= segments_per_lookup)
 	{
 		GetBeatStarts beat_start;
-		beat_start.last_time= -m_fBeat0OffsetInSeconds - m_fBeat0PackOffsetInSeconds;
+		beat_start.last_time= -m_fBeat0OffsetInSeconds;
 		GetBeatArgs args;
 		args.elapsed_time= FLT_MAX;
 		GetBeatInternal(beat_start, args, curr_segment);
 		m_beat_start_lookup.push_back(lookup_item_t(args.elapsed_time, beat_start));
 
 		GetBeatStarts time_start;
-		time_start.last_time= -m_fBeat0OffsetInSeconds - m_fBeat0PackOffsetInSeconds;
+		time_start.last_time= -m_fBeat0OffsetInSeconds;
 		m_time_start_lookup.push_back(lookup_item_t(NoteRowToBeat(time_start.last_row), time_start));
 	}
 	// If there are less than two entries, then FindEntryInLookup in lookup
@@ -917,7 +916,7 @@ void TimingData::GetBeatInternal(GetBeatStarts& start, GetBeatArgs& args,
 void TimingData::GetBeatAndBPSFromElapsedTimeNoOffset(GetBeatArgs& args) const
 {
 	GetBeatStarts start;
-	start.last_time= -m_fBeat0OffsetInSeconds - m_fBeat0PackOffsetInSeconds;
+	start.last_time= -m_fBeat0OffsetInSeconds;
 	beat_start_lookup_t::const_iterator looked_up_start=
 		FindEntryInLookup(m_beat_start_lookup, args.elapsed_time);
 	if(looked_up_start != m_beat_start_lookup.end())
@@ -1002,7 +1001,7 @@ float TimingData::GetElapsedTimeFromBeat( float fBeat ) const
 float TimingData::GetElapsedTimeFromBeatNoOffset( float fBeat ) const
 {
 	GetBeatStarts start;
-	start.last_time= -m_fBeat0OffsetInSeconds - m_fBeat0PackOffsetInSeconds;
+	start.last_time= -m_fBeat0OffsetInSeconds;
 	beat_start_lookup_t::const_iterator looked_up_start=
 		FindEntryInLookup(m_time_start_lookup, fBeat);
 	if(looked_up_start != m_time_start_lookup.end())

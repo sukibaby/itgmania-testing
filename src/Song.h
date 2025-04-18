@@ -73,10 +73,9 @@ struct Pack
 	RString m_sGroupName;
 	RString m_sTranslitTitle;
 	RString m_sSeries;
-	float m_iSyncOffset;
+	int m_iSyncOffset;
 	bool m_bHasPackIni;
 	int iTotalSongs;
-	RString m_sBannerPath;
 };
 
 /** @brief Holds all music metadata and steps for one song. */
