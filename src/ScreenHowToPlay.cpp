@@ -12,7 +12,6 @@
 #include "PlayerState.h"
 #include "Style.h"
 #include "PrefsManager.h"
-#include "CharacterManager.h"
 #include "StatsManager.h"
 #include "RageDisplay.h"
 #include "SongUtil.h"
@@ -89,42 +88,6 @@ void ScreenHowToPlay::Init()
 		// xxx: hardcoded rotation. can be undone, but still. -freem
 		m_pmDancePad->SetRotationX( 35 );
 		ActorUtil::LoadAllCommandsAndSetXY( m_pmDancePad, m_sName );
-	}
-
-	// Display a character
-	std::vector<Character*> vpCharacters;
-	CHARMAN->GetCharacters( vpCharacters );
-	if( (bool)USE_CHARACTER && vpCharacters.size() && HaveAllCharAnimations() )
-	{
-		Character* displayChar;
-		if( !CHARACTER_NAME.GetValue().empty() && CHARMAN->GetCharacterFromID(CHARACTER_NAME.GetValue()) )
-			displayChar = CHARMAN->GetCharacterFromID(CHARACTER_NAME.GetValue());
-		else
-			displayChar = CHARMAN->GetRandomCharacter();
-
-		RString sModelPath = displayChar->GetModelPath();
-		if( sModelPath != "" )
-		{
-			m_pmCharacter = new Model;
-			m_pmCharacter->SetName( "Character" );
-			m_pmCharacter->LoadMilkshapeAscii( displayChar->GetModelPath() );
-			m_pmCharacter->LoadMilkshapeAsciiBones( "Step-LEFT", GetAnimPath( ANIM_LEFT ) );
-			m_pmCharacter->LoadMilkshapeAsciiBones( "Step-DOWN", GetAnimPath( ANIM_DOWN ) );
-			m_pmCharacter->LoadMilkshapeAsciiBones( "Step-UP", GetAnimPath( ANIM_UP ) );
-			m_pmCharacter->LoadMilkshapeAsciiBones( "Step-RIGHT", GetAnimPath( ANIM_RIGHT ) );
-			m_pmCharacter->LoadMilkshapeAsciiBones( "Step-JUMPLR", GetAnimPath( ANIM_JUMPLR ) );
-			RString sRestFile = displayChar->GetRestAnimationPath();
-			ASSERT( !sRestFile.empty() );
-			m_pmCharacter->LoadMilkshapeAsciiBones( "rest",displayChar->GetRestAnimationPath() );
-			m_pmCharacter->SetDefaultAnimation( "rest" );
-			m_pmCharacter->PlayAnimation( "rest" ); // Stay bouncing after a step has finished animating.
-
-			// xxx: hardcoded rotation. can be undone, but still. -freem
-			m_pmCharacter->SetRotationX( 40 );
-			m_pmCharacter->SetCullMode( CULL_NONE ); // many of the models floating around have the vertex order flipped
-			m_pmCharacter->RunCommands( displayChar->m_cmdInit ); // run InitCommand from file
-			ActorUtil::LoadAllCommandsAndSetXY( m_pmCharacter, m_sName );
-		}
 	}
 
 	GAMESTATE->SetCurrentStyle( GAMEMAN->GetHowToPlayStyleForGame(GAMESTATE->m_pCurGame), PLAYER_INVALID );

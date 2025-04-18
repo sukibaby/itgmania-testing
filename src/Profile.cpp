@@ -23,7 +23,6 @@
 #include "XmlFileUtil.h"
 #include "Bookkeeper.h"
 #include "Game.h"
-#include "CharacterManager.h"
 #include "Character.h"
 
 #include <algorithm>
@@ -234,22 +233,9 @@ RString Profile::GetDisplayNameOrHighScoreName() const
 		return RString();
 }
 
-Character *Profile::GetCharacter() const
-{
-	std::vector<Character*> vpCharacters;
-	CHARMAN->GetCharacters( vpCharacters );
-	for (Character *c : vpCharacters)
-	{
-		if( c->m_sCharacterID.CompareNoCase(m_sCharacterID)==0 )
-			return c;
-	}
-	return CHARMAN->GetDefaultCharacter();
-}
-
 void Profile::SetCharacter(const RString sCharacterID)
 {
-	if(CHARMAN->GetCharacterFromID(sCharacterID))
-		m_sCharacterID = sCharacterID;
+	// here as well
 }
 
 static RString FormatCalories( float fCals )
@@ -2663,8 +2649,8 @@ public:
 		return 1;
 	}
 
-	static int GetCharacter( T* p, lua_State *L )			{ p->GetCharacter()->PushSelf(L); return 1; }
-	static int SetCharacter( T* p, lua_State *L )			{ p->SetCharacter(SArg(1)); COMMON_RETURN_SELF; }
+	static int GetCharacter(T* p, lua_State* L) { COMMON_RETURN_SELF; }
+	static int SetCharacter( T* p, lua_State *L )			{ COMMON_RETURN_SELF; }
 	static int GetWeightPounds( T* p, lua_State *L )		{ lua_pushnumber(L, p->m_iWeightPounds ); return 1; }
 	static int SetWeightPounds( T* p, lua_State *L )		{ p->m_iWeightPounds = IArg(1); COMMON_RETURN_SELF; }
 	DEFINE_METHOD(GetVoomax, m_Voomax);

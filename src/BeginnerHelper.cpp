@@ -146,30 +146,6 @@ bool BeginnerHelper::Init( int iDancePadType )
 		// Skip if not enabled
 		if( !m_bPlayerEnabled[pl] )
 			continue;
-
-		// Load character data
-		const Character *Character = GAMESTATE->m_pCurCharacters[pl];
-		ASSERT( Character != nullptr );
-
-		m_pDancer[pl]->SetName( ssprintf("PlayerP%d",pl+1) );
-
-		// Load textures
-		m_pDancer[pl]->LoadMilkshapeAscii( Character->GetModelPath() );
-
-		// Load needed animations
-		m_pDancer[pl]->LoadMilkshapeAsciiBones( "Step-LEFT",	GetAnimPath(ANIM_LEFT) );
-		m_pDancer[pl]->LoadMilkshapeAsciiBones( "Step-DOWN",	GetAnimPath(ANIM_DOWN) );
-		m_pDancer[pl]->LoadMilkshapeAsciiBones( "Step-UP", 	GetAnimPath(ANIM_UP) );
-		m_pDancer[pl]->LoadMilkshapeAsciiBones( "Step-RIGHT", 	GetAnimPath(ANIM_RIGHT) );
-		m_pDancer[pl]->LoadMilkshapeAsciiBones( "Step-JUMPLR", 	GetAnimPath(ANIM_JUMPLR) );
-		m_pDancer[pl]->LoadMilkshapeAsciiBones( "rest",		Character->GetRestAnimationPath() );
-		m_pDancer[pl]->SetDefaultAnimation( "rest" );		// Stay bouncing after a step has finished animating
-		m_pDancer[pl]->PlayAnimation( "rest" );
-		m_pDancer[pl]->SetX( HELPER_X+PLAYER_X(pl) );
-		m_pDancer[pl]->SetY( HELPER_Y+10 );
-		ActorUtil::LoadAllCommandsAndOnCommand( m_pDancer[pl], "BeginnerHelper" );
-		// many of the models floating around have the vertex order flipped, so force this.
-		m_pDancer[pl]->SetCullMode( CULL_NONE );
 	}
 
 	m_bInitialized = true;
@@ -201,11 +177,6 @@ void BeginnerHelper::AddPlayer( PlayerNumber pn, const NoteData &ns )
 	ASSERT( GAMESTATE->IsHumanPlayer(pn) );
 
 	if( !CanUse(pn) )
-		return;
-	
-	const Character *Character = GAMESTATE->m_pCurCharacters[pn];
-	ASSERT( Character != nullptr );
-	if( !DoesFileExist(Character->GetModelPath()) )
 		return;
 
 	m_NoteData[pn].CopyAll( ns );

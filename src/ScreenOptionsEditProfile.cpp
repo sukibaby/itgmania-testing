@@ -8,7 +8,6 @@
 #include "GameState.h"
 #include "Profile.h"
 #include "Character.h"
-#include "CharacterManager.h"
 #include "OptionRowHandler.h"
 
 #include <vector>
@@ -46,10 +45,6 @@ void ScreenOptionsEditProfile::BeginScreen()
 		def.m_bExportOnChange = true;
 		def.m_sName = "Character";
 		def.m_vsChoices.clear();
-		std::vector<Character*> vpCharacters;
-		CHARMAN->GetCharacters( vpCharacters );
-		for (Character const *c : vpCharacters)
-			def.m_vsChoices.push_back( c->GetDisplayName() );
 		if( def.m_vsChoices.empty() )
 			def.m_vsChoices.push_back( RString() );
 	}
