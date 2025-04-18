@@ -121,13 +121,11 @@ source_group("Data Structures\\\\Notes Writers"
 list(APPEND SM_DATA_SCORE_SRC
             "ScoreKeeper.cpp"
             "ScoreKeeperNormal.cpp"
-            "ScoreKeeperRave.cpp"
             "ScoreKeeperShared.cpp")
 
 list(APPEND SM_DATA_SCORE_HPP
             "ScoreKeeper.h"
             "ScoreKeeperNormal.h"
-            "ScoreKeeperRave.h"
             "ScoreKeeperShared.h")
 
 source_group("Data Structures\\\\Score Keepers"
