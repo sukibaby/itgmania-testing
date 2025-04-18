@@ -6,7 +6,6 @@
 #include "WheelNotifyIcon.h"
 #include "TextBanner.h"
 #include "GameConstantsAndTypes.h"
-#include "Song.h"
 #include "GameCommand.h"
 #include "WheelItemBase.h"
 #include "AutoActor.h"
@@ -14,7 +13,6 @@
 
 class Course;
 class Song;
-struct Pack;
 
 struct MusicWheelItemData;
 
@@ -64,15 +62,14 @@ private:
 
 struct MusicWheelItemData : public WheelItemBaseData
 {
-	MusicWheelItemData() : m_pCourse(nullptr), m_pSong(nullptr), m_pPack(nullptr), m_Flags(),
+	MusicWheelItemData() : m_pCourse(nullptr), m_pSong(nullptr), m_Flags(),
 		m_iSectionCount(0), m_sLabel(""), m_pAction() { }
 	MusicWheelItemData( WheelItemDataType type, Song* pSong, 
-			   RString sSectionName, Course* pCourse, Pack* pPack, 
+			   RString sSectionName, Course* pCourse, 
 			   RageColor color, int iSectionCount );
 
 	Course*			m_pCourse;
 	Song*			m_pSong;
-	Pack*			m_pPack;
 	WheelNotifyIcon::Flags  m_Flags;
 
 	// for TYPE_SECTION
