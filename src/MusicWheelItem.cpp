@@ -226,14 +226,10 @@ void MusicWheelItem::LoadFromWheelItemData( const WheelItemBaseData *pData, int 
 				sDisplayName = SONGMAN->ShortenGroupName(pWID->m_sText);
 			}
 			else {
-				if ( pWID->m_pGroup->GetSeries().empty() ) {
+				if ( pWID->m_pGroup->GetSeries().empty() )
 					sDisplayName = SONGMAN->ShortenGroupName(pWID->m_sText);
-					sTranslitName = SONGMAN->ShortenGroupName(pWID->m_pGroup->GetTranslitTitle());
-				}
-				else {
+				else
 					sDisplayName = SONGMAN->ShortenGroupName("[" + pWID->m_pGroup->GetSeries() +"] " + pWID->m_pGroup->GetDisplayTitle());
-					sTranslitName = SONGMAN->ShortenGroupName("[" + pWID->m_pGroup->GetSeries() +"] " + pWID->m_pGroup->GetTranslitTitle());
-				}
 			}
 			if( GAMESTATE->sExpandedSectionName == pWID->m_sText )
 				type = MusicWheelItemType_SectionExpanded;
