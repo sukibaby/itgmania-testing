@@ -1,18 +1,12 @@
 #include "global.h"
-#include "SongManager.h"
-#include "RageFile.h"
-#include "RageUtil.h"
-#include "RageFileManager.h"
-#include "RageLog.h"
 #include "Song.h"
-#include "SongCacheIndex.h"
-#include "SongUtil.h"
-#include "TitleSubstitution.h"
 #include "Group.h"
-
-#include <cstddef>
-#include <tuple>
+#include "Style.h"
+#include "RageFile.h"
+#include "RageFileManager.h"
+#include "RageSurface.h"
 #include <vector>
+
 
 Group::Group() {
     m_sDisplayTitle = "";
@@ -23,58 +17,10 @@ Group::Group() {
     m_sSeries = "";
     m_iSyncOffset = 0;
     m_bHasGroupIni = false;
-    m_iYearReleased = 0;
+    iTotalSongs = 0;
     m_sBannerPath = "";
     m_sCredits.clear();
     m_sAuthorsNotes = "";
-}
-
-Group::Group(const RString &sPath) {
-    RString sGroupIniPath = sPath + "/Group.ini";
-    RString credits = "";
-    if (FILEMAN->DoesFileExist(sGroupIniPath)) {
-        IniFile ini;
-        ini.ReadFile(sGroupIniPath);
-        ini.GetValue("Group", "DisplayTitle", m_sDisplayTitle);
-        if (m_sDisplayTitle.empty()) {
-            m_sDisplayTitle = m_sGroupName;
-        }
-        ini.GetValue("Group", "Banner", m_sBannerPath);
-        ini.GetValue("Group", "SortTitle", m_sSortTitle);
-        if (m_sSortTitle.empty()) {
-            m_sSortTitle = m_sDisplayTitle;
-        }
-        ini.GetValue("Group", "TranslitTitle", m_sTranslitTitle);
-        if (m_sTranslitTitle.empty()) {
-            m_sTranslitTitle = m_sDisplayTitle;
-        }
-        ini.GetValue("Group", "Series", m_sSeries);
-        RString sValue = "";
-        ini.GetValue("Group", "SyncOffset", sValue);
-        if (sValue.CompareNoCase("null") == 0) {
-            m_iSyncOffset = 0;
-        } else if (sValue.CompareNoCase("itg") == 0) {
-            m_iSyncOffset = 0.009f;
-        } else {
-            m_iSyncOffset = StringToFloat(sValue);
-        }
-        ini.GetValue("Group", "Year", m_iYearReleased);
-        ini.GetValue("Group", "AuthorsNotes", m_sAuthorsNotes);
-
-        std::vector<RString> credits_vector;
-        ini.GetValue("Group", "Credits", credits);
-        split(credits, ";", credits_vector);
-        m_sCredits = credits_vector;
-        m_bHasGroupIni = true;
-    } else {
-        m_bHasGroupIni = false;
-    }
-    
-}
-
-const std::vector<Song *> &Group::GetSongs() const
-{
-    return SONGMAN->GetSongs(m_sGroupName);
 }
 
 
@@ -125,10 +71,9 @@ public:
         return 1;
     }
 
-    static int GetSongs( T* p, lua_State *L )
+    static int GetTotalSongs( T* p, lua_State *L )
     {
-        const std::vector<Song*> &v = p->GetSongs();
-        LuaHelpers::CreateTableFromArray<Song*>( v, L );
+        lua_pushnumber(L, p->iTotalSongs);
         return 1;
     }
 
@@ -151,12 +96,6 @@ public:
         return 1;
     }
 
-    static int GetYearReleased( T* p, lua_State *L )
-    {
-        lua_pushnumber(L, p->GetYearReleased());
-        return 1;
-    }
-
 	LunaGroup()
 	{
 		ADD_METHOD( GetGroupName );
@@ -166,11 +105,10 @@ public:
 		ADD_METHOD( GetSeries );
 		ADD_METHOD( GetSyncOffset );
 		ADD_METHOD( HasGroupIni );
-		ADD_METHOD( GetSongs );
+		ADD_METHOD( GetTotalSongs );
 		ADD_METHOD( GetBannerPath );
 		ADD_METHOD( GetStepArtistCredits );
 		ADD_METHOD( GetAuthorsNotes );
-        ADD_METHOD( GetYearReleased );
 	}
 
 };
