@@ -78,11 +78,11 @@ public:
     float GetSyncOffset() const { return m_fSyncOffset; };
 
     /**
-     * @brief Whether the group has a pack.ini file.
+     * @brief Whether the group has a group.ini file.
      * 
-     * @return true if the group has a pack.ini file, false otherwise.
+     * @return true if the group has a group.ini file, false otherwise.
      */
-    bool HasPackIni() const { return m_bHasPackIni; };
+    bool HasGroupIni() const { return m_bHasGroupIni; };
 
     
     /**
@@ -142,8 +142,8 @@ public:
         /** @brief Defines the offset applied to all songs within the group. */
         float m_fSyncOffset;
 
-        /** @brief Whether the group has a pack.ini file. */
-        bool m_bHasPackIni;
+        /** @brief Whether the group has a group.ini file. */
+        bool m_bHasGroupIni;
 
         /** @brief The path to the group's banner. */
         RString m_sBannerPath;
