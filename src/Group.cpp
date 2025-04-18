@@ -43,7 +43,7 @@ Group::Group(const RString& sDir, const RString& sGroupDirName) {
     RString Series = "";
     RString bannerPath = "";
     RString authorsNotes = "";
-    float fOffset = PREFSMAN->m_fMachineSyncBias;
+    float fOffset = PREFSMAN->m_fDefaultGroupOffsetSeconds;
 
     if (FILEMAN->DoesFileExist(sPackIniPath)) {
         IniFile ini;
@@ -83,9 +83,7 @@ Group::Group(const RString& sDir, const RString& sGroupDirName) {
         ini.GetValue("Group", "AuthorsNotes", authorsNotes);
     } else {
         m_bHasPackIni = false;
-        fOffset = PREFSMAN->m_fMachineSyncBias;
     }
-
     
 	// Look for a group banner in this group folder
 	std::vector<RString> arrayGroupBanners;
