@@ -460,8 +460,8 @@ public:
 	/** @brief The initial offset of a song. */
 	float	m_fBeat0OffsetInSeconds;
 
-	/** @brief The offset applied to the song's entire group */
-	float	m_fBeat0GroupOffsetInSeconds;
+	/** @brief The offset applied to the song's entire pack */
+	float	m_fBeat0PackOffsetInSeconds;
 
 	// XXX: this breaks encapsulation. get rid of it ASAP
 	std::vector<RString> ToVectorString(TimingSegmentType tst, int dec = 6) const;

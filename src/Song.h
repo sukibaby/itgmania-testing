@@ -65,7 +65,7 @@ struct LyricSegment
 };
 
 
-struct Group
+struct Pack
 {
 	RString m_sDisplayTitle;
 	RString m_sSortTitle;
@@ -74,7 +74,7 @@ struct Group
 	RString m_sTranslitTitle;
 	RString m_sSeries;
 	float m_iSyncOffset;
-	bool m_bHasGroupIni;
+	bool m_bHasPackIni;
 	int iTotalSongs;
 	RString m_sBannerPath;
 };
@@ -222,7 +222,7 @@ public:
 	RString GetDisplayArtist() const;
 	RString GetMainTitle() const;
 
-	Group* GetGroup() const;
+	Pack* GetPack() const;
 
 	/**
 	 * @brief Retrieve the transliterated title, or the main title if there is no translit.
