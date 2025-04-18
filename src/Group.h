@@ -71,19 +71,20 @@ public:
 
 
     /**
-     * @brief The sync bias offset of this group
+     * @brief The offset applied to all songs within the group.
      * 
      * @return float 
      */
     float GetSyncOffset() const { return m_fSyncOffset; };
 
     /**
-     * @brief Whether the group has a Pack.ini file.
+     * @brief Whether the group has a pack.ini file.
      * 
-     * @return true if the group has a Pack.ini file, false otherwise.
+     * @return true if the group has a pack.ini file, false otherwise.
      */
     bool HasPackIni() const { return m_bHasPackIni; };
 
+    
     /**
      * @brief The path to the group's banner.
      * 
@@ -124,10 +125,10 @@ public:
         /** @brief The series the group belongs to */
         RString m_sSeries;
 
-        /** @brief The sync bias offset of the group */
+        /** @brief Defines the offset applied to all songs within the group. */
         float m_fSyncOffset;
 
-        /** @brief Whether the group has a Pack.ini file. */
+        /** @brief Whether the group has a pack.ini file. */
         bool m_bHasPackIni;
 
         /** @brief The path to the group's banner. */
