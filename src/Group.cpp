@@ -211,6 +211,13 @@ public:
         return 1;
     }
 
+    static int GetSongs(T* p, lua_State *L)
+    {
+        const std::vector<Song*> &v = p->GetSongs();
+        LuaHelpers::CreateTableFromArray<Song*>(v, L);
+        return 1;
+    }
+
     static int GetBannerPath(T* p, lua_State *L)
     {
         lua_pushstring(L, p->GetBannerPath());
@@ -245,6 +252,7 @@ public:
 		ADD_METHOD(GetSeries);
 		ADD_METHOD(GetSyncOffset);
 		ADD_METHOD(HasGroupIni);
+		ADD_METHOD(GetSongs);
 		ADD_METHOD(GetBannerPath);
 		ADD_METHOD(GetStepArtistCredits);
 		ADD_METHOD(GetAuthorsNotes);
