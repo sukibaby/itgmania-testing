@@ -40,7 +40,6 @@
 #include "PrefsManager.h"
 #include "Song.h"
 #include "SongManager.h"
-#include "CharacterManager.h"
 #include "GameState.h"
 #include "AnnouncerManager.h"
 #include "ProfileManager.h"
@@ -305,7 +304,6 @@ void ShutdownGame()
 	RageUtil::SafeDelete( INPUTFILTER );
 	RageUtil::SafeDelete( MODELMAN );
 	RageUtil::SafeDelete( PROFILEMAN ); // PROFILEMAN needs the songs still loaded
-	RageUtil::SafeDelete( CHARMAN );
 	RageUtil::SafeDelete( UNLOCKMAN );
 	RageUtil::SafeDelete( CRYPTMAN );
 	RageUtil::SafeDelete( MEMCARDMAN );
@@ -951,7 +949,6 @@ int sm_main(int argc, char* argv[])
 	if( PREFSMAN->m_bSignProfileData )
 		CRYPTMAN->GenerateGlobalKeys();
 	MEMCARDMAN	= new MemoryCardManager;
-	CHARMAN		= new CharacterManager;
 	PROFILEMAN	= new ProfileManager;
 	PROFILEMAN->Init();				// must load after SONGMAN
 	UNLOCKMAN	= new UnlockManager;

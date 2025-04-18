@@ -6,7 +6,6 @@
 #include "AnnouncerManager.h"
 #include "Bookkeeper.h"
 #include "Character.h"
-#include "CharacterManager.h"
 #include "CommonMetrics.h"
 #include "Course.h"
 #include "CryptManager.h"
@@ -348,15 +347,6 @@ void GameState::Reset()
 	SONGMAN->RegenerateNonFixedCourses();
 
 	STATSMAN->Reset();
-
-	FOREACH_PlayerNumber(p)
-	{
-		if( PREFSMAN->m_ShowDancingCharacters == SDC_Random )
-			m_pCurCharacters[p] = CHARMAN->GetRandomCharacter();
-		else
-			m_pCurCharacters[p] = CHARMAN->GetDefaultCharacter();
-		ASSERT( m_pCurCharacters[p] != nullptr );
-	}
 
 	m_bTemporaryEventMode = false;
 
@@ -3107,11 +3097,9 @@ public:
 	DEFINE_METHOD( GetCurMusicSeconds,	m_Position.m_fMusicSeconds )
 
 	DEFINE_METHOD( GetWorkoutGoalComplete,		m_bWorkoutGoalComplete )
-	static int GetCharacter( T* p, lua_State *L )				{ p->m_pCurCharacters[Enum::Check<PlayerNumber>(L, 1)]->PushSelf(L); return 1; }
+	static int GetCharacter( T* p, lua_State *L )				{ COMMON_RETURN_SELF }
 	static int SetCharacter( T* p, lua_State *L ){
-		Character* c = CHARMAN->GetCharacterFromID(SArg(2));
-		if (c)
-			p->m_pCurCharacters[Enum::Check<PlayerNumber>(L, 1)] = c;
+		// just return. we don't support dancing characters
 		COMMON_RETURN_SELF;
 	}
 	static int GetExpandedSectionName( T* p, lua_State *L )				{ lua_pushstring(L, p->sExpandedSectionName); return 1; }
