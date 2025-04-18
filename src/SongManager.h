@@ -150,7 +150,6 @@ public:
 	std::map<RString, Group*> GetGroupGroupMap() const { return m_mapGroupsByName;};
 	std::map<RString, std::vector<Group*>> GetSeriesGroupMap() const { return m_mapSeries;};
 	Group* GetGroupFromName(  const RString &sGroupName ) const;
-	Group* GetGroup( const Song *pSong ) const;
 	std::vector<RString> GetPreferredSortSectionNames() const;
 	std::vector<Song*> GetPreferredSortSongsBySectionName( const RString &sSectionName ) const;
 	void GetPreferredSortSongsBySectionName( const RString &sSectionName, std::vector<Song*> &AddTo ) const;
