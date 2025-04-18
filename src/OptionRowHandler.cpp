@@ -18,7 +18,6 @@
 #include "GameManager.h"
 #include "GameSoundManager.h"
 #include "CommonMetrics.h"
-#include "CharacterManager.h"
 #include "ScreenManager.h"
 #include "ScreenMiniMenu.h"	// for MenuRowDef
 #include "FontCharAliases.h"
@@ -688,7 +687,6 @@ class OptionRowHandlerListCharacters: public OptionRowHandlerList
 		m_Def.m_bAllowThemeItems = false;
 		m_Def.m_sName = "Characters";
 		m_Def.m_iDefault = 0;
-		m_Default.m_pCharacter = CHARMAN->GetDefaultCharacter();
 
 		{
 			m_Def.m_vsChoices.push_back( OFF );
@@ -697,19 +695,6 @@ class OptionRowHandlerListCharacters: public OptionRowHandlerList
 			m_aListEntries.push_back( mc );
 		}
 
-		std::vector<Character*> vpCharacters;
-		CHARMAN->GetCharacters( vpCharacters );
-		for( unsigned i=0; i<vpCharacters.size(); i++ )
-		{
-			Character* pCharacter = vpCharacters[i];
-			RString s = pCharacter->GetDisplayName();
-			s.MakeUpper();
-
-			m_Def.m_vsChoices.push_back( s );
-			GameCommand mc;
-			mc.m_pCharacter = pCharacter;
-			m_aListEntries.push_back( mc );
-		}
 		return true;
 	}
 };

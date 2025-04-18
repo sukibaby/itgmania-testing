@@ -132,8 +132,6 @@ bool GameCommand::DescribesCurrentMode( PlayerNumber pn ) const
 		return false;
 	if( m_pSteps && GAMESTATE->m_pCurSteps[pn].Get() != m_pSteps )
 		return false;
-	if( m_pCharacter && GAMESTATE->m_pCurCharacters[pn] != m_pCharacter )
-		return false;
 	if( m_pCourse && GAMESTATE->m_pCurCourse.Get() != m_pCourse )
 		return false;
 	if( m_pTrail && GAMESTATE->m_pCurTrail[pn].Get() != m_pTrail )
@@ -790,9 +788,6 @@ void GameCommand::ApplySelf( const std::vector<PlayerNumber> &vpns ) const
 	if( m_CourseDifficulty != Difficulty_Invalid )
 		for (PlayerNumber const &pn : vpns)
 			GAMESTATE->ChangePreferredCourseDifficulty( pn, m_CourseDifficulty );
-	if( m_pCharacter )
-		for (PlayerNumber const &pn : vpns)
-			GAMESTATE->m_pCurCharacters[pn] = m_pCharacter;
 	for( std::map<RString, RString>::const_iterator i = m_SetEnv.begin(); i != m_SetEnv.end(); i++ )
 	{
 		Lua *L = LUA->Get();
