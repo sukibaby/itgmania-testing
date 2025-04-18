@@ -79,7 +79,7 @@ static const char *PlayModeNames[] = {
 	"Oni",
 	"Endless",
 	"Battle",
-	"Rave",
+//	"Rave",
 };
 XToString( PlayMode );
 XToLocalizedString( PlayMode );
