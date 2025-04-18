@@ -63,14 +63,14 @@ BeginnerHelper::BeginnerHelper()
 	m_iLastRowChecked = m_iLastRowFlashed = 0;
 	FOREACH_PlayerNumber( pn )
 		m_bPlayerEnabled[pn] = false;
-	for (PlayerNumber pn = (PlayerNumber)0; pn<NUM_PlayerNumber; enum_add<PlayerNumber>(pn, +1))
+	FOREACH_PlayerNumber( pn )
 		m_pDancer[pn] = new Model;
 	m_pDancePad = new Model;
 }
 
 BeginnerHelper::~BeginnerHelper()
 {
-	for (PlayerNumber pn = (PlayerNumber)0; pn<NUM_PlayerNumber; enum_add<PlayerNumber>(pn, +1))
+	FOREACH_PlayerNumber( pn )
 		delete m_pDancer[pn];
 	delete m_pDancePad;
 }
