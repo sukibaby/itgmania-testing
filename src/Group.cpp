@@ -36,9 +36,8 @@ Group::Group() {
     m_sBannerPath = "";
 }
 
-Group::~Group() 
-{
-
+Group::~Group() {
+    SONGMAN->GetGroupGroupMap().erase(m_sGroupName);
 }
 
 Group::Group(const RString& sDir, const RString& sGroupDirName) {
@@ -64,7 +63,7 @@ Group::Group(const RString& sDir, const RString& sGroupDirName) {
         Trim(sVersion);
 
         // Only read the Pack.ini if the version is set
-        // Otherwise log a warning and use default Pack.ini values
+        // Otherwise log a warning and skip reading the 
         if (!sVersion.empty()) {
             m_bHasPackIni = true;
             m_iVersion = StringToInt(sVersion);
@@ -95,9 +94,9 @@ Group::Group(const RString& sDir, const RString& sGroupDirName) {
             ini.GetValue("Group", "SyncOffset", sValue);
             Trim(sValue);
             if (!sValue.empty()) {
-                if (sValue == "NULL") {
+                if (sValue.CompareNoCase("null") == 0) {
                     m_fSyncOffset = 0.0f;
-                } else if (sValue == "ITG") {
+                } else if (sValue.CompareNoCase("itg") == 0) {
                     m_fSyncOffset = -0.009f;
                 } else {
                     LOG->Warn("Group::Group: Invalid SyncOffset value: %s in Pack.ini. Valid values are NULL and ITG. Defaulting to NULL.", sValue.c_str());
