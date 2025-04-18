@@ -1,28 +1,60 @@
-#ifndef RAGESOUNDMIXBUFFER_H
-#define RAGESOUNDMIXBUFFER_H
+/* RageSoundMixBuffer - Simple audio mixing. */
 
-#include <vector>
+#ifndef RAGE_SOUND_MIX_BUFFER_H
+#define RAGE_SOUND_MIX_BUFFER_H
+
 #include <cstdint>
 
-class RageSoundMixBuffer {
+class RageSoundMixBuffer
+{
 public:
 	RageSoundMixBuffer();
 	~RageSoundMixBuffer();
 
-	void SetWriteOffset(int iOffset);
-	void Extend(unsigned iSamples);
-	void write(const float* pBuf, unsigned iSize, int iSourceStride = 1, int iDestStride = 1);
-	void read(int16_t* pBuf);
-	void read(float* pBuf);
-	void read_deinterlace(float** pBufs, int channels);
-	inline size_t size() const { return m_pMixbuf.size(); }
+	void write( const float *pBuf, unsigned iSize, int iSourceStride = 1, int iDestStride = 1 ) noexcept;
+	void Extend( unsigned iSamples ) noexcept;
+	void read_deinterlace( float **pBufs, int channels ) noexcept;
+	float *read() { return m_pMixbuf; }
+	unsigned size() const { return m_iBufUsed; }
+
+	void SetWriteOffset(int iOffset) noexcept;
+	void read(int16_t *pBuf) noexcept;
+	void read(float *pBuf) noexcept;
+	void Reinitialize(unsigned new_size);
 
 private:
-	std::vector<float> m_pMixbuf;
-	unsigned m_iOffset;
+	float *m_pMixbuf;
+	int_fast64_t m_iBufSize; // actual allocated samples
+	int_fast64_t m_iBufUsed; // used samples
+	int_fast32_t m_iOffset;
 };
 
-#endif // RAGESOUNDMIXBUFFER_H
+/* write() will start mixing iOffset samples into the buffer.  Be careful; this is
+ * measured in samples, not frames, so if the data is stereo, multiply by two. */
+inline void RageSoundMixBuffer::SetWriteOffset(int iOffset) noexcept
+{
+	m_iOffset = iOffset;
+}
+
+inline void RageSoundMixBuffer::read(int16_t *pBuf) noexcept
+{
+	constexpr int16_t MAX_INT16 = 32767;
+	for (unsigned iPos = 0; iPos < m_iBufUsed; ++iPos)
+	{
+		float iOut = m_pMixbuf[iPos];
+		iOut = std::max(-1.0f, std::min(iOut, 1.0f));
+		pBuf[iPos] = static_cast<int16_t>((iOut * MAX_INT16) + 0.5f);
+	}
+	m_iBufUsed = 0;
+}
+
+inline void RageSoundMixBuffer::read(float *pBuf) noexcept
+{
+	std::memcpy(pBuf, m_pMixbuf, m_iBufUsed * sizeof(float));
+	m_iBufUsed = 0;
+}
+
+#endif
 
 /*
  * Copyright (c) 2002-2004 Glenn Maynard
