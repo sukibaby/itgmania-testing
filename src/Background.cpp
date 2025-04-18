@@ -10,7 +10,6 @@
 #include "PrefsManager.h"
 #include "NoteTypes.h"
 #include "Steps.h"
-#include "DancingCharacters.h"
 #include "BeginnerHelper.h"
 #include "StatsManager.h"
 #include "ScreenDimensions.h"
@@ -87,13 +86,10 @@ public:
 	void FadeToActualBrightness() { m_Brightness.FadeToActualBrightness(); }
 	void SetBrightness( float fBrightness ) { m_Brightness.Set(fBrightness); } /* overrides pref and Cover */
 
-	DancingCharacters* GetDancingCharacters() { return m_pDancingCharacters; };
-
 	void GetLoadedBackgroundChanges( std::vector<BackgroundChange> *pBackgroundChangesOut[NUM_BackgroundLayer] );
 
 protected:
 	bool m_bInitted;
-	DancingCharacters*	m_pDancingCharacters;
 	const Song *m_pSong;
 	std::map<RString,BackgroundTransition> m_mapNameToTransition;
 	std::deque<BackgroundDef> m_RandomBGAnimations;	// random background to choose from.  These may or may not be loaded into m_BGAnimations.
@@ -154,7 +150,6 @@ static RageColor GetBrightnessColor( float fBrightnessPercent )
 BackgroundImpl::BackgroundImpl()
 {
 	m_bInitted = false;
-	m_pDancingCharacters = nullptr;
 	m_pSong = nullptr;
 }
 
@@ -217,9 +212,6 @@ void BackgroundImpl::Init()
 			bShowingBeginnerHelper = true;
 	}
 
-	if( bOneOrMoreChars && !bShowingBeginnerHelper && SHOW_DANCING_CHARACTERS )
-		m_pDancingCharacters = new DancingCharacters;
-
 	RageColor c = GetBrightnessColor(0);
 
 	m_quadBorderLeft.StretchTo( RectF(SCREEN_LEFT,SCREEN_TOP,LEFT_EDGE,SCREEN_BOTTOM) );
@@ -242,7 +234,6 @@ void BackgroundImpl::Init()
 BackgroundImpl::~BackgroundImpl()
 {
 	Unload();
-	delete m_pDancingCharacters;
 }
 
 void BackgroundImpl::Unload()
@@ -696,9 +687,6 @@ void BackgroundImpl::LoadFromSong( const Song* pSong )
 
 	TEXTUREMAN->EnableOddDimensionWarning();
 
-	if( m_pDancingCharacters )
-		m_pDancingCharacters->LoadNextSong();
-
 	TEXTUREMAN->SetDefaultTexturePolicy( OldPolicy );
 }
 
@@ -833,9 +821,6 @@ void BackgroundImpl::Update( float fDeltaTime )
 		m_bDangerAllWasVisible = bVisible;
 	}
 
-	if( m_pDancingCharacters )
-		m_pDancingCharacters->Update( fDeltaTime );
-
 	FOREACH_BackgroundLayer( i )
 	{
 		Layer &layer = m_Layer[i];
@@ -851,15 +836,6 @@ void BackgroundImpl::DrawPrimitives()
 
 	if( IsDangerAllVisible() )
 	{
-		// Since this only shows when DANGER is visible, it will flash red on it's own accord :)
-		if( m_pDancingCharacters )
-			m_pDancingCharacters->m_bDrawDangerLight = true;
-	}
-
-	{
-		if( m_pDancingCharacters )
-			m_pDancingCharacters->m_bDrawDangerLight = false;
-
 		FOREACH_BackgroundLayer( i )
 		{
 			Layer &layer = m_Layer[i];
@@ -868,12 +844,6 @@ void BackgroundImpl::DrawPrimitives()
 			if( layer.m_pFadingBGA )
 				layer.m_pFadingBGA->Draw();
 		}
-	}
-
-	if( m_pDancingCharacters )
-	{
-		m_pDancingCharacters->Draw();
-		DISPLAY->ClearZBuffer();
 	}
 
 	ActorFrame::DrawPrimitives();
@@ -990,7 +960,6 @@ void Background::LoadFromSong( const Song *pSong )	{ m_pImpl->LoadFromSong(pSong
 void Background::Unload()				{ m_pImpl->Unload(); }
 void Background::FadeToActualBrightness()		{ m_pImpl->FadeToActualBrightness(); }
 void Background::SetBrightness( float fBrightness )	{ m_pImpl->SetBrightness(fBrightness); }
-DancingCharacters* Background::GetDancingCharacters()	{ return m_pImpl->GetDancingCharacters(); }
 void Background::GetLoadedBackgroundChanges( std::vector<BackgroundChange> *pBackgroundChangesOut[NUM_BackgroundLayer] ) { m_pImpl->GetLoadedBackgroundChanges(pBackgroundChangesOut); }
 
 /*

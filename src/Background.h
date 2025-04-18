@@ -9,7 +9,6 @@
 #include <vector>
 
 
-class DancingCharacters;
 class Song;
 class BackgroundImpl;
 /** @brief the Background that is behind the notes while playing. */
@@ -32,11 +31,6 @@ public:
 	// child. -Kyz
 	bool m_disable_draw;
 	virtual bool EarlyAbortDraw() const { return m_disable_draw; }
-
-	/**
-	 * @brief Retrieve whatever dancing characters are in use.
-	 * @return the dancing characters. */
-	DancingCharacters* GetDancingCharacters();
 
 	void GetLoadedBackgroundChanges( std::vector<BackgroundChange> **pBackgroundChangesOut );
 
