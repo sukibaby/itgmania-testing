@@ -418,6 +418,8 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
 				const std::vector<Steps*>& vpSteps = pNewSong->GetAllSteps();
 				for (Steps* s : vpSteps)
 				{
+					// Empty TimingData means it's inherited
+					// from the song and is already changed.
 					if( s->m_Timing.empty() )
 						continue;
 					s->m_Timing.m_fBeat0GroupOffsetInSeconds = group->GetSyncOffset();
