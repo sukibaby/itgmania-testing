@@ -728,9 +728,6 @@ void MusicWheel::BuildWheelItemDatas( std::vector<MusicWheelItemData *> &arrayWh
 				/* We're using sections, so use the section name as the top-level sort. */
 				switch( so )
 				{
-					case SORT_GROUP:
-						SongUtil::SortSongPointerArrayByGroup(arraySongs);
-						break;
 					case SORT_METER:
 					case SORT_PREFERRED:
 					case SORT_TOP_GRADES:
@@ -802,7 +799,7 @@ void MusicWheel::BuildWheelItemDatas( std::vector<MusicWheelItemData *> &arrayWh
 								unsigned j;
 								for( j=i; j < arraySongs.size(); j++ )
 								{
-									if( SONGMAN->GetGroup(arraySongs[j])->GetGroupName() != sThisSection )
+									if( SongUtil::GetSectionNameFromSongAndSort( arraySongs[j], so ) != sThisSection )
 										break;
 								}
 								iSectionCount = j-i;
