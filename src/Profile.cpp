@@ -97,6 +97,7 @@ void Profile::ClearSongs()
 		delete curr_song;
 	}
 	m_songs.clear();
+	LOG->Trace("Profile::ClearSongs()");
 	if (m_group != nullptr)
 	{
 		RageUtil::SafeDelete( m_group);
