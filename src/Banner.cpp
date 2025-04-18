@@ -8,7 +8,6 @@
 #include "Course.h"
 #include "Character.h"
 #include "ThemeMetric.h"
-#include "CharacterManager.h"
 #include "ActorUtil.h"
 #include "UnlockManager.h"
 #include "PrefsManager.h"
@@ -206,11 +205,7 @@ void Banner::LoadCourseFallback()
 
 void Banner::LoadFallbackCharacterIcon()
 {
-	Character *pCharacter = CHARMAN->GetDefaultCharacter();
-	if( pCharacter  &&  !pCharacter->GetIconPath().empty() )
-		Load( pCharacter->GetIconPath(), false );
-	else
-		LoadFallback();
+	LoadFallback();
 }
 
 void Banner::LoadRoulette()
