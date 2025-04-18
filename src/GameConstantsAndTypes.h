@@ -130,9 +130,12 @@ enum PlayMode
 	PLAY_MODE_ONI, /**< Similar to Nonstop, only there is also the danger of lives or a clock. */
 	PLAY_MODE_ENDLESS, /**< Keep playing until you get a game over. */
 	PLAY_MODE_BATTLE, /**< Choose when to send attacks to your opponent. */
-	PLAY_MODE_RAVE,	/**< Have attacks launched during play automatically. */
 	NUM_PlayMode,
-	PlayMode_Invalid
+	PlayMode_Invalid,
+
+
+	//  Deprecated
+	PLAY_MODE_RAVE,	/**< Have attacks launched during play automatically. */
 };
 /**
  * @brief Turn the play mode into a proper string.
