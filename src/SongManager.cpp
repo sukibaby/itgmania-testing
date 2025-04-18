@@ -349,8 +349,9 @@ void SongManager::AddGroup( RString sDir, RString sGroupDirName, Group* group )
 	// Add the group to its series if the group has one and if the series exists
 	if( group->GetSeries() != "" )
 	{
-		std::unordered_set<Group*>& series = m_mapSeriesToGroup[group->GetSeries()];
-		series.insert(group);
+		std::vector<Group*>& series = m_mapSeriesToGroup[group->GetSeries()];
+		if( std::find(series.begin(), series.end(), group) == series.end() )
+			series.push_back(group);
 	}
 	//m_sSongGroupBackgroundPaths.push_back( sBackgroundPath );
 }
