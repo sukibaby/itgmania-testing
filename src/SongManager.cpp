@@ -599,7 +599,6 @@ void SongManager::FreeSongs()
 
 	m_pSongs.clear();
 	m_mapNameToGroup.clear();
-	m_mapSeriesToGroups.clear();
 	m_SongsByDir.clear();
 
 	// also free the songs that have been deleted from disk
