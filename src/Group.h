@@ -19,7 +19,7 @@ class Group
 {
 public:
 	Group();
-    Group( const RString& sDir, const RString& sGroupDirName);
+    Group( const RString sDir, const RString &sGroupDirName);
     ~Group();
     // Lua
 	void PushSelf( lua_State *L );
@@ -71,11 +71,11 @@ public:
 
 
     /**
-     * @brief The offset applied to all songs within the group.
+     * @brief Defines the offset applied to all songs within the group.
      * 
      * @return float 
      */
-    float GetSyncOffset() const { return m_fSyncOffset; };
+    float GetSyncOffset() const { return m_iSyncOffset; };
 
     /**
      * @brief Whether the group has a group.ini file.
@@ -140,7 +140,7 @@ public:
         RString m_sSeries;
 
         /** @brief Defines the offset applied to all songs within the group. */
-        float m_fSyncOffset;
+        float m_iSyncOffset;
 
         /** @brief Whether the group has a group.ini file. */
         bool m_bHasGroupIni;
