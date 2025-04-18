@@ -21,8 +21,7 @@
 #include "StepsUtil.h"
 #include "Style.h"
 #include "HighScore.h"
-#include "Character.h"
-#include "CharacterManager.h"
+#include "RandomSeed.h"
 
 #include <cstddef>
 #include <vector>
@@ -125,15 +124,16 @@ void ProfileManager::Init()
 
 		for( int i=g_vLocalProfile.size(); i<NUM_FIXED_PROFILES; i++ )
 		{
-			RString sCharacterID = FIXED_PROFILE_CHARACTER_ID( i );
-			Character *pCharacter = CHARMAN->GetCharacterFromID( sCharacterID );
-			ASSERT_M( pCharacter != nullptr, sCharacterID );
-			RString sProfileID;
-			bool b = CreateLocalProfile( pCharacter->GetDisplayName(), sProfileID );
+			int iID = RandomInt(0, MAX_ID);
+			std::string idString = std::to_string(iID);
+			const char* sID = idString.c_str();
+			RString sProfileID = sID;
+			RString sNameID = "untitled" + sProfileID;
+			// previously the name was the character ID, but now it's a random number
+			bool b = CreateLocalProfile( sNameID, sProfileID);
 			ASSERT( b );
 			Profile* pProfile = GetLocalProfile( sProfileID );
 			ASSERT_M( pProfile != nullptr, sProfileID );
-			pProfile->m_sCharacterID = sCharacterID;
 			SaveLocalProfile( sProfileID );
 		}
 
@@ -701,7 +701,6 @@ bool ProfileManager::CreateLocalProfile( RString sName, RString &sProfileIDOut )
 	// Create the new profile.
 	Profile *pProfile = new Profile;
 	pProfile->m_sDisplayName = sName;
-	pProfile->m_sCharacterID = CHARMAN->GetRandomCharacter()->m_sCharacterID;
 
 	// Save it to disk.
 	RString sProfileDir = LocalProfileIDToDir(profile_id);
