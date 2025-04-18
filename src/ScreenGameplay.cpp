@@ -20,7 +20,6 @@
 #include "ThemeManager.h"
 #include "RageTimer.h"
 #include "ScoreKeeperNormal.h"
-#include "ScoreKeeperRave.h"
 #include "LyricsLoader.h"
 #include "ActorUtil.h"
 #include "ArrowEffects.h"
@@ -154,27 +153,10 @@ void PlayerInfo::Load( PlayerNumber pn, MultiPlayer mp, bool bShowNoteField, int
 	if( m_pPrimaryScoreDisplay )
 		m_pPrimaryScoreDisplay->Init( pPlayerState, pPlayerStageStats );
 
-	switch( GAMESTATE->m_PlayMode )
-	{
-		case PLAY_MODE_RAVE:
-			m_pSecondaryScoreDisplay = new ScoreDisplayRave;
-			m_pSecondaryScoreDisplay->SetName( "ScoreDisplayRave" );
-		default:
-			break;
-	}
-
 	if( m_pSecondaryScoreDisplay )
 		m_pSecondaryScoreDisplay->Init( pPlayerState, pPlayerStageStats );
 
 	m_pPrimaryScoreKeeper = ScoreKeeper::MakeScoreKeeper( SCORE_KEEPER_CLASS, pPlayerState, pPlayerStageStats );
-
-	switch( GAMESTATE->m_PlayMode )
-	{
-		case PLAY_MODE_RAVE:
-			m_pSecondaryScoreKeeper = new ScoreKeeperRave( pPlayerState, pPlayerStageStats );
-		default:
-			break;
-	}
 
 	m_ptextPlayerOptions = nullptr;
 	m_pActiveAttackList = nullptr;
