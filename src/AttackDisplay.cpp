@@ -32,37 +32,37 @@ AttackDisplay::AttackDisplay()
 
 void AttackDisplay::Init( const PlayerState* pPlayerState )
 {
-	m_pPlayerState = pPlayerState;
+	//m_pPlayerState = pPlayerState;
 
-	// TODO: Remove use of PlayerNumber.
-	PlayerNumber pn = m_pPlayerState->m_PlayerNumber;
-	m_sprAttack.SetName( ssprintf("TextP%d",pn+1) );
+	//// TODO: Remove use of PlayerNumber.
+	//PlayerNumber pn = m_pPlayerState->m_PlayerNumber;
+	//m_sprAttack.SetName( ssprintf("TextP%d",pn+1) );
 
-	if( GAMESTATE->m_PlayMode != PLAY_MODE_BATTLE &&
-		GAMESTATE->m_PlayMode != PLAY_MODE_RAVE )
-		return;
+	//if( GAMESTATE->m_PlayMode != PLAY_MODE_BATTLE &&
+	//	GAMESTATE->m_PlayMode != PLAY_MODE_RAVE )
+	//	return;
 
-	std::set<RString> attacks;
-	for( int al=0; al<NUM_ATTACK_LEVELS; al++ )
-	{
-		const Character *ch = GAMESTATE->m_pCurCharacters[pn];
-		ASSERT( ch != nullptr );
-		const RString* asAttacks = ch->m_sAttacks[al];
-		for( int att = 0; att < NUM_ATTACKS_PER_LEVEL; ++att )
-			attacks.insert( asAttacks[att] );
-	}
+	//std::set<RString> attacks;
+	//for( int al=0; al<NUM_ATTACK_LEVELS; al++ )
+	//{
+	//	const Character *ch = GAMESTATE->m_pCurCharacters[pn];
+	//	ASSERT( ch != nullptr );
+	//	const RString* asAttacks = ch->m_sAttacks[al];
+	//	for( int att = 0; att < NUM_ATTACKS_PER_LEVEL; ++att )
+	//		attacks.insert( asAttacks[att] );
+	//}
 
-	for( std::set<RString>::const_iterator it = attacks.begin(); it != attacks.end(); ++it )
-	{
-		const RString path = THEME->GetPathG( "AttackDisplay", GetAttackPieceName( *it ), true );
-		if( path == "" )
-		{
-			LOG->Trace( "Couldn't find \"%s\"", GetAttackPieceName( *it ).c_str() );
-			continue;
-		}
+	//for( std::set<RString>::const_iterator it = attacks.begin(); it != attacks.end(); ++it )
+	//{
+	//	const RString path = THEME->GetPathG( "AttackDisplay", GetAttackPieceName( *it ), true );
+	//	if( path == "" )
+	//	{
+	//		LOG->Trace( "Couldn't find \"%s\"", GetAttackPieceName( *it ).c_str() );
+	//		continue;
+	//	}
 
-		m_TexturePreload.Load( path );
-	}
+	//	m_TexturePreload.Load( path );
+	//}
 }
 
 
