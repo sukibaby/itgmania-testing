@@ -25,7 +25,7 @@ RageSoundMixBuffer::RageSoundMixBuffer() {
 	m_iOffset = 0;
 	m_pMixbuf = static_cast<float*>(std::malloc(size_in_bytes_));
 	if (!(m_pMixbuf)) {
-		FailWithMessage("Failed to allocate memory for the audio mix buffer");
+		FAIL_M("Failed to allocate memory for the audio mix buffer");
 	}
 	std::memset(m_pMixbuf, 0, size_in_bytes_);
 }
@@ -76,7 +76,7 @@ void RageSoundMixBuffer::Reinitialize(unsigned new_size = 0) {
 	// Set up the temporary buffer, switch, & free old memory
 	float* temp_buf = static_cast<float*>(std::malloc(size_in_bytes_));
 	if (!(temp_buf)) {
-		FailWithMessage("Failed to allocate memory for the audio mix buffer");
+		FAIL_M("Failed to allocate memory for the audio mix buffer");
 	}
 	std::memset(temp_buf, 0, size_in_bytes_);
 	float* old_buf = m_pMixbuf;
