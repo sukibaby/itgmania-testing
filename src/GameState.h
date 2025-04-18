@@ -338,8 +338,7 @@ public:
 	FailType GetPlayerFailType( const PlayerState *pPlayerState ) const;
 	FailType GetPlayerFailType( PlayerNumber pn ) const { return GetPlayerFailType( m_pPlayerState[pn] ); }
 
-	// character stuff
-	Character* m_pCurCharacters[NUM_PLAYERS];
+	int m_pCurCharacters = 2;
 
 	bool HasEarnedExtraStage() const { return m_bEarnedExtraStage; }
 	EarnedExtraStage GetEarnedExtraStage() const { return CalculateEarnedExtraStage(); }
