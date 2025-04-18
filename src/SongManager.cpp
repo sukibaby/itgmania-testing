@@ -621,10 +621,7 @@ bool SongManager::HasPackIni(RString sSongGroup) const
 	{
 		return group->HasPackIni();
 	}
-	LOG->Warn("Requested pack.ini for song group '%s' that doesn't exist", sSongGroup.c_str());
-	#ifdef DEBUG
-		ASSERT_M( 0, ssprintf("requested pack.ini for song group '%s' that doesn't exist",sSongGroup.c_str()) );
-	#endif
+	ASSERT_M( 0, ssprintf("requested pack.ini for song group '%s' that doesn't exist",sSongGroup.c_str()) );
 	return false;
 }
 
