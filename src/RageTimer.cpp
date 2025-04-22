@@ -69,10 +69,10 @@ uint64_t RageTimer::GetTimeSinceStartMicroseconds()
 
 void RageTimer::Touch()
 {
-	uint64_t usecs = GetTime();
+	const uint64_t usecs = GetTime();
 
-	this->m_secs = uint64_t(usecs / ONE_SECOND_IN_MICROSECONDS_ULL);
-	this->m_us = uint64_t(usecs % ONE_SECOND_IN_MICROSECONDS_ULL);
+	this->m_secs = usecs / ONE_SECOND_IN_MICROSECONDS_ULL;
+	this->m_us = usecs % ONE_SECOND_IN_MICROSECONDS_ULL;
 }
 
 float RageTimer::Ago() const
