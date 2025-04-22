@@ -77,16 +77,41 @@ void RageTimer::Touch()
 
 float RageTimer::Ago() const
 {
-	const RageTimer Now;
-	return Now - *this;
+	const uint64_t usecs = GetTime();
+	const uint64_t now_secs = usecs / ONE_SECOND_IN_MICROSECONDS_ULL;
+	const uint64_t now_us = usecs % ONE_SECOND_IN_MICROSECONDS_ULL;
+
+	int64_t secs = now_secs - this->m_secs;
+	int64_t us = now_us - this->m_us;
+
+	if (us < 0)
+	{
+		us += ONE_SECOND_IN_MICROSECONDS_LL;
+		--secs;
+	}
+
+	return static_cast<float>(secs) + static_cast<float>(us) / ONE_SECOND_IN_MICROSECONDS_DBL;
 }
 
 float RageTimer::GetDeltaTime()
 {
-	const RageTimer Now;
-	const float diff = Difference( Now, *this );
-	*this = Now;
-	return diff;
+	const uint64_t usecs = GetTime();
+	const uint64_t now_secs = usecs / ONE_SECOND_IN_MICROSECONDS_ULL;
+	const uint64_t now_us = usecs % ONE_SECOND_IN_MICROSECONDS_ULL;
+
+	int64_t secs = now_secs - this->m_secs;
+	int64_t us = now_us - this->m_us;
+
+	if (us < 0)
+	{
+		us += ONE_SECOND_IN_MICROSECONDS_LL;
+		--secs;
+	}
+
+	this->m_secs = now_secs;
+	this->m_us = now_us;
+
+	return static_cast<float>(secs) + static_cast<float>(us) / ONE_SECOND_IN_MICROSECONDS_DBL;
 }
 
 /* Get a timer representing half of the time ago as this one.  This is	
