@@ -28,6 +28,21 @@
 #include <cmath>
 #include <cstdint>
 
+///
+/// DO NOT CHANGE THIS FILE WITHOUT DOING EXTENSIVE TESTING!
+///  Very minor changes here can have effects which
+///  can cascade quickly and cause major problems.
+///
+/// A RageTimer object really just a std::pair of int64_t.
+/// For the sake of optimization, many functions below
+/// will directly access the pair instead of using the getters,
+/// and the functions often prefer to construct compatible pairs
+/// rather than create temporary RageTimer objects.
+///
+/// m_time.first refers to the seconds part of the std::pair,
+/// and m_time.second refers to the microseconds part.
+/// 
+
 // Intialize important variables and definitions
 constexpr uint64_t ONE_SECOND_IN_MICROSECONDS_ULL = 1000000ULL;
 constexpr int64_t ONE_SECOND_IN_MICROSECONDS_LL = 1000000LL;
@@ -40,26 +55,23 @@ static uint64_t GetTime() noexcept
 	return ArchHooks::GetSystemTimeInMicroseconds();
 }
 
-/* The accuracy of RageTimer::GetTimeSinceStart() is directly tied to the
- * stability of the clock sync. Maintaining precision here is crucial. Too
- * much error here will manifest as a drastic shift in the game's sync, and
- * will feel like the global offset suddenly changed. Incorrect math here will
- * manifest as a _consistent_ sync offset in game. Resolution mismatches or
- * values truncated or rounded when they shouldn't be can cause errors when
- * this is calculated and manifest as a _sudden_ drift of sync. Use caution
- * and do thorough testing if you change anything here. -sukibaby */
+// This is not preferred, but sometimes we need time as a floating point.
+// This is represented in seconds.
 double RageTimer::GetTimeSinceStart() noexcept
 {
 	const uint64_t usecs = (GetTime() - g_iStartTime);
 	return static_cast<double>(usecs / ONE_SECOND_IN_MICROSECONDS_DBL);
 }
 
+// This is used where GetTimeSinceStart would be cast to an int without rounding.
 int RageTimer::GetTimeSinceStartSeconds() noexcept
 {
 	const uint64_t usecs = (GetTime() - g_iStartTime);
 	return static_cast<int>(usecs / ONE_SECOND_IN_MICROSECONDS_ULL);
 }
 
+// This is the preferred way to handle system time.
+// It has the greatest accuracy and the lowest overhead of all methods.
 uint64_t RageTimer::GetTimeSinceStartMicroseconds() noexcept
 {
 	return (GetTime() - g_iStartTime);
@@ -73,15 +85,15 @@ void RageTimer::Touch() noexcept
 	m_time.second = usecs % ONE_SECOND_IN_MICROSECONDS_ULL; // m_us
 }
 
-// Avoid making a temporary RageTimer when possible. Ago() and GetDeltaTime()
-// are called frequently & in tight loops.  This is a performance optimization.
+// Avoid making a temporary RageTimer when possible, because Ago() and GetDeltaTime() are called frequently & in tight loops.
+// Ago() returns the time since the last call to Touch().
 float RageTimer::Ago() const noexcept
 {
-	uint64_t usecs = GetTime();
-	int64_t currentSecs = usecs / ONE_SECOND_IN_MICROSECONDS_ULL;
-	int64_t currentUs = usecs % ONE_SECOND_IN_MICROSECONDS_ULL;
+	const uint64_t usecs = GetTime();
 
-	// Calculate the difference in seconds and microseconds
+	const int64_t currentSecs = usecs / ONE_SECOND_IN_MICROSECONDS_ULL;
+	const int64_t currentUs = usecs % ONE_SECOND_IN_MICROSECONDS_ULL;
+
 	int64_t secs = currentSecs - m_time.first;
 	int64_t us = currentUs - m_time.second;
 
@@ -92,19 +104,17 @@ float RageTimer::Ago() const noexcept
 		--secs;
 	}
 
-	// Return the difference as a float, but calculate
-	// it as a double to preserve the fractional part.
-	double ret = static_cast<double>(secs) + static_cast<double>(us) / ONE_SECOND_IN_MICROSECONDS_DBL;
-	return static_cast<float>(ret);
+	return static_cast<float>(secs) + static_cast<float>(us) / ONE_SECOND_IN_MICROSECONDS_DBL;
 }
 
+// GetDeltaTime() returns the time since the last call to GetDeltaTime(), but also updates the stored time.
 float RageTimer::GetDeltaTime() noexcept
 {
-	uint64_t usecs = GetTime();
-	int64_t currentSecs = usecs / ONE_SECOND_IN_MICROSECONDS_ULL;
-	int64_t currentUs = usecs % ONE_SECOND_IN_MICROSECONDS_ULL;
+	const uint64_t usecs = GetTime();
 
-	// Calculate the difference in seconds and microseconds
+	const int64_t currentSecs = usecs / ONE_SECOND_IN_MICROSECONDS_ULL;
+	const int64_t currentUs = usecs % ONE_SECOND_IN_MICROSECONDS_ULL;
+
 	int64_t secs = currentSecs - m_time.first;
 	int64_t us = currentUs - m_time.second;
 
@@ -119,10 +129,7 @@ float RageTimer::GetDeltaTime() noexcept
 	m_time.first = currentSecs;
 	m_time.second = currentUs;
 
-	// Return the difference as a float, but calculate
-	// it as a double to preserve the fractional part.
-	double ret = static_cast<double>(secs) + static_cast<double>(us) / ONE_SECOND_IN_MICROSECONDS_DBL;
-	return static_cast<float>(ret);
+	return static_cast<float>(secs) + static_cast<float>(us) / ONE_SECOND_IN_MICROSECONDS_DBL;
 }
 
 /* Get a timer representing half of the time ago as this one.  This is	
