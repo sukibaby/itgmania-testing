@@ -116,7 +116,9 @@ float RageTimer::operator-(const RageTimer &rhs) const
 
 bool RageTimer::operator<( const RageTimer &rhs ) const
 {
-	if (m_time.first != rhs.m_time.first) return m_time.first < rhs.m_time.first;
+	if (m_time.first != rhs.m_time.first) {
+		return m_time.first < rhs.m_time.first;
+	}
 	return m_time.second < rhs.m_time.second;
 }
 
