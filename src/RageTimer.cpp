@@ -50,24 +50,24 @@ static inline uint64_t GetTime() noexcept
  * values truncated or rounded when they shouldn't be can cause errors when
  * this is calculated and manifest as a _sudden_ drift of sync. Use caution
  * and do thorough testing if you change anything here. -sukibaby */
-double RageTimer::GetTimeSinceStart()
+double RageTimer::GetTimeSinceStart() noexcept
 {
 	const uint64_t usecs = (GetTime() - g_iStartTime);
 	return static_cast<double>(usecs / ONE_SECOND_IN_MICROSECONDS_DBL);
 }
 
-int RageTimer::GetTimeSinceStartSeconds()
+int RageTimer::GetTimeSinceStartSeconds() noexcept
 {
 	const uint64_t usecs = (GetTime() - g_iStartTime);
 	return static_cast<int>(usecs / ONE_SECOND_IN_MICROSECONDS_ULL);
 }
 
-uint64_t RageTimer::GetTimeSinceStartMicroseconds()
+uint64_t RageTimer::GetTimeSinceStartMicroseconds() noexcept
 {
 	return (GetTime() - g_iStartTime);
 }
 
-void RageTimer::Touch()
+void RageTimer::Touch() noexcept
 {
 	uint64_t usecs = GetTime();
 
@@ -77,7 +77,7 @@ void RageTimer::Touch()
 
 // Avoid making a temporary RageTimer when possible. Ago() and GetDeltaTime()
 // are called frequently & in tight loops.  This is a performance optimization.
-float RageTimer::Ago() const
+float RageTimer::Ago() const noexcept
 {
 	uint64_t usecs = GetTime();
 	int64_t currentSecs = usecs / ONE_SECOND_IN_MICROSECONDS_ULL;
@@ -100,7 +100,7 @@ float RageTimer::Ago() const
 	return static_cast<float>(ret);
 }
 
-float RageTimer::GetDeltaTime()
+float RageTimer::GetDeltaTime() noexcept
 {
 	uint64_t usecs = GetTime();
 	int64_t currentSecs = usecs / ONE_SECOND_IN_MICROSECONDS_ULL;
@@ -135,17 +135,17 @@ float RageTimer::GetDeltaTime()
  * RageTimer AverageTime = tm.Half();	
  * printf( "Something happened approximately %f seconds ago.\n", tm.Ago() ); 
  * Note this has been reverted to the original SM3.95 function. */
-RageTimer RageTimer::Half() const
+RageTimer RageTimer::Half() const noexcept
 {
 	const float fProbableDelay = Ago() / 2;
 	return *this + fProbableDelay;
 }
 
-RageTimer RageTimer::operator+(float tm) const
+// Calculate the seconds and microseconds from the time:
+// tm == 5.25  -> secs =  5, us = 5.25  - ( 5) = .25
+// tm == -1.25 -> secs = -2, us = -1.25 - (-2) = .75
+RageTimer RageTimer::operator+(float tm) const noexcept
 {
-	/* Calculate the seconds and microseconds from the time:
-	 * tm == 5.25  -> secs =  5, us = 5.25  - ( 5) = .25
-	 * tm == -1.25 -> secs = -2, us = -1.25 - (-2) = .75 */
 	int64_t seconds = std::floor(tm);
 	int64_t us = static_cast<int64_t>((tm - seconds) * ONE_SECOND_IN_MICROSECONDS_LL);
 
@@ -156,7 +156,7 @@ RageTimer RageTimer::operator+(float tm) const
 	ret.m_time.first = seconds + m_time.first; // m_secs
 	ret.m_time.second = us + m_time.second; // m_us
 
-	// Adjust the seconds and microseconds if microseconds is greater than or equal to TIMESTAMP_RESOLUTION
+	// Adjust the seconds and microseconds if microseconds is greater than or equal to one second
 	if (ret.m_time.second >= ONE_SECOND_IN_MICROSECONDS_LL)
 	{
 		ret.m_time.second -= ONE_SECOND_IN_MICROSECONDS_LL;
@@ -166,25 +166,24 @@ RageTimer RageTimer::operator+(float tm) const
 	return ret;
 }
 
-float RageTimer::operator-(const RageTimer &rhs) const
+// Calculate the difference in seconds and microseconds respectively
+// and adjust the seconds and microseconds if microseconds is negative
+float RageTimer::operator-(const RageTimer &rhs) const noexcept
 {
-	// Calculate the difference in seconds and microseconds respectively
 	int64_t secs = m_time.first - rhs.m_time.first; // m_secs
 	int64_t us = m_time.second - rhs.m_time.second; // m_us
 
-	// Adjust seconds and microseconds if microseconds is negative
 	if (us < 0)
 	{
 		us += ONE_SECOND_IN_MICROSECONDS_LL;
 		--secs;
 	}
 
-	// Calculate the difference as a double to preserve the fractional part
 	double ret = static_cast<double>(secs) + static_cast<double>(us) / ONE_SECOND_IN_MICROSECONDS_DBL;
 	return static_cast<float>(ret);
 }
 
-bool RageTimer::operator<( const RageTimer &rhs ) const
+bool RageTimer::operator<( const RageTimer &rhs ) const noexcept
 {
 	if (m_time.first != rhs.m_time.first) {
 		return m_time.first < rhs.m_time.first;
