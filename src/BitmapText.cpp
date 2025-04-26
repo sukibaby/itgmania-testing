@@ -911,36 +911,50 @@ BitmapText::Attribute BitmapText::GetDefaultAttribute() const
 	return attr;
 }
 
+std::pair<size_t, size_t> BitmapText::FixupLengthForNewLines(size_t adjustedPos, size_t inputLength) const {
+	auto lineIter = m_wTextLines.cbegin();
+	size_t adjustedEndPos = adjustedPos + inputLength;
+
+	for( ; lineIter != m_wTextLines.cend(); ++lineIter )
+	{
+		size_t lineLength = lineIter->length() + 1; // +1 to account for implicit newline at the end
+		if (lineLength > adjustedEndPos || lineLength == 0) {
+			break;
+		}
+		adjustedEndPos -= lineLength;
+		inputLength -= 1;
+	}
+
+	return { adjustedEndPos, inputLength };
+}
+
+std::pair<size_t, int> BitmapText::AdjustPositionForNewLines(size_t inputPosition) const {
+	auto lineIter = m_wTextLines.cbegin();
+	int lineCount = 0;
+	size_t adjustedPosition = inputPosition;
+
+	for (; lineIter != m_wTextLines.cend(); ++lineIter) {
+		size_t lineLength = lineIter->length() + 1; // +1 to account for implicit newline at the end
+		if (lineLength > adjustedPosition) {
+			break;
+		}
+		adjustedPosition -= lineLength;
+		++lineCount;
+	}
+
+	return std::make_pair(adjustedPosition, lineCount);
+}
+
 void BitmapText::AddAttribute( size_t iPos, const Attribute &attr )
 {
 	// Fixup position for new lines.
 	Attribute newAttr = attr;
-	auto lineIter = m_wTextLines.cbegin();
+	const auto [iAdjustedPos, iLines] = AdjustPositionForNewLines(iPos);
 
-	int iLines = 0;
-	size_t iAdjustedPos = iPos;
-
-	for( ; lineIter != m_wTextLines.cend(); ++lineIter )
-	{
-		size_t length = lineIter->length() + 1; // +1 to account for implicit newline at the end
-		if( length > iAdjustedPos )
-			break;
-		iAdjustedPos -= length;
-		++iLines;
-	}
-
-	if( newAttr.length > 0 )
-	{
+	if (newAttr.length > 0)	{
 		// Fixup length for new lines.
-		size_t iAdjustedEndPos = iAdjustedPos + newAttr.length;
-		for( ; lineIter != m_wTextLines.cend(); ++lineIter )
-		{
-			size_t length = lineIter->length() + 1; // +1 to account for implicit newline at the end
-			if( length > iAdjustedEndPos || newAttr.length == 0 )
-				break;
-			iAdjustedEndPos -= length;
-			newAttr.length -= 1;
-		}
+		const auto [iAdjustedEndPos, remainingLength] = FixupLengthForNewLines(iAdjustedPos, newAttr.length);
+		newAttr.length = remainingLength;
 	}
 
 	if( newAttr.length == 0 ) // Attribute doesn't cover any printable characters
