@@ -911,8 +911,7 @@ BitmapText::Attribute BitmapText::GetDefaultAttribute() const
 	return attr;
 }
 
-std::pair<size_t, int> BitmapText::AdjustPositionForNewLines(size_t inputPosition) const
-{
+std::pair<size_t, int> BitmapText::AdjustPositionForNewLines(size_t inputPosition) const {
 	auto lineIterator = m_wTextLines.cbegin();
 	int lineCount = 0;
 	size_t adjustedPosition = inputPosition;
@@ -931,8 +930,7 @@ std::pair<size_t, int> BitmapText::AdjustPositionForNewLines(size_t inputPositio
 	return { adjustedPosition, lineCount };
 }
 
-std::pair<size_t, size_t> BitmapText::FixupLengthForNewLines(size_t adjustedPos, size_t inputLength) const
-{
+std::pair<size_t, size_t> BitmapText::FixupLengthForNewLines(size_t adjustedPos, size_t inputLength) const {
 	auto lineIter = m_wTextLines.cbegin();
 	size_t adjustedEndPos = adjustedPos + inputLength;
 
