@@ -931,23 +931,23 @@ std::pair<size_t, int> BitmapText::AdjustPositionForNewLines(size_t iPos) const
 	return { iAdjustedPos, iLines };
 }
 
-std::pair<size_t, size_t> BitmapText::FixupLengthForNewLines(size_t iAdjustedPos, size_t length) const
+std::pair<size_t, size_t> BitmapText::FixupLengthForNewLines(size_t adjustedPos, size_t inputLength) const
 {
 	auto lineIter = m_wTextLines.cbegin();
-	size_t iAdjustedEndPos = iAdjustedPos + length;
+	size_t adjustedEndPos = adjustedPos + inputLength;
 
 	for (; lineIter != m_wTextLines.cend(); ++lineIter)
 	{
-		size_t length = lineIter->length() + 1; // +1 to account for implicit newline at the end
-		if (length > iAdjustedEndPos || length == 0)
+		size_t lineLength = lineIter->length() + 1; // +1 to account for implicit newline at the end
+		if (lineLength > adjustedEndPos || lineLength == 0)
 		{
 			break;
 		}
-		iAdjustedEndPos -= length;
-		length -= 1;
+		adjustedEndPos -= lineLength;
+		inputLength -= 1;
 	}
 
-	return { iAdjustedEndPos, length };
+	return { adjustedEndPos, inputLength };
 }
 
 void BitmapText::AddAttribute( size_t iPos, const Attribute &attr )
