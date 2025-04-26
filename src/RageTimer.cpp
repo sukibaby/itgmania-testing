@@ -44,10 +44,10 @@
 /// 
 
 // Intialize important variables and definitions
-constexpr uint64_t ONE_SECOND_IN_MICROSECONDS_ULL = 1000000ULL;
-constexpr int64_t ONE_SECOND_IN_MICROSECONDS_LL = 1000000LL;
-constexpr double ONE_SECOND_IN_MICROSECONDS_DBL = 1000000.0;
-constexpr float FLOAT_MICROSECONDS_RATIO = 0.000001f;
+constexpr uint64_t kUsecsPerSecULL = 1000000ULL;
+constexpr int64_t kUsecsPerSecLL = 1000000LL;
+constexpr double kUsecsPerSecDouble = 1000000.0;
+constexpr float kUsecsToSecRatio = 0.000001f;
 const RageTimer RageZeroTimer(0,0);
 static const uint64_t g_iStartTime = ArchHooks::GetSystemTimeInMicroseconds();
 
@@ -61,14 +61,14 @@ static uint64_t GetTime() noexcept
 double RageTimer::GetTimeSinceStart() noexcept
 {
 	const uint64_t usecs = (GetTime() - g_iStartTime);
-	return static_cast<double>(usecs / ONE_SECOND_IN_MICROSECONDS_DBL);
+	return static_cast<double>(usecs / kUsecsPerSecDouble);
 }
 
 // This is used where GetTimeSinceStart would be cast to an int without rounding.
 int RageTimer::GetTimeSinceStartSeconds() noexcept
 {
 	const uint64_t usecs = (GetTime() - g_iStartTime);
-	return static_cast<int>(usecs / ONE_SECOND_IN_MICROSECONDS_ULL);
+	return static_cast<int>(usecs / kUsecsPerSecULL);
 }
 
 // This is the preferred way to handle system time.
@@ -82,8 +82,8 @@ void RageTimer::Touch() noexcept
 {
 	uint64_t usecs = GetTime();
 
-	m_time.first = usecs / ONE_SECOND_IN_MICROSECONDS_ULL; // m_secs
-	m_time.second = usecs % ONE_SECOND_IN_MICROSECONDS_ULL; // m_us
+	m_time.first = usecs / kUsecsPerSecULL; // m_secs
+	m_time.second = usecs % kUsecsPerSecULL; // m_us
 }
 
 // Avoid making a temporary RageTimer when possible, because Ago() and GetDeltaTime() are called frequently & in tight loops.
@@ -92,8 +92,8 @@ float RageTimer::Ago() const noexcept
 {
 	const uint64_t usecs = GetTime();
 
-	const int64_t currentSecs = usecs / ONE_SECOND_IN_MICROSECONDS_ULL;
-	const int64_t currentUs = usecs % ONE_SECOND_IN_MICROSECONDS_ULL;
+	const int64_t currentSecs = usecs / kUsecsPerSecULL;
+	const int64_t currentUs = usecs % kUsecsPerSecULL;
 
 	int64_t secs = currentSecs - m_time.first;
 	int64_t us = currentUs - m_time.second;
@@ -101,11 +101,11 @@ float RageTimer::Ago() const noexcept
 	// Adjust for negative microseconds
 	if (us < 0)
 	{
-		us += ONE_SECOND_IN_MICROSECONDS_LL;
+		us += kUsecsPerSecLL;
 		--secs;
 	}
 
-	return static_cast<float>(secs) + static_cast<float>(us * FLOAT_MICROSECONDS_RATIO);
+	return static_cast<float>(secs) + static_cast<float>(us * kUsecsToSecRatio);
 }
 
 // GetDeltaTime() returns the time since the last call to GetDeltaTime(), but also updates the stored time.
@@ -113,8 +113,8 @@ float RageTimer::GetDeltaTime() noexcept
 {
 	const uint64_t usecs = GetTime();
 
-	const int64_t currentSecs = usecs / ONE_SECOND_IN_MICROSECONDS_ULL;
-	const int64_t currentUs = usecs % ONE_SECOND_IN_MICROSECONDS_ULL;
+	const int64_t currentSecs = usecs / kUsecsPerSecULL;
+	const int64_t currentUs = usecs % kUsecsPerSecULL;
 
 	int64_t secs = currentSecs - m_time.first;
 	int64_t us = currentUs - m_time.second;
@@ -122,7 +122,7 @@ float RageTimer::GetDeltaTime() noexcept
 	// Adjust for negative microseconds
 	if (us < 0)
 	{
-		us += ONE_SECOND_IN_MICROSECONDS_LL;
+		us += kUsecsPerSecLL;
 		--secs;
 	}
 
@@ -130,7 +130,7 @@ float RageTimer::GetDeltaTime() noexcept
 	m_time.first = currentSecs;
 	m_time.second = currentUs;
 
-	return static_cast<float>(secs) + static_cast<float>(us * FLOAT_MICROSECONDS_RATIO);
+	return static_cast<float>(secs) + static_cast<float>(us * kUsecsToSecRatio);
 }
 
 /* Get a timer representing half of the time ago as this one.  This is	
@@ -153,16 +153,16 @@ RageTimer RageTimer::Half() const noexcept
 RageTimer RageTimer::operator+(float tm) const noexcept
 {
 	int64_t seconds = std::floor(tm);
-	int64_t us = static_cast<int64_t>((tm - seconds) * ONE_SECOND_IN_MICROSECONDS_LL);
+	int64_t us = static_cast<int64_t>((tm - seconds) * kUsecsPerSecLL);
 
 	// Avoid creating a RageTimer until we have the final result
 	int64_t newSecs = m_time.first + seconds;
 	int64_t newUs = m_time.second + us;
 
 	// Adjust the seconds and microseconds if microseconds is greater than or equal to one second
-	if (newUs >= ONE_SECOND_IN_MICROSECONDS_LL)
+	if (newUs >= kUsecsPerSecLL)
 	{
-		newUs -= ONE_SECOND_IN_MICROSECONDS_LL;
+		newUs -= kUsecsPerSecLL;
 		++newSecs;
 	}
 
@@ -178,11 +178,11 @@ float RageTimer::operator-(const RageTimer &rhs) const noexcept
 
 	if (us < 0)
 	{
-		us += ONE_SECOND_IN_MICROSECONDS_LL;
+		us += kUsecsPerSecLL;
 		--secs;
 	}
 
-	double ret = static_cast<double>(secs) + static_cast<double>(us) / ONE_SECOND_IN_MICROSECONDS_DBL;
+	double ret = static_cast<double>(secs) + static_cast<double>(us) / kUsecsPerSecDouble;
 	return static_cast<float>(ret);
 }
 
