@@ -916,11 +916,9 @@ std::pair<size_t, int> BitmapText::AdjustPositionForNewLines(size_t inputPositio
 	int lineCount = 0;
 	size_t adjustedPosition = inputPosition;
 
-	for (; lineIterator != m_wTextLines.cend(); ++lineIterator)
-	{
+	for (; lineIterator != m_wTextLines.cend(); ++lineIterator) {
 		size_t lineLength = lineIterator->length() + 1; // +1 to account for implicit newline at the end
-		if (lineLength > adjustedPosition)
-		{
+		if (lineLength > adjustedPosition) {
 			break;
 		}
 		adjustedPosition -= lineLength;
@@ -931,14 +929,12 @@ std::pair<size_t, int> BitmapText::AdjustPositionForNewLines(size_t inputPositio
 }
 
 std::pair<size_t, size_t> BitmapText::FixupLengthForNewLines(size_t adjustedPos, size_t inputLength) const {
-	auto lineIter = m_wTextLines.cbegin();
+	auto lineIterator = m_wTextLines.cbegin();
 	size_t adjustedEndPos = adjustedPos + inputLength;
 
-	for (; lineIter != m_wTextLines.cend(); ++lineIter)
-	{
-		size_t lineLength = lineIter->length() + 1; // +1 to account for implicit newline at the end
-		if (lineLength > adjustedEndPos || lineLength == 0)
-		{
+	for (; lineIterator != m_wTextLines.cend(); ++lineIterator) {
+		size_t lineLength = lineIterator->length() + 1; // +1 to account for implicit newline at the end
+		if (lineLength > adjustedEndPos || lineLength == 0) {
 			break;
 		}
 		adjustedEndPos -= lineLength;
