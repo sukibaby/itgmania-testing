@@ -17,13 +17,9 @@ public:
 	RageTimer() noexcept { Touch(); }
 	RageTimer(int64_t secs, int64_t us) noexcept : m_time(secs, us) {}
 
-	// Getters
+	// Getter methods
 	inline int64_t GetSecs() const noexcept { return m_time.first; }
 	inline int64_t GetUs() const noexcept { return m_time.second; }
-
-	// Setters
-	inline void SetSecs(int64_t secs) noexcept { m_time.first = secs; }
-	inline void SetUs(int64_t us) noexcept { m_time.second = us; }
 
 	// Time ago this RageTimer represents
 	float Ago() const noexcept;
