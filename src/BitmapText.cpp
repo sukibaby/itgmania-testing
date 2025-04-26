@@ -911,28 +911,26 @@ BitmapText::Attribute BitmapText::GetDefaultAttribute() const
 	return attr;
 }
 
-std::pair<size_t, int> BitmapText::AdjustPositionForNewLines(size_t iPos) const
-{
-	auto lineIter = m_wTextLines.cbegin();
-	int iLines = 0;
-	size_t iAdjustedPos = iPos;
+std::pair<size_t, int> BitmapText::AdjustPositionForNewLines(size_t inputPosition) const {
+	auto lineIterator = m_wTextLines.cbegin();
+	int lineCount = 0;
+	size_t adjustedPosition = inputPosition;
 
-	for( ; lineIter != m_wTextLines.cend(); ++lineIter )
+	for (; lineIterator != m_wTextLines.cend(); ++lineIterator)
 	{
-		size_t length = lineIter->length() + 1; // +1 to account for implicit newline at the end
-		if (length > iAdjustedPos)
+		size_t lineLength = lineIterator->length() + 1; // +1 to account for implicit newline at the end
+		if (lineLength > adjustedPosition)
 		{
 			break;
 		}
-		iAdjustedPos -= length;
-		++iLines;
+		adjustedPosition -= lineLength;
+		++lineCount;
 	}
 
-	return { iAdjustedPos, iLines };
+	return { adjustedPosition, lineCount };
 }
 
-std::pair<size_t, size_t> BitmapText::FixupLengthForNewLines(size_t adjustedPos, size_t inputLength) const
-{
+std::pair<size_t, size_t> BitmapText::FixupLengthForNewLines(size_t adjustedPos, size_t inputLength) const {
 	auto lineIter = m_wTextLines.cbegin();
 	size_t adjustedEndPos = adjustedPos + inputLength;
 
