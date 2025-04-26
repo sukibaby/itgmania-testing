@@ -78,17 +78,51 @@ void RageTimer::Touch()
 float RageTimer::Ago() const
 {
 	uint64_t usecs = GetTime();
-	RageTimer Now(usecs / ONE_SECOND_IN_MICROSECONDS_ULL, usecs % ONE_SECOND_IN_MICROSECONDS_ULL);
-	return Now - *this;
+	int64_t currentSecs = usecs / ONE_SECOND_IN_MICROSECONDS_ULL;
+	int64_t currentUs = usecs % ONE_SECOND_IN_MICROSECONDS_ULL;
+
+	// Calculate the difference in seconds and microseconds
+	int64_t secs = currentSecs - m_time.first;
+	int64_t us = currentUs - m_time.second;
+
+	// Adjust for negative microseconds
+	if (us < 0)
+	{
+		us += ONE_SECOND_IN_MICROSECONDS_LL;
+		--secs;
+	}
+
+	// Return the difference as a float, but calculate
+	// it as a double to preserve the fractional part.
+	double ret = static_cast<double>(secs) + static_cast<double>(us) / ONE_SECOND_IN_MICROSECONDS_DBL;
+	return static_cast<float>(ret);
 }
 
 float RageTimer::GetDeltaTime()
 {
 	uint64_t usecs = GetTime();
-	RageTimer Now(usecs / ONE_SECOND_IN_MICROSECONDS_ULL, usecs % ONE_SECOND_IN_MICROSECONDS_ULL);
-	const float diff = Now - *this;
-	*this = Now;
-	return diff;
+	int64_t currentSecs = usecs / ONE_SECOND_IN_MICROSECONDS_ULL;
+	int64_t currentUs = usecs % ONE_SECOND_IN_MICROSECONDS_ULL;
+
+	// Calculate the difference in seconds and microseconds
+	int64_t secs = currentSecs - m_time.first;
+	int64_t us = currentUs - m_time.second;
+
+	// Adjust for negative microseconds
+	if (us < 0)
+	{
+		us += ONE_SECOND_IN_MICROSECONDS_LL;
+		--secs;
+	}
+
+	// Update the stored time
+	m_time.first = currentSecs;
+	m_time.second = currentUs;
+
+	// Return the difference as a float, but calculate
+	// it as a double to preserve the fractional part.
+	double ret = static_cast<double>(secs) + static_cast<double>(us) / ONE_SECOND_IN_MICROSECONDS_DBL;
+	return static_cast<float>(ret);
 }
 
 /* Get a timer representing half of the time ago as this one.  This is	
