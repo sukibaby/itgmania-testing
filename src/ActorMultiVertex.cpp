@@ -192,14 +192,27 @@ void ActorMultiVertex::AddVertex()
 
 void ActorMultiVertex::AddVertices( int Add )
 {
-	int size = AMV_DestTweenState().vertices.size();
-	size += Add;
-	for( size_t i = 0; i < AMV_Tweens.size(); ++i )
+	// Ensure `add` is non-negative
+	if (Add < 0)
 	{
-		AMV_Tweens[i].vertices.resize( size );
+		LuaHelpers::ReportScriptErrorFmt("ActorMultiVertex::AddVertices: Cannot add a negative number of vertices (%d).", Add);
+		LOG->Warn("ActorMultiVertex::AddVertices: Cannot add a negative number of vertices (%d).", Add);
+		return;
 	}
-	AMV_current.vertices.resize( size );
-	AMV_start.vertices.resize( size );
+
+	// Get the current size of the destination tween state's vertices
+	size_t currentSize = AMV_DestTweenState().vertices.size();
+
+	// Calculate the new size
+	size_t newSize = currentSize + static_cast<size_t>(Add);
+
+	// Resize all relevant containers
+	for (auto& tween : AMV_Tweens)
+	{
+		tween.vertices.resize(newSize);
+	}
+	AMV_current.vertices.resize(newSize);
+	AMV_start.vertices.resize(newSize);
 }
 
 void ActorMultiVertex::SetVertexPos( int index, float x, float y, float z )
