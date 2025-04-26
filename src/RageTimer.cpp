@@ -20,12 +20,8 @@
  */
 
 #include "global.h"
-
 #include "RageTimer.h"
-
 #include "arch/ArchHooks/ArchHooks.h"
-
-#include <cmath>
 #include <cstdint>
 
 ///
@@ -165,7 +161,7 @@ RageTimer RageTimer::Half() const noexcept
 RageTimer RageTimer::operator+(float tm) const noexcept
 {
 	// Prepare the time in a RageTimer object-compatible format
-	int64_t seconds = std::floor(tm);
+	int64_t seconds = static_cast<int64_t>(tm);
 	int64_t us = static_cast<int64_t>((tm - seconds) * kUsecsPerSecLL);
 
 	// Avoid creating a RageTimer until we have the final result
