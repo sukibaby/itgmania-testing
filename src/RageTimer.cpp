@@ -87,14 +87,14 @@ void RageTimer::Touch() noexcept
 }
 
 // Avoid making a temporary RageTimer when possible, because Ago() and GetDeltaTime() are called frequently & in tight loops.
+// These need to be as fast and scalable as is possible, so we accept duplicated code for the sake of speed.
 // Ago() returns the time since the last call to Touch().
 float RageTimer::Ago() const noexcept
 {
+	// Prepare the time in a RageTimer object-compatible format
 	const uint64_t usecs = GetTime();
-
 	const int64_t currentSecs = usecs / kUsecsPerSecULL;
 	const int64_t currentUs = usecs % kUsecsPerSecULL;
-
 	int64_t secs = currentSecs - m_time.first;
 	int64_t us = currentUs - m_time.second;
 
@@ -111,11 +111,10 @@ float RageTimer::Ago() const noexcept
 // GetDeltaTime() returns the time since the last call to GetDeltaTime(), but also updates the stored time.
 float RageTimer::GetDeltaTime() noexcept
 {
+	// Prepare the time in a RageTimer object-compatible format
 	const uint64_t usecs = GetTime();
-
 	const int64_t currentSecs = usecs / kUsecsPerSecULL;
 	const int64_t currentUs = usecs % kUsecsPerSecULL;
-
 	int64_t secs = currentSecs - m_time.first;
 	int64_t us = currentUs - m_time.second;
 
@@ -152,6 +151,7 @@ RageTimer RageTimer::Half() const noexcept
 // tm == -1.25 -> secs = -2, us = -1.25 - (-2) = .75
 RageTimer RageTimer::operator+(float tm) const noexcept
 {
+	// Prepare the time in a RageTimer object-compatible format
 	int64_t seconds = std::floor(tm);
 	int64_t us = static_cast<int64_t>((tm - seconds) * kUsecsPerSecLL);
 
