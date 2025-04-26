@@ -75,6 +75,8 @@ void RageTimer::Touch()
 	m_time.second = usecs % ONE_SECOND_IN_MICROSECONDS_ULL; // m_us
 }
 
+// Avoid making a temporary RageTimer when possible. Ago() and GetDeltaTime()
+// are called frequently & in tight loops.  This is a performance optimization.
 float RageTimer::Ago() const
 {
 	uint64_t usecs = GetTime();
