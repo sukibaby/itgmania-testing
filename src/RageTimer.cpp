@@ -105,7 +105,7 @@ float RageTimer::Ago() const noexcept
 		--secs;
 	}
 
-	return static_cast<float>(secs) + static_cast<float>(us) * FLOAT_MICROSECONDS_RATIO;
+	return static_cast<float>(secs) + static_cast<float>(us * FLOAT_MICROSECONDS_RATIO);
 }
 
 // GetDeltaTime() returns the time since the last call to GetDeltaTime(), but also updates the stored time.
@@ -130,7 +130,7 @@ float RageTimer::GetDeltaTime() noexcept
 	m_time.first = currentSecs;
 	m_time.second = currentUs;
 
-	return static_cast<float>(secs) + static_cast<float>(us) * FLOAT_MICROSECONDS_RATIO;
+	return static_cast<float>(secs) + static_cast<float>(us * FLOAT_MICROSECONDS_RATIO);
 }
 
 /* Get a timer representing half of the time ago as this one.  This is	
