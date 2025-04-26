@@ -9,11 +9,9 @@
 class RageTimer
 {
 public:
-	// We store the seconds and microseconds parts of the time in separate 64-bit integers.
+	// A RageTimer object store the seconds and microseconds parts of the time in separate 64-bit integers.
+	// This is a kept in a std::pair of int64_t called m_time. It is private, so getter methods are provided.
 	// m_time.first refers to the seconds part, and m_time.second refers to the microseconds part.
-	using RageTimerPair = std::pair<int64_t, int64_t>;
-
-	// Default & parameterized constructors
 	RageTimer() noexcept { Touch(); }
 	RageTimer(int64_t secs, int64_t us) noexcept : m_time(secs, us) {}
 
@@ -51,7 +49,9 @@ public:
 	bool operator<(const RageTimer& rhs) const noexcept;
 
 private:
-	RageTimerPair m_time;
+	// We store the seconds and microseconds parts of the time in separate 64-bit integers.
+	// m_time.first refers to the seconds part, and m_time.second refers to the microseconds part.
+	std::pair<int64_t, int64_t> m_time;
 };
 
 extern const RageTimer RageZeroTimer;
