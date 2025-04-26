@@ -30,17 +30,26 @@
 
 ///
 /// DO NOT CHANGE THIS FILE WITHOUT DOING EXTENSIVE TESTING!
-///  Very minor changes here can have effects which
-///  can cascade quickly and cause major problems.
+/// Very minor changes here can have effects which can cascade
+///  quickly, causing major problems. This code is highly optimized.
 ///
-/// A RageTimer object really just a std::pair of int64_t.
-/// For the sake of optimization, many functions below
-/// will directly access the pair instead of using the getters,
-/// and the functions often prefer to construct compatible pairs
-/// rather than create temporary RageTimer objects.
+/// Too much error will manifest as a drastic shift in the game's
+///  sync, and will feel like the global offset suddenly changed.
+///
+/// Incorrect math here will manifest as a consistent, or linearly-
+///  compounding change in the global offset.
+///
+/// Resolution mismatches or truncations will manifest as a sudden
+///  change in the global offset, and will feel like an abrupt drift.
+/// 
+/// A RageTimer object is, at its core, a std::pair of two int64_t.
+/// For the sake of optimization, many functions below will directly
+///  access the pair, and the functions below often prefer to construct
+///  compatible pairs of int64_t rather than to create temporary RageTimer
+///  objects. Badly performing/inefficient code manifests as noise/jitter.
 ///
 /// m_time.first refers to the seconds part of the std::pair,
-/// and m_time.second refers to the microseconds part.
+///  and m_time.second refers to the microseconds part.
 /// 
 
 // Intialize important variables and definitions
@@ -82,8 +91,8 @@ void RageTimer::Touch() noexcept
 {
 	uint64_t usecs = GetTime();
 
-	m_time.first = usecs / kUsecsPerSecULL; // m_secs
-	m_time.second = usecs % kUsecsPerSecULL; // m_us
+	m_time.first = usecs / kUsecsPerSecULL; // seconds
+	m_time.second = usecs % kUsecsPerSecULL; // microseconds
 }
 
 // Avoid making a temporary RageTimer when possible, because Ago() and GetDeltaTime() are called frequently & in tight loops.
