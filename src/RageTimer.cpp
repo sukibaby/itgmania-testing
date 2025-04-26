@@ -58,7 +58,7 @@
 constexpr uint64_t kUsecsPerSecULL = 1000000ULL;
 constexpr int64_t kUsecsPerSecLL = 1000000LL;
 constexpr double kUsecsPerSecDouble = 1000000.0;
-constexpr float kUsecsToSecRatio = 0.000001f;
+constexpr double kUsecsToSecRatio = 0.000001;
 const RageTimer RageZeroTimer(0,0);
 static const uint64_t g_iStartTime = ArchHooks::GetSystemTimeInMicroseconds();
 
@@ -97,8 +97,9 @@ void RageTimer::Touch() noexcept
 	m_time.second = usecs % kUsecsPerSecULL; // microseconds
 }
 
-// Avoid making a temporary RageTimer when possible, because Ago() and GetDeltaTime() are called frequently & in tight loops.
-// These need to be as fast and scalable as is possible, so we accept duplicated code for the sake of speed.
+// Because Ago() and GetDeltaTime() are called frequently & in tight loops,
+// these need to be as fast and scalable as is possible, so for the sake of speed,
+// there is a lot of duplicated code between these two functions.
 // Ago() returns the time since the last call to Touch().
 float RageTimer::Ago() const noexcept
 {
@@ -110,16 +111,17 @@ float RageTimer::Ago() const noexcept
 	int64_t us = currentUs - m_time.second;
 
 	// Adjust the seconds and microseconds if microseconds is greater than or equal to one second
-	if (us < 0)
-	{
+	if (us < 0) {
 		us += kUsecsPerSecLL;
 		--secs;
 	}
 
-	return static_cast<float>(secs) + static_cast<float>(us * kUsecsToSecRatio);
+	double ret = static_cast<double>(secs) + static_cast<double>(us * kUsecsToSecRatio);
+	return static_cast<float>(ret);
 }
 
-// GetDeltaTime() returns the time since the last call to GetDeltaTime(), but also updates the stored time.
+// GetDeltaTime() will update the stored time in the RageTimer object as well as
+// returning the time since the last call to Touch().
 float RageTimer::GetDeltaTime() noexcept
 {
 	// Prepare the time in a RageTimer object-compatible format
@@ -130,8 +132,7 @@ float RageTimer::GetDeltaTime() noexcept
 	int64_t us = currentUs - m_time.second;
 
 	// Adjust the seconds and microseconds if microseconds is greater than or equal to one second
-	if (us < 0)
-	{
+	if (us < 0) {
 		us += kUsecsPerSecLL;
 		--secs;
 	}
@@ -140,7 +141,8 @@ float RageTimer::GetDeltaTime() noexcept
 	m_time.first = currentSecs;
 	m_time.second = currentUs;
 
-	return static_cast<float>(secs) + static_cast<float>(us * kUsecsToSecRatio);
+	double ret = static_cast<double>(secs) + static_cast<double>(us * kUsecsToSecRatio);
+	return static_cast<float>(ret);
 }
 
 /* Get a timer representing half of the time ago as this one.  This is	
@@ -171,8 +173,7 @@ RageTimer RageTimer::operator+(float tm) const noexcept
 	int64_t newUs = m_time.second + us;
 
 	// Adjust the seconds and microseconds if microseconds is greater than or equal to one second
-	if (newUs >= kUsecsPerSecLL)
-	{
+	if (newUs >= kUsecsPerSecLL) {
 		newUs -= kUsecsPerSecLL;
 		++newSecs;
 	}
@@ -180,8 +181,6 @@ RageTimer RageTimer::operator+(float tm) const noexcept
 	return RageTimer(newSecs, newUs);
 }
 
-// Calculate the difference in seconds and microseconds respectively
-// and adjust the seconds and microseconds if microseconds is negative
 float RageTimer::operator-(const RageTimer &rhs) const noexcept
 {
 	// Prepare the time in a RageTimer object-compatible format
@@ -189,13 +188,12 @@ float RageTimer::operator-(const RageTimer &rhs) const noexcept
 	int64_t us = m_time.second - rhs.m_time.second;
 
 	// Adjust the seconds and microseconds if microseconds is greater than or equal to one second
-	if (us < 0)
-	{
+	if (us < 0) {
 		us += kUsecsPerSecLL;
 		--secs;
 	}
 
-	double ret = static_cast<double>(secs) + static_cast<double>(us) / kUsecsPerSecDouble;
+	double ret = static_cast<double>(secs) + static_cast<double>(us * kUsecsToSecRatio);
 	return static_cast<float>(ret);
 }
 
