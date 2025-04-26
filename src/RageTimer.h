@@ -9,50 +9,53 @@
 class RageTimer
 {
 public:
-	/* We store the seconds and microseconds parts of the time in separate 64-bit integers.
-	 * m_time.first refers to the seconds part, and m_time.second refers to the microseconds part. */
+	// We store the seconds and microseconds parts of the time in separate 64-bit integers.
+	// m_time.first refers to the seconds part, and m_time.second refers to the microseconds part.
 	using RageTimerPair = std::pair<int64_t, int64_t>;
 
-	/* Default & parameterized constructors */
-	RageTimer() {Touch();}
+	// Default & parameterized constructors
+	RageTimer() { Touch(); }
 	RageTimer(int64_t secs, int64_t us) : m_time(secs, us) {}
 
-	/* Getter and setter for seconds (m_time.first) */
+	// Getters
 	inline int64_t GetSecs() const { return m_time.first; }
-	inline void SetSecs(int64_t secs) { m_time.first = secs; }
-
-	/* Getter and setter for microseconds (m_time.second) */
 	inline int64_t GetUs() const { return m_time.second; }
+
+	// Setters
+	inline void SetSecs(int64_t secs) { m_time.first = secs; }
 	inline void SetUs(int64_t us) { m_time.second = us; }
 
-	/* Time ago this RageTimer represents. */
+	// Time ago this RageTimer represents
 	float Ago() const;
 	void Touch();
 	inline bool IsZero() const { return m_time.first == 0 && m_time.second == 0; }
 	inline void SetZero() { m_time = { 0, 0 }; }
 
-	/* Time between last call to GetDeltaTime() (Ago() + Touch()): */
+	// Time between last call to GetDeltaTime() (Ago() + Touch())
 	float GetDeltaTime();
 
-	static double GetTimeSinceStart();	// seconds since the program was started
-	static int GetTimeSinceStartSeconds(); 	// This is used where GetTimeSinceStart would be cast to an int without rounding.
+	// Seconds since the program was started
+	static double GetTimeSinceStart();
+
+	// This is used where GetTimeSinceStart would be cast to an int without rounding
+	static int GetTimeSinceStartSeconds();
 	static uint64_t GetTimeSinceStartMicroseconds();
 
-	/* Get a timer representing half of the time ago as this one. */
+	// Get a timer representing half of the time ago as this one
 	RageTimer Half() const;
 
-	/* Add (or subtract) a duration from a timestamp.  The result is another timestamp. */
-	RageTimer operator+( float tm ) const;
-	RageTimer operator-( float tm ) const { return *this + -tm; }
-	void operator+=( float tm ) { *this = *this + tm; }
-	void operator-=( float tm ) { *this = *this + -tm; }
+	// Add (or subtract) a duration from a timestamp. The result is another timestamp
+	RageTimer operator+(float tm) const;
+	RageTimer operator-(float tm) const { return *this + -tm; }
+	void operator+=(float tm) { *this = *this + tm; }
+	void operator-=(float tm) { *this = *this + -tm; }
 
-	/* Find the amount of time between two timestamps.  The result is a duration. */
-	float operator-( const RageTimer &rhs ) const;
+	// Find the amount of time between two timestamps. The result is a duration
+	float operator-(const RageTimer& rhs) const;
+	bool operator<(const RageTimer& rhs) const;
 
-	bool operator<( const RageTimer &rhs ) const;
 private:
-	RageTimerPair m_time; // direct access disallowed - use getter/setter if needed
+	RageTimerPair m_time;
 };
 
 extern const RageTimer RageZeroTimer;
