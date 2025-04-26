@@ -17,6 +17,14 @@ public:
 	RageTimer() {Touch();}
 	RageTimer(int64_t secs, int64_t us) : m_time(secs, us) {}
 
+	/* Getter and Setter for seconds (m_time.first) */
+	inline int64_t GetSecs() const { return m_time.first; }
+	inline void SetSecs(int64_t secs) { m_time.first = secs; }
+
+	/* Getter and Setter for microseconds (m_time.second) */
+	inline int64_t GetUs() const { return m_time.second; }
+	inline void SetUs(int64_t us) { m_time.second = us; }
+
 	/* Time ago this RageTimer represents. */
 	float Ago() const;
 	void Touch();
