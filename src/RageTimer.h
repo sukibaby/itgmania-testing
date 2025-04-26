@@ -55,7 +55,6 @@ private:
 	RageTimerPair m_time; // direct access disallowed - use getter/setter if needed
 
 	static RageTimer Sum( const RageTimer &lhs, float tm );
-	static double Difference( const RageTimer &lhs, const RageTimer &rhs );
 };
 
 extern const RageTimer RageZeroTimer;

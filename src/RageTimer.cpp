@@ -77,14 +77,16 @@ void RageTimer::Touch()
 
 float RageTimer::Ago() const
 {
-	const RageTimer Now;
+	uint64_t usecs = GetTime();
+	RageTimer Now(usecs / ONE_SECOND_IN_MICROSECONDS_ULL, usecs % ONE_SECOND_IN_MICROSECONDS_ULL);
 	return Now - *this;
 }
 
 float RageTimer::GetDeltaTime()
 {
-	const RageTimer Now;
-	const float diff = Difference( Now, *this );
+	uint64_t usecs = GetTime();
+	RageTimer Now(usecs / ONE_SECOND_IN_MICROSECONDS_ULL, usecs % ONE_SECOND_IN_MICROSECONDS_ULL);
+	const float diff = Now - *this;
 	*this = Now;
 	return diff;
 }
@@ -111,7 +113,20 @@ RageTimer RageTimer::operator+(float tm) const
 
 float RageTimer::operator-(const RageTimer &rhs) const
 {
-	return Difference(*this, rhs);
+	// Calculate the difference in seconds and microseconds respectively
+	int64_t secs = m_time.first - rhs.m_time.first; // m_secs
+	int64_t us = m_time.second - rhs.m_time.second; // m_us
+
+	// Adjust seconds and microseconds if microseconds is negative
+	if (us < 0)
+	{
+		us += ONE_SECOND_IN_MICROSECONDS_LL;
+		--secs;
+	}
+
+	// Calculate the difference as a double to preserve the fractional part
+	double ret = static_cast<double>(secs) + static_cast<double>(us) / ONE_SECOND_IN_MICROSECONDS_DBL;
+	return static_cast<float>(ret);
 }
 
 bool RageTimer::operator<( const RageTimer &rhs ) const
@@ -145,23 +160,6 @@ RageTimer RageTimer::Sum(const RageTimer& lhs, float tm)
 	}
 
 	return ret;
-}
-
-double RageTimer::Difference(const RageTimer& lhs, const RageTimer& rhs)
-{
-	// Calculate the difference in seconds and microseconds respectively
-	int64_t secs = lhs.m_time.first - rhs.m_time.first; // m_secs
-	int64_t us = lhs.m_time.second - rhs.m_time.second; // m_us
-
-	// Adjust seconds and microseconds if microseconds is negative
-	if ( us < 0 )
-	{
-		us += ONE_SECOND_IN_MICROSECONDS_LL;
-		--secs;
-	}
-
-	// Return the difference as a double to preserve the fractional part
-	return static_cast<double>(secs) + static_cast<double>(us) / ONE_SECOND_IN_MICROSECONDS_DBL;
 }
 
 #include "LuaManager.h"
