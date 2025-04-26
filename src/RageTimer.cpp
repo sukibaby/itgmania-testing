@@ -22,8 +22,6 @@
 #include "global.h"
 
 #include "RageTimer.h"
-#include "RageLog.h"
-#include "RageUtil.h"
 
 #include "arch/ArchHooks/ArchHooks.h"
 
@@ -37,7 +35,7 @@ constexpr double ONE_SECOND_IN_MICROSECONDS_DBL = 1000000.0;
 const RageTimer RageZeroTimer(0,0);
 static const uint64_t g_iStartTime = ArchHooks::GetSystemTimeInMicroseconds();
 
-static inline uint64_t GetTime() noexcept
+static uint64_t GetTime() noexcept
 {
 	return ArchHooks::GetSystemTimeInMicroseconds();
 }
