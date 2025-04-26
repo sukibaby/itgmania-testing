@@ -597,7 +597,7 @@ bool RageDisplay_D3D::BeginFrame()
 	return RageDisplay::BeginFrame();
 }
 
-static RageTimer g_LastFrameEndedAt( RageZeroTimer );
+static RageTimer g_LastFrameEndedAt(0, 0);
 void RageDisplay_D3D::EndFrame()
 {
 	g_pd3dDevice->EndScene();

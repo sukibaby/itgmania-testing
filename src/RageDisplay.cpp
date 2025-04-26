@@ -34,7 +34,7 @@ static int g_iFramesRenderedSinceLastCheck,
 	   g_iFramesRenderedSinceLastReset,
 	   g_iVertsRenderedSinceLastCheck,
 	   g_iNumChecksSinceLastReset;
-static RageTimer g_LastFrameEndedAt( RageZeroTimer );
+static RageTimer g_LastFrameEndedAt(0, 0);
 
 struct Centering
 {

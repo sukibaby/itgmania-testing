@@ -42,7 +42,7 @@
 RageSoundParams::RageSoundParams():
 	m_StartSecond(0), m_LengthSeconds(-1), m_fFadeInSeconds(0),
 	m_fFadeOutSeconds(0), m_Volume(1.0f), m_fAttractVolume(1.0f),
-	m_fPitch(1.0f), m_fSpeed(1.0f), m_StartTime( RageZeroTimer ),
+	m_fPitch(1.0f), m_fSpeed(1.0f), m_StartTime(0, 0),
 	StopMode(M_AUTO), m_bIsCriticalSound(false) {}
 
 RageSoundLoadParams::RageSoundLoadParams():

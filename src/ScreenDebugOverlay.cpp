@@ -37,7 +37,7 @@
 static bool g_bIsDisplayed = false;
 static bool g_bIsSlow = false;
 static bool g_bIsHalt = false;
-static RageTimer g_HaltTimer(RageZeroTimer);
+static RageTimer g_HaltTimer(0, 0);
 static float g_fImageScaleCurrent = 1;
 static float g_fImageScaleDestination = 1;
 

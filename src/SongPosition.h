@@ -54,6 +54,7 @@ public:
 		m_fWarpDestination = -1; // Set when a warp is encountered. also see above. -aj
 		m_fMusicSecondsVisible = 0;
 		m_fSongBeatVisible = 0;
+		m_LastBeatUpdate.SetZero();
 	}
 	
 	void UpdateSongPosition(
