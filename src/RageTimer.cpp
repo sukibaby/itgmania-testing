@@ -107,7 +107,7 @@ float RageTimer::Ago() const noexcept
 	int64_t secs = currentSecs - m_time.first;
 	int64_t us = currentUs - m_time.second;
 
-	// Adjust for negative microseconds
+	// Adjust the seconds and microseconds if microseconds is greater than or equal to one second
 	if (us < 0)
 	{
 		us += kUsecsPerSecLL;
@@ -127,7 +127,7 @@ float RageTimer::GetDeltaTime() noexcept
 	int64_t secs = currentSecs - m_time.first;
 	int64_t us = currentUs - m_time.second;
 
-	// Adjust for negative microseconds
+	// Adjust the seconds and microseconds if microseconds is greater than or equal to one second
 	if (us < 0)
 	{
 		us += kUsecsPerSecLL;
@@ -182,9 +182,11 @@ RageTimer RageTimer::operator+(float tm) const noexcept
 // and adjust the seconds and microseconds if microseconds is negative
 float RageTimer::operator-(const RageTimer &rhs) const noexcept
 {
-	int64_t secs = m_time.first - rhs.m_time.first; // m_secs
-	int64_t us = m_time.second - rhs.m_time.second; // m_us
+	// Prepare the time in a RageTimer object-compatible format
+	int64_t secs = m_time.first - rhs.m_time.first;
+	int64_t us = m_time.second - rhs.m_time.second;
 
+	// Adjust the seconds and microseconds if microseconds is greater than or equal to one second
 	if (us < 0)
 	{
 		us += kUsecsPerSecLL;
