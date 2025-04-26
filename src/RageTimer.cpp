@@ -105,10 +105,29 @@ RageTimer RageTimer::Half() const
 	return *this + fProbableDelay;
 }
 
-
 RageTimer RageTimer::operator+(float tm) const
 {
-	return Sum(*this, tm);
+	/* Calculate the seconds and microseconds from the time:
+	 * tm == 5.25  -> secs =  5, us = 5.25  - ( 5) = .25
+	 * tm == -1.25 -> secs = -2, us = -1.25 - (-2) = .75 */
+	int64_t seconds = std::floor(tm);
+	int64_t us = static_cast<int64_t>((tm - seconds) * ONE_SECOND_IN_MICROSECONDS_LL);
+
+	// Prevent unnecessarily checking the time
+	RageTimer ret(0, 0);
+
+	// Calculate the sum of the seconds and microseconds
+	ret.m_time.first = seconds + m_time.first; // m_secs
+	ret.m_time.second = us + m_time.second; // m_us
+
+	// Adjust the seconds and microseconds if microseconds is greater than or equal to TIMESTAMP_RESOLUTION
+	if (ret.m_time.second >= ONE_SECOND_IN_MICROSECONDS_LL)
+	{
+		ret.m_time.second -= ONE_SECOND_IN_MICROSECONDS_LL;
+		++ret.m_time.first;
+	}
+
+	return ret;
 }
 
 float RageTimer::operator-(const RageTimer &rhs) const
@@ -135,31 +154,6 @@ bool RageTimer::operator<( const RageTimer &rhs ) const
 		return m_time.first < rhs.m_time.first;
 	}
 	return m_time.second < rhs.m_time.second;
-}
-
-RageTimer RageTimer::Sum(const RageTimer& lhs, float tm)
-{
-	/* Calculate the seconds and microseconds from the time:
-	 * tm == 5.25  -> secs =  5, us = 5.25  - ( 5) = .25
-	 * tm == -1.25 -> secs = -2, us = -1.25 - (-2) = .75 */
-	int64_t seconds = std::floor(tm);
-	int64_t us = static_cast<int64_t>((tm - seconds) * ONE_SECOND_IN_MICROSECONDS_LL);
-
-	// Prevent unnecessarily checking the time
-	RageTimer ret(0, 0);
-
-	// Calculate the sum of the seconds and microseconds
-	ret.m_time.first = seconds + lhs.m_time.first; // m_secs
-	ret.m_time.second = us + lhs.m_time.second; // m_us
-
-	// Adjust the seconds and microseconds if microseconds is greater than or equal to TIMESTAMP_RESOLUTION
-	if (ret.m_time.second >= ONE_SECOND_IN_MICROSECONDS_LL)
-	{
-		ret.m_time.second -= ONE_SECOND_IN_MICROSECONDS_LL;
-		++ret.m_time.first;
-	}
-
-	return ret;
 }
 
 #include "LuaManager.h"

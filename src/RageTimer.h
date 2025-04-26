@@ -53,8 +53,6 @@ public:
 	bool operator<( const RageTimer &rhs ) const;
 private:
 	RageTimerPair m_time; // direct access disallowed - use getter/setter if needed
-
-	static RageTimer Sum( const RageTimer &lhs, float tm );
 };
 
 extern const RageTimer RageZeroTimer;
