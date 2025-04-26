@@ -25,6 +25,10 @@ public:
 	inline int64_t GetUs() const { return m_time.second; }
 	inline void SetUs(int64_t us) { m_time.second = us; }
 
+	// what the heck is this?
+	// it rules thats what it is
+	std::pair<int64_t, int64_t> MakeTemporaryRageTimer() const;
+
 	/* Time ago this RageTimer represents. */
 	float Ago() const;
 	void Touch();

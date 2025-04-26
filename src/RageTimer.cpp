@@ -42,6 +42,30 @@ static inline uint64_t GetTime() noexcept
 	return ArchHooks::GetSystemTimeInMicroseconds();
 }
 
+// Generate a temporary RageTimer object.
+std::pair<int64_t, int64_t> RageTimer::MakeTemporaryRageTimer() const
+{
+	// Get the current time in microseconds
+	uint64_t usecs = GetTime();
+
+	// Split the time into RageTimer object format
+	int64_t currentSecs = usecs / ONE_SECOND_IN_MICROSECONDS_ULL;
+	int64_t currentUs = usecs % ONE_SECOND_IN_MICROSECONDS_ULL;
+
+	// Calculate the difference in seconds and microseconds
+	int64_t secs = currentSecs - m_time.first;
+	int64_t us = currentUs - m_time.second;
+
+	// Adjust for negative microseconds
+	if (us < 0) {
+		us += ONE_SECOND_IN_MICROSECONDS_LL;
+		--secs;
+	}
+
+	// Return the difference in the same format as m_time.
+	return { secs, us };
+}
+
 /* The accuracy of RageTimer::GetTimeSinceStart() is directly tied to the
  * stability of the clock sync. Maintaining precision here is crucial. Too
  * much error here will manifest as a drastic shift in the game's sync, and
@@ -77,20 +101,8 @@ void RageTimer::Touch()
 
 float RageTimer::Ago() const
 {
-	uint64_t usecs = GetTime();
-	int64_t currentSecs = usecs / ONE_SECOND_IN_MICROSECONDS_ULL;
-	int64_t currentUs = usecs % ONE_SECOND_IN_MICROSECONDS_ULL;
-
-	// Calculate the difference in seconds and microseconds
-	int64_t secs = currentSecs - m_time.first;
-	int64_t us = currentUs - m_time.second;
-
-	// Adjust for negative microseconds
-	if (us < 0)
-	{
-		us += ONE_SECOND_IN_MICROSECONDS_LL;
-		--secs;
-	}
+	// Make a temporary RageTimer-compatible pair.
+	std::pair<int64_t,int64_t> [secs, us] = MakeTemporaryRageTimer();
 
 	// Return the difference as a float, but calculate
 	// it as a double to preserve the fractional part.
@@ -100,24 +112,13 @@ float RageTimer::Ago() const
 
 float RageTimer::GetDeltaTime()
 {
-	uint64_t usecs = GetTime();
-	int64_t currentSecs = usecs / ONE_SECOND_IN_MICROSECONDS_ULL;
-	int64_t currentUs = usecs % ONE_SECOND_IN_MICROSECONDS_ULL;
-
-	// Calculate the difference in seconds and microseconds
-	int64_t secs = currentSecs - m_time.first;
-	int64_t us = currentUs - m_time.second;
-
-	// Adjust for negative microseconds
-	if (us < 0)
-	{
-		us += ONE_SECOND_IN_MICROSECONDS_LL;
-		--secs;
-	}
+	// Make a temporary RageTimer-compatible pair.
+	std::pair<int64_t, int64_t>[secs, us] = MakeTemporaryRageTimer();
 
 	// Update the stored time
-	m_time.first = currentSecs;
-	m_time.second = currentUs;
+	uint64_t usecs = GetTime();
+	m_time.first = usecs / ONE_SECOND_IN_MICROSECONDS_ULL;
+	m_time.second = usecs % ONE_SECOND_IN_MICROSECONDS_ULL;
 
 	// Return the difference as a float, but calculate
 	// it as a double to preserve the fractional part.
