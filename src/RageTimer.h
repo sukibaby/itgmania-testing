@@ -14,7 +14,7 @@ public:
 	using RageTimerPair = std::pair<int64_t, int64_t>;
 
 	/* Default & parameterized constructors */
-	RageTimer() {Touch();}
+	RageTimer() { Touch(); }
 	RageTimer(int64_t secs, int64_t us) : m_time(secs, us) {}
 
 	/* Getters to protect encapsulation */
