@@ -149,21 +149,18 @@ RageTimer RageTimer::operator+(float tm) const noexcept
 	int64_t seconds = std::floor(tm);
 	int64_t us = static_cast<int64_t>((tm - seconds) * ONE_SECOND_IN_MICROSECONDS_LL);
 
-	// Prevent unnecessarily checking the time
-	RageTimer ret(0, 0);
-
-	// Calculate the sum of the seconds and microseconds
-	ret.m_time.first = seconds + m_time.first; // m_secs
-	ret.m_time.second = us + m_time.second; // m_us
+	// Avoid creating a RageTimer until we have the final result
+	int64_t newSecs = m_time.first + seconds;
+	int64_t newUs = m_time.second + us;
 
 	// Adjust the seconds and microseconds if microseconds is greater than or equal to one second
-	if (ret.m_time.second >= ONE_SECOND_IN_MICROSECONDS_LL)
+	if (newUs >= ONE_SECOND_IN_MICROSECONDS_LL)
 	{
-		ret.m_time.second -= ONE_SECOND_IN_MICROSECONDS_LL;
-		++ret.m_time.first;
+		newUs -= ONE_SECOND_IN_MICROSECONDS_LL;
+		++newSecs;
 	}
 
-	return ret;
+	return RageTimer(newSecs, newUs);
 }
 
 // Calculate the difference in seconds and microseconds respectively
