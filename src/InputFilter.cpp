@@ -176,10 +176,11 @@ void InputFilter::ResetRepeatRate()
 	SetRepeatDelay( TIME_BEFORE_REPEATS );
 }
 
-ButtonState::ButtonState():
-	m_BeingHeldTime(RageZeroTimer),
-	m_LastReportTime(RageZeroTimer)
+ButtonState::ButtonState()
 {
+	m_BeingHeldTime.SetZero();
+	m_LastReportTime.SetZero();
+
 	m_BeingHeld = false;
 	m_bLastReportedHeld = false;
 	m_fSecsHeld = 0;

@@ -63,9 +63,9 @@ static bool g_bCDTitleWaiting = false;
 static RString g_sBannerPath;
 static bool g_bBannerWaiting = false;
 static bool g_bSampleMusicWaiting = false;
-static RageTimer g_StartedLoadingAt(RageZeroTimer);
-static RageTimer g_ScreenStartedLoadingAt(RageZeroTimer);
-RageTimer g_CanOpenOptionsList(RageZeroTimer);
+static RageTimer g_StartedLoadingAt(0, 0);
+static RageTimer g_ScreenStartedLoadingAt(0, 0);
+RageTimer g_CanOpenOptionsList(0, 0);
 
 static LocalizedString PERMANENTLY_DELETE("ScreenSelectMusic", "PermanentlyDelete");
 
