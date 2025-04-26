@@ -47,6 +47,7 @@
 constexpr uint64_t ONE_SECOND_IN_MICROSECONDS_ULL = 1000000ULL;
 constexpr int64_t ONE_SECOND_IN_MICROSECONDS_LL = 1000000LL;
 constexpr double ONE_SECOND_IN_MICROSECONDS_DBL = 1000000.0;
+constexpr float FLOAT_MICROSECONDS_RATIO = 0.000001f;
 const RageTimer RageZeroTimer(0,0);
 static const uint64_t g_iStartTime = ArchHooks::GetSystemTimeInMicroseconds();
 
@@ -104,7 +105,7 @@ float RageTimer::Ago() const noexcept
 		--secs;
 	}
 
-	return static_cast<float>(secs) + static_cast<float>(us) / ONE_SECOND_IN_MICROSECONDS_DBL;
+	return static_cast<float>(secs) + static_cast<float>(us) * FLOAT_MICROSECONDS_RATIO;
 }
 
 // GetDeltaTime() returns the time since the last call to GetDeltaTime(), but also updates the stored time.
@@ -129,7 +130,7 @@ float RageTimer::GetDeltaTime() noexcept
 	m_time.first = currentSecs;
 	m_time.second = currentUs;
 
-	return static_cast<float>(secs) + static_cast<float>(us) / ONE_SECOND_IN_MICROSECONDS_DBL;
+	return static_cast<float>(secs) + static_cast<float>(us) * FLOAT_MICROSECONDS_RATIO;
 }
 
 /* Get a timer representing half of the time ago as this one.  This is	
