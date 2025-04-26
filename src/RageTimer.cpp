@@ -31,7 +31,9 @@
 ///
 /// DO NOT CHANGE THIS FILE WITHOUT DOING EXTENSIVE TESTING!
 /// Very minor changes here can have effects which can cascade
-///  quickly, causing major problems. This code is highly optimized.
+///  quickly, causing major problems. This code is highly optimized,
+///  and a majority of the engine depends on RageTimer working in
+///  a very specific and predictable way.
 ///
 /// Too much error will manifest as a drastic shift in the game's
 ///  sync, and will feel like the global offset suddenly changed.
