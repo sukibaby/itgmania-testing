@@ -165,7 +165,7 @@ double RageTimer::Difference(const RageTimer& lhs, const RageTimer& rhs)
 }
 
 #include "LuaManager.h"
-LuaFunction(GetTimeSinceStart, RageTimer::GetTimeSinceStartFast())
+LuaFunction(GetTimeSinceStart, RageTimer::GetTimeSinceStart())
 
 /*
  * Copyright (c) 2001-2003 Chris Danford, Glenn Maynard
