@@ -29,8 +29,13 @@ else()
     set(SM_VERSION_GIT
         "${SM_VERSION_MAJOR}.${SM_VERSION_MINOR}.${SM_VERSION_PATCH}")
   else()
-    set(SM_VERSION_GIT
-        "${SM_VERSION_MAJOR}.${SM_VERSION_MINOR}.${SM_VERSION_PATCH}-git-${SM_VERSION_GIT_HASH}")
+    if(WITH_BETA_RELEASE)
+      set(SM_VERSION_GIT
+        "${SM_VERSION_MAJOR}.${SM_VERSION_MINOR}.${SM_VERSION_PATCH}-git-${SM_VERSION_GIT_HASH}-BETA")
+    else()
+      set(SM_VERSION_GIT
+          "${SM_VERSION_MAJOR}.${SM_VERSION_MINOR}.${SM_VERSION_PATCH}-git-${SM_VERSION_GIT_HASH}")
+    endif()
   endif()
 endif()
 
