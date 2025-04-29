@@ -14,8 +14,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: recursive
-
-      - name: Cache Git submodules
+      - name: Cache submodules
         uses: actions/cache@v4
         with:
           path: |
@@ -23,12 +22,10 @@ jobs:
           key: ${{ runner.os }}-git-modules-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-git-modules-
-
       - name: Initialize submodules
         run: |
           git submodule sync
           git submodule update --init --recursive
-
       - name: Cache CMake build directory
         uses: actions/cache@v4
         with:
@@ -64,8 +61,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: recursive
-
-      - name: Cache Git submodules
+      - name: Cache submodules
         uses: actions/cache@v4
         with:
           path: |
@@ -73,12 +69,10 @@ jobs:
           key: ${{ runner.os }}-git-modules-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-git-modules-
-
       - name: Initialize submodules
         run: |
           git submodule sync
           git submodule update --init --recursive
-
       - name: Cache CMake build directory
         uses: actions/cache@v4
         with:
@@ -114,8 +108,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: recursive
-
-      - name: Cache Git submodules
+      - name: Cache submodules
         uses: actions/cache@v4
         with:
           path: |
@@ -123,12 +116,10 @@ jobs:
           key: ${{ runner.os }}-git-modules-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-git-modules-
-
       - name: Initialize submodules
         run: |
           git submodule sync
           git submodule update --init --recursive
-
       - name: Cache CMake build directory
         uses: actions/cache@v4
         with:
@@ -152,8 +143,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: recursive
-
-      - name: Cache Git submodules
+      - name: Cache submodules
         uses: actions/cache@v4
         with:
           path: |
@@ -161,12 +151,10 @@ jobs:
           key: ${{ runner.os }}-git-modules-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-git-modules-
-
       - name: Initialize submodules
         run: |
           git submodule sync
           git submodule update --init --recursive
-
       - name: Cache CMake build directory
         uses: actions/cache@v4
         with:
@@ -190,8 +178,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: recursive
-
-      - name: Cache Git submodules
+      - name: Cache submodules
         uses: actions/cache@v4
         with:
           path: |
@@ -199,12 +186,10 @@ jobs:
           key: ${{ runner.os }}-git-modules-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-git-modules-
-
       - name: Initialize submodules
         run: |
           git submodule sync
           git submodule update --init --recursive
-
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v2
       - name: Set up Visual Studio environment
