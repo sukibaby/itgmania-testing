@@ -1018,7 +1018,10 @@ RString StepMania::SaveScreenshot( RString Dir, bool SaveCompressed, bool MakeSi
 	 * index. This was causing naming issues for some unknown reason, so we have
 	 * changed the screenshot names to a non-blocking format: date and time.
 	 * As before, we ignore the extension. -aj */
-	RString FileNameNoExtension = NamePrefix + DateTime::GetNowDateTime().GetString() + NameSuffix;
+	RString FileNameNoExtension = NamePrefix + DateTime::GetNowDateTime().GetString();
+	if (!NameSuffix.empty()) {
+		FileNameNoExtension += NameSuffix;
+	}
 	// replace space with underscore.
 	FileNameNoExtension.Replace(" ","_");
 	// colons are illegal in filenames.
