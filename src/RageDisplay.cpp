@@ -769,10 +769,8 @@ void RageDisplay::UpdateCentering()
 
 bool RageDisplay::SaveScreenshot( RString sPath, GraphicsFileFormat format )
 {
-	RageTimer timer;
 	RageSurface *surface = this->CreateScreenshot();
-//	LOG->Trace( "CreateScreenshot took %f seconds", timer.GetDeltaTime() );
-
+	
 	if (nullptr == surface)
 	{
 		LOG->Trace("CreateScreenshot failed to return a surface");
@@ -790,9 +788,7 @@ bool RageDisplay::SaveScreenshot( RString sPath, GraphicsFileFormat format )
 		// This used to be lrint. However, lrint causes odd resolutions like
 		// 639x480 (4:3) and 853x480 (16:9). ceil gives correct values. -aj
 		int iWidth = std::ceil( iHeight * GetActualVideoModeParams().fDisplayAspectRatio );
-		timer.Touch();
 		RageSurfaceUtils::Zoom( surface, iWidth, iHeight );
-//		LOG->Trace( "%ix%i -> %ix%i (%.3f) in %f seconds", surface->w, surface->h, iWidth, iHeight, GetActualVideoModeParams().fDisplayAspectRatio, timer.GetDeltaTime() );
 	}
 
 	RageFile out;
@@ -804,7 +800,6 @@ bool RageDisplay::SaveScreenshot( RString sPath, GraphicsFileFormat format )
 	}
 
 	bool bSuccess = false;
-	timer.Touch();
 	RString strError = "";
 	switch( format )
 	{
@@ -822,7 +817,6 @@ bool RageDisplay::SaveScreenshot( RString sPath, GraphicsFileFormat format )
 		break;
 	DEFAULT_FAIL( format );
 	}
-//	LOG->Trace( "Saving Screenshot file took %f seconds.", timer.GetDeltaTime() );
 
 	RageUtil::SafeDelete( surface );
 
