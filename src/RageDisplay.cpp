@@ -829,10 +829,9 @@ bool RageDisplay::SaveScreenshot( RString sPath, GraphicsFileFormat format )
 	if( !bSuccess )
 	{
 		LOG->Trace("Couldn't write %s: %s", sPath.c_str(), out.GetError().c_str() );
-		return false;
 	}
 
-	return true;
+	return bSuccess;
 }
 
 void RageDisplay::DrawQuads( const RageSpriteVertex v[], int iNumVerts )
