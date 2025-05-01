@@ -828,7 +828,7 @@ bool RageDisplay::SaveScreenshot( RString sPath, GraphicsFileFormat format )
 
 	if( !bSuccess )
 	{
-		LOG->Trace("Couldn't write %s: %s", sPath.c_str(), out.GetError().c_str() );
+		LOG->Warn("SaveScreenshot: Failed to save screenshot to %s: %s", sPath.c_str(), out.GetError().c_str() );
 	}
 
 	return bSuccess;
