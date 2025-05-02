@@ -1,59 +1,106 @@
-on:
-  push:
+'on':
+  push: null
   pull_request:
     branches:
       - beta
     paths-ignore:
       - '**.md'
-
 name: Nightly release
-
 jobs:
   build:
-    runs-on: ${{ matrix.os }}
+    runs-on: '${{ matrix.os }}'
     strategy:
       matrix:
-        os: [ubuntu-latest, ubuntu-24.04-arm, macos-latest, windows-latest] # TODO: macos-13
+        os:
+          - ubuntu-latest
+          - ubuntu-24.04-arm
+          - macos-latest
+          - windows-latest
         include:
           - os: ubuntu-latest
             name: Ubuntu x86_64
             arch: x86_64
-            install: sudo apt-get update && sudo apt-get install -y libasound2-dev libgl-dev libglu1-mesa-dev libgtk-3-dev libjack-dev libmad0-dev libpulse-dev libudev-dev libxinerama-dev libx11-dev libxrandr-dev libxtst-dev nasm
+            install: >-
+              sudo apt-get update && sudo apt-get install -y libasound2-dev
+              libgl-dev libglu1-mesa-dev libgtk-3-dev libjack-dev libmad0-dev
+              libpulse-dev libudev-dev libxinerama-dev libx11-dev libxrandr-dev
+              libxtst-dev nasm
             configure: cmake -B build -DWITH_FFMPEG_JOBS="$(nproc)"
-            release: |
-              cmake -B build -DCMAKE_BUILD_TYPE=Release -DWITH_FULL_RELEASE=Off -DWITH_NIGHTLY_RELEASE=On -DWITH_CLUB_FANTASTIC=Off
+            release: >
+              cmake -B build -DCMAKE_BUILD_TYPE=Release -DWITH_FULL_RELEASE=Off
+              -DWITH_NIGHTLY_RELEASE=On -DWITH_CLUB_FANTASTIC=Off
+
               cmake --build build --target package
             path: build/ITGmania-*-NIGHTLY-git-*-Linux-no-songs.tar.gz
           - os: ubuntu-24.04-arm
             name: Ubuntu ARM
             arch: arm
-            install: sudo apt-get update && sudo apt-get install -y libasound2-dev libgl-dev libglu1-mesa-dev libgtk-3-dev libjack-dev libmad0-dev libpulse-dev libudev-dev libxinerama-dev libx11-dev libxrandr-dev libxtst-dev nasm
+            install: >-
+              sudo apt-get update && sudo apt-get install -y libasound2-dev
+              libgl-dev libglu1-mesa-dev libgtk-3-dev libjack-dev libmad0-dev
+              libpulse-dev libudev-dev libxinerama-dev libx11-dev libxrandr-dev
+              libxtst-dev nasm
             configure: cmake -B build -DWITH_FFMPEG_JOBS="$(nproc)" -DWITH_MINIMAID=OFF
-            release: |
-              cmake -B build -DCMAKE_BUILD_TYPE=Release -DWITH_FULL_RELEASE=Off -DWITH_NIGHTLY_RELEASE=On -DWITH_CLUB_FANTASTIC=Off
+            release: >
+              cmake -B build -DCMAKE_BUILD_TYPE=Release -DWITH_FULL_RELEASE=Off
+              -DWITH_NIGHTLY_RELEASE=On -DWITH_CLUB_FANTASTIC=Off
+
               cmake --build build --target package
             path: build/ITGmania-*-NIGHTLY-git-*-Linux-no-songs.tar.gz
           - os: macos-latest
             name: macOS (M1)
             arch: arm64
             install: brew install nasm
-            configure: cmake -B build -DCMAKE_OSX_ARCHITECTURES=arm64 -DWITH_FFMPEG_JOBS="$(sysctl -n hw.logicalcpu)"
-            release: |
-              cmake -B build -DCMAKE_BUILD_TYPE=Release -DWITH_FULL_RELEASE=Off -DWITH_NIGHTLY_RELEASE=On -DCMAKE_OSX_ARCHITECTURES=arm64 -DWITH_CLUB_FANTASTIC=Off
+            configure: >-
+              cmake -B build -DCMAKE_OSX_ARCHITECTURES=arm64
+              -DWITH_FFMPEG_JOBS="$(sysctl -n hw.logicalcpu)"
+            release: >
+              cmake -B build -DCMAKE_BUILD_TYPE=Release -DWITH_FULL_RELEASE=Off
+              -DWITH_NIGHTLY_RELEASE=On -DCMAKE_OSX_ARCHITECTURES=arm64
+              -DWITH_CLUB_FANTASTIC=Off
+
               cmake --build build --target package
             path: build/ITGmania-*-NIGHTLY-git-*-macOS-M1-no-songs.dmg
+          - os: macos-13
+            name: macOS (Intel)
+            arch: x86_64
+            install: brew install nasm
+            configure: >-
+              cmake -B build -DCMAKE_OSX_ARCHITECTURES=x86_64
+              -DWITH_FFMPEG_JOBS="$(sysctl -n hw.logicalcpu)"
+            release: >
+              hdiutil_retry() {
+                local i=0
+                while ! hdiutil "$@"; do
+                  ((i++))
+                  if [ $i -ge 10 ]; then return 1; fi
+                  sleep 1
+                done
+              } cmake -B Build/release-x86_64 -DCMAKE_BUILD_TYPE=Release
+              -DWITH_FULL_RELEASE=Off -DWITH_BETA_RELEASE=On
+              -DCMAKE_OSX_ARCHITECTURES=x86_64 -DWITH_CLUB_FANTASTIC=Off cmake
+              --build Build/release-x86_64 --target package hdiutil_retry create
+              -volname "ITGmania" -srcfolder Build/release-x86_64 -ov -format
+              UDZO
+              Build/release-x86_64/ITGmania-*-git-*-BETA-macOS-Intel-no-songs.dmg
           - os: windows-latest
             name: Windows
             arch: x64
-            install: |
-              $vsPath = &"C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
+            install: >
+              $vsPath = &"C:\Program Files (x86)\Microsoft Visual
+              Studio\Installer\vswhere.exe" -latest -products * -requires
+              Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property
+              installationPath
+
               &"$vsPath\VC\Auxiliary\Build\vcvarsall.bat" x64
-            configure: cmake -B build -DWITH_FFMPEG_JOBS="$env:NUMBER_OF_PROCESSORS"
-            release: |
-              cmake -B build -DWITH_FULL_RELEASE=Off -DWITH_NIGHTLY_RELEASE=On -DWITH_CLUB_FANTASTIC=Off
+            configure: 'cmake -B build -DWITH_FFMPEG_JOBS="$env:NUMBER_OF_PROCESSORS"'
+            release: >
+              cmake -B build -DWITH_FULL_RELEASE=Off -DWITH_NIGHTLY_RELEASE=On
+              -DWITH_CLUB_FANTASTIC=Off
+
               cmake --build build --config Release --target package
             path: build/ITGmania-*-NIGHTLY-git-*-Windows-no-songs.exe
-    name: ${{ matrix.name }}
+    name: '${{ matrix.name }}'
     steps:
       - uses: actions/checkout@v4
         with:
@@ -64,18 +111,20 @@ jobs:
           path: |
             build/*
             !${{ matrix.path }}
-          key: ${{ runner.os }}-${{ matrix.arch }}-cmake-build-${{ hashFiles('**/CMakeLists.txt', '**/*.cmake') }}
+          key: >-
+            ${{ runner.os }}-${{ matrix.arch }}-cmake-build-${{
+            hashFiles('**/CMakeLists.txt', '**/*.cmake') }}
           restore-keys: |
             ${{ runner.os }}-${{ matrix.arch }}-cmake-build-
       - name: Install dependencies
-        run: ${{ matrix.install }}
+        run: '${{ matrix.install }}'
       - name: Configure
-        run: ${{ matrix.configure }}
+        run: '${{ matrix.configure }}'
       - name: Create nightly release
-        run: ${{ matrix.release }}
+        run: '${{ matrix.release }}'
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: ITGmania-${{ github.sha }}-${{ matrix.name }}-${{ matrix.arch }}
-          path: ${{ matrix.path }}
+          name: 'ITGmania-${{ github.sha }}-${{ matrix.name }}-${{ matrix.arch }}'
+          path: '${{ matrix.path }}'
           compression-level: 0
