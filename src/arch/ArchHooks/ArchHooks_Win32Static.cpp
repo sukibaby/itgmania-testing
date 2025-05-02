@@ -8,52 +8,43 @@
 
 #include <cstdint>
 #include <vector>
+#include <mutex> // for call_once
+
+#include <string>
 
 // for QueryPerformanceCounter
 #include <windows.h>
-#include <mmsystem.h>
+#include <mmsystem.h> // for timeBeginPeriod
 #if defined(_MSC_VER)
 #pragma comment(lib, "winmm.lib")
 #endif
-
-static bool g_bTimerInitialized;
 
 /* QueryPerformanceCounter variables below.
  * QueryPerformanceCounter and QueryPerformanceFrequency expect
  * a LARGE_INTEGER, which is a union. These functions store data
  * in the QuadPart of the LARGE_INTEGER, which is a 64-bit integer. */
-namespace {
-    LARGE_INTEGER g_liFrequency;
-    LARGE_INTEGER g_liCurrentTime;
-}  // namespace
+static std::once_flag g_timerInitFlag;
+static LARGE_INTEGER g_liFrequency;
 
-static void InitTimer()
-{
-	if( g_bTimerInitialized ) {
-		return;
-	}
-	
-	g_bTimerInitialized = true;
+static void InitTimer() {
+  // Set the thread scheduler to let us update every 1ms.
+  timeBeginPeriod(1);
 
-	// Set the thread scheduler to let us update every 1ms.
-	timeBeginPeriod(1);
-	
-	// Retrieve the number of ticks per second.
-	QueryPerformanceFrequency(&g_liFrequency);
+  // Retrieve the number of ticks per second.
+  QueryPerformanceFrequency(&g_liFrequency);
 }
 
-int64_t ArchHooks::GetSystemTimeInMicroseconds()
-{
-	// Make sure the timer is initialized.
-	if (!g_bTimerInitialized) {
-		InitTimer();
-	}
+int64_t ArchHooks::GetSystemTimeInMicroseconds() {
+  // Make sure the timer is initialized.
+  std::call_once(g_timerInitFlag, InitTimer);
 
-	// Get the current time.
-	QueryPerformanceCounter(&g_liCurrentTime);
+  // Get the current time.
+  LARGE_INTEGER liCurrentTime;
+  QueryPerformanceCounter(&liCurrentTime);
 
-	// Calculate the elapsed time in microseconds.
-	return (g_liCurrentTime.QuadPart * 1000000) / g_liFrequency.QuadPart;
+  // Calculate the elapsed time in microseconds.
+  return static_cast<int64_t>(
+      (liCurrentTime.QuadPart * 1000000) / g_liFrequency.QuadPart);
 }
 
 static RString GetMountDir( const RString &sDirOfExecutable )
@@ -108,110 +99,38 @@ void ArchHooks::MountUserFilesystems(const RString& sDirOfExecutable) {
 	MountDirectories(sAppDataDir);
 }
 
-static RString LangIdToString( LANGID l )
-{
-	switch( PRIMARYLANGID(l) )
-	{
-	case LANG_ARABIC: return "ar";
-	case LANG_BULGARIAN: return "bg";
-	case LANG_CATALAN: return "ca";
-	case LANG_CHINESE:
-	{
-		switch (SUBLANGID(l))
-		{
-		case SUBLANG_CHINESE_TRADITIONAL:
-		case SUBLANG_CHINESE_HONGKONG:
-		case SUBLANG_CHINESE_MACAU:
-			return "zh-Hant";
-		case SUBLANG_CHINESE_SIMPLIFIED:
-		case SUBLANG_CHINESE_SINGAPORE:
-			return "zh-Hans";
-		}
-	}
-	case LANG_CZECH: return "cs";
-	case LANG_DANISH: return "da";
-	case LANG_GERMAN: return "de";
-	case LANG_GREEK: return "el";
-	case LANG_SPANISH: return "es";
-	case LANG_FINNISH: return "fi";
-	case LANG_FRENCH: return "fr";
-	case LANG_HEBREW: return "iw";
-	case LANG_HUNGARIAN: return "hu";
-	case LANG_ICELANDIC: return "is";
-	case LANG_ITALIAN: return "it";
-	case LANG_JAPANESE: return "ja";
-	case LANG_KOREAN: return "ko";
-	case LANG_DUTCH: return "nl";
-	case LANG_NORWEGIAN: return "no";
-	case LANG_POLISH: return "pl";
-	case LANG_PORTUGUESE: return "pt";
-	case LANG_ROMANIAN: return "ro";
-	case LANG_RUSSIAN: return "ru";
-	case LANG_CROATIAN: return "hr";
-	// case LANG_SERBIAN: return "sr"; // same as LANG_CROATIAN?
-	case LANG_SLOVAK: return "sk";
-	case LANG_ALBANIAN: return "sq";
-	case LANG_SWEDISH: return "sv";
-	case LANG_THAI: return "th";
-	case LANG_TURKISH: return "tr";
-	case LANG_URDU: return "ur";
-	case LANG_INDONESIAN: return "in";
-	case LANG_UKRAINIAN: return "uk";
-	case LANG_SLOVENIAN: return "sl";
-	case LANG_ESTONIAN: return "et";
-	case LANG_LATVIAN: return "lv";
-	case LANG_LITHUANIAN: return "lt";
-	case LANG_VIETNAMESE: return "vi";
-	case LANG_ARMENIAN: return "hy";
-	case LANG_BASQUE: return "eu";
-	case LANG_MACEDONIAN: return "mk";
-	case LANG_AFRIKAANS: return "af";
-	case LANG_GEORGIAN: return "ka";
-	case LANG_FAEROESE: return "fo";
-	case LANG_HINDI: return "hi";
-	case LANG_MALAY: return "ms";
-	case LANG_KAZAK: return "kk";
-	case LANG_SWAHILI: return "sw";
-	case LANG_UZBEK: return "uz";
-	case LANG_TATAR: return "tt";
-	case LANG_PUNJABI: return "pa";
-	case LANG_GUJARATI: return "gu";
-	case LANG_TAMIL: return "ta";
-	case LANG_KANNADA: return "kn";
-	case LANG_MARATHI: return "mr";
-	case LANG_SANSKRIT: return "sa";
-	// These aren't present in the VC6 headers. We'll never have translations to these languages anyway. -C
-	//case LANG_MONGOLIAN: return "mn";
-	//case LANG_GALICIAN: return "gl";
-	default: LOG->Warn("Unable to determine system language. Using English.");
-	case LANG_ENGLISH: return "en";
-	}
+static RString GetSystemLocale() {
+  wchar_t locale_name[LOCALE_NAME_MAX_LENGTH] = {0};
+
+  // Retrieve the system's default locale name
+  if (GetUserDefaultLocaleName(locale_name, LOCALE_NAME_MAX_LENGTH) > 0) {
+    char locale_name_utf8[LOCALE_NAME_MAX_LENGTH] = {0};
+    WideCharToMultiByte(
+        CP_UTF8, 0, locale_name, -1, locale_name_utf8, LOCALE_NAME_MAX_LENGTH,
+        nullptr, nullptr);
+
+    // Extract the language portion (e.g., "en" from "en-US")
+    std::string locale_str(locale_name_utf8);
+    size_t dash_pos = locale_str.find('-');
+    if (dash_pos != std::string::npos) {
+      return locale_str.substr(0, dash_pos);
+    }
+    return locale_str;  // no dash found, return locale_str as is
+  }
+
+  // Fallback to English if the locale cannot be determined.
+      // Display a dialog box with the warning and log a warning.
+    MessageBox(
+        nullptr, // No owner window
+        "Unable to determine system locale. Using English.", // Message text
+        "Locale Warning", // Title of the dialog box
+        MB_OK | MB_ICONWARNING // OK button with a warning icon
+    );
+  LOG->Warn("Unable to determine system locale. Using English.");
+  return "en";
 }
 
-static LANGID GetLanguageID()
-{
-	HINSTANCE hDLL = LoadLibrary( "kernel32.dll" );
-	if( hDLL )
-	{
-		typedef LANGID(GET_USER_DEFAULT_UI_LANGUAGE)(void);
-
-		GET_USER_DEFAULT_UI_LANGUAGE *pGetUserDefaultUILanguage = (GET_USER_DEFAULT_UI_LANGUAGE*) GetProcAddress( hDLL, "GetUserDefaultUILanguage" );
-		if( pGetUserDefaultUILanguage )
-		{
-			LANGID ret = pGetUserDefaultUILanguage();
-			FreeLibrary( hDLL );
-			return ret;
-		}
-		FreeLibrary( hDLL );
-	}
-
-	return GetUserDefaultLangID();
-}
-
-RString ArchHooks::GetPreferredLanguage()
-{
-	return LangIdToString( GetLanguageID() );
-}
+RString ArchHooks::GetPreferredLanguage() { return GetSystemLocale(); }
 
 /*
  * (c) 2003-2004 Chris Danford
