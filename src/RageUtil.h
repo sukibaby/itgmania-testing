@@ -331,7 +331,8 @@ float fmodfp( float x, float y );
 // lrint is notoriously slow in some implementations, so we provide our own.
 // This is super fast, but it doesn't handle overflow.
 // If you need to handle overflow, use std::lrint() instead.
-inline int fast_lrint(volatile double x) {
+inline int fast_lrint(volatile float input_value) {
+	double x = input_value;
 	return static_cast<int>(x + (x >= 0.0 ? 0.5 : -0.5));
 }
 
