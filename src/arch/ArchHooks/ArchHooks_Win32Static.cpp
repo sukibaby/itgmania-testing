@@ -25,7 +25,7 @@ static std::once_flag g_timerInitFlag;
  * in the QuadPart of the LARGE_INTEGER, which is a 64-bit integer. */
 namespace {
     LARGE_INTEGER g_liFrequency;
-    LARGE_INTEGER g_liCurrentTime;
+
 }  // namespace
 
 static void InitTimer()
@@ -43,6 +43,7 @@ int64_t ArchHooks::GetSystemTimeInMicroseconds()
 	std::call_once(g_timerInitFlag, InitTimer);
 
 	// Get the current time.
+        LARGE_INTEGER g_liCurrentTime;
 	QueryPerformanceCounter(&g_liCurrentTime);
 
 	// Calculate the elapsed time in microseconds.
