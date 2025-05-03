@@ -213,7 +213,7 @@ int RageSoundReader_Merge::Read( float *pBuffer, int iFrames )
 			/* A sound is being delayed to resync it; clamp the number of frames we
 			 * read now, so we don't advance past it. */
 			int iMaxSourceFramesToRead = aNextSourceFrames[i] - iMinPosition;
-			int iMaxStreamFramesToRead = static_cast<int>((iMaxSourceFramesToRead / m_fCurrentStreamToSourceRatio) + 0.5 );
+			int iMaxStreamFramesToRead = fast_lrint( iMaxSourceFramesToRead / m_fCurrentStreamToSourceRatio );
 			iFrames = std::min( iFrames, iMaxStreamFramesToRead );
 //			LOG->Warn( "RageSoundReader_Merge: sound positions moving at different rates" );
 		}
@@ -226,8 +226,10 @@ int RageSoundReader_Merge::Read( float *pBuffer, int iFrames )
 		iFrames = pSound->Read( pBuffer, iFrames );
 		if( iFrames > 0 )
 		{
-			m_iNextSourceFrame += static_cast<int>((iFrames * m_fCurrentStreamToSourceRatio) + 0.5 );
+			m_iNextSourceFrame += fast_lrint( iFrames * m_fCurrentStreamToSourceRatio );
 		}
+		aNextSourceFrames.front() = pSound->GetNextSourceFrame();
+		aRatios.front() = pSound->GetStreamToSourceRatio();
 		return iFrames;
 	}
 

@@ -328,6 +328,13 @@ void fapproach( float& val, float other_val, float to_move );
 /* Return a positive x mod y. */
 float fmodfp( float x, float y );
 
+// lrint is notoriously slow in some implementations, so we provide our own.
+// This is super fast, but it doesn't handle overflow.
+// If you need to handle overflow, use std::lrint() instead.
+inline int fast_lrint(volatile double x) {
+	return static_cast<int>(x + (x >= 0 ? 0.5 : -0.5));
+}
+
 int power_of_two( int v );
 bool IsAnInt( const RString &s );
 bool IsHexVal( const RString &s );
