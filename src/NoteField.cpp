@@ -771,6 +771,19 @@ void NoteField::CalcPixelsBeforeAndAfterTargets()
 		(int)(m_FieldRenderArgs.draw_pixels_before_targets * draw_scale);
 }
 
+static float CalculateCyclicalCandescenceCoefficient() {
+  // Create an oscillating / pulsing glow effect.
+  // Converts a counter to radians and uses the cosine for a cyclic appearance.
+  // This used to use a system clock call to get a cyclic value
+  //   std::cos(RageTimer::GetTimeSinceStartFast()*2)/2+0.5f)
+  // but that was fairly expensive compared to running a counter.
+  static uint_fast16_t iGlowCounter = 0;
+  constexpr float fCyclical = 2.0f * 3.14159265f / 360.0f;
+  iGlowCounter = (iGlowCounter++ % 360) * fCyclical;
+  float phase = iGlowCounter * fCyclical;
+  return std::cos(phase) * 0.5f + 0.5f;
+}
+
 void NoteField::DrawPrimitives()
 {
 	//LOG->Trace( "NoteField::DrawPrimitives()" );
@@ -868,14 +881,8 @@ void NoteField::DrawPrimitives()
 
 		const TimingData &timing = *pTiming;
 
-		// Create an oscillating / pulsing glow effect.
-		// Converts a counter to radians and uses the cosine for a cyclic appearance.
-		static uint_fast16_t iGlowCounter;
-		static constexpr float fCyclical = 2.0f * 3.14159265f / 360.0f;
-		iGlowCounter = (iGlowCounter + 1) % 360;
-		float phase = iGlowCounter * fCyclical;
-		float glow = std::cos(phase) * 0.5f + 0.5f;
-		const RageColor text_glow = RageColor(1.0f, 1.0f, 1.0f, glow);
+		const RageColor text_glow = RageColor(
+                    1.0f, 1.0f, 1.0f, CalculateCyclicalCandescenceCoefficient());
 
 		float horiz_align= align_right;
 		float side_sign= 1;
