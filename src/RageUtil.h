@@ -332,7 +332,7 @@ float fmodfp( float x, float y );
 // This is super fast, but it doesn't handle overflow.
 // If you need to handle overflow, use std::lrint() instead.
 inline int fast_lrint(volatile double x) {
-	return static_cast<int>(x + (x >= 0 ? 0.5 : -0.5));
+	return static_cast<int>(x + (x >= 0.0 ? 0.5 : -0.5));
 }
 
 int power_of_two( int v );
