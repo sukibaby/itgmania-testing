@@ -17,14 +17,14 @@
 #endif
 
 namespace {
-	std::once_flag g_timer_init_flag;
+	static std::once_flag g_timer_init_flag;
 
 	// QueryPerformanceCounter and QueryPerformanceFrequency expect
 	// a LARGE_INTEGER, which is a union. These functions store data
 	// in the QuadPart of the LARGE_INTEGER, which is a 64-bit integer.
-	LARGE_INTEGER g_frequency;
+	static LARGE_INTEGER g_frequency;
 
-	void InitTimer()
+	static void InitTimer()
 	{
 		// Set the thread scheduler to let us update every 1ms.
 		timeBeginPeriod(1);
@@ -33,7 +33,7 @@ namespace {
 		QueryPerformanceFrequency(&g_frequency);
 	}
 
-	RString GetMountDir(const RString &dir_of_executable)
+	static RString GetMountDir(const RString &dir_of_executable)
 	{
 		// All Windows data goes in the directory one level above the executable.
 		CHECKPOINT_M(ssprintf("DOE \"%s\"", dir_of_executable.c_str()));
@@ -45,7 +45,7 @@ namespace {
 		return dir;
 	}
 
-	RString LangIdToString(LANGID lang_id) // TODO: replace with locale-based lookup
+	static RString LangIdToString(LANGID lang_id)
 	{
 		switch (PRIMARYLANGID(lang_id))
 		{
@@ -53,7 +53,6 @@ namespace {
 		case LANG_BULGARIAN: return "bg";
 		case LANG_CATALAN: return "ca";
 		case LANG_CHINESE:
-		{
 			switch (SUBLANGID(lang_id))
 			{
 			case SUBLANG_CHINESE_TRADITIONAL:
@@ -63,8 +62,10 @@ namespace {
 			case SUBLANG_CHINESE_SIMPLIFIED:
 			case SUBLANG_CHINESE_SINGAPORE:
 				return "zh-Hans";
+			default:
+				LOG->Warn("Unknown Chinese sublanguage. Using zh-Hans.");
+				return "zh-Hans";
 			}
-		}
 		case LANG_CZECH: return "cs";
 		case LANG_DANISH: return "da";
 		case LANG_GERMAN: return "de";
@@ -120,12 +121,14 @@ namespace {
 		// These aren't present in the VC6 headers. We'll never have translations to these languages anyway. -C
 		// case LANG_MONGOLIAN: return "mn";
 		// case LANG_GALICIAN: return "gl";
-		default: LOG->Warn("Unable to determine system language. Using English.");
+		default:
+			LOG->Warn("Unable to determine system language. Using English.");
+			[[fallthrough]];
 		case LANG_ENGLISH: return "en";
 		}
 	}
 
-	LANGID GetLanguageID()
+	static LANGID GetLanguageID()
 	{
 		HINSTANCE dll_handle = LoadLibrary("kernel32.dll");
 		if (dll_handle)
