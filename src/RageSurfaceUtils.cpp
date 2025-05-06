@@ -821,6 +821,21 @@ RageSurface *RageSurfaceUtils::LoadSurface( RString file )
 	return img;
 }
 
+static uint8_t ClampToByte(float value) {
+	constexpr float lower = 0.0f;
+	constexpr float upper = 255.0f;
+
+	if (value < lower) {
+		return static_cast<uint8_t>(lower);
+	}
+
+	if (value > upper) {
+		return static_cast<uint8_t>(upper);
+	}
+
+	return static_cast<uint8_t>(value);
+}
+
 /* This converts an image to a special 8-bit paletted format. The palette is set up
  * so that palette indexes look like regular, packed components.
  *
@@ -865,10 +880,10 @@ RageSurface *RageSurfaceUtils::PalettizeToGrayscale( const RageSurface *src_surf
 		const unsigned int A = (index & Amask) >> Ashift;
 
 		// if only one intensity value, always fullbright
-		const uint8_t ScaledI = Ivalues == 1 ? 255 : std::clamp( std::lrint(I * (255.0f / (Ivalues-1))), 0L, 255L );
+		const uint8_t ScaledI = (Ivalues == 1U) ? 255U : ClampToByte(std::round(I * (255.0f / (Ivalues - 1U))));
 
 		// if only one alpha value, always opaque
-		const uint8_t ScaledA = Avalues == 1 ? 255 : std::clamp( std::lrint(A * (255.0f / (Avalues-1))), 0L, 255L );
+		const uint8_t ScaledA = (Avalues == 1U) ? 255U : ClampToByte(std::round(A * (255.0f / (Avalues - 1U))));
 
 		RageSurfaceColor c;
 		c.r = ScaledI;
