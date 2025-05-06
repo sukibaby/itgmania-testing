@@ -183,23 +183,30 @@ int RageSoundReader_Split::Read( float *pBuf, int iFrames )
 
 int RageSoundSplitterImpl::ReadBuffer()
 {
-	/* Discard any bytes that are no longer requested by any sound. */
+	// Determine the range of frames requested by all sounds.
 	int iMinFrameRequested = INT_MAX;
-	int iMaxFrameRequested = INT_MIN;
+	long int iMaxFrameRequested = INT_MIN;
 	for (RageSoundReader_Split *snd : m_apSounds)
 	{
 		iMinFrameRequested = std::min( iMinFrameRequested, snd->m_iPositionFrame );
-		iMaxFrameRequested = std::max( iMaxFrameRequested, snd->m_iPositionFrame + snd->m_iRequestFrames );
+		iMaxFrameRequested = std::max( iMaxFrameRequested, static_cast<long int>(snd->m_iPositionFrame + snd->m_iRequestFrames) );
 	}
 
+	// Discard frames that are no longer needed.
 	if( iMinFrameRequested > m_iBufferPositionFrames )
 	{
 		int iEraseFrames = iMinFrameRequested - m_iBufferPositionFrames;
-		iEraseFrames = std::min( iEraseFrames, (int) m_sBuffer.size() );
-		m_sBuffer.erase( m_sBuffer.begin(), m_sBuffer.begin() + iEraseFrames * m_pSource->GetNumChannels() );
-		m_iBufferPositionFrames += iEraseFrames;
+		long int iEraseSamples = iEraseFrames * m_pSource->GetNumChannels();
+
+		if (iEraseSamples > 0 &&
+			iEraseSamples <= static_cast<int>(m_sBuffer.size()))
+		{
+			m_sBuffer.erase(m_sBuffer.begin(), m_sBuffer.begin() + iEraseSamples);
+			m_iBufferPositionFrames += iEraseFrames;
+		}
 	}
 
+	// If the buffer position doesn't match the minimum requested frame, reset the buffer.
 	if( iMinFrameRequested != m_iBufferPositionFrames )
 	{
 		m_pSource->SetPosition( iMinFrameRequested );
@@ -207,24 +214,32 @@ int RageSoundSplitterImpl::ReadBuffer()
 		m_sBuffer.clear();
 	}
 
+	// Calculate the number of frames to read.
 	int iFramesBuffered = m_sBuffer.size() / m_pSource->GetNumChannels();
-
 	int iFramesToRead = iMaxFrameRequested - (m_iBufferPositionFrames + iFramesBuffered);
-	if( iFramesToRead <= 0 )
-		return 1; // requested data already buffered
 
-	int iSamplesToRead = iFramesToRead * m_pSource->GetNumChannels();
-	int iOldSizeSamples = m_sBuffer.size();
-	m_sBuffer.resize( iOldSizeSamples + iSamplesToRead );
-	int iGotFrames = m_pSource->Read( &m_sBuffer[0] + iOldSizeSamples, iFramesToRead );
-	if( iGotFrames < 0 )
+	if( iFramesToRead <= 0 )
 	{
-		m_sBuffer.resize( iOldSizeSamples );
-		return iGotFrames;
+		return 1;  // All requested data is already buffered.
 	}
 
+	// Resize the buffer to accommodate the new frames.
+	long int iSamplesToRead = iFramesToRead * m_pSource->GetNumChannels();
+	size_t iOldSizeSamples = m_sBuffer.size();
+	m_sBuffer.resize(iOldSizeSamples + iSamplesToRead);
+
+	// Read the new frames into the buffer.
+	int iGotFrames = m_pSource->Read(&m_sBuffer[iOldSizeSamples], iFramesToRead);
+	if (iGotFrames < 0)
+	{
+		m_sBuffer.resize( iOldSizeSamples );
+		return iGotFrames; // error
+	}
+
+	// Adjust the buffer size based on the actual number of frames read.
 	int iGotSamples = iGotFrames * m_pSource->GetNumChannels();
 	m_sBuffer.resize( iOldSizeSamples + iGotSamples );
+
 	return 1;
 }
 
