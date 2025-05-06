@@ -154,21 +154,24 @@ void Alsa9Buf::GetSoundCardDebugInfo()
 
 	InitializeErrorHandler();
 
-	int card = -1;
+    int card = -1;
+    snd_ctl_t *handle = nullptr;
+    snd_ctl_card_info_t *info = nullptr;
+    snd_pcm_info_t *pcminfo = nullptr;
+
+    dsnd_ctl_card_info_alloca(&info);
+    dsnd_pcm_info_alloca(&pcminfo);
+
 	while( dsnd_card_next( &card ) >= 0 && card >= 0 )
 	{
 		const RString id = ssprintf( "hw:%d", card );
-		snd_ctl_t *handle;
-		int err;
-		err = dsnd_ctl_open( &handle, id, 0 );
+		int err = dsnd_ctl_open( &handle, id, 0 );
 		if ( err < 0 )
 		{
 			LOG->Info( "Couldn't open card #%i (\"%s\") to probe: %s", card, id.c_str(), dsnd_strerror(err) );
 			continue;
 		}
 
-		snd_ctl_card_info_t *info;
-		dsnd_ctl_card_info_alloca(&info);
 		err = dsnd_ctl_card_info( handle, info );
 		if ( err < 0 )
 		{
@@ -180,8 +183,6 @@ void Alsa9Buf::GetSoundCardDebugInfo()
 		int dev = -1;
 		while ( dsnd_ctl_pcm_next_device( handle, &dev ) >= 0 && dev >= 0 )
 		{
-			snd_pcm_info_t *pcminfo;
-			dsnd_pcm_info_alloca(&pcminfo);
 			dsnd_pcm_info_set_device(pcminfo, dev);
 			dsnd_pcm_info_set_stream(pcminfo, SND_PCM_STREAM_PLAYBACK);
 
