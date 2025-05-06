@@ -184,11 +184,11 @@ int RageSoundSplitterImpl::ReadBuffer()
 {
 	/* Discard any bytes that are no longer requested by any sound. */
 	int iMinFrameRequested = INT_MAX;
-	int iMaxFrameRequested = INT_MIN;
+	long int iMaxFrameRequested = INT_MIN;
 	for (RageSoundReader_Split *snd : m_apSounds)
 	{
 		iMinFrameRequested = std::min( iMinFrameRequested, snd->m_iPositionFrame );
-		iMaxFrameRequested = std::max( iMaxFrameRequested, snd->m_iPositionFrame + snd->m_iRequestFrames );
+		iMaxFrameRequested = std::max( iMaxFrameRequested, static_cast<long int>(snd->m_iPositionFrame + snd->m_iRequestFrames) );
 	}
 
 	if( iMinFrameRequested > m_iBufferPositionFrames )
