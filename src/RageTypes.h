@@ -265,6 +265,21 @@ public:
 	float r, g, b, a;
 };
 
+inline static uint8_t ClampToByte(float value) {
+	constexpr float lower = 0.0f;
+	constexpr float upper = 255.0f;
+
+	if (value < lower) {
+		return static_cast<uint8_t>(lower);
+	}
+
+	if (value > upper) {
+		return static_cast<uint8_t>(upper);
+	}
+
+	return static_cast<uint8_t>(value);
+}
+
 /* Convert floating-point 0..1 value to integer 0..255 value. *
  *
  * As a test case,
@@ -278,7 +293,7 @@ public:
 inline unsigned char FTOC(float a)
 {
 	int value = static_cast<int>(a * 256.0f);
-	return static_cast<unsigned char>(std::clamp(value, 0, 255));
+	return static_cast<unsigned char>(ClampToByte(value));
 }
 
 /* Color type used only in vertex lists.  OpenGL expects colors in
