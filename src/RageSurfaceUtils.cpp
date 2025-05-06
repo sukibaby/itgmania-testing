@@ -456,7 +456,7 @@ void RageSurfaceUtils::BlitTransform( const RageSurface *src, RageSurface *dst,
 				sum += v[1][i] * (1-weight_x) * (weight_y);
 				sum += v[2][i] * (weight_x)   * (1-weight_y);
 				sum += v[3][i] * (weight_x)   * (weight_y);
-				out[i] = (uint8_t) std::clamp( std::lrint(sum), 0L, 255L );
+				out[i] = static_cast<uint8_t>(std::min(std::max(static_cast<long>(std::round(sum)), 0L), 255L));
 			}
 
 			// If the source has no alpha, set the destination to opaque.
