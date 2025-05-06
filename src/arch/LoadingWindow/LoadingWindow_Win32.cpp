@@ -39,7 +39,7 @@ static HBITMAP LoadWin32Surface( const RageSurface *pSplash, HWND hWnd )
 
 		int iWidth = r.right;
 		float fRatio = (float) iWidth / s->w;
-		int iHeight = std::lrint( s->h * fRatio );
+		int iHeight = std::round( s->h * fRatio );
 
 		RageSurfaceUtils::Zoom( s, iWidth, iHeight );
 	}

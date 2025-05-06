@@ -798,7 +798,7 @@ void BitmapText::DrawPrimitives() noexcept
 		std::vector<RageVector3> vGlyphJitter;
 		if( m_bJitter )
 		{
-			int iSeed = std::lrint( RageTimer::GetTimeSinceStart()*8 );
+			int iSeed = std::round( RageTimer::GetTimeSinceStart()*8 );
 			RandomGen rnd( iSeed );
 			for (size_t i = 0; i < m_aVertices.size(); i += 4)
 			{

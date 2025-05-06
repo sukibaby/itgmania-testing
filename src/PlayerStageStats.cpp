@@ -340,7 +340,7 @@ int PlayerStageStats::GetLessonScoreNeeded() const
 {
 	float fScore = std::accumulate(m_vpPossibleSteps.begin(), m_vpPossibleSteps.end(), 0.f,
 		[](float total, Steps const *steps) { return total + steps->GetRadarValues(PLAYER_1)[RadarCategory_TapsAndHolds]; });
-	return std::lrint( fScore * LESSON_PASS_THRESHOLD );
+	return std::round( fScore * LESSON_PASS_THRESHOLD );
 }
 
 void PlayerStageStats::ResetScoreForLesson()

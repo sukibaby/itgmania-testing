@@ -5269,7 +5269,7 @@ void ScreenEdit::HandleAlterMenuChoice(AlterMenuChoice c, const std::vector<int>
 
 			int iStartIndex  = m_NoteFieldEdit.m_iBeginMarker;
 			int iEndIndex    = m_NoteFieldEdit.m_iEndMarker;
-			int iNewEndIndex = iEndIndex + std::lrint( (iEndIndex - iStartIndex) * (fScale - 1) );
+			int iNewEndIndex = iEndIndex + std::round( (iEndIndex - iStartIndex) * (fScale - 1) );
 
 			// scale currently editing notes
 			NoteDataUtil::ScaleRegion( m_NoteDataEdit, fScale, iStartIndex, iEndIndex );

@@ -35,7 +35,7 @@ NoteType NoteDataUtil::GetSmallestNoteTypeInRange( const NoteData &n, int iStart
 	FOREACH_ENUM(NoteType, nt)
 	{
 		float fBeatSpacing = NoteTypeToBeat( nt );
-		int iRowSpacing = std::lrint( fBeatSpacing * ROWS_PER_BEAT );
+		int iRowSpacing = std::round( fBeatSpacing * ROWS_PER_BEAT );
 
 		bool bFoundSmallerNote = false;
 		// for each index in this measure
@@ -381,7 +381,7 @@ void NoteDataUtil::GetSMNoteDataString( const NoteData &in, RString &sRet )
 			if( nt == NoteType_Invalid )
 				iRowSpacing = 1;
 			else
-				iRowSpacing = std::lrint( NoteTypeToBeat(nt) * ROWS_PER_BEAT );
+				iRowSpacing = std::round( NoteTypeToBeat(nt) * ROWS_PER_BEAT );
 			// (verify first)
 			// iRowSpacing = BeatToNoteRow( NoteTypeToBeat(nt) );
 
@@ -2329,7 +2329,7 @@ void NoteDataUtil::Wide( NoteData &inout, int iStartIndex, int iEndIndex )
 			continue;	// skip
 
 		// add a note determinitsitcally
-		int iBeat = std::lrint( NoteRowToBeat(i) );
+		int iBeat = std::round( NoteRowToBeat(i) );
 		int iTrackOfNote = inout.GetFirstTrackWithTap(i);
 		int iTrackToAdd = iTrackOfNote + (iBeat%5)-2;	// won't be more than 2 tracks away from the existing note
 		CLAMP( iTrackToAdd, 0, inout.GetNumTracks()-1 );
@@ -3124,8 +3124,8 @@ void NoteDataUtil::Scale( NoteData &nd, float fScale )
 		for( NoteData::const_iterator iter = nd.begin(t); iter != nd.end(t); ++iter )
 		{
 			TapNote tn = iter->second;
-			int iNewRow      = std::lrint( fScale * iter->first );
-			int iNewDuration = std::lrint( fScale * (iter->first + tn.iDuration) );
+			int iNewRow      = std::round( fScale * iter->first );
+			int iNewDuration = std::round( fScale * (iter->first + tn.iDuration) );
 			tn.iDuration = iNewDuration;
 			ndOut.SetTapNote( t, iNewRow, tn );
 		}
@@ -3141,9 +3141,9 @@ static inline int GetScaledRow( float fScale, int iStartIndex, int iEndIndex, in
 	if( iRow < iStartIndex )
 		return iRow;
 	else if( iRow > iEndIndex )
-		return iRow + std::lrint( (iEndIndex - iStartIndex) * (fScale - 1) );
+		return iRow + std::round( (iEndIndex - iStartIndex) * (fScale - 1) );
 	else
-		return std::lrint( (iRow - iStartIndex) * fScale ) + iStartIndex;
+		return std::round( (iRow - iStartIndex) * fScale ) + iStartIndex;
 }
 
 void NoteDataUtil::ScaleRegion( NoteData &nd, float fScale, int iStartIndex, int iEndIndex )
