@@ -47,6 +47,7 @@ void RageSoundMixBuffer::write( const float *pBuf, unsigned iSize, int iSourceSt
 
 void RageSoundMixBuffer::read( int16_t *pBuf )
 {
+	constexpr float kInt16Max = static_cast<float>(INT16_MAX);
 	for (unsigned iPos = 0; iPos < m_pMixbuf.size(); ++iPos)
 	{
 		// do the read
@@ -54,9 +55,7 @@ void RageSoundMixBuffer::read( int16_t *pBuf )
 		// ensure volume is within expected levels to prevent clipping
 		iOut = std::clamp( iOut, -1.0f, +1.0f );
 		// round rather than truncate to minimize distortion.
-		// this is heavily optimized, but will be off by one if the value
-		//  is exactly 0.5. this is unlikely to be audible though.
-		pBuf[iPos] = static_cast<int16_t>(iOut + (iOut >= 0 ? 0.5 : -0.5));
+		pBuf[iPos] = static_cast<int16_t>(std::round(iOut * kInt16Max));
 	}
 	m_pMixbuf.clear();
 }
