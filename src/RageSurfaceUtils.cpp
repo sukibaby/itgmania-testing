@@ -837,15 +837,6 @@ RageSurface *RageSurfaceUtils::LoadSurface( RString file )
 	return img;
 }
 
-// Helper function for RageSurfaceUtils::PalettizeToGrayscale.
-constexpr uint8_t ScaleIntensity(unsigned int I, unsigned int Ivalues) noexcept
-{
-    constexpr uint8_t MAX_INTENSITY = 255u; // Full brightness
-    return (Ivalues <= 1U) 
-        ? MAX_INTENSITY 
-        : static_cast<uint8_t>((I * MAX_INTENSITY) / (Ivalues - 1U));
-}
-
 /* This converts an image to a special 8-bit paletted format. The palette is set up
  * so that palette indexes look like regular, packed components.
  *
@@ -890,10 +881,10 @@ RageSurface *RageSurfaceUtils::PalettizeToGrayscale( const RageSurface *src_surf
 		const unsigned int A = (index & Amask) >> Ashift;
 
 		// if only one intensity value, always fullbright
-		const uint8_t ScaledI = ScaleIntensity(I, Ivalues);
+		const uint8_t ScaledI = (Ivalues == 1U) ? 255U : ClampToByte(std::round(I * (255.0f / (Ivalues - 1U))));
 
 		// if only one alpha value, always opaque
-		const uint8_t ScaledA = ScaleIntensity(A, Avalues);
+		const uint8_t ScaledA = (Avalues == 1U) ? 255U : ClampToByte(std::round(A * (255.0f / (Avalues - 1U))));
 
 		RageSurfaceColor c;
 		c.r = ScaledI;
