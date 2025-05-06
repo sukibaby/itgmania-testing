@@ -220,7 +220,9 @@ int RageSoundSplitterImpl::ReadBuffer()
 	long int iSamplesToRead = iFramesToRead * m_pSource->GetNumChannels();
 	size_t iOldSizeSamples = m_sBuffer.size();
 	m_sBuffer.resize( iOldSizeSamples + iSamplesToRead );
-	int iGotFrames = m_pSource->Read( &m_sBuffer[0] + iOldSizeSamples, iFramesToRead );
+
+	// Read the new frames into the buffer.
+	int iGotFrames = m_pSource->Read( &m_sBuffer[iOldSizeSamples], iFramesToRead );
 	if( iGotFrames < 0 )
 	{
 		m_sBuffer.resize( iOldSizeSamples );
