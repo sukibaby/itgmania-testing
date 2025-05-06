@@ -194,9 +194,13 @@ int RageSoundSplitterImpl::ReadBuffer()
 	if( iMinFrameRequested > m_iBufferPositionFrames )
 	{
 		int iEraseFrames = iMinFrameRequested - m_iBufferPositionFrames;
-		iEraseFrames = std::min( iEraseFrames, (int) m_sBuffer.size() );
-		m_sBuffer.erase( m_sBuffer.begin(), m_sBuffer.begin() + iEraseFrames * m_pSource->GetNumChannels() );
-		m_iBufferPositionFrames += iEraseFrames;
+		long int iEraseSamples = iEraseFrames * m_pSource->GetNumChannels();
+
+		if (iEraseSamples > 0 && iEraseSamples <= static_cast<int>(m_sBuffer.size()))
+		{
+			m_sBuffer.erase(m_sBuffer.begin(), m_sBuffer.begin() + iEraseSamples);
+			m_iBufferPositionFrames += iEraseFrames;
+		}
 	}
 
 	if( iMinFrameRequested != m_iBufferPositionFrames )
