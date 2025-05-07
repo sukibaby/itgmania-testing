@@ -490,7 +490,10 @@ bool Song::ReloadFromSongDir( const RString &sDir )
 	// Create a copy of the song, and attempt to load it from the directory.
 	Song copy;
 	if( !copy.LoadFromSongDir( sDir ) )
+	{
+		LOG->Trace("Failed to load song from directory: %s", sDir.c_str());
 		return false;
+	}
 
 	// Remove auto-generated notes from the copy.
 	copy.RemoveAutoGenNotes();
