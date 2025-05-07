@@ -471,99 +471,71 @@ bool Song::LoadFromSongDir(RString sDir, bool load_autosave, ProfileSlot from_pr
 	return true;	// do load this song
 }
 
-/* This function feels EXTREMELY hacky - copying things on top of pointers so
- * they don't break elsewhere.  Maybe it could be rewritten to politely ask the
- * Song/Steps objects to reload themselves. -- djpohly */
-bool Song::ReloadFromSongDir( RString sDir )
+// Get the hash of the song file. This is primarily used to determine if the simfile
+// has changed since it was last seen. The SHA-1 of the file is also validated against
+// the cached file here. This will potentially clear cached song data and reload from disk!
+bool Song::ReloadFromSongDir( const RString &sDir )
 {
-	// Remove the cache file to force the song to reload from its dir instead
-	// of loading from the cache. -Kyz
+	// Store the hash of the cached file before forcing a reload from disk.
+	RString currentHash = m_sFileHash;
 	FILEMAN->Remove(GetCacheFilePath());
 
-	RemoveAutoGenNotes();
-	std::vector<Steps*> vOldSteps = m_vpSteps;
-
-
-	Song copy;
-	if( !copy.LoadFromSongDir( sDir ) )
-		return false;
-	copy.RemoveAutoGenNotes();
-	*this = copy;
-
-	/* Go through the steps, first setting their Song pointer to this song
-	 * (instead of the copy used above), and constructing a map to let us
-	 * easily find the new steps. */
-	std::map<StepsID, Steps*> mNewSteps;
-	for( std::vector<Steps*>::const_iterator it = m_vpSteps.begin(); it != m_vpSteps.end(); ++it )
+	// Hash comparison. If it's a match, return early without changing anything.
+	m_sFileHash = GetFileHash();
+	if( currentHash == m_sFileHash )
 	{
-		(*it)->m_pSong = this;
-
-		StepsID id;
-		id.FromSteps( *it );
-		mNewSteps[id] = *it;
+		return true;
 	}
 
-	// Now we wipe out the new pointers, which were shallow copied and not deep copied...
+	// Clear out all old data to prepare for a reload from disk.
+	// m_vpSteps represent known charts for a given difficulty or mode.
+	// m_UnknownStyleSteps represent things like unfilled difficulty blocks.
+	for( Steps* step : m_vpSteps )
+	{
+		delete step;
+	}
 	m_vpSteps.clear();
 	FOREACH_ENUM( StepsType, i )
 		m_vpStepsByType[i].clear();
 
-	/* Then we copy as many Steps as possible on top of the old pointers.
-	 * The only pointers that change are pointers to Steps that are not in the
-	 * reverted file, which we delete, and pointers to Steps that are in the
-	 * reverted file but not the original *this, which we create new copies of.
-	 * We have to go through these hoops because many places assume the Steps
-	 * pointers don't change - even though there are other ways they can change,
-	 * such as deleting a Steps via the editor. */
-	for( std::vector<Steps*>::const_iterator itOld = vOldSteps.begin(); itOld != vOldSteps.end(); ++itOld )
+	m_UnknownStyleSteps.clear(); // If we don't clear these out, new difficulties won't be loaded
+	for( Steps* step : m_UnknownStyleSteps )
 	{
-		StepsID id;
-		id.FromSteps( *itOld );
-		std::map<StepsID, Steps*>::iterator itNew = mNewSteps.find( id );
-		if( itNew == mNewSteps.end() )
-		{
-			// This stepchart didn't exist in the file we reverted from
-			delete *itOld;
-		}
-		else
-		{
-			Steps *OldSteps = *itOld;
-			*OldSteps = *(itNew->second);
-			AddSteps( OldSteps );
-			mNewSteps.erase( itNew );
-		}
+		delete step;
 	}
-	// The leftovers in the map are steps that didn't exist before we reverted
-	for( std::map<StepsID, Steps*>::const_iterator it = mNewSteps.begin(); it != mNewSteps.end(); ++it )
-	{
-		Steps *NewSteps = new Steps(this);
-		*NewSteps = *(it->second);
-		AddSteps( NewSteps );
-	}
+	m_UnknownStyleSteps.clear();
 
-	AddAutoGenNotes();
-	// Reload any images associated with the song. -Kyz
-	std::vector<RString> to_reload;
-	to_reload.reserve(7);
-	to_reload.push_back(m_sBannerFile);
-	to_reload.push_back(m_sJacketFile);
-	to_reload.push_back(m_sCDFile);
-	to_reload.push_back(m_sDiscFile);
-	to_reload.push_back(m_sBackgroundFile);
-	to_reload.push_back(m_sCDTitleFile);
-	to_reload.push_back(m_sPreviewVidFile);
-	for(std::vector<RString>::iterator file= to_reload.begin(); file != to_reload.end(); ++file)
+	// Reload into the cache from disk. Group offset will be applied here as well.
+	if( LoadFromSongDir(sDir) )
 	{
-		RageTextureID id(*file);
-		if(TEXTUREMAN->IsTextureRegistered(id))
+		AddAutoGenNotes();
+
+		// Reload associated images.
+		const std::array<RString, 7> toReload =
 		{
-			RageTexture* tex= TEXTUREMAN->LoadTexture(id);
-			if(tex)
+			m_sBannerFile, m_sJacketFile, m_sCDFile, m_sDiscFile,
+			m_sBackgroundFile, m_sCDTitleFile, m_sPreviewVidFile
+		};
+
+		for (const RString& file : toReload)
+		{
+			RageTextureID id(file);
+			if (TEXTUREMAN->IsTextureRegistered(id))
 			{
-				tex->Reload();
+				RageTexture* tex = TEXTUREMAN->LoadTexture(id);
+				if (tex)
+				{
+					tex->Reload();
+				}
 			}
 		}
 	}
+	else
+	{
+		LOG->Trace("Failed to reload song from directory: %s", sDir.c_str());
+		return false;
+	}
+
 	return true;
 }
 

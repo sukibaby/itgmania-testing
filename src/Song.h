@@ -96,7 +96,7 @@ public:
 	bool LoadFromSongDir(RString sDir, bool load_autosave= false,
 		ProfileSlot from_profile= ProfileSlot_Invalid);
 	// This one takes the effort to reuse Steps pointers as best as it can
-	bool ReloadFromSongDir( RString sDir );
+	bool ReloadFromSongDir( const RString &sDir );
 	bool ReloadFromSongDir() { return ReloadFromSongDir(GetSongDir()); }
 	void LoadEditsFromSongDir(RString dir);
 
