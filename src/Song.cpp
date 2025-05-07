@@ -478,7 +478,7 @@ LOG->Trace(
 	return true;	// do load this song
 }
 
-bool Song::ReloadFromSongDir( RString sDir )
+bool Song::ReloadFromSongDir( const RString &sDir )
 {
 	// Remove the cache file to force reloading from disk.
 	FILEMAN->Remove(GetCacheFilePath());
