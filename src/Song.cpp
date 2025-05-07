@@ -506,10 +506,8 @@ bool Song::ReloadFromSongDir( const RString &sDir )
 	// Replace the current song with the loaded copy.
 	*this = std::move(copy);
 
-	/* Go through the steps, first setting their Song pointer to this song
-	 * (instead of the copy used above), and constructing a map to let us
-	 * easily find the new steps. */
-	std::map<StepsID, Steps*> mNewSteps;
+	// Reuse old steps where possible and delete unused ones.
+	std::unordered_map<StepsID, Steps*> mNewSteps;
 	for (Steps* step : m_vpSteps)
 	{
 		step->m_pSong = this; // Update the song pointer for each step.
