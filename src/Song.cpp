@@ -439,6 +439,13 @@ bool Song::LoadFromSongDir(RString sDir, bool load_autosave, ProfileSlot from_pr
 	}
 	m_SongTiming.m_fBeat0GroupOffsetInSeconds = fOffset;
 
+LOG->Trace(
+            "[LoadFromSongDir] File: %s, DefaultSyncOffset: %f, Group Offset: %f, "
+            "Song Offset: %f",
+            GetSongFilePath().c_str(), PREFSMAN->m_DefaultSyncOffset,
+            SONGMAN->GetGroupFromName(m_sGroupName)->GetSyncOffset(),
+            m_SongTiming.m_fBeat0GroupOffsetInSeconds);
+
 	for (Steps *s : m_vpSteps)
 	{
 		s->m_Timing.m_fBeat0GroupOffsetInSeconds = fOffset;
@@ -669,6 +676,13 @@ void Song::TidyUpData( bool from_cache, bool /* duringCache */ )
 		fOffset = SONGMAN->GetGroupFromName(m_sGroupName)->GetSyncOffset();
 	}
 	m_SongTiming.m_fBeat0GroupOffsetInSeconds = fOffset;
+        LOG->Trace(
+            "[TidyUpData] File: %s, DefaultSyncOffset: %f, Group Offset: %f, "
+            "Song Offset: %f",
+            GetSongFilePath().c_str(), PREFSMAN->m_DefaultSyncOffset,
+            SONGMAN->GetGroupFromName(m_sGroupName)->GetSyncOffset(),
+            m_SongTiming.m_fBeat0GroupOffsetInSeconds);
+
 
 	for (Steps *s : m_vpSteps)
 	{
