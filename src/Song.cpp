@@ -561,20 +561,17 @@ bool Song::ReloadFromSongDir( const RString &sDir )
 	AddAutoGenNotes();
 
 	// Reload associated images.
-	std::vector<RString> toReload = {
-		m_sBannerFile, m_sJacketFile, m_sCDFile, m_sDiscFile,
-		m_sBackgroundFile, m_sCDTitleFile, m_sPreviewVidFile
-	};
-
-	for (const RString& file : toReload)
+	for (const RString& file : {m_sBannerFile, m_sJacketFile, m_sCDFile, m_sDiscFile, m_sBackgroundFile, m_sCDTitleFile, m_sPreviewVidFile})
 	{
-		RageTextureID id(file);
-		if (TEXTUREMAN->IsTextureRegistered(id))
+		if (!file.empty())
 		{
-			RageTexture* tex= TEXTUREMAN->LoadTexture(id);
-			if(tex)
+			RageTextureID id(file);
+			if (TEXTUREMAN->IsTextureRegistered(id))
 			{
-				tex->Reload();
+				if (RageTexture* tex = TEXTUREMAN->LoadTexture(id))
+				{
+					tex->Reload();
+				}
 			}
 		}
 	}
