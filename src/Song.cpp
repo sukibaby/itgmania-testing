@@ -517,35 +517,17 @@ bool Song::ReloadFromSongDir( const RString &sDir )
 		mNewSteps[id] = step;
 	}
 
-	// Clear the current steps and their types.
-	m_vpSteps.clear();
-	FOREACH_ENUM( StepsType, i )
-		m_vpStepsByType[i].clear();
-
-	/* Then we copy as many Steps as possible on top of the old pointers.
-	 * The only pointers that change are pointers to Steps that are not in the
-	 * reverted file, which we delete, and pointers to Steps that are in the
-	 * reverted file but not the original *this, which we create new copies of.
-	 * We have to go through these hoops because many places assume the Steps
-	 * pointers don't change - even though there are other ways they can change,
-	 * such as deleting a Steps via the editor. */
-	for (Steps* OldSteps : vOldSteps)
+	for (auto& OldSteps : oldSteps)
 	{
 		StepsID id;
-		id.FromSteps(OldSteps);
-
+		id.FromSteps(OldSteps.get());
 		auto itNew = mNewSteps.find(id);
-		if( itNew == mNewSteps.end() )
-		{
-			// This stepchart didn't exist in the file we reverted from
-			delete OldSteps;
-		}
-		else
+		if (itNew != mNewSteps.end())
 		{
 			// Reuse the old step and remove it from the new map.
 			*OldSteps = *(itNew->second);
-			AddSteps( OldSteps );
-			mNewSteps.erase( itNew );
+			AddSteps(OldSteps.release());
+			mNewSteps.erase(itNew);
 		}
 	}
 
