@@ -498,6 +498,13 @@ bool Song::ReloadFromSongDir( const RString &sDir )
 	}
 	m_UnknownStyleSteps.clear();
 
+	// Clear and delete all unknown style steps.
+	for (Steps* step : m_UnknownStyleSteps)
+	{
+		delete step;
+	}
+	m_UnknownStyleSteps.clear();
+
 	// Reload the song from disk.
 	if (!LoadFromSongDir(sDir))
 	{
