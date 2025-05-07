@@ -474,10 +474,17 @@ bool Song::LoadFromSongDir(RString sDir, bool load_autosave, ProfileSlot from_pr
 bool Song::ReloadFromSongDir( const RString &sDir )
 {
 	// We will get the hash of the current file to determine if it has changed since we last saw it.
-	RString currentHash = GetFileHash();
+	RString currentHash = m_sFileHash;
 
 	// Force a reload from disk.
 	FILEMAN->Remove(GetCacheFilePath());
+
+	// Compute the hash of the current file to determine if we need to reload.
+	m_sFileHash = GetFileHash();
+	if (currentHash == m_sFileHash)
+	{
+		return true; // true signals a successful reload, but really, nothing had changed
+	}
 
 	// Clear all existing steps and auto-generated notes.
 	for (Steps* step : m_vpSteps)
@@ -496,13 +503,6 @@ bool Song::ReloadFromSongDir( const RString &sDir )
 	{
 		LOG->Trace("Failed to reload song from directory: %s", sDir.c_str());
 		return false;
-	}
-
-	m_sFileHash = currentHash;
-	if (currentHash == m_sFileHash)
-	{
-		LOG->Trace("Song file has not changed, skipping reload: %s", sDir.c_str());
-		return true; // true signals a successful reload, but really, we didn't need to do anything.
 	}
 
 	// Add auto-generated notes.
