@@ -509,7 +509,7 @@ bool Song::ReloadFromSongDir( const RString &sDir )
 	AddAutoGenNotes();
 
 	// Reload associated images.
-	std::vector<RString> toReload = {
+	const std::vector<RString> toReload = {
 		m_sBannerFile, m_sJacketFile, m_sCDFile, m_sDiscFile,
 		m_sBackgroundFile, m_sCDTitleFile, m_sPreviewVidFile
 	};
