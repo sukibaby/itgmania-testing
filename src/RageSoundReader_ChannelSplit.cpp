@@ -197,7 +197,7 @@ int RageSoundSplitterImpl::ReadBuffer()
 	if( iMinFrameRequested > m_iBufferPositionFrames )
 	{
 		int iEraseFrames = iMinFrameRequested - m_iBufferPositionFrames;
-		long int iEraseSamples = iEraseFrames * m_pSource->GetNumChannels();
+		long int iEraseSamples = static_cast<long int>(iEraseFrames) * numChannels;
 
 		if (iEraseSamples > 0 && iEraseSamples <= static_cast<int>(m_sBuffer.size()))
 		{
@@ -236,7 +236,7 @@ int RageSoundSplitterImpl::ReadBuffer()
 	}
 
 	// Adjust the buffer size based on the actual number of frames read.
-	long iGotSamples = iGotFrames * numChannels;
+	long int iGotSamples = static_cast<long int>(iGotFrames) * numChannels;
 	m_sBuffer.resize( iOldSizeSamples + iGotSamples );
 	return 1;
 }
