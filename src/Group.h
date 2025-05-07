@@ -110,6 +110,17 @@ public:
      */
     int GetVersion() const { return m_iVersion; };
 
+ //   /**
+ //    * @brief Helper function to calculate the effective offset factoring in the Default Sync Offset.
+ //    * 
+ //    */
+	//inline float CalculateEffectiveOffset(const RString& groupName) {
+ //     if (SongManager::GetGroupFromName(groupName) != nullptr) {
+ //       return SongManager::GetGroupFromName(groupName)->GetSyncOffset();
+ //     }
+ //     return PREFSMAN->m_DefaultSyncOffset == SyncOffset_NULL ? 0.0f : -0.009f;
+ //   }
+
     private:
         /**
          * @brief This is the title of the group as its displayed to the user 
