@@ -222,10 +222,9 @@ int RageSoundSplitterImpl::ReadBuffer()
 		return 1; // requested data already buffered
 
 	// Resize the buffer to accommodate the new frames.
-	long int iSamplesToRead = iFramesToRead * numChannels;
 	size_t iOldSizeSamples = m_sBuffer.size();
-	m_sBuffer.resize( iOldSizeSamples + iSamplesToRead );
 	size_t iNewSizeSamples = static_cast<size_t>(iFramesToRead) * numChannels;
+	m_sBuffer.resize( iOldSizeSamples + iNewSizeSamples );
 
 	// Read the new frames into the buffer.
 	int iGotFrames = m_pSource->Read( &m_sBuffer[iOldSizeSamples], iFramesToRead );
