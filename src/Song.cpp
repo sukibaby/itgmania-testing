@@ -471,7 +471,7 @@ bool Song::LoadFromSongDir(RString sDir, bool load_autosave, ProfileSlot from_pr
 	return true;	// do load this song
 }
 
-bool Song::ReloadFromSongDir( RString sDir )
+bool Song::ReloadFromSongDir( const RString &sDir )
 {
 	// Remove the cache file to force reloading from disk.
 	FILEMAN->Remove(GetCacheFilePath());
