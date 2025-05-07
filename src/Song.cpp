@@ -552,9 +552,9 @@ bool Song::ReloadFromSongDir( const RString &sDir )
 	// Add any remaining new steps that were not in the old steps.
 	for (auto& [id, newStep] : mNewSteps)
 	{
-		Steps *NewSteps = new Steps(this);
+		auto NewSteps = std::make_unique<Steps>(this);
 		*NewSteps = *newStep;
-		AddSteps( NewSteps );
+		AddSteps(NewSteps.release());
 	}
 
 	// Add auto-generated notes.
