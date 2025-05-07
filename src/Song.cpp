@@ -504,7 +504,7 @@ bool Song::ReloadFromSongDir( const RString &sDir )
 	copy.RemoveAutoGenNotes();
 
 	// Replace the current song with the loaded copy.
-	*this = copy;
+	*this = std::move(copy);
 
 	/* Go through the steps, first setting their Song pointer to this song
 	 * (instead of the copy used above), and constructing a map to let us
