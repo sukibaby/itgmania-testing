@@ -485,7 +485,12 @@ bool Song::ReloadFromSongDir( const RString &sDir )
 
 	// Remove auto-generated notes and store the old steps.
 	RemoveAutoGenNotes();
-	std::vector<Steps*> vOldSteps = m_vpSteps;
+	std::vector<std::unique_ptr<Steps>> oldSteps;
+	for (Steps* step : m_vpSteps)
+	{
+		oldSteps.emplace_back(step);
+	}
+	m_vpSteps.clear();
 
 	// Create a copy of the song, and attempt to load it from the directory.
 	Song copy;
