@@ -473,78 +473,35 @@ bool Song::LoadFromSongDir(RString sDir, bool load_autosave, ProfileSlot from_pr
 
 bool Song::ReloadFromSongDir( const RString &sDir )
 {
-	// Remove the cache file to force reloading from disk.
+	// We will get the hash of the current file to determine if it has changed since we last saw it.
+	RString currentHash = GetFileHash();
+	if (currentHash == m_sFileHash)
+	{
+		LOG->Trace("Song file has not changed, skipping reload: %s", sDir.c_str());
+		return true; // true signals a successful reload, but really, we didn't need to do anything.
+	}
+
+	// Update the stored hash, and force a reload from disk.
+	m_sFileHash = currentHash;
 	FILEMAN->Remove(GetCacheFilePath());
 
-	// Remove auto-generated notes and store the old steps.
-	RemoveAutoGenNotes();
-	std::vector<Steps*> vOldSteps = m_vpSteps;
-
-	// Create a copy of the song, and attempt to load it from the directory.
-	Song copy;
-	if( !copy.LoadFromSongDir( sDir ) )
-	{
-		LOG->Trace("Failed to load song from directory: %s", sDir.c_str());
-		return false;
-	}
-
-	// Remove auto-generated notes from the copy.
-	copy.RemoveAutoGenNotes();
-
-	// Replace the current song with the loaded copy.
-	*this = copy;
-
-	/* Go through the steps, first setting their Song pointer to this song
-	 * (instead of the copy used above), and constructing a map to let us
-	 * easily find the new steps. */
-	std::map<StepsID, Steps*> mNewSteps;
+	// Clear all existing steps and auto-generated notes.
 	for (Steps* step : m_vpSteps)
 	{
-		step->m_pSong = this; // Update the song pointer for each step.
-
-		StepsID id;
-		id.FromSteps(step);
-		mNewSteps[id] = step;
+		delete step;
 	}
-
-	// Clear the current steps and their types.
 	m_vpSteps.clear();
-	FOREACH_ENUM( StepsType, i )
+	FOREACH_ENUM(StepsType, i)
+	{
 		m_vpStepsByType[i].clear();
-
-	/* Then we copy as many Steps as possible on top of the old pointers.
-	 * The only pointers that change are pointers to Steps that are not in the
-	 * reverted file, which we delete, and pointers to Steps that are in the
-	 * reverted file but not the original *this, which we create new copies of.
-	 * We have to go through these hoops because many places assume the Steps
-	 * pointers don't change - even though there are other ways they can change,
-	 * such as deleting a Steps via the editor. */
-	for (Steps* OldSteps : vOldSteps)
-	{
-		StepsID id;
-		id.FromSteps(OldSteps);
-
-		auto itNew = mNewSteps.find(id);
-		if( itNew == mNewSteps.end() )
-		{
-			// This stepchart didn't exist in the file we reverted from
-			delete OldSteps;
-		}
-		else
-		{
-			// Reuse the old step and remove it from the new map.
-			*OldSteps = *(itNew->second);
-			AddSteps( OldSteps );
-			mNewSteps.erase( itNew );
-		}
 	}
+	m_UnknownStyleSteps.clear();
 
-	// Add any remaining new steps that were not in the old steps.
-	for (auto& [id, newStep] : mNewSteps)
+	// Reload the song from disk.
+	if (!LoadFromSongDir(sDir))
 	{
-		Steps *NewSteps = new Steps(this);
-		*NewSteps = *newStep;
-		AddSteps( NewSteps );
+		LOG->Trace("Failed to reload song from directory: %s", sDir.c_str());
+		return false;
 	}
 
 	// Add auto-generated notes.
