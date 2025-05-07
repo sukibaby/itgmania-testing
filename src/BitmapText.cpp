@@ -328,7 +328,7 @@ void BitmapText::BuildChars()
 
 	if( m_bUsingDistortion )
 	{
-		int iSeed = std::lrint( RageTimer::GetTimeSinceStart()*500000.0f );
+		int iSeed = RageTimer::GetTimeSinceStartSeconds() * 500000;
 		RandomGen rnd( iSeed );
 		for(unsigned int i= 0; i < m_aVertices.size(); i+=4)
 		{
