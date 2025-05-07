@@ -187,9 +187,9 @@ void MovieTexture_Generic::CreateTexture()
 	/* Adjust m_iSourceWidth to support different source aspect ratios. */
 	float fSourceAspectRatio = decoder_->GetSourceAspectRatio();
 	if (fSourceAspectRatio < 1)
-		m_iSourceHeight = std::lrint(m_iSourceHeight / fSourceAspectRatio);
+		m_iSourceHeight = std::round(m_iSourceHeight / fSourceAspectRatio);
 	else if (fSourceAspectRatio > 1)
-		m_iSourceWidth = std::lrint(m_iSourceWidth * fSourceAspectRatio);
+		m_iSourceWidth = std::round(m_iSourceWidth * fSourceAspectRatio);
 
 	/* HACK: Don't cap movie textures to the max texture size, since we
 	 * render them onto the texture at the source dimensions.  If we find a

@@ -106,7 +106,7 @@ void FontPage::Load( const FontPageSettings &cfg )
 	if( cfg.m_fScaleAllWidthsBy != 1 )
 	{
 		for( int i=0; i<m_FontPageTextures.m_pTextureMain->GetNumFrames(); i++ )
-			aiFrameWidths[i] = std::lrint( aiFrameWidths[i] * cfg.m_fScaleAllWidthsBy );
+			aiFrameWidths[i] = std::round( aiFrameWidths[i] * cfg.m_fScaleAllWidthsBy );
 	}
 
 	m_iCharToGlyphNo = cfg.CharToGlyphNo;

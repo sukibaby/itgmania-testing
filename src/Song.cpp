@@ -846,7 +846,7 @@ void Song::TidyUpData( bool from_cache, bool /* duringCache */ )
 				if(m_fMusicSampleStartSeconds+m_fMusicSampleLengthSeconds > this->m_fMusicLengthSeconds)
 				{
 					// Attempt to get a reasonable default.
-					int iBeat = std::lrint(this->m_SongTiming.GetBeatFromElapsedTime(this->GetLastSecond())/2);
+					int iBeat = std::round(this->m_SongTiming.GetBeatFromElapsedTime(this->GetLastSecond())/2);
 					iBeat -= iBeat%4;
 					m_fMusicSampleStartSeconds = timing.GetElapsedTimeFromBeat((float)iBeat);
 				}

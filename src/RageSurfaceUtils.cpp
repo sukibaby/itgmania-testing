@@ -269,6 +269,22 @@ static void SetAlphaRGB(const RageSurface *pImg, uint8_t r, uint8_t g, uint8_t b
 	}
 }
 
+// Local helper for PalletizeToGrayscale and BlitTransform.
+static uint8_t ClampToByte(float value) {
+	constexpr float lower = 0.0f;
+	constexpr float upper = 255.0f;
+
+	if (value < lower) {
+		return static_cast<uint8_t>(lower);
+	}
+
+	if (value > upper) {
+		return static_cast<uint8_t>(upper);
+	}
+
+	return static_cast<uint8_t>(value);
+}
+
 /* When we scale up images (which we always do in high res), pixels
  * that are completely transparent can be blended with opaque pixels,
  * causing their RGB elements to show. This is visible in many textures
@@ -456,7 +472,7 @@ void RageSurfaceUtils::BlitTransform( const RageSurface *src, RageSurface *dst,
 				sum += v[1][i] * (1-weight_x) * (weight_y);
 				sum += v[2][i] * (weight_x)   * (1-weight_y);
 				sum += v[3][i] * (weight_x)   * (weight_y);
-				out[i] = (uint8_t) std::clamp( std::lrint(sum), 0L, 255L );
+				out[i] = ClampToByte(sum);
 			}
 
 			// If the source has no alpha, set the destination to opaque.
@@ -865,10 +881,10 @@ RageSurface *RageSurfaceUtils::PalettizeToGrayscale( const RageSurface *src_surf
 		const unsigned int A = (index & Amask) >> Ashift;
 
 		// if only one intensity value, always fullbright
-		const uint8_t ScaledI = Ivalues == 1 ? 255 : std::clamp( std::lrint(I * (255.0f / (Ivalues-1))), 0L, 255L );
+		const uint8_t ScaledI = (Ivalues == 1U) ? 255U : ClampToByte(std::round(I * (255.0f / (Ivalues - 1U))));
 
 		// if only one alpha value, always opaque
-		const uint8_t ScaledA = Avalues == 1 ? 255 : std::clamp( std::lrint(A * (255.0f / (Avalues-1))), 0L, 255L );
+		const uint8_t ScaledA = (Avalues == 1U) ? 255U : ClampToByte(std::round(A * (255.0f / (Avalues - 1U))));
 
 		RageSurfaceColor c;
 		c.r = ScaledI;
