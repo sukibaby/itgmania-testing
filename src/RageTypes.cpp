@@ -55,12 +55,12 @@ void RageColor::FromStackCompat( lua_State *L, int iPos )
 
 RString RageColor::ToString() const
 {
-	int iR = std::clamp( static_cast<int>(std::lrint(r * 255)), 0, 255 );
-	int iG = std::clamp( static_cast<int>(std::lrint(g * 255)), 0, 255 );
-	int iB = std::clamp( static_cast<int>(std::lrint(b * 255)), 0, 255 );
-	int iA = std::clamp( static_cast<int>(std::lrint(a * 255)), 0, 255 );
+	uint8_t iR = ClampToByte(std::round(r * 255.f));
+	uint8_t iG = ClampToByte(std::round(g * 255.f));
+	uint8_t iB = ClampToByte(std::round(b * 255.f));
+	uint8_t iA = ClampToByte(std::round(a * 255.f));
 
-	if( iA == 255 )
+	if( iA == UINT8_MAX )
 		return ssprintf( "#%02X%02X%02X", iR, iG, iB );
 	else
 		return ssprintf( "#%02X%02X%02X%02X", iR, iG, iB, iA );
