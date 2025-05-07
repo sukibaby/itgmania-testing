@@ -478,39 +478,40 @@ LOG->Trace(
 	return true;	// do load this song
 }
 
-/* This function feels EXTREMELY hacky - copying things on top of pointers so
- * they don't break elsewhere.  Maybe it could be rewritten to politely ask the
- * Song/Steps objects to reload themselves. -- djpohly */
 bool Song::ReloadFromSongDir( RString sDir )
 {
-	// Remove the cache file to force the song to reload from its dir instead
-	// of loading from the cache. -Kyz
+	// Remove the cache file to force reloading from disk.
 	FILEMAN->Remove(GetCacheFilePath());
 
+	// Remove auto-generated notes and store the old steps.
 	RemoveAutoGenNotes();
 	std::vector<Steps*> vOldSteps = m_vpSteps;
 
-
+	// Create a copy of the song, and attempt to load it from the directory.
 	Song copy;
 	if( !copy.LoadFromSongDir( sDir ) )
 		return false;
+
+	// Remove auto-generated notes from the copy.
 	copy.RemoveAutoGenNotes();
+
+	// Replace the current song with the loaded copy.
 	*this = copy;
 
 	/* Go through the steps, first setting their Song pointer to this song
 	 * (instead of the copy used above), and constructing a map to let us
 	 * easily find the new steps. */
 	std::map<StepsID, Steps*> mNewSteps;
-	for( std::vector<Steps*>::const_iterator it = m_vpSteps.begin(); it != m_vpSteps.end(); ++it )
+	for (Steps* step : m_vpSteps)
 	{
-		(*it)->m_pSong = this;
+		step->m_pSong = this; // Update the song pointer for each step.
 
 		StepsID id;
-		id.FromSteps( *it );
-		mNewSteps[id] = *it;
+		id.FromSteps(step);
+		mNewSteps[id] = step;
 	}
 
-	// Now we wipe out the new pointers, which were shallow copied and not deep copied...
+	// Clear the current steps and their types.
 	m_vpSteps.clear();
 	FOREACH_ENUM( StepsType, i )
 		m_vpStepsByType[i].clear();
@@ -522,47 +523,47 @@ bool Song::ReloadFromSongDir( RString sDir )
 	 * We have to go through these hoops because many places assume the Steps
 	 * pointers don't change - even though there are other ways they can change,
 	 * such as deleting a Steps via the editor. */
-	for( std::vector<Steps*>::const_iterator itOld = vOldSteps.begin(); itOld != vOldSteps.end(); ++itOld )
+	for (Steps* OldSteps : vOldSteps)
 	{
 		StepsID id;
-		id.FromSteps( *itOld );
-		std::map<StepsID, Steps*>::iterator itNew = mNewSteps.find( id );
+		id.FromSteps(OldSteps);
+
+		auto itNew = mNewSteps.find(id);
 		if( itNew == mNewSteps.end() )
 		{
 			// This stepchart didn't exist in the file we reverted from
-			delete *itOld;
+			delete OldSteps;
 		}
 		else
 		{
-			Steps *OldSteps = *itOld;
+			// Reuse the old step and remove it from the new map.
 			*OldSteps = *(itNew->second);
 			AddSteps( OldSteps );
 			mNewSteps.erase( itNew );
 		}
 	}
-	// The leftovers in the map are steps that didn't exist before we reverted
-	for( std::map<StepsID, Steps*>::const_iterator it = mNewSteps.begin(); it != mNewSteps.end(); ++it )
+
+	// Add any remaining new steps that were not in the old steps.
+	for (auto& [id, newStep] : mNewSteps)
 	{
 		Steps *NewSteps = new Steps(this);
-		*NewSteps = *(it->second);
+		*NewSteps = *newStep;
 		AddSteps( NewSteps );
 	}
 
+	// Add auto-generated notes.
 	AddAutoGenNotes();
-	// Reload any images associated with the song. -Kyz
-	std::vector<RString> to_reload;
-	to_reload.reserve(7);
-	to_reload.push_back(m_sBannerFile);
-	to_reload.push_back(m_sJacketFile);
-	to_reload.push_back(m_sCDFile);
-	to_reload.push_back(m_sDiscFile);
-	to_reload.push_back(m_sBackgroundFile);
-	to_reload.push_back(m_sCDTitleFile);
-	to_reload.push_back(m_sPreviewVidFile);
-	for(std::vector<RString>::iterator file= to_reload.begin(); file != to_reload.end(); ++file)
+
+	// Reload associated images.
+	std::vector<RString> toReload = {
+		m_sBannerFile, m_sJacketFile, m_sCDFile, m_sDiscFile,
+		m_sBackgroundFile, m_sCDTitleFile, m_sPreviewVidFile
+	};
+
+	for (const RString& file : toReload)
 	{
-		RageTextureID id(*file);
-		if(TEXTUREMAN->IsTextureRegistered(id))
+		RageTextureID id(file);
+		if (TEXTUREMAN->IsTextureRegistered(id))
 		{
 			RageTexture* tex= TEXTUREMAN->LoadTexture(id);
 			if(tex)
