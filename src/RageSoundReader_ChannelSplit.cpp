@@ -217,7 +217,7 @@ int RageSoundSplitterImpl::ReadBuffer()
 	// Calculate the number of frames to read.
 	int iFramesBuffered = static_cast<int>(m_sBuffer.size() / numChannels);
 
-	int iFramesToRead = iMaxFrameRequested - (m_iBufferPositionFrames + iFramesBuffered);
+	int iFramesToRead = static_cast<int>(iMaxFrameRequested) - (m_iBufferPositionFrames + iFramesBuffered);
 	if( iFramesToRead <= 0 )
 		return 1; // requested data already buffered
 
