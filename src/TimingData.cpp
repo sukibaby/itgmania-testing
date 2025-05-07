@@ -29,6 +29,7 @@ void TimingData::Copy( const TimingData& cpy )
 
 	m_fBeat0OffsetInSeconds = cpy.m_fBeat0OffsetInSeconds;
 	m_fBeat0GroupOffsetInSeconds = cpy.m_fBeat0GroupOffsetInSeconds;
+	m_bGroupOffsetApplied = cpy.m_bGroupOffsetApplied;
 	m_sFile = cpy.m_sFile;
 
 	FOREACH_TimingSegmentType( tst )

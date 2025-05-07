@@ -328,6 +328,8 @@ public:
 	void SetLastSecond(const float f);
 	void SetSpecifiedLastSecond(const float f);
 
+	float ApplyGroupOffset();
+
 	typedef std::vector<BackgroundChange> 	VBackgroundChange;
 private:
 	/** @brief The first second that a note is hit. */

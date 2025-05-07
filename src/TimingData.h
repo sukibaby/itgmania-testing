@@ -415,7 +415,9 @@ public:
 			}
 		}
 
-		return this->m_fBeat0OffsetInSeconds == other.m_fBeat0OffsetInSeconds && this->m_fBeat0GroupOffsetInSeconds == other.m_fBeat0GroupOffsetInSeconds;
+    return this->m_fBeat0OffsetInSeconds == other.m_fBeat0OffsetInSeconds &&
+           this->m_fBeat0GroupOffsetInSeconds == other.m_fBeat0GroupOffsetInSeconds &&
+           this->m_bGroupOffsetApplied == other.m_bGroupOffsetApplied;
 	}
 
 	/**
@@ -462,6 +464,9 @@ public:
 
 	/** @brief The sync offset of this group */
 	float	m_fBeat0GroupOffsetInSeconds;
+
+    /** @brief Whether the group offset has been applied. */
+    bool m_bGroupOffsetApplied = false;
 
 	// XXX: this breaks encapsulation. get rid of it ASAP
 	std::vector<RString> ToVectorString(TimingSegmentType tst, int dec = 6) const;

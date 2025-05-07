@@ -146,6 +146,8 @@ public:
         /** @brief The version of the Pack.ini info */
         int m_iVersion;
 
+		/** @brief Whether or not the offset has been applied */
+		bool b_OffsetApplied;
 };
 
 #endif

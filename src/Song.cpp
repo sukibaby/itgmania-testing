@@ -189,6 +189,33 @@ void Song::Reset()
 	// that all pointers to this Song and its Steps are invalidated.
 }
 
+float Song::ApplyGroupOffset()
+{
+	float fOffset;
+	if (!m_SongTiming.m_bGroupOffsetApplied)
+	{
+		fOffset = PREFSMAN->m_DefaultSyncOffset == SyncOffset_NULL ? 0 : -0.009;
+		if (SONGMAN->GetGroupFromName(m_sGroupName) != nullptr)
+		{
+			fOffset = SONGMAN->GetGroupFromName(m_sGroupName)->GetSyncOffset();
+		}
+		m_SongTiming.m_fBeat0GroupOffsetInSeconds = fOffset;
+		m_SongTiming.m_bGroupOffsetApplied = true;
+		LOG->Trace("Group offset applied: %f", fOffset);
+	}
+	else
+	{
+		LOG->Trace("Group offset was already applied. Skipping offset application. fOffset is %f", fOffset);
+		return FLT_MIN;  // error value
+	}
+
+	for (Steps *s : m_vpSteps)
+	{
+		// Apply the group offset to the step timing as well.
+		s->m_Timing.m_fBeat0GroupOffsetInSeconds = fOffset;
+	}
+	return fOffset;
+}
 
 void Song::AddBackgroundChange( BackgroundLayer iLayer, BackgroundChange seg )
 {
@@ -432,16 +459,10 @@ bool Song::LoadFromSongDir(RString sDir, bool load_autosave, ProfileSlot from_pr
 	// That is to keep the song start and end times become inaccurate in some cases.
 	// SInce there are cases where TidyUpData isn't called, we still want to guarantee the
 	// m_fBeat0GroupOffsetInSeconds is always set so we do that here. 
-	float fOffset = PREFSMAN->m_DefaultSyncOffset == SyncOffset_NULL ? 0 : -0.009;
-	if (SONGMAN->GetGroupFromName(m_sGroupName) != nullptr)
-	{
-		fOffset = SONGMAN->GetGroupFromName(m_sGroupName)->GetSyncOffset();
-	}
-	m_SongTiming.m_fBeat0GroupOffsetInSeconds = fOffset;
+	ApplyGroupOffset();
 
 	for (Steps *s : m_vpSteps)
 	{
-		s->m_Timing.m_fBeat0GroupOffsetInSeconds = fOffset;
 		if(m_LoadedFromProfile != ProfileSlot_Invalid)
 		{
 			s->ChangeFilenamesForCustomSong();
@@ -624,20 +645,7 @@ void Song::TidyUpData( bool from_cache, bool /* duringCache */ )
 
 	m_SongTiming.TidyUpData(false);
 
-	// Apply the group offset to the song timing before we do anything else.
-	float fOffset = PREFSMAN->m_DefaultSyncOffset == SyncOffset_NULL ? 0 : -0.009;
-	if (SONGMAN->GetGroupFromName(m_sGroupName) != nullptr)
-	{
-		fOffset = SONGMAN->GetGroupFromName(m_sGroupName)->GetSyncOffset();
-	}
-	m_SongTiming.m_fBeat0GroupOffsetInSeconds = fOffset;
-
-	for (Steps *s : m_vpSteps)
-	{
-		s->m_Timing.TidyUpData(true);
-		// Apply the group offset to the step timing as well.
-		s->m_Timing.m_fBeat0GroupOffsetInSeconds = fOffset;
-	}
+	ApplyGroupOffset();
 
 	if(!from_cache)
 	{
