@@ -37,7 +37,7 @@ float SampleHistory::GetSampleNum( float fSamplesAgo ) const
 	// always valid and have wrapped around the size of the history vector.
 	int iSample = static_cast<int>(fSample);
 	int iNextSample = iSample + 1;
-	wrap( iSample, static_cast<int>(m_afHistory.size()) );
+	wrap( iSample, static_cast<int>(m_afHistory.size()) ); // TODO: make wrap return int, not void
 	wrap( iNextSample, static_cast<int>(m_afHistory.size()) );
 
 	float p = fSample - f;
