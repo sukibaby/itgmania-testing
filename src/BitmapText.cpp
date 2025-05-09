@@ -966,12 +966,14 @@ void BitmapText::AddAttribute( size_t iPos, const Attribute &attr )
 {
 	// Fixup position for new lines.
 	Attribute newAttr = attr;
-	const auto [iAdjustedPos, iLines] = AdjustPositionForNewLines(iPos);
+	std::pair<size_t, int> resultPair = AdjustPositionForNewLines(iPos);
+	size_t iAdjustedEndPos = resultPair.first; // Adjusted position
+	int iLines = resultPair.second; // Number of lines
 
 	if (newAttr.length > 0)	{
 		// Fixup length for new lines.
-		const auto [iAdjustedEndPos, remainingLength] = FixupLengthForNewLines(iAdjustedPos, newAttr.length);
-		newAttr.length = remainingLength;
+		const int oldAttrLength = newAttr.length;
+		newAttr.length = FixupLengthForNewLines(iAdjustedEndPos, oldAttrLength);
 	}
 
 	if( newAttr.length == 0 ) // Attribute doesn't cover any printable characters
