@@ -432,7 +432,7 @@ bool Song::LoadFromSongDir(RString sDir, bool load_autosave, ProfileSlot from_pr
 	// That is to keep the song start and end times become inaccurate in some cases.
 	// SInce there are cases where TidyUpData isn't called, we still want to guarantee the
 	// m_fBeat0GroupOffsetInSeconds is always set so we do that here. 
-	const float fOffset = PREFSMAN->m_DefaultSyncOffset == SyncOffset_NULL ? 0 : -0.009;
+	float fOffset = PREFSMAN->m_DefaultSyncOffset == SyncOffset_NULL ? 0 : -0.009;
 	if (SONGMAN->GetGroupFromName(m_sGroupName) != nullptr)
 	{
 		fOffset = SONGMAN->GetGroupFromName(m_sGroupName)->GetSyncOffset();
@@ -632,7 +632,7 @@ void Song::TidyUpData( bool from_cache, bool /* duringCache */ )
 	m_SongTiming.TidyUpData(false);
 
 	// Apply the group offset to the song timing before we do anything else.
-	const float fOffset = PREFSMAN->m_DefaultSyncOffset == SyncOffset_NULL ? 0 : -0.009;
+	float fOffset = PREFSMAN->m_DefaultSyncOffset == SyncOffset_NULL ? 0 : -0.009;
 	if (SONGMAN->GetGroupFromName(m_sGroupName) != nullptr)
 	{
 		fOffset = SONGMAN->GetGroupFromName(m_sGroupName)->GetSyncOffset();
