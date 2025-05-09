@@ -42,7 +42,6 @@ float SampleHistory::GetSampleNum( float fSamplesAgo ) const
 
 	float p = fSample - f;
 	float fRet = lerp( p, m_afHistory[iSample], m_afHistory[iNextSample] );
-//	LOG->Trace( "%.3f: %i, %i, %.3f (f %.3f, %.3f)", fSample, iSample, iNextSample, fRet, f, p );
 	return fRet;
 }
 
