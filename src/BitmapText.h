@@ -137,7 +137,7 @@ protected:
 	bool								m_bHasGlowAttribute;
 
 	std::pair<size_t, int> AdjustPositionForNewLines(size_t iPos) const;
-	std::pair<size_t, size_t> FixupLengthForNewLines(size_t iAdjustedPos, size_t length) const;
+	int FixupLengthForNewLines(size_t iAdjustedPos, int length) const;
 
 	TextGlowMode	m_TextGlowMode;
 

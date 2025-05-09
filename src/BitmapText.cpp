@@ -918,14 +918,20 @@ std::pair<size_t, size_t> BitmapText::FixupLengthForNewLines(size_t adjustedPos,
 	for( ; lineIter != m_wTextLines.cend(); ++lineIter )
 	{
 		size_t lineLength = lineIter->length() + 1; // +1 to account for implicit newline at the end
+int BitmapText::FixupLengthForNewLines(size_t adjustedPos, int inputLength) const {
+	std::vector<std::wstring>::const_iterator lineIter = m_wTextLines.cbegin();
+	size_t adjustedEndPos = adjustedPos + static_cast<size_t>(inputLength);
+
+	for (; lineIter != m_wTextLines.cend(); ++lineIter) {
+		size_t lineLength = CalculateLineLength(*lineIter);
 		if (lineLength > adjustedEndPos || lineLength == 0) {
 			break;
 		}
-		adjustedEndPos -= lineLength;
+		adjustedEndPos = AdjustPositionByLineLength(adjustedEndPos, lineLength);
 		inputLength -= 1;
 	}
 
-	return { adjustedEndPos, inputLength };
+	return inputLength;
 }
 
 std::pair<size_t, int> BitmapText::AdjustPositionForNewLines(size_t inputPosition) const {
