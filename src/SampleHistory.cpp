@@ -32,8 +32,10 @@ float SampleHistory::GetSampleNum( float fSamplesAgo ) const
 
 	float fSample = m_iLastHistory - fSamplesAgo - 1;
 
-	float f = std::floor( fSample );
-	int iSample = std::round(f);
+	// Truncate the floating point number to an integer, and wrap it around
+	// the history size, to ensure ithe iSample and iNextSample indices are
+	// always valid and have wrapped around the size of the history vector.
+	int iSample = static_cast<int>(fSample);
 	int iNextSample = iSample + 1;
 	wrap( iSample, static_cast<int>(m_afHistory.size()) );
 	wrap( iNextSample, static_cast<int>(m_afHistory.size()) );
