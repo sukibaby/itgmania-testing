@@ -40,7 +40,8 @@ float SampleHistory::GetSampleNum( float fSamplesAgo ) const
 	wrap( iSample, static_cast<int>(m_afHistory.size()) ); // TODO: make wrap return int, not void
 	wrap( iNextSample, static_cast<int>(m_afHistory.size()) );
 
-	float p = fSample - f;
+	// Calculate the interpolated value between the two samples at position "p".
+	const float p = fSample - std::floor(fSample);
 	float fRet = lerp( p, m_afHistory[iSample], m_afHistory[iNextSample] );
 	return fRet;
 }
