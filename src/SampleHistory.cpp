@@ -35,8 +35,8 @@ float SampleHistory::GetSampleNum( float fSamplesAgo ) const
 	float f = std::floor( fSample );
 	int iSample = std::round(f);
 	int iNextSample = iSample + 1;
-	wrap( iSample, m_afHistory.size() );
-	wrap( iNextSample, m_afHistory.size() );
+	wrap( iSample, static_cast<int>(m_afHistory.size()) );
+	wrap( iNextSample, static_cast<int>(m_afHistory.size()) );
 
 	float p = fSample - f;
 	float fRet = lerp( p, m_afHistory[iSample], m_afHistory[iNextSample] );
