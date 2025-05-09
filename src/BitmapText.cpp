@@ -935,20 +935,22 @@ int BitmapText::FixupLengthForNewLines(size_t adjustedPos, int inputLength) cons
 }
 
 std::pair<size_t, int> BitmapText::AdjustPositionForNewLines(size_t inputPosition) const {
-	auto lineIter = m_wTextLines.cbegin();
-	int lineCount = 0;
-	size_t adjustedPosition = inputPosition;
+	std::vector<std::wstring>::const_iterator lineIter = m_wTextLines.cbegin();
+
+	// The first value of the pair is the adjusted position.
+	// The second value of the pair is the line count.
+	std::pair<size_t, int> resultPair = std::make_pair(inputPosition, 0);
 
 	for (; lineIter != m_wTextLines.cend(); ++lineIter) {
-		size_t lineLength = lineIter->length() + 1; // +1 to account for implicit newline at the end
-		if (lineLength > adjustedPosition) {
+		size_t lineLength = CalculateLineLength(*lineIter);
+		if (lineLength > resultPair.first) {
 			break;
 		}
-		adjustedPosition -= lineLength;
-		++lineCount;
+		resultPair.first = AdjustPositionByLineLength(resultPair.first, lineLength);
+		++resultPair.second;
 	}
 
-	return std::make_pair(adjustedPosition, lineCount);
+	return resultPair;
 }
 
 void BitmapText::AddAttribute( size_t iPos, const Attribute &attr )
