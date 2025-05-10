@@ -913,7 +913,7 @@ BitmapText::Attribute BitmapText::GetDefaultAttribute() const
 
 static size_t CalculateLineLength(const std::wstring& line)
 {
-	return line.length() + 1; // +1 to account for implicit newline
+	return line.length() + 1ULL; // +1 to account for implicit newline
 }
 
 static size_t AdjustPositionByLineLength(size_t position, size_t lineLength)
