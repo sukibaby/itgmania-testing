@@ -49,9 +49,6 @@ public:
 	bool operator<( const RageTimer &rhs ) const;
 private:
 	RageTimerPair m_time;
-
-	static RageTimer Sum( const RageTimer &lhs, float tm );
-	static double Difference( const RageTimer &lhs, const RageTimer &rhs );
 };
 
 extern const RageTimer RageZeroTimer;

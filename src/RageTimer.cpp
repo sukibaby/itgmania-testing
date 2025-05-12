@@ -151,63 +151,50 @@ RageTimer RageTimer::Half() const
 	return *this + fProbableDelay;
 }
 
-
-RageTimer RageTimer::operator+(float tm) const
+// Calculate the seconds and microseconds from the time:
+// tm == 5.25  -> secs =  5, us = 5.25  - ( 5) = .25
+// tm == -1.25 -> secs = -2, us = -1.25 - (-2) = .75
+RageTimer RageTimer::operator+(float tm) const noexcept
 {
-	return Sum(*this, tm);
-}
+	// Prepare the time in a RageTimer object-compatible format
+	int64_t seconds = static_cast<int64_t>(tm);
+	int64_t us = static_cast<int64_t>((tm - seconds) * kUsecsPerSecLL);
 
-float RageTimer::operator-(const RageTimer &rhs) const
-{
-	return Difference(*this, rhs);
-}
+	// Avoid creating a RageTimer until we have the final result
+	int64_t newSecs = m_time.first + seconds;
+	int64_t newUs = m_time.second + us;
 
-bool RageTimer::operator<( const RageTimer &rhs ) const
-{
-	if (m_time.first != rhs.m_time.first) return m_time.first < rhs.m_time.first;
-	return m_time.second < rhs.m_time.second;
-}
-
-RageTimer RageTimer::Sum(const RageTimer& lhs, float tm)
-{
-	/* Calculate the seconds and microseconds from the time:
-	 * tm == 5.25  -> secs =  5, us = 5.25  - ( 5) = .25
-	 * tm == -1.25 -> secs = -2, us = -1.25 - (-2) = .75 */
-	int64_t seconds = std::floor(tm);
-	int64_t us = static_cast<int64_t>((tm - seconds) * ONE_SECOND_IN_MICROSECONDS_LL);
-
-	// Prevent unnecessarily checking the time
-	RageTimer ret(0, 0);
-
-	// Calculate the sum of the seconds and microseconds
-	ret.m_time.first = seconds + lhs.m_time.first;
-	ret.m_time.second = us + lhs.m_time.second;
-
-	// Adjust the seconds and microseconds if microseconds is greater than or equal to TIMESTAMP_RESOLUTION
-	if (ret.m_time.second >= ONE_SECOND_IN_MICROSECONDS_LL)
-	{
-		ret.m_time.second -= ONE_SECOND_IN_MICROSECONDS_LL;
-		++ret.m_time.first;
+	// Adjust the seconds and microseconds if microseconds is greater than or equal to one second
+	if (newUs >= kUsecsPerSecLL) {
+		newUs -= kUsecsPerSecLL;
+		++newSecs;
 	}
 
-	return ret;
+	return RageTimer(newSecs, newUs);
 }
 
-double RageTimer::Difference(const RageTimer& lhs, const RageTimer& rhs)
+float RageTimer::operator-(const RageTimer &rhs) const noexcept
 {
-	// Calculate the difference in seconds and microseconds respectively
-	int64_t secs = lhs.m_time.first - rhs.m_time.first;
-	int64_t us = lhs.m_time.second - rhs.m_time.second;
+	// Prepare the time in a RageTimer object-compatible format
+	int64_t secs = m_time.first - rhs.m_time.first;
+	int64_t us = m_time.second - rhs.m_time.second;
 
-	// Adjust seconds and microseconds if microseconds is negative
-	if ( us < 0 )
-	{
-		us += ONE_SECOND_IN_MICROSECONDS_LL;
+	// Adjust the seconds and microseconds if microseconds is greater than or equal to one second
+	if (us < 0) {
+		us += kUsecsPerSecLL;
 		--secs;
 	}
 
-	// Return the difference as a double to preserve the fractional part
-	return static_cast<double>(secs) + static_cast<double>(us) / ONE_SECOND_IN_MICROSECONDS_DBL;
+	double ret = static_cast<double>(secs) + static_cast<double>(us * kUsecsToSecRatio);
+	return static_cast<float>(ret);
+}
+
+bool RageTimer::operator<( const RageTimer &rhs ) const noexcept
+{
+	if (m_time.first != rhs.m_time.first) {
+		return m_time.first < rhs.m_time.first;
+	}
+	return m_time.second < rhs.m_time.second;
 }
 
 #include "LuaManager.h"
