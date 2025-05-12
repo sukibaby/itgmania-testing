@@ -121,12 +121,26 @@ float RageTimer::Ago() const noexcept
 	return static_cast<float>(ret);
 }
 
-float RageTimer::GetDeltaTime()
+// GetDeltaTime() will update the stored time in the RageTimer object as well as
+// returning the time since the last call to Touch().
+float RageTimer::GetDeltaTime() noexcept
 {
-	const RageTimer Now;
-	const float diff = Difference( Now, *this );
-	*this = Now;
-	return diff;
+	RageTimer currentTime;
+	int64_t secs = currentTime.GetSecs() - m_time.first;
+	int64_t us = currentTime.GetUs() - m_time.second;
+
+	// Adjust the seconds and microseconds if microseconds is greater than or equal to one second
+	if (us < 0) {
+		us += kUsecsPerSecLL;
+		--secs;
+	}
+
+	// Update the stored time
+	m_time.first = secs;
+	m_time.second = us;
+
+	double ret = static_cast<double>(secs) + static_cast<double>(us * kUsecsToSecRatio);
+	return static_cast<float>(ret);
 }
 
 /* Get a timer representing half of the time ago as this one.  This is	
