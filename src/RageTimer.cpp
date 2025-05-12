@@ -161,7 +161,7 @@ RageTimer RageTimer::operator+(float tm) const noexcept
 	int64_t newSecs = m_time.first + seconds;
 	int64_t newUs = m_time.second + us;
 
-	// Adjust the seconds and microseconds if microseconds is greater than or equal to one second
+	// Adjust the seconds and microseconds if microseconds exceed or equal one second
 	if (newUs >= kUsecsPerSecLL) {
 		newUs -= kUsecsPerSecLL;
 		++newSecs;
@@ -176,7 +176,7 @@ float RageTimer::operator-(const RageTimer &rhs) const noexcept
 	int64_t secs = m_time.first - rhs.m_time.first;
 	int64_t us = m_time.second - rhs.m_time.second;
 
-	// Adjust the seconds and microseconds if microseconds is greater than or equal to one second
+	// Adjust the seconds and microseconds if microseconds exceed or equal one second
 	if (us < 0) {
 		us += kUsecsPerSecLL;
 		--secs;
