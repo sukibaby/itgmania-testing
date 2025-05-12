@@ -63,32 +63,29 @@ static uint64_t GetTime() noexcept
 	return ArchHooks::GetSystemTimeInMicroseconds();
 }
 
-/* The accuracy of RageTimer::GetTimeSinceStart() is directly tied to the
- * stability of the clock sync. Maintaining precision here is crucial. Too
- * much error here will manifest as a drastic shift in the game's sync, and
- * will feel like the global offset suddenly changed. Incorrect math here will
- * manifest as a _consistent_ sync offset in game. Resolution mismatches or
- * values truncated or rounded when they shouldn't be can cause errors when
- * this is calculated and manifest as a _sudden_ drift of sync. Use caution
- * and do thorough testing if you change anything here. -sukibaby */
-double RageTimer::GetTimeSinceStart()
+// This is not preferred, but sometimes we need time as a floating point.
+// This is represented in seconds.
+double RageTimer::GetTimeSinceStart() noexcept
 {
 	const uint64_t usecs = (GetTime() - g_iStartTime);
 	return static_cast<double>(usecs / kUsecsPerSecDouble);
 }
 
-int RageTimer::GetTimeSinceStartSeconds()
+// This is used where GetTimeSinceStart would be cast to an int without rounding.
+int RageTimer::GetTimeSinceStartSeconds() noexcept
 {
 	const uint64_t usecs = (GetTime() - g_iStartTime);
 	return static_cast<int>(usecs / kUsecsPerSecULL);
 }
 
-uint64_t RageTimer::GetTimeSinceStartMicroseconds()
+// This is the preferred way to handle system time.
+// It has the greatest accuracy and the lowest overhead of all methods.
+uint64_t RageTimer::GetTimeSinceStartMicroseconds() noexcept
 {
 	return (GetTime() - g_iStartTime);
 }
 
-void RageTimer::Touch()
+void RageTimer::Touch() noexcept
 {
 	uint64_t usecs = GetTime();
 
@@ -145,7 +142,7 @@ float RageTimer::GetDeltaTime() noexcept
  * RageTimer AverageTime = tm.Half();	
  * printf( "Something happened approximately %f seconds ago.\n", tm.Ago() ); 
  * Note this has been reverted to the original SM3.95 function. */
-RageTimer RageTimer::Half() const
+RageTimer RageTimer::Half() const noexcept
 {
 	const float fProbableDelay = Ago() / 2;
 	return *this + fProbableDelay;
