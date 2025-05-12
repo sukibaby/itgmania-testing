@@ -98,18 +98,8 @@ void RageTimer::Touch() noexcept
 // stored time in the RageTimer object. This is useful for tracking elapsed time.
 float RageTimer::Ago() const noexcept
 {
-	RageTimer currentTime;
-	int64_t secs = currentTime.GetSecs() - m_time.first;
-	int64_t us = currentTime.GetUs() - m_time.second;
-
-	// Adjust the seconds and microseconds if microseconds is greater than or equal to one second
-	if (us < 0) {
-		us += kUsecsPerSecLL;
-		--secs;
-	}
-
-	double ret = static_cast<double>(secs) + static_cast<double>(us * kUsecsToSecRatio);
-	return static_cast<float>(ret);
+	const RageTimer currentTime;
+	return currentTime - *this;
 }
 
 // GetDeltaTime() will update the stored time in the RageTimer object as well as
@@ -117,21 +107,9 @@ float RageTimer::Ago() const noexcept
 float RageTimer::GetDeltaTime() noexcept
 {
 	RageTimer currentTime;
-	int64_t secs = currentTime.GetSecs() - m_time.first;
-	int64_t us = currentTime.GetUs() - m_time.second;
-
-	// Adjust the seconds and microseconds if microseconds is greater than or equal to one second
-	if (us < 0) {
-		us += kUsecsPerSecLL;
-		--secs;
-	}
-
-	// Update the stored time
-	m_time.first = secs;
-	m_time.second = us;
-
-	double ret = static_cast<double>(secs) + static_cast<double>(us * kUsecsToSecRatio);
-	return static_cast<float>(ret);
+	float delta = currentTime - *this;
+	*this = currentTime; // Update the stored time
+	return delta;
 }
 
 /* Get a timer representing half of the time ago as this one.  This is	
