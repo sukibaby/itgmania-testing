@@ -106,7 +106,7 @@ float RageTimer::Ago() const noexcept
 // returning the time since the last call to Touch().
 float RageTimer::GetDeltaTime() noexcept
 {
-	RageTimer currentTime;
+	const RageTimer currentTime;
 	float delta = currentTime - *this;
 	*this = currentTime; // Update the stored time
 	return delta;
