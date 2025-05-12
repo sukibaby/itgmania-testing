@@ -102,10 +102,23 @@ void RageTimer::Touch()
 	m_time.second = usecs % kUsecsPerSecULL; // microseconds
 }
 
-float RageTimer::Ago() const
+// Ago() returns the time since the last call to Touch(), whereas GetDeltaTime()
+// returns the time since the last call to GetDeltaTime() but also updates the
+// stored time in the RageTimer object. This is useful for tracking elapsed time.
+float RageTimer::Ago() const noexcept
 {
-	const RageTimer Now;
-	return Now - *this;
+	RageTimer currentTime;
+	int64_t secs = currentTime.GetSecs() - m_time.first;
+	int64_t us = currentTime.GetUs() - m_time.second;
+
+	// Adjust the seconds and microseconds if microseconds is greater than or equal to one second
+	if (us < 0) {
+		us += kUsecsPerSecLL;
+		--secs;
+	}
+
+	double ret = static_cast<double>(secs) + static_cast<double>(us * kUsecsToSecRatio);
+	return static_cast<float>(ret);
 }
 
 float RageTimer::GetDeltaTime()
