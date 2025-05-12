@@ -22,31 +22,31 @@ public:
 	inline int64_t GetUs() const { return m_time.second; }
 
 	/* Time ago this RageTimer represents. */
-	float Ago() const;
-	void Touch();
+	float Ago() const noexcept;
+	void Touch() noexcept;
 	inline bool IsZero() const { return m_time.first == 0 && m_time.second == 0; }
 	inline void SetZero() { m_time = { 0, 0 }; }
 
 	/* Time between last call to GetDeltaTime() (Ago() + Touch()): */
-	float GetDeltaTime();
+	float GetDeltaTime() noexcept;
 
-	static double GetTimeSinceStart();	// seconds since the program was started
-	static int GetTimeSinceStartSeconds(); 	// This is used where GetTimeSinceStart would be cast to an int without rounding.
-	static uint64_t GetTimeSinceStartMicroseconds();
+	static double GetTimeSinceStart() noexcept;	// seconds since the program was started
+	static int GetTimeSinceStartSeconds() noexcept; 	// This is used where GetTimeSinceStart would be cast to an int without rounding.
+	static uint64_t GetTimeSinceStartMicroseconds() noexcept;
 
 	/* Get a timer representing half of the time ago as this one. */
-	RageTimer Half() const;
+	RageTimer Half() const noexcept;
 
 	/* Add (or subtract) a duration from a timestamp.  The result is another timestamp. */
-	RageTimer operator+( float tm ) const;
+	RageTimer operator+( float tm ) const noexcept;
 	RageTimer operator-( float tm ) const { return *this + -tm; }
 	void operator+=( float tm ) { *this = *this + tm; }
 	void operator-=( float tm ) { *this = *this + -tm; }
 
 	/* Find the amount of time between two timestamps.  The result is a duration. */
-	float operator-( const RageTimer &rhs ) const;
+	float operator-( const RageTimer &rhs ) const noexcept;
 
-	bool operator<( const RageTimer &rhs ) const;
+	bool operator<( const RageTimer &rhs ) const noexcept;
 private:
 	RageTimerPair m_time;
 };
