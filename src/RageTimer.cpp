@@ -64,7 +64,7 @@ constexpr double kUsecsToSecRatio = 0.000001;
 const RageTimer RageZeroTimer(0,0);
 static const uint64_t g_iStartTime = ArchHooks::GetSystemTimeInMicroseconds();
 
-static inline uint64_t GetTime() noexcept
+static uint64_t GetTime() noexcept
 {
 	return ArchHooks::GetSystemTimeInMicroseconds();
 }
