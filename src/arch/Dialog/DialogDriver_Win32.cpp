@@ -53,7 +53,7 @@ static INT_PTR CALLBACK OKWndProc( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lP
 			// Set static text.
 			RString sMessage = g_sMessage;
 			Replace(sMessage, "\n", "\r\n" );
-			SetWindowText( GetDlgItem(hWnd, IDC_MESSAGE), sMessage );
+			SetWindowText( GetDlgItem(hWnd, IDC_MESSAGE), sMessage.c_str() );
 
 			// Focus is on any of the controls in the dialog by default.
 			// I'm not sure why. Set focus to the button manually. -Chris

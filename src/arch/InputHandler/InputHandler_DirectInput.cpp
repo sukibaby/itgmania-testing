@@ -947,7 +947,7 @@ bool InputHandler_DInput::DevicesChanged()
 void InputHandler_DInput::InputThreadMain()
 {
 	if(!SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_HIGHEST))
-		LOG->Warn(werr_ssprintf(GetLastError(), "Failed to set DirectInput thread priority"));
+		LOG->Warn(werr_ssprintf(GetLastError(), "Failed to set DirectInput thread priority").c_str());
 
 	// Enable priority boosting.
 	SetThreadPriorityBoost( GetCurrentThread(), FALSE );
@@ -979,7 +979,7 @@ void InputHandler_DInput::InputThreadMain()
 			int ret = WaitForSingleObjectEx( Handle, 50, true );
 			if( ret == -1 )
 			{
-				LOG->Trace( werr_ssprintf(GetLastError(), "WaitForSingleObjectEx failed") );
+				LOG->Trace( werr_ssprintf(GetLastError(), "WaitForSingleObjectEx failed").c_str() );
 				continue;
 			}
 

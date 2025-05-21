@@ -220,7 +220,7 @@ RString LowLevelWindow_Win32::TryVideoMode( const VideoModeParams &p, bool &bNew
 			/* Destroy the window. */
 			DestroyGraphicsWindowAndOpenGLContext();
 
-			return werr_ssprintf( err, "Pixel format failed" );
+			return werr_ssprintf( err, "Pixel format failed" ).c_str();
 		}
 
 		DescribePixelFormat( GraphicsWindow::GetHDC(), iPixelFormat, sizeof(g_CurrentPixelFormat), &g_CurrentPixelFormat );
@@ -250,7 +250,7 @@ RString LowLevelWindow_Win32::TryVideoMode( const VideoModeParams &p, bool &bNew
 
 		if( !wglShareLists(g_HGLRC, g_HGLRC_Background) )
 		{
-			LOG->Warn( werr_ssprintf(GetLastError(), "wglShareLists failed") );
+			LOG->Warn( werr_ssprintf(GetLastError(), "wglShareLists failed").c_str() );
 			wglDeleteContext( g_HGLRC_Background );
 			g_HGLRC_Background = nullptr;
 		}

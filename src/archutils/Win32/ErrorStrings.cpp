@@ -4,25 +4,29 @@
 
 #include <windows.h>
 
-RString werr_ssprintf( int err, const char *fmt, ... )
+std::string werr_ssprintf(int err, const char* fmt, ...)
 {
-	char buf[1024] = "";
-	FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-		0, err, 0, buf, sizeof(buf), nullptr);
+    char buf[1024] = "";
+    FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+        0, err, 0, buf, sizeof(buf), nullptr);
 
-	// Why is FormatMessage returning text ending with \r\n? (who? -aj)
-	// Perhaps it's because you're on Windows, where newlines are \r\n. -aj
-	RString text = buf;
-	Replace(text, "\n", "" );
-	Replace(text, "\r", " " ); // foo\r\nbar -> foo bar
-	TrimRight( text ); // "foo\r\n" -> "foo"
+    // Remove \r and \n from the error message
+    std::string text = buf;
+    text.erase(std::remove(text.begin(), text.end(), '\n'), text.end());
+    std::replace(text.begin(), text.end(), '\r', ' ');
+    // Trim right
+    while (!text.empty() && std::isspace(text.back()))
+        text.pop_back();
 
-	va_list	va;
-	va_start(va, fmt);
-	RString s = vssprintf( fmt, va );
-	va_end(va);
+    va_list va;
+    va_start(va, fmt);
+    char msgbuf[1024];
+    vsnprintf(msgbuf, sizeof(msgbuf), fmt, va);
+    va_end(va);
 
-	return s += ssprintf( " (%s)", text.c_str() );
+    std::string s = msgbuf;
+    s += " (" + text + ")";
+    return s;
 }
 
 RString ConvertWstringToCodepage( std::wstring s, int iCodePage )
