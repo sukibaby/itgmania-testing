@@ -203,7 +203,7 @@ MutexImpl_Win32::MutexImpl_Win32( RageMutex *pParent ):
 	MutexImpl( pParent )
 {
 	mutex = CreateMutex( nullptr, false, nullptr );
-	ASSERT_M( mutex != nullptr, werr_ssprintf(GetLastError(), "CreateMutex") );
+	ASSERT_M( mutex != nullptr, werr_ssprintf(GetLastError(), "CreateMutex").c_str() );
 }
 
 MutexImpl_Win32::~MutexImpl_Win32()
@@ -235,7 +235,7 @@ static bool SimpleWaitForSingleObject( HANDLE h, DWORD ms )
 		FAIL_M( "WAIT_ABANDONED" );
 
 	case WAIT_FAILED:
-		FAIL_M( werr_ssprintf(GetLastError(), "WaitForSingleObject") );
+		FAIL_M( werr_ssprintf(GetLastError(), "WaitForSingleObject").c_str() );
 
 	default:
 		FAIL_M( "unknown" );
@@ -273,7 +273,7 @@ void MutexImpl_Win32::Unlock()
 	/* We can't ASSERT here, since this is called from checkpoints,
 	 * which is called from ASSERT. */
 	if( !ret )
-		sm_crash( werr_ssprintf( GetLastError(), "ReleaseMutex failed" ) );
+		sm_crash( werr_ssprintf( GetLastError(), "ReleaseMutex failed" ).c_str() );
 }
 
 uint64_t GetThisThreadId()

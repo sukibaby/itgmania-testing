@@ -2,27 +2,37 @@
 #include "ErrorStrings.h"
 #include "RageUtil.h"
 
+#include <string>
+#include <cstdarg>
+#include <cstdio>
 #include <windows.h>
+#include <algorithm>
 
-RString werr_ssprintf( int err, const char *fmt, ... )
+// Returns a string describing the error code, and appends the user message.
+std::string werr_ssprintf(int err, const char* fmt, ...)
 {
 	char buf[1024] = "";
-	FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+	FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
 		0, err, 0, buf, sizeof(buf), nullptr);
 
-	// Why is FormatMessage returning text ending with \r\n? (who? -aj)
-	// Perhaps it's because you're on Windows, where newlines are \r\n. -aj
-	RString text = buf;
-	Replace(text, "\n", "" );
-	Replace(text, "\r", " " ); // foo\r\nbar -> foo bar
-	TrimRight( text ); // "foo\r\n" -> "foo"
+	// Remove \n and replace \r with space
+	std::string text(buf);
+	text.erase(std::remove(text.begin(), text.end(), '\n'), text.end());
+	std::replace(text.begin(), text.end(), '\r', ' ');
 
-	va_list	va;
+	while (!text.empty() && std::isspace(text.back()))
+		text.pop_back();
+
+	char userMsg[1024];
+	va_list va;
 	va_start(va, fmt);
-	RString s = vssprintf( fmt, va );
+	// Example output: "<user message> (<system message>)"
+	std::vsnprintf(userMsg, sizeof(userMsg), fmt, va);
 	va_end(va);
 
-	return s += ssprintf( " (%s)", text.c_str() );
+	std::string result = userMsg;
+	result += " (" + text + ")";
+	return result;
 }
 
 RString ConvertWstringToCodepage( std::wstring s, int iCodePage )
