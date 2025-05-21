@@ -8,22 +8,38 @@
 #include <dsound.h>
 #include <stdexcept>
 
-RString GetErrorString(HRESULT hr);
+// Helper for formatting with va_list
+static std::string vformat(const char* fmt, va_list args) {
+	char buf[1024];
+	std::vsnprintf(buf, sizeof(buf), fmt, args);
+	return std::string(buf);
+}
 
-RString hr_ssprintf( int hr, const char *fmt, ... )
-{
-	va_list	va;
+// Helper for formatting with ... (like ssprintf)
+static std::string sformat(const char* fmt, ...) {
+	char buf[1024];
+	va_list args;
+	va_start(args, fmt);
+	std::vsnprintf(buf, sizeof(buf), fmt, args);
+	va_end(args);
+	return std::string(buf);
+}
+
+std::string GetErrorString(HRESULT hr);
+
+std::string hr_ssprintf(int hr, const char* fmt, ...) {
+	va_list va;
 	va_start(va, fmt);
-	RString s = vssprintf( fmt, va );
+	std::string s = vformat(fmt, va);
 	va_end(va);
 
-	RString szError = GetErrorString(hr);
-	return s + ssprintf(" (%s)", szError.c_str());
+	std::string szError = GetErrorString(hr);
+	return s + sformat(" (%s)", szError.c_str());
 }
 
 #define DXERRMSG(hrcode, dummy) case hrcode: return #hrcode;
 
-RString GetErrorString(HRESULT hr)
+std::string GetErrorString(HRESULT hr)
 {
 	switch (hr)
 	{

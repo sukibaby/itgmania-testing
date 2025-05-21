@@ -190,8 +190,12 @@ void RageLog::SetShowLogOutput( bool show )
 		// create a new console window and attach standard handles
 		AllocConsole();
 		SetConsoleOutputCP(CP_UTF8);
-		freopen( "CONOUT$","wb", stdout );
-		freopen( "CONOUT$","wb", stderr );
+		if (freopen("CONOUT$", "wb", stdout) == nullptr) {
+			FAIL_M( "Failed to redirect standard output to the console." );
+		}
+		if (freopen("CONOUT$", "wb", stderr) == nullptr) {
+			FAIL_M( "Failed to redirect standard error to the console." );
+		}
 	}
 	else
 	{

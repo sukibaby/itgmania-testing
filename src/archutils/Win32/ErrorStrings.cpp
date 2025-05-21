@@ -2,31 +2,37 @@
 #include "ErrorStrings.h"
 #include "RageUtil.h"
 
+#include <string>
+#include <cstdarg>
+#include <cstdio>
 #include <windows.h>
+#include <algorithm>
 
+// Returns a string describing the error code, and appends the user message.
 std::string werr_ssprintf(int err, const char* fmt, ...)
 {
-    char buf[1024] = "";
-    FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-        0, err, 0, buf, sizeof(buf), nullptr);
+	char buf[1024] = "";
+	FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+		0, err, 0, buf, sizeof(buf), nullptr);
 
-    // Remove \r and \n from the error message
-    std::string text = buf;
-    text.erase(std::remove(text.begin(), text.end(), '\n'), text.end());
-    std::replace(text.begin(), text.end(), '\r', ' ');
-    // Trim right
-    while (!text.empty() && std::isspace(text.back()))
-        text.pop_back();
+	// Remove \n and replace \r with space
+	std::string text(buf);
+	text.erase(std::remove(text.begin(), text.end(), '\n'), text.end());
+	std::replace(text.begin(), text.end(), '\r', ' ');
 
-    va_list va;
-    va_start(va, fmt);
-    char msgbuf[1024];
-    vsnprintf(msgbuf, sizeof(msgbuf), fmt, va);
-    va_end(va);
+	while (!text.empty() && std::isspace(text.back()))
+		text.pop_back();
 
-    std::string s = msgbuf;
-    s += " (" + text + ")";
-    return s;
+	char userMsg[1024];
+	va_list va;
+	va_start(va, fmt);
+	// Example output: "<user message> (<system message>)"
+	std::vsnprintf(userMsg, sizeof(userMsg), fmt, va);
+	va_end(va);
+
+	std::string result = userMsg;
+	result += " (" + text + ")";
+	return result;
 }
 
 RString ConvertWstringToCodepage( std::wstring s, int iCodePage )

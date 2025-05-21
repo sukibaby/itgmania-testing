@@ -2,10 +2,11 @@
 #define DIRECTX_HELPERS_H
 #include "windows.h"
 #include "VersionHelpers.h"
+#include <string>
 
-RString hr_ssprintf( int hr, const char *fmt, ... );
+std::string hr_ssprintf( int hr, const char *fmt, ... );
 
-RString GetErrorString(HRESULT hr);
+std::string GetErrorString(HRESULT hr);
 
 // These defined need to be exposed anywhere this is included.
 #define DIRECTINPUT_VERSION 0x0800
