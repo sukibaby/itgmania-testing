@@ -490,6 +490,8 @@ bool Song::ReloadFromSongDir( const RString &sDir )
 	// Clear out all old data to prepare for a reload from disk.
 	// m_vpSteps represent known charts for a given difficulty or mode.
 	// m_UnknownStyleSteps represent things like unfilled difficulty blocks.
+	RemoveAutoGenNotes();
+	
 	for( Steps* step : m_vpSteps )
 	{
 		delete step;
