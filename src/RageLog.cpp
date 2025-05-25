@@ -17,6 +17,13 @@
 
 RageLog* LOG;		// global and accessible from anywhere in the program
 
+// For the calls to vsnprintf, one must define a maximum possible size for the buffer.
+// This is the maximum size of a single log line, not the total size of the log.
+// e.g. if the value is 10240, and then you use 2500 chars for a single log line,
+// the resulting string will be not be truncated and will not have extra spaces added to it.
+// vsnprintf only guarantees null termination as long as we don't overflow the buffer.
+constexpr int MAX_LOG_SIZE = 10240;
+
 /*
  * We have a couple log types and a couple logs.
  *
@@ -203,7 +210,7 @@ void RageLog::SetShowLogOutput( bool show )
 
 void RageLog::Trace( const char *fmt, ... )
 {
-	char buffer[1024];
+	char buffer[MAX_LOG_SIZE];
 	va_list	va;
 	va_start( va, fmt );
 	std::vsnprintf( buffer, sizeof(buffer), fmt, va );
@@ -217,7 +224,7 @@ void RageLog::Trace( const char *fmt, ... )
  * in crash dumps. */
 void RageLog::Info( const char *fmt, ... )
 {
-	char buffer[1024];
+	char buffer[MAX_LOG_SIZE];
 	va_list	va;
 	va_start( va, fmt );
 	std::vsnprintf( buffer, sizeof(buffer), fmt, va );
@@ -229,7 +236,7 @@ void RageLog::Info( const char *fmt, ... )
 
 void RageLog::Warn( const char *fmt, ... )
 {
-	char buffer[1024];
+	char buffer[MAX_LOG_SIZE];
 	va_list	va;
 	va_start( va, fmt );
 	std::vsnprintf( buffer, sizeof(buffer), fmt, va );
@@ -241,7 +248,7 @@ void RageLog::Warn( const char *fmt, ... )
 
 void RageLog::Time(const char *fmt, ...)
 {
-	char buffer[1024];
+	char buffer[MAX_LOG_SIZE];
 	va_list	va;
 	va_start(va, fmt);
 	std::vsnprintf( buffer, sizeof(buffer), fmt, va );
@@ -253,7 +260,7 @@ void RageLog::Time(const char *fmt, ...)
 
 void RageLog::UserLog( const RString &sType, const RString &sElement, const char *fmt, ... )
 {
-	char buffer[1024];
+	char buffer[MAX_LOG_SIZE];
 	va_list va;
 	va_start( va, fmt );
 	std::vsnprintf( buffer, sizeof(buffer), fmt, va );
@@ -402,7 +409,7 @@ const char *RageLog::GetRecentLog( int n )
 }
 
 
-static char g_AdditionalLogStr[10240] = "";
+static char g_AdditionalLogStr[MAX_LOG_SIZE] = "";
 static int g_AdditionalLogSize = 0;
 
 void RageLog::UpdateMappedLog()
@@ -425,7 +432,7 @@ const char *RageLog::GetAdditionalLog()
 
 void RageLog::MapLog( const RString &key, const char *fmt, ... )
 {
-	char buffer[1024];
+	char buffer[MAX_LOG_SIZE];
 	va_list	va;
 	va_start( va, fmt );
 	std::vsnprintf( buffer, sizeof(buffer), fmt, va );
