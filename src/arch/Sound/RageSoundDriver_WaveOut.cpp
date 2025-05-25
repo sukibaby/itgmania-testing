@@ -15,7 +15,7 @@
 
 #include <cstdint>
 #include <vector>
-
+#include <cstdio>
 
 REGISTER_SOUND_DRIVER_CLASS( WaveOut );
 
@@ -34,12 +34,13 @@ static RString wo_ssprintf( MMRESULT err, const char *szFmt, ...)
 	char szBuf[MAXERRORLENGTH];
 	waveOutGetErrorText( err, szBuf, MAXERRORLENGTH );
 
+	char formatted[1024];
 	va_list va;
 	va_start( va, szFmt );
-	RString s = vssprintf( szFmt, va );
+	std::vsnprintf(formatted, sizeof(formatted), szFmt, va);
 	va_end( va );
 
-	return s += ssprintf( "(%s)", szBuf );
+	return RString(formatted) += ssprintf( "(%s)", szBuf );
 }
 
 int RageSoundDriver_WaveOut::MixerThread_start( void *p )

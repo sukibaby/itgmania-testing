@@ -394,21 +394,16 @@ RString ssprintf( const char *fmt, ...)
 {
 	va_list	va;
 	va_start(va, fmt);
-	RString sRet = vssprintf(fmt, va);
-	va_end(va);
-	return sRet;
-}
 
-RString vssprintf( const char *szFormat, va_list argList )
-{
-	va_list tmp;
-	va_copy( tmp, argList );
-	int iNeeded = std::vsnprintf( nullptr, 0, szFormat, tmp );
-	va_end(tmp);
+	va_list va_copy;
+	va_copy(va_copy, va);
+	int sizeNeeded = std::vsnprintf(nullptr, 0, fmt, va_copy);
+	va_end(va_copy);
 
 	RString sRet;
-	sRet.resize(iNeeded);
-	std::vsnprintf( &sRet.front(), iNeeded+1, szFormat, argList );
+	sRet.resize(sizeNeeded);
+	std::vsnprintf(&sRet.front(), sizeNeeded + 1, fmt, va);
+	va_end(va);
 	return sRet;
 }
 

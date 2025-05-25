@@ -3,6 +3,7 @@
 #include "RageUtil.h"
 
 #include <windows.h>
+#include <cstdio>
 
 RString werr_ssprintf( int err, const char *fmt, ... )
 {
@@ -19,8 +20,11 @@ RString werr_ssprintf( int err, const char *fmt, ... )
 
 	va_list	va;
 	va_start(va, fmt);
-	RString s = vssprintf( fmt, va );
+	char formatted[1024];
+	std::vsnprintf(formatted, sizeof(formatted), fmt, va);
 	va_end(va);
+
+	RString s = formatted;
 
 	return s += ssprintf( " (%s)", text.c_str() );
 }

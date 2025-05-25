@@ -7,18 +7,23 @@
 #include <mmsystem.h> // dsound.h needs this
 #include <dsound.h>
 #include <stdexcept>
+#include <cstdio>
 
 RString GetErrorString(HRESULT hr);
 
 RString hr_ssprintf( int hr, const char *fmt, ... )
 {
 	va_list	va;
+	char formattedMessage[1024];
 	va_start(va, fmt);
-	RString s = vssprintf( fmt, va );
+	std::vsnprintf( formattedMessage, sizeof(formattedMessage), fmt, va );
 	va_end(va);
 
 	RString szError = GetErrorString(hr);
-	return s + ssprintf(" (%s)", szError.c_str());
+
+	char result[1024];
+	std::snprintf( result, sizeof(result), "%s (%s)", formattedMessage, szError.c_str() );
+	return RString(result);
 }
 
 #define DXERRMSG(hrcode, dummy) case hrcode: return #hrcode;

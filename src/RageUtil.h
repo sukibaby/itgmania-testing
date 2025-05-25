@@ -355,7 +355,6 @@ RString NormalizeDecimal(float num);
 struct tm GetLocalTime();
 
 RString ssprintf( const char *fmt, ...) PRINTF(1,2);
-RString vssprintf( const char *fmt, va_list argList );
 
 /*
  * Splits a Path into 4 parts (Directory, Drive, Filename, Extention).  Supports UNC path names.

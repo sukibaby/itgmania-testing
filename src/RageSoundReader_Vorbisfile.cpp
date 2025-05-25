@@ -16,6 +16,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
+#include <cstdio>
 
 static size_t OggRageFile_read_func( void *ptr, size_t size, size_t nmemb, void *datasource )
 {
@@ -44,7 +45,8 @@ static RString ov_ssprintf( int err, const char *fmt, ...)
 {
 	va_list	va;
 	va_start( va, fmt );
-	RString s = vssprintf( fmt, va );
+	char formatted[1024];
+	std::vsnprintf( formatted, sizeof(formatted), fmt, va );
 	va_end( va );
 
 	RString errstr;
@@ -70,7 +72,7 @@ static RString ov_ssprintf( int err, const char *fmt, ...)
 		default:		errstr = ssprintf( "unknown error %i", err ); break;
 	}
 
-	return s + ssprintf( " (%s)", errstr.c_str() );
+	return RString(formatted) + ssprintf( " (%s)", errstr.c_str() );
 }
 
 RageSoundReader_FileReader::OpenResult RageSoundReader_Vorbisfile::Open( RageFileBasic *pFile )

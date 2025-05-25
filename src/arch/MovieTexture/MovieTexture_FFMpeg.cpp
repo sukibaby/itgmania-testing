@@ -11,6 +11,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <thread>
+#include <cstdio>
 
 static void FixLilEndian()
 {
@@ -481,9 +482,10 @@ static RString averr_ssprintf(int err, const char* fmt, ...)
 {
 	ASSERT(err < 0);
 
+	char formatted[1024];
 	va_list     va;
 	va_start(va, fmt);
-	RString s = vssprintf(fmt, va);
+	std::vsnprintf(formatted, sizeof(formatted), fmt, va);
 	va_end(va);
 
 	size_t errbuf_size = 512;
@@ -492,7 +494,7 @@ static RString averr_ssprintf(int err, const char* fmt, ...)
 	RString Error = ssprintf("%i: %s", err, errbuf);
 	delete[] errbuf;
 
-	return s + " (" + Error + ")";
+	return RString(formatted) + " (" + Error + ")";
 }
 
 static int AVIORageFile_ReadPacket(void* opaque, uint8_t* buf, int buf_size)

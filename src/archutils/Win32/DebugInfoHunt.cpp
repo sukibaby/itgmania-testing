@@ -7,6 +7,7 @@
 #include "ErrorStrings.h"
 
 #include <vector>
+#include <cstring>
 
 #include <windows.h>
 #include <mmsystem.h>
@@ -82,12 +83,13 @@ static RString wo_ssprintf( MMRESULT err, const char *fmt, ...)
 	char buf[MAXERRORLENGTH];
 	waveOutGetErrorText(err, buf, MAXERRORLENGTH);
 
-	va_list	va;
+	char formatted[1024];
+	va_list va;
 	va_start(va, fmt);
-	RString s = vssprintf( fmt, va );
+	std::vsnprintf(formatted, sizeof(formatted), fmt, va);
 	va_end(va);
 
-	return s += ssprintf( "(%s)", buf );
+	return RString(formatted) + ssprintf(" (%s)", buf);
 }
 
 static void GetDriveDebugInfo()

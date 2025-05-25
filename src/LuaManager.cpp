@@ -21,6 +21,7 @@
 #include <map>
 #include <sstream> // conversion for lua functions.
 #include <vector>
+#include <cstdio>
 
 LuaManager *LUA = nullptr;
 struct Impl
@@ -825,8 +826,10 @@ void LuaHelpers::ReportScriptErrorFmt(const char *fmt, ...)
 {
 	va_list	va;
 	va_start( va, fmt );
-	RString Buff = vssprintf( fmt, va );
+	char buffer[1024];
+	std::vsnprintf( buffer, sizeof(buffer), fmt, va );
 	va_end( va );
+	RString Buff = buffer;
 	ReportScriptError(Buff);
 }
 

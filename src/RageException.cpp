@@ -6,6 +6,7 @@
 
 #include <cstdarg>
 #include <cstdint>
+#include <cstdio>
 
 #if defined(_WIN32) && defined(DEBUG)
 #define WIN32_LEAN_AND_MEAN
@@ -30,9 +31,11 @@ void RageException::Throw( const char *sFmt, ... )
 {
 	va_list	va;
 	va_start( va, sFmt );
-	RString error = vssprintf( sFmt, va );
+	char buffer[1024];
+	std::vsnprintf( buffer, sizeof(buffer), sFmt, va );
 	va_end( va );
 
+	RString error = buffer;
 	RString msg = ssprintf(
 		"\n"
 		"//////////////////////////////////////////////////////\n"

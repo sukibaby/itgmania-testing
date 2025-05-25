@@ -9,6 +9,7 @@
 #include <cstdarg>
 #include <map>
 #include <vector>
+#include <cstdio>
 
 #if defined(_WIN32)
 #include <windows.h>
@@ -202,11 +203,13 @@ void RageLog::SetShowLogOutput( bool show )
 
 void RageLog::Trace( const char *fmt, ... )
 {
+	char buffer[1024];
 	va_list	va;
 	va_start( va, fmt );
-	RString sBuff = vssprintf( fmt, va );
+	std::vsnprintf( buffer, sizeof(buffer), fmt, va );
 	va_end( va );
 
+	RString sBuff = buffer;
 	Write( 0, sBuff );
 }
 
@@ -214,41 +217,49 @@ void RageLog::Trace( const char *fmt, ... )
  * in crash dumps. */
 void RageLog::Info( const char *fmt, ... )
 {
+	char buffer[1024];
 	va_list	va;
 	va_start( va, fmt );
-	RString sBuff = vssprintf( fmt, va );
+	std::vsnprintf( buffer, sizeof(buffer), fmt, va );
 	va_end( va );
 
+	RString sBuff = buffer;
 	Write( WRITE_TO_INFO, sBuff );
 }
 
 void RageLog::Warn( const char *fmt, ... )
 {
+	char buffer[1024];
 	va_list	va;
 	va_start( va, fmt );
-	RString sBuff = vssprintf( fmt, va );
+	std::vsnprintf( buffer, sizeof(buffer), fmt, va );
 	va_end( va );
 
+	RString sBuff = buffer;
 	Write( WRITE_TO_INFO | WRITE_LOUD, sBuff );
 }
 
 void RageLog::Time(const char *fmt, ...)
 {
+	char buffer[1024];
 	va_list	va;
 	va_start(va, fmt);
-	RString sBuff = vssprintf(fmt, va);
+	std::vsnprintf( buffer, sizeof(buffer), fmt, va );
 	va_end(va);
 
+	RString sBuff = buffer;
 	Write(WRITE_TO_TIME, sBuff);
 }
 
 void RageLog::UserLog( const RString &sType, const RString &sElement, const char *fmt, ... )
 {
+	char buffer[1024];
 	va_list va;
 	va_start( va, fmt );
-	RString sBuf = vssprintf( fmt, va );
+	std::vsnprintf( buffer, sizeof(buffer), fmt, va );
 	va_end( va );
 
+	RString sBuf = buffer;
 	if( !sType.empty() )
 		sBuf = ssprintf( "%s \"%s\" %s", sType.c_str(), sElement.c_str(), sBuf.c_str() );
 
@@ -414,13 +425,13 @@ const char *RageLog::GetAdditionalLog()
 
 void RageLog::MapLog( const RString &key, const char *fmt, ... )
 {
-	RString s;
-
+	char buffer[1024];
 	va_list	va;
 	va_start( va, fmt );
-	s += vssprintf( fmt, va );
+	std::vsnprintf( buffer, sizeof(buffer), fmt, va );
 	va_end( va );
 
+	RString s = buffer;
 	LogMaps[key] = s;
 	UpdateMappedLog();
 }

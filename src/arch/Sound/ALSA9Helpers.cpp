@@ -8,6 +8,7 @@
 #include <cstdint>
 #include <fstream>
 #include <string>
+#include <cstdio>
 
 /* int err; must be defined before using this macro */
 #define ALSA_CHECK(x) \
@@ -111,18 +112,25 @@ bool Alsa9Buf::SetSWParams()
 
 void Alsa9Buf::ErrorHandler(const char *file, int line, const char *function, int err, const char *fmt, ...)
 {
+	char formatted[1024];
 	va_list va;
 	va_start( va, fmt );
-	RString str = vssprintf(fmt, va);
+	std::vsnprintf(formatted, sizeof(formatted), fmt, va);
 	va_end( va );
 
+	// strncat is used to avoid buffer overflow, but it will not null-terminate if it's completely filled.
 	if( err )
-		str += ssprintf( " (%s)", dsnd_strerror(err) );
+	{
+		size_t remaining = sizeof(formatted) - strlen(formatted) - 1;
+		strncat(formatted, " (", remaining);
+		strncat(formatted, dsnd_strerror(err), remaining);
+		strncat(formatted, ")", remaining);
+	}
 
 	/* Annoying: these happen both normally (eg. "out of memory" when allocating too many PCM
 	 * slots) and abnormally, and there's no way to tell which is which.  I don't want to
 	 * pollute the warning output. */
-	LOG->Trace( "ALSA error: %s:%i %s: %s", file, line, function, str.c_str() );
+	LOG->Trace( "ALSA error: %s:%i %s: %s", file, line, function, formatted );
 }
 
 void Alsa9Buf::InitializeErrorHandler()
