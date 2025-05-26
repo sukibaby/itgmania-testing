@@ -270,6 +270,9 @@ void MovieDecoder_FFMpeg::HandleReset() {
 
 int MovieDecoder_FFMpeg::DecodeMovie()
 {
+	// Should be thread local so that each thread has its own status variable.
+	thread_local int status;
+
 	// Never exit when the movie is looping. Otherwise exit when the last frame
 	// is added to the FrameBuffer.
 	while (looping_ || (!looping_ && display_frame_num_ < total_frames_)) {
@@ -277,7 +280,7 @@ int MovieDecoder_FFMpeg::DecodeMovie()
 			HandleReset();
 		}
 
-		int status = DecodeFrame();
+		status = DecodeFrame();
 
 		// If cancelled (quitting a song, scrolling the banner), or fatal error,
 		// stop decoding.
