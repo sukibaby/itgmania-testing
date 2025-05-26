@@ -270,6 +270,8 @@ void MovieDecoder_FFMpeg::HandleReset() {
 
 int MovieDecoder_FFMpeg::DecodeMovie()
 {
+	thread_local static int last_status = 0;
+
 	// Never exit when the movie is looping. Otherwise exit when the last frame
 	// is added to the FrameBuffer.
 	while (looping_ || (!looping_ && display_frame_num_ < total_frames_)) {
@@ -278,6 +280,15 @@ int MovieDecoder_FFMpeg::DecodeMovie()
 		}
 
 		int status = DecodeFrame();
+
+		if (status == last_status && status < 0) {
+			// assume we are in a fail loop, so break out
+			LOG->Trace(
+				"MovieDecoder_FFMpeg::DecodeMovie: received more than one request to stop playing a video (code %i).", last_status);
+			return -1;
+		}
+
+		last_status = status;
 
 		// If cancelled (quitting a song, scrolling the banner), or fatal error,
 		// stop decoding.
