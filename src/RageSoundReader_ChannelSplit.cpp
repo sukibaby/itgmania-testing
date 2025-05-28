@@ -140,7 +140,7 @@ int RageSoundReader_Split::Read( float *pBuf, int iFrames )
 	m_iRequestFrames = iFrames;
 	int iRet = m_pImpl->ReadBuffer();
 
-	int iSamplesAvailable = m_pImpl->m_sBuffer.size();
+	int iSamplesAvailable = static_cast<int>(m_pImpl->m_sBuffer.size());
 	const float *pSrc = &m_pImpl->m_sBuffer[0];
 	if( m_pImpl->m_iBufferPositionFrames < m_iPositionFrame )
 	{
@@ -185,13 +185,16 @@ int RageSoundSplitterImpl::ReadBuffer()
 {
 	/* Discard any bytes that are no longer requested by any sound. */
 	int iMinFrameRequested = INT_MAX;
-	int iMaxFrameRequested = INT_MIN;
+	int64_t iMaxFrameRequested = INT_MIN;
 	for (RageSoundReader_Split *snd : m_apSounds)
 	{
 		iMinFrameRequested = std::min( iMinFrameRequested, snd->m_iPositionFrame );
-		iMaxFrameRequested = std::max( iMaxFrameRequested, snd->m_iPositionFrame + snd->m_iRequestFrames );
+		iMaxFrameRequested = std::max( iMaxFrameRequested, static_cast<int64_t>(snd->m_iPositionFrame + snd->m_iRequestFrames) );
 	}
 
+	int64_t numChannels = m_pSource->GetNumChannels();
+
+	// Discard frames that are no longer needed.
 	if( iMinFrameRequested > m_iBufferPositionFrames )
 	{
 		int iEraseFrames = iMinFrameRequested - m_iBufferPositionFrames;
@@ -207,15 +210,19 @@ int RageSoundSplitterImpl::ReadBuffer()
 		m_sBuffer.clear();
 	}
 
-	int iFramesBuffered = m_sBuffer.size() / m_pSource->GetNumChannels();
+	// Calculate the number of frames to read.
+	int iFramesBuffered = static_cast<int>(m_sBuffer.size() / numChannels);
 
-	int iFramesToRead = iMaxFrameRequested - (m_iBufferPositionFrames + iFramesBuffered);
+	int iFramesToRead = static_cast<int>(iMaxFrameRequested) - (m_iBufferPositionFrames + iFramesBuffered);
 	if( iFramesToRead <= 0 )
 		return 1; // requested data already buffered
 
-	int iSamplesToRead = iFramesToRead * m_pSource->GetNumChannels();
-	int iOldSizeSamples = m_sBuffer.size();
-	m_sBuffer.resize( iOldSizeSamples + iSamplesToRead );
+	// Resize the buffer to accommodate the new frames.
+	size_t iOldSizeSamples = m_sBuffer.size();
+	size_t iNewSizeSamples = static_cast<size_t>(iFramesToRead) * numChannels;
+	m_sBuffer.resize( iOldSizeSamples + iNewSizeSamples );
+
+	// Read the new frames into the buffer.
 	int iGotFrames = m_pSource->Read( &m_sBuffer[0] + iOldSizeSamples, iFramesToRead );
 	if( iGotFrames < 0 )
 	{
@@ -223,7 +230,8 @@ int RageSoundSplitterImpl::ReadBuffer()
 		return iGotFrames;
 	}
 
-	int iGotSamples = iGotFrames * m_pSource->GetNumChannels();
+	// Adjust the buffer size based on the actual number of frames read.
+	int64_t iGotSamples = static_cast<int64_t>(iGotFrames) * numChannels;
 	m_sBuffer.resize( iOldSizeSamples + iGotSamples );
 	return 1;
 }
