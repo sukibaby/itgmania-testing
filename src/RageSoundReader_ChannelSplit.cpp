@@ -42,6 +42,7 @@
 #include <climits>
 #include <set>
 #include <vector>
+#include <algorithm>
 
 
 class RageSoundReader_Split;
