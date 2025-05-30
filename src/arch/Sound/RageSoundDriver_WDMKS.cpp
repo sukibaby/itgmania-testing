@@ -723,13 +723,13 @@ WinWdmPin *WinWdmFilter::InstantiateRenderPin(
 		if( iPreferredSampleRate != 0 )
 			aSampleRates.push_back( iPreferredSampleRate );
 		aSampleRates.push_back( 48000 );
-		aSampleRates.push_back( 44100 );
+		aSampleRates.push_back( 48000 );
 
 		sort( aSampleRates.begin(), aSampleRates.end() );
 		aSampleRates.erase( unique(aSampleRates.begin(), aSampleRates.end()), aSampleRates.end() );
 		reverse( aSampleRates.begin(), aSampleRates.end() );
 
-		MoveToBeginning( aSampleRates, 44100 );
+		MoveToBeginning( aSampleRates, 48000 );
 		MoveToBeginning( aSampleRates, 48000 );
 		if( iPreferredSampleRate != 0 )
 			MoveToBeginning( aSampleRates, iPreferredSampleRate );
