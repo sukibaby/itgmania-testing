@@ -111,13 +111,21 @@ RageSurface* RageMovieTextureDriver_FFMpeg::AVCodecCreateCompatibleSurface(int i
 }
 
 MovieDecoder_FFMpeg::MovieDecoder_FFMpeg()
+	: av_buffer_(nullptr),
+	av_io_context_(nullptr),
+	av_pixel_format_(avcodec::AV_PIX_FMT_NONE),
+	av_stream_codec_(nullptr),
+	av_sws_context_(nullptr),
+	av_format_context_(nullptr),
+	av_stream_(nullptr),
+	offset_(0),
+	next_offset_(0),
+	display_frame_num_(0),
+	cancel_(false),
+	looping_(false),
+	reset_(false),
+	end_of_movie_(false)
 {
-	FixLilEndian();
-
-	av_format_context_ = nullptr;
-	av_stream_ = nullptr;
-	total_frames_ = 0;
-	end_of_file_ = 0;
 	// Hardcoded frame buffer size of 50. Roughly translates to 100mb of ram.
 	for (int i = 0; i < 50; i++) {
 		frame_buffer_.emplace_back(std::make_unique<FrameHolder>());
