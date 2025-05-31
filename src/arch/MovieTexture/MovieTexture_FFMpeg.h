@@ -3,6 +3,11 @@
 #ifndef RAGE_MOVIE_TEXTURE_FFMPEG_H
 #define RAGE_MOVIE_TEXTURE_FFMPEG_H
 
+#ifdef _WIN32
+#pragma warning(push)
+#pragma warning(disable : 26495)
+#endif
+
 #include "MovieTexture_Generic.h"
 
 #include <cstdint>
@@ -30,8 +35,10 @@ struct FrameHolder {
 	bool displayed = false;
 	std::size_t packet_num = std::numeric_limits<std::size_t>::max(); // Used as a sanity check during display.
 	std::mutex lock; // Protects the frame as it's being initialized.
+
+	// Destructor to free the AVFrame
 	~FrameHolder() {
-		if (frame != nullptr) {
+		if (frame) {
 			avcodec::av_frame_free(&frame);
 		}
 	}
@@ -262,6 +269,7 @@ static struct AVPixelFormat_t
 	{ 0, { 0,0,0,0 }, avcodec::AV_PIX_FMT_NB, true, false, PixelFormatYCbCr_Invalid }
 };
 
+#pragma warning(pop)
 #endif
 
 /*
