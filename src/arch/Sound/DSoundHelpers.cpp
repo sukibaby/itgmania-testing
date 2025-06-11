@@ -191,11 +191,6 @@ RString DSoundBuf::Init( DSound &ds, DSoundBuf::hw hardware,
 	m_bPlaying = false;
 	ZERO( m_iLastCursors );
 
-	/* The size of the actual DSound buffer.  This can be large; we generally
-	 * won't fill it completely. */
-	m_iBufferSize = 1024*64;
-	m_iBufferSize = std::max( m_iBufferSize, m_iWriteAhead );
-
 	WAVEFORMATEX waveformat;
 	memset( &waveformat, 0, sizeof(waveformat) );
 	waveformat.cbSize = 0;
