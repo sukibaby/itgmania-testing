@@ -15,6 +15,8 @@
 #include "DirectXHelpers.h"
 #include "PrefsManager.h"
 
+#include <windows.h>
+#include <string>
 #include <set>
 
 static const RString g_sClassName = PRODUCT_ID;
@@ -230,17 +232,25 @@ static void AdjustVideoModeParams( VideoModeParams &p )
  * The refresh setting may be ignored. */
 RString GraphicsWindow::SetScreenMode( const VideoModeParams &p )
 {
+	const DWORD displaySettingsFlag = p.windowed ? CDS_RESET : CDS_FULLSCREEN;
+
 	if( p.windowed )
 	{
-		// We're going windowed. If we were previously fullscreen, reset.
-		ChangeDisplaySettingsEx( p.sDisplayId, nullptr, nullptr, 0, nullptr );
-
+		ChangeDisplaySettingsEx( p.sDisplayId, nullptr, nullptr, displaySettingsFlag, nullptr );
 		return RString();
 	}
 
 	DEVMODE DevMode;
-	ZERO( DevMode );
+	ZeroMemory(&DevMode, sizeof(DEVMODE));
 	DevMode.dmSize = sizeof(DEVMODE);
+
+	// Run DevMode thru EnumDisplaySettings to ensure we only provide modes supported by the display driver.
+	if( !EnumDisplaySettings(p.sDisplayId.c_str(), ENUM_CURRENT_SETTINGS, &DevMode) )
+	{
+		LOG->Warn("EnumDisplaySettings failed for display: %s", p.sDisplayId.c_str());
+		return "Failed to retrieve current display settings.";
+	}
+
 	DevMode.dmPelsWidth = p.width;
 	DevMode.dmPelsHeight = p.height;
 	DevMode.dmBitsPerPel = p.bpp;
@@ -251,13 +261,12 @@ RString GraphicsWindow::SetScreenMode( const VideoModeParams &p )
 		DevMode.dmDisplayFrequency = p.rate;
 		DevMode.dmFields |= DM_DISPLAYFREQUENCY;
 	}
-	ChangeDisplaySettingsEx(p.sDisplayId, nullptr, nullptr, 0, nullptr);
 
-	int ret = ChangeDisplaySettingsEx( p.sDisplayId, &DevMode, nullptr, CDS_FULLSCREEN, nullptr );
+	int ret = ChangeDisplaySettingsEx( p.sDisplayId, &DevMode, nullptr, displaySettingsFlag, nullptr );
 	if( ret != DISP_CHANGE_SUCCESSFUL && (DevMode.dmFields & DM_DISPLAYFREQUENCY) )
 	{
 		DevMode.dmFields &= ~DM_DISPLAYFREQUENCY;
-		ret = ChangeDisplaySettingsEx( p.sDisplayId, &DevMode, nullptr, CDS_FULLSCREEN, nullptr );
+		ret = ChangeDisplaySettingsEx( p.sDisplayId, &DevMode, nullptr, displaySettingsFlag, nullptr );
 	}
 
 	// XXX: append error
