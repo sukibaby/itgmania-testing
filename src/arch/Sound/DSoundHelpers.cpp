@@ -43,8 +43,7 @@ BOOL CALLBACK DSound::EnumCallback( LPGUID lpGuid, LPCSTR lpcstrDescription, LPC
 
 void DSound::SetPrimaryBufferMode()
 {
-	DSBUFFERDESC format;
-	memset( &format, 0, sizeof(format) );
+	DSBUFFERDESC format = {};
 	format.dwSize = sizeof(format);
 	format.dwFlags = DSBCAPS_PRIMARYBUFFER;
 	format.dwBufferBytes = 0;
@@ -58,8 +57,7 @@ void DSound::SetPrimaryBufferMode()
 		return;
 	}
 
-	WAVEFORMATEX waveformat;
-	memset( &waveformat, 0, sizeof(waveformat) );
+	WAVEFORMATEX waveformat = {};
 	waveformat.cbSize = 0;
 	waveformat.wFormatTag = WAVE_FORMAT_PCM;
 	waveformat.wBitsPerSample = 16;
@@ -196,8 +194,7 @@ RString DSoundBuf::Init( DSound &ds, DSoundBuf::hw hardware,
 	m_iBufferSize = 1024*64;
 	m_iBufferSize = std::max( m_iBufferSize, m_iWriteAhead );
 
-	WAVEFORMATEX waveformat;
-	memset( &waveformat, 0, sizeof(waveformat) );
+	WAVEFORMATEX waveformat = {};
 	waveformat.cbSize = 0;
 	waveformat.wFormatTag = WAVE_FORMAT_PCM;
 
@@ -217,8 +214,7 @@ RString DSoundBuf::Init( DSound &ds, DSoundBuf::hw hardware,
 	waveformat.nAvgBytesPerSec = m_iSampleRate * bytes*m_iChannels;
 
 	/* Try to create the secondary buffer */
-	DSBUFFERDESC format;
-	memset( &format, 0, sizeof(format) );
+	DSBUFFERDESC format = {};
 	format.dwSize = sizeof(format);
 
 	if (IsWindowsVistaOrGreater())
