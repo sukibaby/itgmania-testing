@@ -512,12 +512,6 @@ void GraphicsWindow::Shutdown()
 {
 	DestroyGraphicsWindow();
 
-	/* Return to the desktop resolution, if needed.
-	 * It'd be nice to not do this: Windows will do it when we quit, and if
-	 * we're shutting down OpenGL to try D3D, this will cause extra mode
-	 * switches. However, we need to do this before displaying dialogs. */
-	ChangeDisplaySettingsEx( g_CurrentParams.sDisplayId, nullptr, nullptr, 0, nullptr );
-
 	AppInstance inst;
 	UnregisterClass( g_sClassName, inst );
 }
