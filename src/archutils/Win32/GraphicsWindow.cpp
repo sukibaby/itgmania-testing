@@ -425,41 +425,39 @@ void GraphicsWindow::CreateGraphicsWindow( const VideoModeParams &p, bool bForce
 /** @brief Shut down the window, but don't reset the video mode. */
 void GraphicsWindow::DestroyGraphicsWindow()
 {
-	if( g_HDC != nullptr )
+	// If we were in fullscreen, release the display mode before destroying the window
+	if( g_hWndMain && !g_CurrentParams.windowed )
 	{
-		ReleaseDC( g_hWndMain, g_HDC );
+		ChangeDisplaySettingsEx(g_CurrentParams.sDisplayId, nullptr, nullptr, 0, nullptr);
+	}
+
+	// Release and destroy the window and its resources.
+	if( g_HDC )
+	{
+		ReleaseDC(g_hWndMain, g_HDC);
 		g_HDC = nullptr;
 	}
 
-	CHECKPOINT;
-
-	if( g_hWndMain != nullptr )
+	if( g_hWndMain )
 	{
 		DestroyWindow( g_hWndMain );
 		g_hWndMain = nullptr;
 		CrashHandler::SetForegroundWindow( g_hWndMain );
 	}
 
-	CHECKPOINT;
-
-	if( g_hIcon != nullptr )
+	if( g_hIcon )
 	{
 		DestroyIcon( g_hIcon );
 		g_hIcon = nullptr;
 	}
 
-	CHECKPOINT;
-
+	// Process any messages that were pending.
 	MSG msg;
 	while( PeekMessage( &msg, nullptr, 0, 0, PM_NOREMOVE ) )
 	{
-		CHECKPOINT;
 		GetMessage( &msg, nullptr, 0, 0 );
-		CHECKPOINT;
 		DispatchMessage( &msg );
 	}
-
-	CHECKPOINT;
 }
 
 void GraphicsWindow::Initialize( bool bD3D )
