@@ -260,9 +260,15 @@ RString GraphicsWindow::SetScreenMode( const VideoModeParams &p )
 		ret = ChangeDisplaySettingsEx( p.sDisplayId, &DevMode, nullptr, CDS_FULLSCREEN, nullptr );
 	}
 
-	// XXX: append error
 	if( ret != DISP_CHANGE_SUCCESSFUL )
-		return "Couldn't set screen mode";
+	{
+		LOG->Warn( "Failed to change display settings: %s", werr_ssprintf( GetLastError(), "ChangeDisplaySettingsEx" ).c_str() );
+		return RString( "Couldn't set screen mode" );
+	}
+	else
+	{
+		LOG->Info( "Diplay settings changed to %d x %d @ %dHz, %d bpp", p.width, p.height, p.rate, p.bpp );
+	}
 
 	g_FullScreenDevMode = DevMode;
 	return RString();
