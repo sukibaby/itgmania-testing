@@ -50,3 +50,7 @@
 	path = extern/hidapi
 	url = https://github.com/libusb/hidapi.git
 	shallow = true
+[submodule "extern/libmad"]
+	path = extern/libmad
+	url = https://codeberg.org/tenacityteam/libmad.git
+	shallow = true
