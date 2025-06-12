@@ -23,9 +23,12 @@ static int chunksize() { return g_iMaxWriteahead / num_chunks; }
 
 void RageSoundDriver_DSound_Software::MixerThread()
 {
-	if( !SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL) )
-		if( !SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_ABOVE_NORMAL) )
-			LOG->Warn(werr_ssprintf(GetLastError(), "Failed to set sound thread priority"));
+	if( !SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL) ) {
+		if( !SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_ABOVE_NORMAL) ) {
+			RString warn_string = WinErrorToString(GetLastError()) + " Failed to set sound thread priority";
+			LOG->Warn( warn_string.c_str() );
+		}
+	}
 
 	/* Fill a buffer before we start playing, so we don't play whatever junk is
 	 * in the buffer. */
@@ -133,8 +136,10 @@ RageSoundDriver_DSound_Software::~RageSoundDriver_DSound_Software()
 
 void RageSoundDriver_DSound_Software::SetupDecodingThread()
 {
-	if( !SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_ABOVE_NORMAL) )
-		LOG->Warn( werr_ssprintf(GetLastError(), "Failed to set decoding thread priority") );
+	if( !SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_ABOVE_NORMAL) ) {
+		RString werr_string = WinErrorToString(GetLastError()) + " Failed to set decoding thread priority";
+		LOG->Warn( werr_string.c_str() );
+	}
 }
 
 float RageSoundDriver_DSound_Software::GetPlayLatency() const

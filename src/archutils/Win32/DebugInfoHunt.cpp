@@ -31,7 +31,8 @@ static void GetMemoryDebugInfo()
 	}
 	else
 	{
-		LOG->Warn("GlobalMemoryStatusEx failed: %s", werr_ssprintf(GetLastError(), "GlobalMemoryStatusEx").c_str());
+		RString werr_string = "GlobalMemoryStatusEx failed: " + WinErrorToString(GetLastError()) + "GlobalMemoryStatusEx";
+		LOG->Warn(werr_string.c_str());
 	}
 }
 
@@ -203,7 +204,8 @@ static void GetSoundDriverDebugInfo()
 		MMRESULT ret = waveOutGetDevCaps(i, &caps, sizeof(caps));
 		if(ret != MMSYSERR_NOERROR)
 		{
-			LOG->Info(wo_ssprintf(ret, "waveOutGetDevCaps(%i) failed", i));
+			RString wo_string = wo_ssprintf(ret, "waveOutGetDevCaps(%i) failed", i);
+			LOG->Info(wo_string.c_str());
 			continue;
 		}
 		LOG->Info("Sound device %i: %s, %i.%i, MID %i, PID %i %s", i, caps.szPname,

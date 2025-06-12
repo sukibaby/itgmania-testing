@@ -37,14 +37,16 @@ bool DIDevice::Open()
 	HRESULT hr = g_dinput->CreateDevice( JoystickInst.guidInstance, &tmpdevice, nullptr );
 	if ( hr != DI_OK )
 	{
-		LOG->Info( hr_ssprintf(hr, "OpenDevice: IDirectInput_CreateDevice") );
+		RString info_string = HResultToString(hr) + "OpenDevice: IDirectInput8::CreateDevice";
+		LOG->Info( info_string.c_str() );
 		return false;
 	}
 	hr = tmpdevice->QueryInterface( IID_IDirectInputDevice8, (LPVOID *) &Device );
 	tmpdevice->Release();
 	if ( hr != DI_OK )
 	{
-		LOG->Info( hr_ssprintf(hr, "OpenDevice(%s): IDirectInputDevice::QueryInterface", m_sName.c_str()) );
+		RString info_string = HResultToString(hr) + "OpenDevice(" + m_sName.c_str() + "): IDirectInputDevice::QueryInterface";
+		LOG->Info( info_string.c_str() );
 		return false;
 	}
 
@@ -55,7 +57,8 @@ bool DIDevice::Open()
 	hr = Device->SetCooperativeLevel( GraphicsWindow::GetHwnd(), coop );
 	if ( hr != DI_OK )
 	{
-		LOG->Info( hr_ssprintf(hr, "OpenDevice(%s): IDirectInputDevice2::SetCooperativeLevel", m_sName.c_str()) );
+		RString info_string = HResultToString(hr) + "OpenDevice(" + m_sName.c_str() + "): IDirectInputDevice2::SetCooperativeLevel";
+		LOG->Info( info_string.c_str() );
 		return false;
 	}
 
@@ -73,7 +76,8 @@ bool DIDevice::Open()
 	}
 	if ( hr != DI_OK )
 	{
-		LOG->Info( hr_ssprintf(hr, "OpenDevice(%s): IDirectInputDevice2::SetDataFormat", m_sName.c_str()) );
+		RString info_string = HResultToString(hr) + "OpenDevice(" + m_sName.c_str() + "): IDirectInputDevice2::SetDataFormat";
+		LOG->Info( info_string.c_str() );
 		return false;
 	}
 
@@ -117,7 +121,8 @@ bool DIDevice::Open()
 		}
 		else if ( hr != DI_OK )
 		{
-			LOG->Info( hr_ssprintf(hr, "OpenDevice(%s): IDirectInputDevice2::SetProperty", m_sName.c_str()) );
+			RString info_string = HResultToString(hr) + "OpenDevice(" + m_sName.c_str() + "): IDirectInputDevice2::SetProperty";
+			LOG->Info( info_string.c_str() );
 			return false;
 		}
 	}

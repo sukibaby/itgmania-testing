@@ -192,16 +192,27 @@ RString ArchHooks_Win32::GetClipboard()
 
 	// Yes. All this mess just to gain access to the string stored by the clipboard.
 	// I'm having flashbacks to Berkeley sockets.
-	if(unlikely( !OpenClipboard( nullptr ) ))
-		{ LOG->Warn(werr_ssprintf( GetLastError(), "InputHandler_DirectInput: OpenClipboard() failed" )); return ""; }
+	if(unlikely( !OpenClipboard( nullptr ) )) {
+		RString err_string = WinErrorToString(GetLastError()) + "InputHandler_DirectInput: OpenClipboard() failed";
+		LOG->Warn( err_string.c_str() );
+		return "";
+	}
 
 	hgl = GetClipboardData( CF_TEXT );
-	if(unlikely( hgl == nullptr ))
-		{ LOG->Warn(werr_ssprintf( GetLastError(), "InputHandler_DirectInput: GetClipboardData() failed" )); CloseClipboard(); return ""; }
+	if(unlikely( hgl == nullptr )) {
+		RString err_string = WinErrorToString(GetLastError()) + "InputHandler_DirectInput: GetClipboardData() failed";
+		LOG->Warn( err_string.c_str() );
+		CloseClipboard();
+		return "";
+	}
 
 	lpstr = (LPTSTR) GlobalLock( hgl );
-	if(unlikely( lpstr == nullptr ))
-		{ LOG->Warn(werr_ssprintf( GetLastError(), "InputHandler_DirectInput: GlobalLock() failed" )); CloseClipboard(); return ""; }
+	if(unlikely( lpstr == nullptr )) {
+		RString err_string = WinErrorToString(GetLastError()) + "InputHandler_DirectInput: GlobalLock() failed";
+		LOG->Warn( err_string.c_str() );
+		CloseClipboard();
+		return "";
+	}
 
 	// And finally, we have a char (or wchar_t) array of the clipboard contents,
 	// pointed to by sToPaste.

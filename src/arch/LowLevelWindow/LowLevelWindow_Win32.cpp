@@ -220,7 +220,8 @@ RString LowLevelWindow_Win32::TryVideoMode( const VideoModeParams &p, bool &bNew
 			/* Destroy the window. */
 			DestroyGraphicsWindowAndOpenGLContext();
 
-			return werr_ssprintf( err, "Pixel format failed" );
+			RString werr_string = WinErrorToString(err) + " Pixel format failed";
+			return werr_string.c_str();
 		}
 
 		DescribePixelFormat( GraphicsWindow::GetHDC(), iPixelFormat, sizeof(g_CurrentPixelFormat), &g_CurrentPixelFormat );
@@ -237,7 +238,8 @@ RString LowLevelWindow_Win32::TryVideoMode( const VideoModeParams &p, bool &bNew
 		{
 			DWORD err = GetLastError();
 			DestroyGraphicsWindowAndOpenGLContext();
-			return hr_ssprintf( err, "wglCreateContext" );
+			RString werr_string = WinErrorToString(err) + " wglCreateContext";
+			return werr_string;
 		}
 
 		g_HGLRC_Background = wglCreateContext( GraphicsWindow::GetHDC() );
@@ -245,12 +247,14 @@ RString LowLevelWindow_Win32::TryVideoMode( const VideoModeParams &p, bool &bNew
 		{
 			DWORD err = GetLastError();
 			DestroyGraphicsWindowAndOpenGLContext();
-			return hr_ssprintf( err, "wglCreateContext" );
+			RString werr_string = WinErrorToString(err) + " wglCreateContext";
+			return werr_string;
 		}
 
 		if( !wglShareLists(g_HGLRC, g_HGLRC_Background) )
 		{
-			LOG->Warn( werr_ssprintf(GetLastError(), "wglShareLists failed") );
+			RString werr_string = WinErrorToString(GetLastError()) + " wglShareLists failed";
+			LOG->Warn( werr_string );
 			wglDeleteContext( g_HGLRC_Background );
 			g_HGLRC_Background = nullptr;
 		}
@@ -259,7 +263,8 @@ RString LowLevelWindow_Win32::TryVideoMode( const VideoModeParams &p, bool &bNew
 		{
 			DWORD err = GetLastError();
 			DestroyGraphicsWindowAndOpenGLContext();
-			return hr_ssprintf( err, "wglCreateContext" );
+			RString werr_string = WinErrorToString(err) + " wglCreateContext";
+			return werr_string;
 		}
 	}
 	return RString();	// we set the video mode successfully
@@ -274,9 +279,9 @@ void LowLevelWindow_Win32::BeginConcurrentRendering()
 {
 	if( !wglMakeCurrent( GraphicsWindow::GetHDC(), g_HGLRC_Background ) )
 	{
-		DWORD err = GetLastError();
-		LOG->Warn( hr_ssprintf(err, "wglMakeCurrent") );
-		FAIL_M( hr_ssprintf(err, "wglMakeCurrent") );
+		RString fail_string = HResultToString(GetLastError()) + " wglMakeCurrent";
+		LOG->Warn( fail_string.c_str() );
+		FAIL_M( fail_string.c_str() );
 	}
 }
 

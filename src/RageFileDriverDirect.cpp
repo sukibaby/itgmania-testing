@@ -356,9 +356,9 @@ RageFileObjDirect::~RageFileObjDirect()
 
 		/* We failed. */
 		int err = GetLastError();
-		const RString error = werr_ssprintf( err, "Error renaming \"%s\" to \"%s\"", sOldPath.c_str(), sNewPath.c_str() );
-		WARN( ssprintf("%s", error.c_str()) );
-		SetError( error );
+		const RString error_string = WinErrorToString(err) + "Error renaming " + sOldPath + " to " + sNewPath;
+		WARN( error_string.c_str() );
+		SetError( error_string );
 		break;
 #else
 		if( rename( sOldPath.c_str(), sNewPath.c_str() ) == -1 )
