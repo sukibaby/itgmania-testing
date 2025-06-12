@@ -86,35 +86,62 @@ static void parse_header(const unsigned char **ptr,
 	*size    = id3_parse_syncsafe(ptr, 4);
 }
 
+static bool is_id3v1_tag( const unsigned char *data, id3_length_t length )
+{
+	// ID3v1 tags are always exactly 128 bytes at the end of the file and start with "TAG"
+	// Only check if length is at least 128 for correctness
+	return length >= 128 && data[0] == 'T' && data[1] == 'A' && data[2] == 'G';
+}
+
+static bool is_id3v2_tag( const unsigned char *data, id3_length_t length )
+{
+	// ID3v2 tags are at least 10 bytes and start with "ID3" (header) or "3DI" (footer)
+	return length >= 10 &&
+	       ((data[0] == 'I' && data[1] == 'D' && data[2] == '3') || // ID3v2 header
+	        (data[0] == '3' && data[1] == 'D' && data[2] == 'I'));  // ID3v2 footer
+}
+
+static unsigned long parse_id3v2_size( const unsigned char *data )
+{
+	// ID3v2 size is stored in 4 syncsafe bytes at offset 6-9
+	unsigned long size = 0;
+	for (int i = 6; i < 10; ++i)
+	{
+		if (data[i] & 0x80) // Highest bit must be zero
+			return 0;
+		size = (size << 7) | (data[i] & 0x7F);
+	}
+	return size;
+}
+
 /*
  * NAME:	tag->query()
  * DESCRIPTION:	if a tag begins at the given location, return its size
  */
 signed long id3_tag_query( const unsigned char *data, id3_length_t length )
 {
-	unsigned int version;
-	int flags;
-	id3_length_t size;
-
-	switch (tagtype(data, length))
+	if (is_id3v1_tag(data, length))
 	{
-	case TAGTYPE_ID3V1:
 		return 128;
+	}
 
-	case TAGTYPE_ID3V2:
-		parse_header(&data, &version, &flags, &size);
+	if (is_id3v2_tag(data, length))
+	{
+		bool isFooter = (data[0] == '3');
+		int flags = data[5];
+		unsigned long size = parse_id3v2_size(data);
 
-		if (flags & ID3_TAG_FLAG_FOOTERPRESENT)
+		if (size == 0)
+		{
+			LOG->Info("libmad: Invalid ID3v2 size, MP3 may be corrupted");
+			return 0;
+		}
+
+		// Account for ID3v2.4 footer
+		if (!isFooter && (flags & ID3_TAG_FLAG_FOOTERPRESENT))
 			size += 10;
 
-		return 10 + size;
-
-	case TAGTYPE_ID3V2_FOOTER:
-		parse_header(&data, &version, &flags, &size);
-		return -(int)size - 10;
-
-	case TAGTYPE_NONE:
-		break;
+		return isFooter ? -(signed long)(size + 10) : (signed long)(size + 10);
 	}
 
 	return 0;
