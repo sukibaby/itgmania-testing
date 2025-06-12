@@ -22,7 +22,7 @@ enum tagtype {
 
 static const int ID3_TAG_FLAG_FOOTERPRESENT = 0x10;
 
-static tagtype tagtype( const unsigned char *data, id3_length_t length )
+static tagtype detect_tagtype( const unsigned char *data, id3_length_t length )
 {
 	if (length >= 3 &&
 		data[0] == 'T' && data[1] == 'A' && data[2] == 'G')
@@ -96,7 +96,7 @@ signed long id3_tag_query( const unsigned char *data, id3_length_t length )
 	int flags;
 	id3_length_t size;
 
-	switch (tagtype(data, length))
+	switch (detect_tagtype(data, length))
 	{
 	case TAGTYPE_ID3V1:
 		return 128;
