@@ -15,6 +15,8 @@
 #include "DirectXHelpers.h"
 #include "PrefsManager.h"
 
+#include <windows.h>
+#include <string>
 #include <set>
 
 static const RString g_sClassName = PRODUCT_ID;
@@ -230,10 +232,18 @@ static void AdjustVideoModeParams( VideoModeParams &p )
  * The refresh setting may be ignored. */
 RString GraphicsWindow::SetScreenMode( const VideoModeParams &p )
 {
+	const DWORD displaySettingsFlag = p.windowed ? CDS_RESET : CDS_FULLSCREEN;
+	
 	if( p.windowed )
 	{
-		// We're going windowed. If we were previously fullscreen, reset.
-		ChangeDisplaySettingsEx( p.sDisplayId.c_str(), nullptr, nullptr, 0, nullptr );
+		// The MS docs suggest that we should use CDS_RESET here, and that is usually what we want,
+		// but old or non-compliant drivers may not support it, so we use the legacy behavior if
+		// we don't get a DISP_CHANGE_SUCCESSFUL back from ChangeDisplaySettingsEx.
+		if( ChangeDisplaySettingsEx( p.sDisplayId.c_str(), nullptr, nullptr, CDS_RESET, nullptr ) 
+			!= DISP_CHANGE_SUCCESSFUL )
+		{
+			ChangeDisplaySettingsEx( p.sDisplayId.c_str(), nullptr, nullptr, 0, nullptr );
+		}
 
 		return RString();
 	}
@@ -241,23 +251,34 @@ RString GraphicsWindow::SetScreenMode( const VideoModeParams &p )
 	DEVMODE DevMode;
 	ZERO( DevMode );
 	DevMode.dmSize = sizeof(DEVMODE);
+
+	// Attempt to load the current display settings into DevMode.
+	// This will take care not to overwrite any fields we don't set.
+	// We don't expect EnumDisplaySettingsEx to fail, but better safe than sorry.
+	if( EnumDisplaySettings(p.sDisplayId.c_str(), ENUM_CURRENT_SETTINGS, &DevMode) )
+	{
+		DevMode.dmFields |= (DM_PELSWIDTH | DM_PELSHEIGHT | DM_BITSPERPEL);
+	}
+	else
+	{
+		DevMode.dmFields = DM_PELSWIDTH | DM_PELSHEIGHT | DM_BITSPERPEL;
+	}
+	
 	DevMode.dmPelsWidth = p.width;
 	DevMode.dmPelsHeight = p.height;
 	DevMode.dmBitsPerPel = p.bpp;
-	DevMode.dmFields = DM_PELSWIDTH | DM_PELSHEIGHT | DM_BITSPERPEL;
 
 	if( p.rate != REFRESH_DEFAULT )
 	{
 		DevMode.dmDisplayFrequency = p.rate;
 		DevMode.dmFields |= DM_DISPLAYFREQUENCY;
 	}
-	ChangeDisplaySettingsEx(p.sDisplayId.c_str(), nullptr, nullptr, 0, nullptr);
 
-	int ret = ChangeDisplaySettingsEx( p.sDisplayId.c_str(), &DevMode, nullptr, CDS_FULLSCREEN, nullptr );
+	int ret = ChangeDisplaySettingsEx( p.sDisplayId.c_str(), &DevMode, nullptr, displaySettingsFlag, nullptr );
 	if( ret != DISP_CHANGE_SUCCESSFUL && (DevMode.dmFields & DM_DISPLAYFREQUENCY) )
 	{
 		DevMode.dmFields &= ~DM_DISPLAYFREQUENCY;
-		ret = ChangeDisplaySettingsEx( p.sDisplayId.c_str(), &DevMode, nullptr, CDS_FULLSCREEN, nullptr );
+		ret = ChangeDisplaySettingsEx( p.sDisplayId.c_str(), &DevMode, nullptr, displaySettingsFlag, nullptr );
 	}
 
 	// XXX: append error
@@ -425,13 +446,17 @@ void GraphicsWindow::CreateGraphicsWindow( const VideoModeParams &p, bool bForce
 /** @brief Shut down the window, but don't reset the video mode. */
 void GraphicsWindow::DestroyGraphicsWindow()
 {
+	// If we were in fullscreen, release the display mode before destroying the window
+	if( g_hWndMain && !g_CurrentParams.windowed )
+	{
+		ChangeDisplaySettingsEx(g_CurrentParams.sDisplayId, nullptr, nullptr, 0, nullptr);
+	}
+	
 	if( g_HDC != nullptr )
 	{
 		ReleaseDC( g_hWndMain, g_HDC );
 		g_HDC = nullptr;
 	}
-
-	CHECKPOINT;
 
 	if( g_hWndMain != nullptr )
 	{
@@ -440,15 +465,11 @@ void GraphicsWindow::DestroyGraphicsWindow()
 		CrashHandler::SetForegroundWindow( g_hWndMain );
 	}
 
-	CHECKPOINT;
-
 	if( g_hIcon != nullptr )
 	{
 		DestroyIcon( g_hIcon );
 		g_hIcon = nullptr;
 	}
-
-	CHECKPOINT;
 
 	MSG msg;
 	while( PeekMessage( &msg, nullptr, 0, 0, PM_NOREMOVE ) )
@@ -458,8 +479,6 @@ void GraphicsWindow::DestroyGraphicsWindow()
 		CHECKPOINT;
 		DispatchMessage( &msg );
 	}
-
-	CHECKPOINT;
 }
 
 void GraphicsWindow::Initialize( bool bD3D )
@@ -514,12 +533,6 @@ void GraphicsWindow::Initialize( bool bD3D )
 void GraphicsWindow::Shutdown()
 {
 	DestroyGraphicsWindow();
-
-	/* Return to the desktop resolution, if needed.
-	 * It'd be nice to not do this: Windows will do it when we quit, and if
-	 * we're shutting down OpenGL to try D3D, this will cause extra mode
-	 * switches. However, we need to do this before displaying dialogs. */
-	ChangeDisplaySettingsEx( g_CurrentParams.sDisplayId.c_str(), nullptr, nullptr, 0, nullptr );
 
 	AppInstance inst;
 	UnregisterClass( g_sClassName.c_str(), inst );
