@@ -184,7 +184,7 @@ DSoundBuf::DSoundBuf()
 	m_iExtraWriteahead(0),
 	m_bBufferLocked(false),
 	m_bPlaying(false),
-	m_iBufferSize(0),
+	m_iBufferSize(65536),
 	m_iChannels(0),
 	m_iLastPosition(0),
 	m_iSampleBits(0),
