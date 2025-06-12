@@ -38,6 +38,8 @@
 #endif
 
 #include "StdString.h"
+/** @brief Use RStrings throughout the program. */
+typedef StdString::CStdString RString;
 
 /** @brief RageThreads defines (don't pull in all of RageThreads.h here) */
 namespace Checkpoints

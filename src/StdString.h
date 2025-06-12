@@ -560,7 +560,7 @@ struct StdStringEqualsNoCase
 
 }	// namespace StdString
 
-typedef std::string RString;
+typedef StdString::CStdString RString;
 // FIXME: separate these into functions that either modify the argument, or
 // return a new string leaving the original unmodified.
 inline RString MakeLower(RString&& s) {
