@@ -84,7 +84,7 @@ namespace VDDebugInfo
 			RString sError;
 			if( !GunzipString(pctx->sRawBlock, sBufOut, sError) )
 			{
-				pctx->sError = werr_ssprintf( GetLastError(), "VDI error: %s", sError.c_str() );
+				pctx->sError = werr_ssprintf( GetLastError(), "VDI error: %s", sError.c_str() ).c_str();
 				return false;
 			}
 
@@ -140,7 +140,7 @@ namespace VDDebugInfo
 		HANDLE h = CreateFile( pctx->sFilename, GENERIC_READ, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr );
 		if( h == INVALID_HANDLE_VALUE )
 		{
-			pctx->sError = werr_ssprintf( GetLastError(), "CreateFile failed" );
+			pctx->sError = werr_ssprintf( GetLastError(), "CreateFile failed" ).c_str();
 			return false;
 		}
 
@@ -831,7 +831,7 @@ INT_PTR CrashDialog::HandleMessage( UINT msg, WPARAM wParam, LPARAM lParam )
 				{
 					char sBuf[1024];
 					GetWindowText( hDlg, sBuf, 1024 );
-					SetWindowText( hDlg, ssprintf("%s (#%i)", sBuf, iID) );
+					SetWindowText( hDlg, ssprintf("%s (#%i)", sBuf, iID).c_str() );
 				}
 
 				ShowWindow( GetDlgItem(hDlg, IDC_PROGRESS), false );

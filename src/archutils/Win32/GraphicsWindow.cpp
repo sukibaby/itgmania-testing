@@ -439,7 +439,7 @@ void GraphicsWindow::DestroyGraphicsWindow()
 	// If we were in fullscreen, release the display mode before destroying the window
 	if( g_hWndMain && !g_CurrentParams.windowed )
 	{
-		ChangeDisplaySettingsEx(g_CurrentParams.sDisplayId, nullptr, nullptr, 0, nullptr);
+		ChangeDisplaySettingsEx(g_CurrentParams.sDisplayId.c_str(), nullptr, nullptr, 0, nullptr);
 	}
 	
 	if( g_HDC != nullptr )

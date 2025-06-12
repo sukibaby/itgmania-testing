@@ -220,7 +220,7 @@ RString LowLevelWindow_Win32::TryVideoMode( const VideoModeParams &p, bool &bNew
 			/* Destroy the window. */
 			DestroyGraphicsWindowAndOpenGLContext();
 
-			return werr_ssprintf( err, "Pixel format failed" );
+			return werr_ssprintf( err, "Pixel format failed" ).c_str();
 		}
 
 		DescribePixelFormat( GraphicsWindow::GetHDC(), iPixelFormat, sizeof(g_CurrentPixelFormat), &g_CurrentPixelFormat );
@@ -237,7 +237,7 @@ RString LowLevelWindow_Win32::TryVideoMode( const VideoModeParams &p, bool &bNew
 		{
 			DWORD err = GetLastError();
 			DestroyGraphicsWindowAndOpenGLContext();
-			return hr_ssprintf( err, "wglCreateContext" );
+			return hr_ssprintf( err, "wglCreateContext" ).c_str();
 		}
 
 		g_HGLRC_Background = wglCreateContext( GraphicsWindow::GetHDC() );
@@ -245,12 +245,12 @@ RString LowLevelWindow_Win32::TryVideoMode( const VideoModeParams &p, bool &bNew
 		{
 			DWORD err = GetLastError();
 			DestroyGraphicsWindowAndOpenGLContext();
-			return hr_ssprintf( err, "wglCreateContext" );
+			return hr_ssprintf( err, "wglCreateContext" ).c_str();
 		}
 
 		if( !wglShareLists(g_HGLRC, g_HGLRC_Background) )
 		{
-			LOG->Warn( werr_ssprintf(GetLastError(), "wglShareLists failed") );
+			LOG->Warn( werr_ssprintf(GetLastError(), "wglShareLists failed").c_str() );
 			wglDeleteContext( g_HGLRC_Background );
 			g_HGLRC_Background = nullptr;
 		}
@@ -259,7 +259,7 @@ RString LowLevelWindow_Win32::TryVideoMode( const VideoModeParams &p, bool &bNew
 		{
 			DWORD err = GetLastError();
 			DestroyGraphicsWindowAndOpenGLContext();
-			return hr_ssprintf( err, "wglCreateContext" );
+			return hr_ssprintf( err, "wglCreateContext" ).c_str();
 		}
 	}
 	return RString();	// we set the video mode successfully
@@ -275,8 +275,8 @@ void LowLevelWindow_Win32::BeginConcurrentRendering()
 	if( !wglMakeCurrent( GraphicsWindow::GetHDC(), g_HGLRC_Background ) )
 	{
 		DWORD err = GetLastError();
-		LOG->Warn( hr_ssprintf(err, "wglMakeCurrent") );
-		FAIL_M( hr_ssprintf(err, "wglMakeCurrent") );
+		LOG->Warn( hr_ssprintf(err, "wglMakeCurrent").c_str() );
+		FAIL_M( hr_ssprintf(err, "wglMakeCurrent").c_str() );
 	}
 }
 
