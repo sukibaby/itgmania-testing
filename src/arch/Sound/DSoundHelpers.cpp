@@ -209,6 +209,8 @@ RString DSoundBuf::Init( DSound &ds, DSoundBuf::hw hardware,
 	m_bPlaying = false;
 	memset( &(m_iLastCursors), 0, sizeof(m_iLastCursors) );
 
+	m_iBufferSize = std::max( m_iBufferSize, m_iWriteAhead );
+	
 	WAVEFORMATEX waveformat;
 	memset( &waveformat, 0, sizeof(waveformat) );
 	waveformat.cbSize = 0;
