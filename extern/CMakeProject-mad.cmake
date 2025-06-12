@@ -1,35 +1,32 @@
-set(MAD_SRC "libmad/bit.c"
-            "libmad/decoder.c"
-            "libmad/fixed.c"
-            "libmad/frame.c"
-            "libmad/huffman.c"
-            "libmad/layer12.c"
-            "libmad/layer3.c"
-            "libmad/stream.c"
-            "libmad/synth.c"
-            "libmad/timer.c"
-            "libmad/version.c")
+# Use the generic 64-bit FPM.
+set(FPM_64BIT 1)
 
-set(MAD_HPP "libmad/bit.h"
-            "libmad/config.h"
-            "libmad/decoder.h"
-            "libmad/fixed.h"
-            "libmad/frame.h"
-            "libmad/global.h"
-            "libmad/huffman.h"
-            "libmad/layer12.h"
-            "libmad/layer3.h"
-            "libmad/mad.h"
-            "libmad/stream.h"
-            "libmad/synth.h"
-            "libmad/timer.h"
-            "libmad/version.h")
+configure_file("libmad/include/mad.h.in" "libmad/include/mad.h")
 
-set(MAD_DAT "libmad/D.dat"
-            "libmad/imdct_s.dat"
-            "libmad/qc_table.dat"
-            "libmad/rq_table.dat"
-            "libmad/sf_table.dat")
+set(MAD_SRC "libmad/src/bit.c"
+            "libmad/src/decoder.c"
+            "libmad/src/fixed.c"
+            "libmad/src/frame.c"
+            "libmad/src/huffman.c"
+            "libmad/src/layer12.c"
+            "libmad/src/layer3.c"
+            "libmad/src/stream.c"
+            "libmad/src/synth.c"
+            "libmad/src/timer.c"
+            "libmad/src/version.c")
+
+set(MAD_HPP "libmad/include/mad.h"
+            "libmad/src/global.h"
+            "libmad/src/huffman.h"
+            "libmad/src/layer12.h"
+            "libmad/src/layer3.h"
+            "libmad/src/config.h")
+
+set(MAD_DAT "libmad/src/D.dat"
+            "libmad/src/imdct_s.dat"
+            "libmad/src/qc_table.dat"
+            "libmad/src/rq_table.dat"
+            "libmad/src/sf_table.dat")
 
 source_group("Source Files" FILES ${MAD_SRC})
 source_group("Header Files" FILES ${MAD_HPP})
@@ -50,26 +47,11 @@ target_compile_definitions("mad" PRIVATE HAVE_CONFIG_H)
 
 if(MSVC)
   target_compile_definitions("mad" PRIVATE _CRT_SECURE_NO_WARNINGS)
-  # TODO: Remove the need for this check since it's tied to 32-bit builds from
-  # first glance.
   target_compile_definitions("mad" PRIVATE ASO_ZEROCHECK)
-  target_compile_definitions("mad" PRIVATE $<$<CONFIG:Debug>:FPM_DEFAULT>)
-  if(SM_WIN32_ARCH MATCHES "x64")
-    target_compile_definitions("mad" PRIVATE $<$<CONFIG:Release>:FPM_64BIT>)
-    target_compile_definitions("mad" PRIVATE $<$<CONFIG:MinSizeRel>:FPM_64BIT>)
-    target_compile_definitions("mad" PRIVATE $<$<CONFIG:RelWithDebInfo>:FPM_64BIT>)
-  else()
-    target_compile_definitions("mad" PRIVATE $<$<CONFIG:Release>:FPM_INTEL>)
-    target_compile_definitions("mad" PRIVATE $<$<CONFIG:MinSizeRel>:FPM_INTEL>)
-    target_compile_definitions("mad" PRIVATE $<$<CONFIG:RelWithDebInfo>:FPM_INTEL>)
-  endif()
-  # TODO: Provide a proper define for inline.
   target_compile_definitions("mad" PRIVATE inline=__inline)
-elseif(APPLE OR UNIX)
-  target_compile_definitions("mad" PRIVATE FPM_64BIT=1)
-endif(MSVC)
+endif()
 
-target_include_directories("mad" PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/libmad")
-target_include_directories("mad" PUBLIC "libmad")
+target_include_directories("mad" PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/libmad/include")
+target_include_directories("mad" PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/libmad/include")
 
-configure_file("config.mad.in.h" "libmad/config.h")
+configure_file("config.mad.in.h" "libmad/src/config.h")
