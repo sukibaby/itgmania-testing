@@ -42,6 +42,10 @@ if(ENDIAN_BIG)
   set(WORDS_BIGENDIAN 1)
 endif()
 
+if(APPLE)
+  target_compile_options("mad" PRIVATE -include stdlib.h)
+endif()
+
 target_compile_definitions("mad" PRIVATE $<$<CONFIG:Debug>:DEBUG>)
 target_compile_definitions("mad" PRIVATE HAVE_CONFIG_H)
 
