@@ -848,21 +848,23 @@ int RageSoundReader_MP3::SetPosition_estimate( int iFrame )
 
 int RageSoundReader_MP3::SetPosition( int iFrame )
 {
-	/* Rewinding is always fast and accurate, and SetPosition_estimate is bad at 0. */
+    // Always rewind to position 0 in libmad.
 	if (!iFrame)
 	{
 		MADLIB_rewind();
 		return 1; /* ok */
 	}
 
-	/* We can do a fast jump in VBR with Xing with more accuracy than without Xing. */
+    // Use frame-accurate seeking for VBR files with Xing tags (the most common case)
 	if (mad->has_xing)
 	{
 		return SetPosition_hard(iFrame);
 	}
 
-	/* Guess.  This is only remotely accurate when we're not VBR, but also
-	 * do it if we have no Xing tag. */
+
+	// For files without Xing tags (usually CBR files), estimate the position
+	// based on bitrate. This isn't frame perfect, but it puts us close enough
+	// that we can determine the correct playback position from where we land.
 	return SetPosition_estimate(iFrame);
 }
 
