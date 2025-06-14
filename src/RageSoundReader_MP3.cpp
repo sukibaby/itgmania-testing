@@ -861,7 +861,6 @@ int RageSoundReader_MP3::SetPosition( int iFrame )
 		return SetPosition_hard(iFrame);
 	}
 
-	LOG->Trace("MP3 decoder had to revert to guessing the song position");
 	/* Guess.  This is only remotely accurate when we're not VBR, but also
 	 * do it if we have no Xing tag. */
 	return SetPosition_estimate(iFrame);
