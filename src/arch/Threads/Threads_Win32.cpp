@@ -187,15 +187,20 @@ ThreadImpl *MakeThread( int (*pFunc)(void *pData), void *pData, uint64_t *piThre
 
 	thread->ThreadHandle = CreateThread(nullptr, 0, &StartThread, thread.get(), CREATE_SUSPENDED, &thread->ThreadId);
 	*piThreadID = static_cast<uint64_t>(thread->ThreadId);
-	RString assert_string = WinErrorToString(GetLastError()) + " CreateThread";
-	ASSERT_M(thread->ThreadHandle != nullptr, assert_string.c_str());
+
+	if (thread->ThreadHandle == nullptr) {
+		RString assert_string = WinErrorToString(GetLastError()) + " CreateThread";
+		sm_crash(assert_string.c_str());
+	}
 
 	int slot = GetOpenSlot( thread->ThreadId );
 	g_ThreadHandles[slot] = thread->ThreadHandle;
 
 	int iRet = ResumeThread( thread->ThreadHandle );
-	assert_string = WinErrorToString(GetLastError()) + " ResumeThread";
-	ASSERT_M( iRet == 1, assert_string.c_str() );
+	if (iRet != 1) {
+		RString assert_string = WinErrorToString(GetLastError()) + " ResumeThread";
+		sm_crash(assert_string.c_str());
+	}
 
 	return thread.release();
 }
