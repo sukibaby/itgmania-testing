@@ -122,8 +122,10 @@ int InputHandler_Win32_Pump::InputThread_Start( void *p )
 
 void InputHandler_Win32_Pump::InputThreadMain()
 {
-	if( !SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_HIGHEST) )
-		LOG->Warn( werr_ssprintf(GetLastError(), "Failed to set Pump thread priority") );
+	if( !SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_HIGHEST) ) {
+		RString werr_string = WinErrorToString(GetLastError()) + " Failed to set Pump thread priority";
+		LOG->Warn( werr_string.c_str() );
+	}
 
 	/* Enable priority boosting. */
 	SetThreadPriorityBoost( GetCurrentThread(), FALSE );

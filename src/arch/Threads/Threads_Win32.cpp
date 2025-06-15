@@ -187,13 +187,15 @@ ThreadImpl *MakeThread( int (*pFunc)(void *pData), void *pData, uint64_t *piThre
 
 	thread->ThreadHandle = CreateThread(nullptr, 0, &StartThread, thread.get(), CREATE_SUSPENDED, &thread->ThreadId);
 	*piThreadID = static_cast<uint64_t>(thread->ThreadId);
-	ASSERT_M(thread->ThreadHandle != nullptr, ssprintf("%s", werr_ssprintf(GetLastError(), "CreateThread").c_str()));
+	RString assert_string = ssprintf("%s", WinErrorToString(GetLastError()), " CreateThread");
+	ASSERT_M(thread->ThreadHandle != nullptr, assert_string.c_str());
 
 	int slot = GetOpenSlot( thread->ThreadId );
 	g_ThreadHandles[slot] = thread->ThreadHandle;
 
 	int iRet = ResumeThread( thread->ThreadHandle );
-	ASSERT_M( iRet == 1, ssprintf("%s", werr_ssprintf(GetLastError(), "ResumeThread").c_str() ) );
+	assert_string = ssprintf("%s", WinErrorToString(GetLastError()), " ResumeThread");
+	ASSERT_M( iRet == 1, assert_string.c_str() );
 
 	return thread.release();
 }
@@ -203,7 +205,8 @@ MutexImpl_Win32::MutexImpl_Win32( RageMutex *pParent ):
 	MutexImpl( pParent )
 {
 	mutex = CreateMutex( nullptr, false, nullptr );
-	ASSERT_M( mutex != nullptr, werr_ssprintf(GetLastError(), "CreateMutex") );
+	RString assert_string = WinErrorToString(GetLastError()) + " CreateMutex";
+	ASSERT_M( mutex != nullptr, assert_string.c_str() );
 }
 
 MutexImpl_Win32::~MutexImpl_Win32()
@@ -231,15 +234,26 @@ static bool SimpleWaitForSingleObject( HANDLE h, DWORD ms )
 		return false;
 
 	case WAIT_ABANDONED:
+	{
 		// The docs aren't particular about what this does, but it should never happen.
 		FAIL_M( "WAIT_ABANDONED" );
+		break;
+	}
 
 	case WAIT_FAILED:
-		FAIL_M( werr_ssprintf(GetLastError(), "WaitForSingleObject") );
+	{
+		RString fail_string = WinErrorToString(GetLastError()) + "WaitForSingleObject";
+		FAIL_M( fail_string.c_str() );
+		break;
+	}
 
 	default:
+	{
 		FAIL_M( "unknown" );
+		break;
 	}
+	}
+	return false;
 }
 
 bool MutexImpl_Win32::Lock()
@@ -272,8 +286,10 @@ void MutexImpl_Win32::Unlock()
 
 	/* We can't ASSERT here, since this is called from checkpoints,
 	 * which is called from ASSERT. */
-	if( !ret )
-		sm_crash( werr_ssprintf( GetLastError(), "ReleaseMutex failed" ) );
+	if( !ret ) {
+		RString werr_string = WinErrorToString(GetLastError()) + "ReleaseMutex failed";
+		sm_crash( werr_string.c_str() );
+	}
 }
 
 uint64_t GetThisThreadId()

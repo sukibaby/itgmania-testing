@@ -31,7 +31,8 @@ static void GetMemoryDebugInfo()
 	}
 	else
 	{
-		LOG->Warn("GlobalMemoryStatusEx failed: %s", werr_ssprintf(GetLastError(), "GlobalMemoryStatusEx").c_str());
+		RString werr_string = "GlobalMemoryStatusEx failed: " + WinErrorToString(GetLastError()) + "GlobalMemoryStatusEx";
+		LOG->Warn(werr_string.c_str());
 	}
 }
 

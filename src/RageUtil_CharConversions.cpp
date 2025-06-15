@@ -17,7 +17,8 @@ static bool CodePageConvert( RString &sText, int iCodePage )
 	int iSize = MultiByteToWideChar( iCodePage, MB_ERR_INVALID_CHARS, sText.data(), sText.size(), nullptr, 0 );
 	if( iSize == 0 )
 	{
-		LOG->Trace( "%s\n", werr_ssprintf(GetLastError(), "err: ").c_str() );
+		RString trace_string = "err" + WinErrorToString(GetLastError());
+		LOG->Trace( trace_string.c_str() );
 		return false; /* error */
 	}
 

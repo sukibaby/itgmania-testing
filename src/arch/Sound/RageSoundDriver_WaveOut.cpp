@@ -50,8 +50,10 @@ int RageSoundDriver_WaveOut::MixerThread_start( void *p )
 
 void RageSoundDriver_WaveOut::MixerThread()
 {
-	if( !SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_ABOVE_NORMAL) )
-		LOG->Warn( werr_ssprintf(GetLastError(), "Failed to set sound thread priority") );
+	if( !SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_ABOVE_NORMAL) ) {
+		RString warn_string = WinErrorToString(GetLastError()) + " Failed to set sound thread priority";
+		LOG->Warn( warn_string.c_str() );
+	}
 
 	while( !m_bShutdown )
 	{
@@ -95,8 +97,10 @@ bool RageSoundDriver_WaveOut::GetData()
 
 void RageSoundDriver_WaveOut::SetupDecodingThread()
 {
-	if( !SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_ABOVE_NORMAL) )
-		LOG->Warn( werr_ssprintf(GetLastError(), "Failed to set sound thread priority") );
+	if( !SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_ABOVE_NORMAL) ) {
+		RString warn_string = WinErrorToString(GetLastError()) + " Failed to set sound thread priority";
+		LOG->Warn( warn_string.c_str() );
+	}
 }
 
 int64_t RageSoundDriver_WaveOut::GetPosition() const
@@ -104,8 +108,10 @@ int64_t RageSoundDriver_WaveOut::GetPosition() const
 	MMTIME tm;
 	tm.wType = TIME_SAMPLES;
 	MMRESULT ret = waveOutGetPosition( m_hWaveOut, &tm, sizeof(tm) );
-  	if( ret != MMSYSERR_NOERROR )
-		FAIL_M( wo_ssprintf(ret, "waveOutGetPosition failed") );
+  	if( ret != MMSYSERR_NOERROR ) {
+		RString fail_string = wo_ssprintf(ret, "waveOutGetPosition failed");
+		FAIL_M( fail_string.c_str() );
+	}
 
 	return tm.u.sample;
 }

@@ -3,7 +3,7 @@
 #include "windows.h"
 #include "VersionHelpers.h"
 
-RString hr_ssprintf( int hr, const char *fmt, ... );
+RString HResultToString( int hr );
 
 RString GetErrorString(HRESULT hr);
 

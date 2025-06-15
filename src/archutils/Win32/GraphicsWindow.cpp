@@ -202,7 +202,8 @@ static void AdjustVideoModeParams( VideoModeParams &p )
 	if (!EnumDisplaySettings(p.sDisplayId.c_str(), ENUM_CURRENT_SETTINGS, &dm))
 	{
 		p.rate = 60;
-		LOG->Warn( "%s", werr_ssprintf(GetLastError(), "EnumDisplaySettings failed").c_str() );
+		RString warn_string = WinErrorToString(GetLastError()) + " EnumDisplaySettings failed" + p.sDisplayId;
+		LOG->Warn( warn_string.c_str() );
 		return;
 	}
 
@@ -334,8 +335,10 @@ void GraphicsWindow::CreateGraphicsWindow( const VideoModeParams &p, bool bForce
 		AppInstance inst;
 		HWND hWnd = CreateWindow( g_sClassName.c_str(), "app", iWindowStyle,
 						0, 0, 0, 0, nullptr, nullptr, inst, nullptr );
-		if( hWnd == nullptr )
-			RageException::Throw( "%s", werr_ssprintf( GetLastError(), "CreateWindow" ).c_str() );
+		if( hWnd == nullptr ) {
+			RString throw_string = "CreateWindow failed: " + WinErrorToString(GetLastError());
+			RageException::Throw( throw_string.c_str() );
+		}
 
 		/* If an old window exists, transfer focus to the new window before
 		 * deleting it, or some other window may temporarily get focus, which
@@ -417,8 +420,10 @@ void GraphicsWindow::CreateGraphicsWindow( const VideoModeParams &p, bool bForce
 
 	/* Move and resize the window. SWP_FRAMECHANGED causes the above
 	 * SetWindowLong to take effect. */
-	if( !SetWindowPos( g_hWndMain, HWND_NOTOPMOST, x, y, iWidth, iHeight, SWP_FRAMECHANGED|SWP_SHOWWINDOW ) )
-		LOG->Warn( "%s", werr_ssprintf( GetLastError(), "SetWindowPos" ).c_str() );
+	if( !SetWindowPos( g_hWndMain, HWND_NOTOPMOST, x, y, iWidth, iHeight, SWP_FRAMECHANGED|SWP_SHOWWINDOW ) ) {
+		RString warn_string = "SetWindowPos failed: " + WinErrorToString(GetLastError());
+		LOG->Warn( warn_string.c_str() );
+	}
 
 	SetForegroundWindow( g_hWndMain );
 
@@ -513,8 +518,10 @@ void GraphicsWindow::Initialize( bool bD3D )
 		}; 
 
 		m_bWideWindowClass = false;
-		if( !RegisterClassA( &WindowClassA ) )
-			RageException::Throw( "%s", werr_ssprintf( GetLastError(), "RegisterClass" ).c_str() );
+		if( !RegisterClassA( &WindowClassA ) ) {
+			RString throw_string = "RegisterClass failed: " + WinErrorToString(GetLastError());
+			RageException::Throw( throw_string.c_str() );
+		}
 	} while(0);
 
 	g_iQueryCancelAutoPlayMessage = RegisterWindowMessage( "QueryCancelAutoPlay" );
