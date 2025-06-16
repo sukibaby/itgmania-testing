@@ -27,8 +27,11 @@ RString ConvertWstringToCodepage( std::wstring s, int iCodePage )
 
 	int iBytes = WideCharToMultiByte( iCodePage, 0, s.data(), s.size(), 
 					nullptr, 0, nullptr, FALSE );
-	RString werr_string = WinErrorToString(GetLastError()) + " WideCharToMultiByte";
-	ASSERT_M( iBytes > 0, werr_string.c_str() );
+	if (iBytes <= 0) {
+		RString werr_string = WinErrorToString(GetLastError()) + " WideCharToMultiByte";
+		FAIL_M(werr_string.c_str());
+		return RString();
+	}
 
 	char * buf = new char[iBytes + 1];
 	std::fill(buf, buf + iBytes + 1, '\0');
@@ -50,8 +53,11 @@ std::wstring ConvertCodepageToWString( RString s, int iCodePage )
 		return std::wstring();
 
 	int iBytes = MultiByteToWideChar( iCodePage, 0, s.data(), s.size(), nullptr, 0 );
-	RString werr_string = WinErrorToString(GetLastError()) + " MultiByteToWideChar";
-	ASSERT_M( iBytes > 0, werr_string.c_str() );
+	if (iBytes <= 0) {
+		RString werr_string = WinErrorToString(GetLastError()) + " MultiByteToWideChar";
+		FAIL_M(werr_string.c_str());
+		return std::wstring();
+	}
 
 	wchar_t *pTemp = new wchar_t[iBytes];
 	MultiByteToWideChar( iCodePage, 0, s.data(), s.size(), pTemp, iBytes );
