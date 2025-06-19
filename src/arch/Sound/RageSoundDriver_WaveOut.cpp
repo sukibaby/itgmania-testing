@@ -123,13 +123,19 @@ int64_t RageSoundDriver_WaveOut::GetPosition() const
 }
 
 RageSoundDriver_WaveOut::RageSoundDriver_WaveOut()
+    : m_hWaveOut(nullptr)
+    , m_hSoundEvent(CreateEvent(nullptr, false, true, nullptr))
+    , m_iLastCursorPos(0)
+    , m_iSampleRate(0)
+    , m_bShutdown(false)
+    , b_InitSuccess(false)
+    , wo_num_blocks(1)
+    , wo_buffer_size_frames(0)
+    , wo_block_size(0)
+    , wo_buffer_size(0)
+    , m_aBuffers{}
+    , MixingThread()
 {
-	m_bShutdown = false;
-	m_iLastCursorPos = 0;
-
-	m_hSoundEvent = CreateEvent( nullptr, false, true, nullptr );
-
-	m_hWaveOut = nullptr;
 }
 
 RString RageSoundDriver_WaveOut::Init()
