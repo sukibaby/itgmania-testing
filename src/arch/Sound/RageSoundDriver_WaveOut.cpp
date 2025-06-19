@@ -54,7 +54,7 @@ static RString WaveOutErrorToString( MMRESULT err )
 
 int RageSoundDriver_WaveOut::MixerThread_start( void *p )
 {
-	((RageSoundDriver_WaveOut *) p)->MixerThread();
+	static_cast<RageSoundDriver_WaveOut *>(p)->MixerThread();
 	return 0;
 }
 
