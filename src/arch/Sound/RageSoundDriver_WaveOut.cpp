@@ -107,6 +107,9 @@ bool RageSoundDriver_WaveOut::GetData()
 
 void RageSoundDriver_WaveOut::SetupDecodingThread()
 {
+	// It may seem counter-productive, but we want to set the thread priority
+	// to below normal. This is because the sound thread is not time-critical
+	// and we want to leave room for the mixing thread, which is more critical.
 	if( !SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_BELOW_NORMAL) )
 		LOG->Warn( werr_ssprintf(GetLastError(), "Failed to set sound thread priority") );
 }
