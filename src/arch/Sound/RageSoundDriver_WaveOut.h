@@ -18,7 +18,6 @@ public:
 	int64_t GetPosition() const;
 	float GetPlayLatency() const;
 	int GetSampleRate() const { return m_iSampleRate; }
-	static const int NUM_BUFFERS = 32;
 private:
 	static int MixerThread_start( void *p );
 	void MixerThread();
@@ -28,11 +27,15 @@ private:
 
 	HWAVEOUT m_hWaveOut;
 	HANDLE m_hSoundEvent;
-	WAVEHDR m_aBuffers[NUM_BUFFERS];
+	WAVEHDR m_aBuffers[32]; // Maximum of 32 output blocks (frame blocks) allowed.
 	int m_iSampleRate;
 	bool m_bShutdown;
 	int m_iLastCursorPos;
 	bool b_InitSuccess;
+	int wo_num_blocks;
+	int wo_buffer_size_frames;
+	int wo_block_size;
+	int wo_buffer_size;
 };
 
 #endif
