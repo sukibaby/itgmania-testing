@@ -42,24 +42,31 @@ static RString wo_ssprintf( MMRESULT err, const char *szFmt, ...)
 	return s += ssprintf( "(%s)", szBuf );
 }
 
-void RageSoundDriver_WaveOut::LogMixerThreadError()
+void RageSoundDriver_WaveOut::SetMixerPriority()
 {
-	const char* errorMessage =
-		"WaveOut thread is running in a console window!\n"
-		"This may cause issues with sound playback, and the game\n"
-		"will crash if the console window is interrupted.\n";
+	static bool initialized = false;
 
-	switch (m_ThreadError)
+	if (initialized) {
+		LOG->Warn("SetMixerPriority unexpectedly called more than once");
+		return;
+    }
+
+	if( !SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_ABOVE_NORMAL) )
 	{
-	case WaveOutMixerThreadError::SetPriorityFailed:
-		LOG->Warn( werr_ssprintf(GetLastError(), "Failed to set sound thread priority") );
-		break;
-	case WaveOutMixerThreadError::ConsoleWindowWarning:
-		LOG->Warn(errorMessage);
-		break;
-	default:
-		break;
+		RString warn_string = werr_ssprintf(GetLastError(), "Failed to set sound thread priority");
+		LOG->Warn( warn_string.c_str() );
 	}
+
+	if( GetConsoleWindow() != nullptr )
+	{
+		LOG->Warn(
+			"WaveOut thread is running in a console window!\n"
+			"This may cause issues with sound playback, and the game\n"
+			"will crash if the console window is interrupted.\n"
+		);
+	}
+
+	initialized = true;
 }
 
 int RageSoundDriver_WaveOut::MixerThread_start( void *p )
@@ -70,20 +77,7 @@ int RageSoundDriver_WaveOut::MixerThread_start( void *p )
 
 void RageSoundDriver_WaveOut::MixerThread()
 {
-	m_ThreadError = WaveOutMixerThreadError::None;
-
-	if( !SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_ABOVE_NORMAL) ) {
-		m_ThreadError = WaveOutMixerThreadError::SetPriorityFailed;
-	}
-
-	if( GetConsoleWindow() != NULL ) {
-		m_ThreadError = WaveOutMixerThreadError::ConsoleWindowWarning;
-	}
-
-	if( m_ThreadError != WaveOutMixerThreadError::None )
-	{
-		LogMixerThreadError();
-	}
+	SetMixerPriority();
 	
 	while( !m_bShutdown )
 	{
