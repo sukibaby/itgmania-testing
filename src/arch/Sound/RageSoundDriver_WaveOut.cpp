@@ -88,7 +88,7 @@ bool RageSoundDriver_WaveOut::GetData()
 		return false;
 
 	/* Call the callback. */
-	this->Mix( (int16_t *) m_aBuffers[b].lpData, kChunkSizeFrames, m_iLastCursorPos, GetPosition() );
+	this->Mix( reinterpret_cast<int16_t*>(m_aBuffers[b].lpData), kChunkSizeFrames, m_iLastCursorPos, GetPosition() );
 
 	MMRESULT ret = waveOutWrite( m_hWaveOut, &m_aBuffers[b], sizeof(m_aBuffers[b]) );
 	if( ret != MMSYSERR_NOERROR )
