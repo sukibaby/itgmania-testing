@@ -22,83 +22,48 @@
 REGISTER_SOUND_DRIVER_CLASS( WaveOut );
 
 namespace {
-	// WaveOut targets a specific latency calculated from the sample rate,
-	// number of buffers, and buffer size. For example, at 44100 Hz, with
-	// 15 buffers of 256 frames each, the latency would be ~87 ms. At 48000 Hz,
-	// with 16 buffers of 256 frames each, the latency would be ~85 ms.
-	// We target a specific latency (118 ms) to ensure a consistent experience
-	// for both 44100 and 48000 Hz sample rates.
+	// We want to target a specific latency (118 ms) to ensure a consistent
+	// experience when using either 44100 or 48000 Hz sample rate.
 	// This value was chosen because it has the smallest difference in actual
-	// latency between 44100 and 48000 Hz (0.29 ms), which is almost negligible.
+	// latency (0.29 ms) between these two 44100 and 48000 Hz.
+	// To achieve this, we use 512 frames per block and determine the number
+	// of blocks and buffer size in frames based on the sample rate.
 	constexpr int kTargetLatencyMilliseconds = 118;
 	constexpr int kChannels = 2;
-	constexpr int kChunkSizeFrames = 512;
+	constexpr int kBlockSizeFrames = 512;
 	constexpr int kBytesPerFrame = kChannels * 2;  // 16 bit
 
-	inline int CalculteNumBufferChunks( int sampleRate )
+	inline int CalculateNumBlocks( int sampleRate )
 	{
-	  return(sampleRate * kTargetLatencyMilliseconds + (1000 * kChunkSizeFrames - 1)) /
-			 (1000 * kChunkSizeFrames);
+		return (sampleRate * kTargetLatencyMilliseconds +
+			(1000 * kBlockSizeFrames - 1)) /
+			(1000 * kBlockSizeFrames);
 	}
 }  // namespace
 
-static RString WaveOutErrorToString( MMRESULT err )
+static RString wo_ssprintf( MMRESULT err, const char *szFmt, ...)
 {
-	char szBuf[MAXERRORLENGTH] = "";
-	if( waveOutGetErrorText(err, szBuf, MAXERRORLENGTH) != MMSYSERR_NOERROR )
-	{
-		strncpy_s( szBuf, MAXERRORLENGTH, "Unknown error", _TRUNCATE );
-	}
-	return RString( szBuf );
+	char szBuf[MAXERRORLENGTH];
+	waveOutGetErrorText( err, szBuf, MAXERRORLENGTH );
+
+	va_list va;
+	va_start( va, szFmt );
+	RString s = vssprintf( szFmt, va );
+	va_end( va );
+
+	return s += ssprintf( "(%s)", szBuf );
 }
 
 int RageSoundDriver_WaveOut::MixerThread_start( void *p )
 {
-	static_cast<RageSoundDriver_WaveOut *>(p)->MixerThread();
+	((RageSoundDriver_WaveOut *) p)->MixerThread();
 	return 0;
-}
-
-void RageSoundDriver_WaveOut::SetMixerPriority()
-{
-	static bool initialized = false;
-	static CRITICAL_SECTION cs;
-	static bool cs_initialized = false;
-
-	if( !cs_initialized )
-	{
-          InitializeCriticalSection( &cs );
-          cs_initialized = true;
-	}
-
-	EnterCriticalSection(&cs);
-
-	if( initialized )
-	{
-		LeaveCriticalSection( &cs );
-		return;
-	}
-	initialized = true;
-	LeaveCriticalSection( &cs );
-
-	if( !SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_ABOVE_NORMAL) )
-	{
-		RString warn_string = werr_ssprintf( GetLastError(), "Failed to set sound thread priority" );
-		LOG->Warn( warn_string.c_str() );
-	}
-
-	if( GetConsoleWindow() != nullptr )
-	{
-		LOG->Warn(
-			"WaveOut thread is running in a console window!\n"
-			"This may cause issues with sound playback, and the game\n"
-			"will crash if the console window is interrupted.\n"
-		);
-	}
 }
 
 void RageSoundDriver_WaveOut::MixerThread()
 {
-	SetMixerPriority();
+	if( !SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_ABOVE_NORMAL) )
+		LOG->Warn( werr_ssprintf(GetLastError(), "Failed to set sound thread priority") );
 
 	while( !m_bShutdown )
 	{
@@ -115,14 +80,14 @@ bool RageSoundDriver_WaveOut::GetData()
 {
 	/* Look for a free buffer. */
 	int b;
-	for( b = 0; b < wo_num_chunks; ++b )
+	for( b = 0; b < wo_num_blocks; ++b )
 		if( m_aBuffers[b].dwFlags & WHDR_DONE )
 			break;
-	if( b == wo_num_chunks )
+	if( b == wo_num_blocks )
 		return false;
 
 	/* Call the callback. */
-	this->Mix( reinterpret_cast<int16_t*>(m_aBuffers[b].lpData), kChunkSizeFrames, m_iLastCursorPos, GetPosition() );
+	this->Mix( (int16_t *) m_aBuffers[b].lpData, kBlockSizeFrames, m_iLastCursorPos, GetPosition() );
 
 	MMRESULT ret = waveOutWrite( m_hWaveOut, &m_aBuffers[b], sizeof(m_aBuffers[b]) );
 	if( ret != MMSYSERR_NOERROR )
@@ -130,49 +95,48 @@ bool RageSoundDriver_WaveOut::GetData()
 		Init();
 		if (b_InitSuccess == false)
 		{
-			RString fail_message = WaveOutErrorToString( ret ) + "waveOutWrite failed";
-			FAIL_M(fail_message.c_str());
+			FAIL_M(wo_ssprintf(ret, "waveOutWrite failed"));
 		}
 	}
 
 	/* Increment m_iLastCursorPos. */
-	m_iLastCursorPos += kChunkSizeFrames;
+	m_iLastCursorPos += kBlockSizeFrames;
 
 	return true;
 }
 
 void RageSoundDriver_WaveOut::SetupDecodingThread()
 {
-	SetMixerPriority();
+	if( !SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_ABOVE_NORMAL) )
+		LOG->Warn( werr_ssprintf(GetLastError(), "Failed to set sound thread priority") );
 }
 
 int64_t RageSoundDriver_WaveOut::GetPosition() const
 {
-	MMTIME tm = {};
+	MMTIME tm;
 	tm.wType = TIME_SAMPLES;
 	MMRESULT ret = waveOutGetPosition( m_hWaveOut, &tm, sizeof(tm) );
   	if( ret != MMSYSERR_NOERROR )
-	{
-		RString fail_message = WaveOutErrorToString( ret ) + "waveOutGetPosition failed";
-		FAIL_M(fail_message.c_str());
-	}
+		FAIL_M( wo_ssprintf(ret, "waveOutGetPosition failed") );
 
 	return tm.u.sample;
 }
 
 RageSoundDriver_WaveOut::RageSoundDriver_WaveOut()
-:   m_hWaveOut(nullptr),
-    m_hSoundEvent(CreateEvent(nullptr, false, true, nullptr)),
-    m_iLastCursorPos(0),
-    m_iSampleRate(0),
-    m_bShutdown(false),
-    b_InitSuccess(false),
-    wo_num_chunks(1),
-    wo_buffer_size_frames(0),
-    wo_chunk_size(0),
-    wo_buffer_size(0),
-    m_aBuffers{},
-    MixingThread() {}
+    : m_hWaveOut(nullptr)
+    , m_hSoundEvent(CreateEvent(nullptr, false, true, nullptr))
+    , m_iLastCursorPos(0)
+    , m_iSampleRate(0)
+    , m_bShutdown(false)
+    , b_InitSuccess(false)
+    , wo_num_blocks(1)
+    , wo_buffer_size_frames(0)
+    , wo_block_size(0)
+    , wo_buffer_size(0)
+    , m_aBuffers{}
+    , MixingThread()
+{
+}
 
 RString RageSoundDriver_WaveOut::Init()
 {
@@ -183,9 +147,9 @@ RString RageSoundDriver_WaveOut::Init()
 		m_iSampleRate = kFallbackSampleRate;
 	}
 
-	wo_num_chunks = CalculteNumBufferChunks( m_iSampleRate );
-	wo_buffer_size_frames = kChunkSizeFrames * wo_num_chunks;
-	wo_chunk_size = kChunkSizeFrames * kBytesPerFrame;
+	wo_num_blocks = CalculateNumBlocks( m_iSampleRate );
+	wo_buffer_size_frames = kBlockSizeFrames * wo_num_blocks;
+	wo_block_size = kBlockSizeFrames * kBytesPerFrame;
 	wo_buffer_size = wo_buffer_size_frames * kBytesPerFrame;
 
 	WAVEFORMATEX fmt;
@@ -218,22 +182,18 @@ RString RageSoundDriver_WaveOut::Init()
 		}
 	}
 	if (ret != MMSYSERR_NOERROR) {
-		RString error_string = WaveOutErrorToString( ret ) + "waveOutOpen failed";
-		return error_string;
+		return wo_ssprintf( ret, "waveOutOpen failed" );
 	}
 
 
 	memset( &(m_aBuffers), 0, sizeof(m_aBuffers) );
-	for(int b = 0; b < wo_num_chunks; ++b)
+	for(int b = 0; b < wo_num_blocks; ++b)
 	{
-		m_aBuffers[b].dwBufferLength = wo_chunk_size;
-		m_aBuffers[b].lpData = new char[wo_chunk_size];
+		m_aBuffers[b].dwBufferLength = wo_block_size;
+		m_aBuffers[b].lpData = new char[wo_block_size];
 		ret = waveOutPrepareHeader( m_hWaveOut, &m_aBuffers[b], sizeof(m_aBuffers[b]) );
 		if( ret != MMSYSERR_NOERROR )
-		{
-			RString error_string = WaveOutErrorToString( ret ) + "waveOutPrepareHeader failed";
-			return error_string;
-		}
+			return wo_ssprintf( ret, "waveOutPrepareHeader failed" );
 		m_aBuffers[b].dwFlags |= WHDR_DONE;
 	}
 
@@ -265,7 +225,7 @@ RageSoundDriver_WaveOut::~RageSoundDriver_WaveOut()
 
 	if( m_hWaveOut != nullptr )
 	{
-		for( int b = 0; b < wo_num_chunks && m_aBuffers[b].lpData != nullptr; ++b )
+		for( int b = 0; b < wo_num_blocks && m_aBuffers[b].lpData != nullptr; ++b )
 		{
 			waveOutUnprepareHeader( m_hWaveOut, &m_aBuffers[b], sizeof(m_aBuffers[b]) );
 			delete [] m_aBuffers[b].lpData;
@@ -281,7 +241,7 @@ float RageSoundDriver_WaveOut::GetPlayLatency() const
 {
 	/* If we have a 1000-byte buffer, and we fill 100 bytes at a time, we
 	 * almost always have between 900 and 1000 bytes filled; on average, 950. */
-	return (wo_buffer_size_frames - kChunkSizeFrames/2) * (1.0f / m_iSampleRate);
+	return (wo_buffer_size_frames - kBlockSizeFrames/2) * (1.0f / m_iSampleRate);
 }
 
 /*

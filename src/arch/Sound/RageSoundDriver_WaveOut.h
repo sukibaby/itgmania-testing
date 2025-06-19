@@ -24,18 +24,17 @@ private:
 	RageThread MixingThread;
 	bool GetData();
 	void SetupDecodingThread();
-	void SetMixerPriority();
 
 	HWAVEOUT m_hWaveOut;
 	HANDLE m_hSoundEvent;
-	WAVEHDR m_aBuffers[32]; // 32 is the maximum number of buffers we'll allow.
+	WAVEHDR m_aBuffers[32]; // Maximum of 32 output blocks (frame blocks) allowed.
 	int m_iSampleRate;
 	bool m_bShutdown;
 	int m_iLastCursorPos;
 	bool b_InitSuccess;
-	int wo_num_chunks;
+	int wo_num_blocks;
 	int wo_buffer_size_frames;
-	int wo_chunk_size;
+	int wo_block_size;
 	int wo_buffer_size;
 };
 
