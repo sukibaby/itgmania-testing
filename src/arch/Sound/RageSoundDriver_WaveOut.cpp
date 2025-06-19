@@ -29,17 +29,14 @@ namespace {
 	const int CHUNKSIZE = CHUNKSIZE_FRAMES * BYTES_PER_FRAME; // in bytes
 }  // namespace
 
-static RString wo_ssprintf( MMRESULT err, const char *szFmt, ...)
+static RString WaveOutErrorToString( MMRESULT err )
 {
-	char szBuf[MAXERRORLENGTH];
-	waveOutGetErrorText( err, szBuf, MAXERRORLENGTH );
-
-	va_list va;
-	va_start( va, szFmt );
-	RString s = vssprintf( szFmt, va );
-	va_end( va );
-
-	return s += ssprintf( "(%s)", szBuf );
+	char szBuf[MAXERRORLENGTH] = "";
+	if( waveOutGetErrorText(err, szBuf, MAXERRORLENGTH) != MMSYSERR_NOERROR )
+	{
+		strncpy_s( szBuf, MAXERRORLENGTH, "Unknown error", _TRUNCATE );
+	}
+	return RString( szBuf );
 }
 
 int RageSoundDriver_WaveOut::MixerThread_start( void *p )
@@ -83,7 +80,8 @@ bool RageSoundDriver_WaveOut::GetData()
 		Init();
 		if (b_InitSuccess == false)
 		{
-			FAIL_M(wo_ssprintf(ret, "waveOutWrite failed"));
+			RString fail_message = WaveOutErrorToString( ret ) + "waveOutWrite failed";
+			FAIL_M(fail_message.c_str());
 		}
 	}
 
@@ -105,7 +103,10 @@ int64_t RageSoundDriver_WaveOut::GetPosition() const
 	tm.wType = TIME_SAMPLES;
 	MMRESULT ret = waveOutGetPosition( m_hWaveOut, &tm, sizeof(tm) );
   	if( ret != MMSYSERR_NOERROR )
-		FAIL_M( wo_ssprintf(ret, "waveOutGetPosition failed") );
+	{
+		RString fail_message = WaveOutErrorToString( ret ) + "waveOutGetPosition failed";
+		FAIL_M(fail_message.c_str());
+	}
 
 	return tm.u.sample;
 }
@@ -159,7 +160,8 @@ RString RageSoundDriver_WaveOut::Init()
 		}
 	}
 	if (ret != MMSYSERR_NOERROR) {
-		return wo_ssprintf( ret, "waveOutOpen failed" );
+		RString error_string = WaveOutErrorToString( ret ) + "waveOutOpen failed";
+		return error_string;
 	}
 
 
@@ -170,7 +172,10 @@ RString RageSoundDriver_WaveOut::Init()
 		m_aBuffers[b].lpData = new char[CHUNKSIZE];
 		ret = waveOutPrepareHeader( m_hWaveOut, &m_aBuffers[b], sizeof(m_aBuffers[b]) );
 		if( ret != MMSYSERR_NOERROR )
-			return wo_ssprintf( ret, "waveOutPrepareHeader failed" );
+		{
+			RString error_string = WaveOutErrorToString( ret ) + "waveOutPrepareHeader failed";
+			return error_string;
+		}
 		m_aBuffers[b].dwFlags |= WHDR_DONE;
 	}
 
