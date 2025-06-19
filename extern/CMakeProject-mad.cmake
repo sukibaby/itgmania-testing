@@ -1,5 +1,6 @@
 # libmad 0.16+ configuration file for CMake.
 
+# The generic 64-bit FPM should be used to avoid inline assembly.
 set(FPM_64BIT 1)
 configure_file("libmad/include/mad.h.in" "libmad/include/mad.h")
 if(ENDIAN_BIG)
@@ -41,9 +42,15 @@ set_property(TARGET "mad" PROPERTY FOLDER "External Libraries")
 target_include_directories("mad" PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/libmad/include")
 target_include_directories("mad" PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/libmad/include")
 
-# Use OPT_SPEED rather than OPT_ACCURACY to prevent stutters on bad MP3 files.
-# ASO_INTERLEAVE2 seems to perform best when using modern (2015+) 64-bit CPUs.
-# ASO_ZEROCHECK is not recommended because it negatively impacts clock accuracy.
+# Use OPT_SPEED rather than OPT_ACCURACY to prevent in-game stutters caused by
+# corrupted or non-compliant MP3 files. If OPT_ACCURACY is set, then libmad
+# may briefly hold up decoding if an unexpected MP3 frame is encountered. We
+# don't want libmad to be able to hold up the decoding process.
+# Using either of the ASO_INTERLEAVE options is a significant improvement
+# on in-game performance and CPU usage while decoding MP3 audio for any CPU
+# which natively supports SSE or AVX instructions.
+# Don't use ASO_ZEROCHECK - it negatively impacts clock accuracy, and does not
+# provide any noticeable impact on in-game FPS or resource usage.
 target_compile_definitions("mad" PRIVATE OPT_SPEED)
 target_compile_definitions("mad" PRIVATE $<$<CONFIG:Debug>:DEBUG>)
 target_compile_definitions("mad" PRIVATE ASO_INTERLEAVE2)
