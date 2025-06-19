@@ -58,10 +58,47 @@ int RageSoundDriver_WaveOut::MixerThread_start( void *p )
 	return 0;
 }
 
+void RageSoundDriver_WaveOut::SetMixerPriority()
+{
+	static bool initialized = false;
+	static CRITICAL_SECTION cs;
+	static bool cs_initialized = false;
+
+	if( !cs_initialized )
+	{
+          InitializeCriticalSection( &cs );
+          cs_initialized = true;
+	}
+
+	EnterCriticalSection(&cs);
+
+	if( initialized )
+	{
+		LeaveCriticalSection( &cs );
+		return;
+	}
+	initialized = true;
+	LeaveCriticalSection( &cs );
+
+	if( !SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_ABOVE_NORMAL) )
+	{
+		RString warn_string = werr_ssprintf( GetLastError(), "Failed to set sound thread priority" );
+		LOG->Warn( warn_string.c_str() );
+	}
+
+	if( GetConsoleWindow() != nullptr )
+	{
+		LOG->Warn(
+			"WaveOut thread is running in a console window!\n"
+			"This may cause issues with sound playback, and the game\n"
+			"will crash if the console window is interrupted.\n"
+		);
+	}
+}
+
 void RageSoundDriver_WaveOut::MixerThread()
 {
-	if( !SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_ABOVE_NORMAL) )
-		LOG->Warn( werr_ssprintf(GetLastError(), "Failed to set sound thread priority") );
+	SetMixerPriority();
 
 	while( !m_bShutdown )
 	{
@@ -106,8 +143,7 @@ bool RageSoundDriver_WaveOut::GetData()
 
 void RageSoundDriver_WaveOut::SetupDecodingThread()
 {
-	if( !SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_ABOVE_NORMAL) )
-		LOG->Warn( werr_ssprintf(GetLastError(), "Failed to set sound thread priority") );
+	SetMixerPriority();
 }
 
 int64_t RageSoundDriver_WaveOut::GetPosition() const

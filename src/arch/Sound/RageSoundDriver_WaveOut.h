@@ -24,6 +24,7 @@ private:
 	RageThread MixingThread;
 	bool GetData();
 	void SetupDecodingThread();
+	void SetMixerPriority();
 
 	HWAVEOUT m_hWaveOut;
 	HANDLE m_hSoundEvent;
