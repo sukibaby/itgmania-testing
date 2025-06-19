@@ -132,7 +132,6 @@ RageSoundDriver_WaveOut::RageSoundDriver_WaveOut()
     , wo_num_blocks(1)
     , wo_buffer_size_frames(0)
     , wo_block_size(0)
-    , wo_buffer_size(0)
     , m_aBuffers{}
     , MixingThread()
 {
@@ -150,7 +149,6 @@ RString RageSoundDriver_WaveOut::Init()
 	wo_num_blocks = CalculateNumBlocks( m_iSampleRate );
 	wo_buffer_size_frames = kBlockSizeFrames * wo_num_blocks;
 	wo_block_size = kBlockSizeFrames * kBytesPerFrame;
-	wo_buffer_size = wo_buffer_size_frames * kBytesPerFrame;
 
 	WAVEFORMATEX fmt;
 	fmt.wFormatTag = WAVE_FORMAT_PCM;

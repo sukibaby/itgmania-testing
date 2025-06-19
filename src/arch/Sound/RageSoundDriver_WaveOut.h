@@ -35,7 +35,6 @@ private:
 	int wo_num_blocks;
 	int wo_buffer_size_frames;
 	int wo_block_size;
-	int wo_buffer_size;
 };
 
 #endif
