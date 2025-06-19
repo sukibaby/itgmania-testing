@@ -24,25 +24,25 @@ REGISTER_SOUND_DRIVER_CLASS( WaveOut );
 namespace {
 	// WaveOut targets a specific latency calculated from the sample rate,
 	// number of buffers, and buffer size. For example, at 44100 Hz, with
-	// 15 buffers of 256 frames each, we get 3840 frames (~87 ms). At 48000 Hz,
-	// with 16 buffers of 256 frames each, we get 4096 frames (~85 ms).
-	// So we target a specific latency to ensure a consistent experience with
-	// both 44100 Hz and 44800 Hz sample rates.
-	// StepMania 5 had hardcoded math resulting in a latency of ~185 ms at
-	// 44100 Hz (about 23ms per chunk). So we set the target latency to 185 ms.
-	constexpr int kLatencyMilliseconds = 185;
+	// 15 buffers of 256 frames each, the latency would be ~87 ms. At 48000 Hz,
+	// with 16 buffers of 256 frames each, the latency would be ~85 ms.
+	// We target a specific latency (118 ms) to ensure a consistent experience
+	// for both 44100 and 48000 Hz sample rates.
+	// This value was chosen because it has the smallest difference in actual
+	// latency between 44100 and 48000 Hz (0.29 ms), which is almost negligible.
+	constexpr int kTargetLatencyMilliseconds = 118;
 	constexpr int kChannels = 2;
 	constexpr int kChunkSizeFrames = 512;
 	constexpr int kBytesPerFrame = kChannels * 2;  // 16 bit
 
-	inline int CalculateBufferChunkSize( int sampleRate )
+	inline int CalculteNumBufferChunks( int sampleRate )
 	{
-	  return(sampleRate * kLatencyMilliseconds + (1000 * kChunkSizeFrames - 1)) /
+	  return(sampleRate * kTargetLatencyMilliseconds + (1000 * kChunkSizeFrames - 1)) /
 			 (1000 * kChunkSizeFrames);
 	}
 }  // namespace
-  
-static RString WaveOutErrorToString(MMRESULT err)
+
+static RString WaveOutErrorToString( MMRESULT err )
 {
 	char szBuf[MAXERRORLENGTH] = "";
 	if( waveOutGetErrorText(err, szBuf, MAXERRORLENGTH) != MMSYSERR_NOERROR )
@@ -54,16 +54,51 @@ static RString WaveOutErrorToString(MMRESULT err)
 
 int RageSoundDriver_WaveOut::MixerThread_start( void *p )
 {
-	((RageSoundDriver_WaveOut *) p)->MixerThread();
+	static_cast<RageSoundDriver_WaveOut *>(p)->MixerThread();
 	return 0;
+}
+
+void RageSoundDriver_WaveOut::SetMixerPriority()
+{
+	static bool initialized = false;
+	static CRITICAL_SECTION cs;
+	static bool cs_initialized = false;
+
+	if( !cs_initialized )
+	{
+          InitializeCriticalSection( &cs );
+          cs_initialized = true;
+	}
+
+	EnterCriticalSection(&cs);
+
+	if( initialized )
+	{
+		LeaveCriticalSection( &cs );
+		return;
+	}
+	initialized = true;
+	LeaveCriticalSection( &cs );
+
+	if( !SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_ABOVE_NORMAL) )
+	{
+		RString warn_string = werr_ssprintf( GetLastError(), "Failed to set sound thread priority" );
+		LOG->Warn( warn_string.c_str() );
+	}
+
+	if( GetConsoleWindow() != nullptr )
+	{
+		LOG->Warn(
+			"WaveOut thread is running in a console window!\n"
+			"This may cause issues with sound playback, and the game\n"
+			"will crash if the console window is interrupted.\n"
+		);
+	}
 }
 
 void RageSoundDriver_WaveOut::MixerThread()
 {
-	if( !SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_ABOVE_NORMAL) )
-	{
-		LOG->Warn( werr_ssprintf(GetLastError(), "Failed to set sound thread priority") );
-	}
+	SetMixerPriority();
 
 	while( !m_bShutdown )
 	{
@@ -79,18 +114,12 @@ void RageSoundDriver_WaveOut::MixerThread()
 bool RageSoundDriver_WaveOut::GetData()
 {
 	/* Look for a free buffer. */
-	int b = 0;
+	int b;
 	for( b = 0; b < wo_num_chunks; ++b )
-	{
 		if( m_aBuffers[b].dwFlags & WHDR_DONE )
-		{
 			break;
-		}
-	}
 	if( b == wo_num_chunks )
-	{
 		return false;
-	}
 
 	/* Call the callback. */
 	this->Mix( reinterpret_cast<int16_t*>(m_aBuffers[b].lpData), kChunkSizeFrames, m_iLastCursorPos, GetPosition() );
@@ -101,8 +130,8 @@ bool RageSoundDriver_WaveOut::GetData()
 		Init();
 		if (b_InitSuccess == false)
 		{
-			RString fail_message = WaveOutErrorToString( ret );
-			FAIL_M( fail_message.c_str() );
+			RString fail_message = WaveOutErrorToString( ret ) + "waveOutWrite failed";
+			FAIL_M(fail_message.c_str());
 		}
 	}
 
@@ -114,10 +143,7 @@ bool RageSoundDriver_WaveOut::GetData()
 
 void RageSoundDriver_WaveOut::SetupDecodingThread()
 {
-	if( !SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_ABOVE_NORMAL) )
-	{
-		LOG->Warn( werr_ssprintf(GetLastError(), "Failed to set sound thread priority") );
-	}
+	SetMixerPriority();
 }
 
 int64_t RageSoundDriver_WaveOut::GetPosition() const
@@ -127,24 +153,26 @@ int64_t RageSoundDriver_WaveOut::GetPosition() const
 	MMRESULT ret = waveOutGetPosition( m_hWaveOut, &tm, sizeof(tm) );
   	if( ret != MMSYSERR_NOERROR )
 	{
-		RString fail_message = WaveOutErrorToString( ret );
-		FAIL_M( fail_message.c_str() );
+		RString fail_message = WaveOutErrorToString( ret ) + "waveOutGetPosition failed";
+		FAIL_M(fail_message.c_str());
 	}
 
 	return tm.u.sample;
 }
 
 RageSoundDriver_WaveOut::RageSoundDriver_WaveOut()
-	: wo_num_chunks(1),
-	  wo_buffer_size_frames(0),
-	  wo_chunk_size(0),
-	  wo_buffer_size(0),
-	  m_bShutdown(false),
-	  m_iLastCursorPos(0),
-	  m_hSoundEvent(CreateEvent(nullptr, false, true, nullptr)),
-	  m_hWaveOut(nullptr)
-{
-}
+:   m_hWaveOut(nullptr),
+    m_hSoundEvent(CreateEvent(nullptr, false, true, nullptr)),
+    m_iLastCursorPos(0),
+    m_iSampleRate(0),
+    m_bShutdown(false),
+    b_InitSuccess(false),
+    wo_num_chunks(1),
+    wo_buffer_size_frames(0),
+    wo_chunk_size(0),
+    wo_buffer_size(0),
+    m_aBuffers{},
+    MixingThread() {}
 
 RString RageSoundDriver_WaveOut::Init()
 {
@@ -155,7 +183,7 @@ RString RageSoundDriver_WaveOut::Init()
 		m_iSampleRate = kFallbackSampleRate;
 	}
 
-	wo_num_chunks = CalculateBufferChunkSize( m_iSampleRate );
+	wo_num_chunks = CalculteNumBufferChunks( m_iSampleRate );
 	wo_buffer_size_frames = kChunkSizeFrames * wo_num_chunks;
 	wo_chunk_size = kChunkSizeFrames * kBytesPerFrame;
 	wo_buffer_size = wo_buffer_size_frames * kBytesPerFrame;
@@ -190,8 +218,8 @@ RString RageSoundDriver_WaveOut::Init()
 		}
 	}
 	if (ret != MMSYSERR_NOERROR) {
-		RString fail_message = WaveOutErrorToString(ret);
-		FAIL_M( fail_message.c_str() );
+		RString error_string = WaveOutErrorToString( ret ) + "waveOutOpen failed";
+		return error_string;
 	}
 
 
@@ -203,8 +231,8 @@ RString RageSoundDriver_WaveOut::Init()
 		ret = waveOutPrepareHeader( m_hWaveOut, &m_aBuffers[b], sizeof(m_aBuffers[b]) );
 		if( ret != MMSYSERR_NOERROR )
 		{
-			RString fail_message = WaveOutErrorToString(ret);
-			FAIL_M( fail_message.c_str() );
+			RString error_string = WaveOutErrorToString( ret ) + "waveOutPrepareHeader failed";
+			return error_string;
 		}
 		m_aBuffers[b].dwFlags |= WHDR_DONE;
 	}
