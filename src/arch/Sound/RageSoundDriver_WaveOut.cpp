@@ -13,42 +13,33 @@
 #include "PrefsManager.h"
 #include "archutils/Win32/ErrorStrings.h"
 
-#include <windows.h>
-#include <mmsystem.h>
 #include <cstdint>
 #include <vector>
+
 
 REGISTER_SOUND_DRIVER_CLASS( WaveOut );
 
 namespace {
-	// WaveOut targets a specific latency calculated from the sample rate,
-	// number of buffers, and buffer size. For example, at 44100 Hz, with
-	// 15 buffers of 256 frames each, we get 3840 frames (~87 ms). At 48000 Hz,
-	// with 16 buffers of 256 frames each, we get 4096 frames (~85 ms).
-	// So we target a specific latency to ensure a consistent experience with
-	// both 44100 Hz and 44800 Hz sample rates.
-	// StepMania 5 had hardcoded math resulting in a latency of ~185 ms at
-	// 44100 Hz (about 23ms per chunk). So we set the target latency to 185 ms.
-	constexpr int kLatencyMilliseconds = 185;
-	constexpr int kChannels = 2;
-	constexpr int kChunkSizeFrames = 512;
-	constexpr int kBytesPerFrame = kChannels * 2;  // 16 bit
-
-	inline int CalculateBufferChunkSize(int sampleRate)
-	{
-	  return (sampleRate * kLatencyMilliseconds + (1000 * kChunkSizeFrames - 1)) /
-			 (1000 * kChunkSizeFrames);
-	}
+	const int CHANNELS = 2;
+	const int BYTES_PER_FRAME = CHANNELS * 2; // 16 bit
+	const int BUFFERSIZE_FRAMES = 512 * RageSoundDriver_WaveOut::NUM_BUFFERS; // in frames
+	const int BUFFERSIZE = BUFFERSIZE_FRAMES * BYTES_PER_FRAME; // in bytes
+	const int NUM_CHUNKS = RageSoundDriver_WaveOut::NUM_BUFFERS;
+	const int CHUNKSIZE_FRAMES = BUFFERSIZE_FRAMES / NUM_CHUNKS; // in frames
+	const int CHUNKSIZE = CHUNKSIZE_FRAMES * BYTES_PER_FRAME; // in bytes
 }  // namespace
-  
-static RString WaveOutErrorToString(MMRESULT err)
+
+static RString wo_ssprintf( MMRESULT err, const char *szFmt, ...)
 {
-    char szBuf[MAXERRORLENGTH] = "";
-    if( waveOutGetErrorText(err, szBuf, MAXERRORLENGTH) != MMSYSERR_NOERROR )
-    {
-        strncpy_s( szBuf, MAXERRORLENGTH, "Unknown error", _TRUNCATE );
-    }
-    return RString( szBuf );
+	char szBuf[MAXERRORLENGTH];
+	waveOutGetErrorText( err, szBuf, MAXERRORLENGTH );
+
+	va_list va;
+	va_start( va, szFmt );
+	RString s = vssprintf( szFmt, va );
+	va_end( va );
+
+	return s += ssprintf( "(%s)", szBuf );
 }
 
 int RageSoundDriver_WaveOut::MixerThread_start( void *p )
@@ -60,9 +51,7 @@ int RageSoundDriver_WaveOut::MixerThread_start( void *p )
 void RageSoundDriver_WaveOut::MixerThread()
 {
 	if( !SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_ABOVE_NORMAL) )
-	{
 		LOG->Warn( werr_ssprintf(GetLastError(), "Failed to set sound thread priority") );
-	}
 
 	while( !m_bShutdown )
 	{
@@ -78,21 +67,15 @@ void RageSoundDriver_WaveOut::MixerThread()
 bool RageSoundDriver_WaveOut::GetData()
 {
 	/* Look for a free buffer. */
-	int b = 0;
-	for( b = 0; b < wo_num_chunks; ++b )
-	{
+	int b;
+	for( b = 0; b < NUM_CHUNKS; ++b )
 		if( m_aBuffers[b].dwFlags & WHDR_DONE )
-		{
 			break;
-		}
-	}
-	if( b == wo_num_chunks )
-	{
+	if( b == NUM_CHUNKS )
 		return false;
-	}
 
 	/* Call the callback. */
-	this->Mix( reinterpret_cast<int16_t*>(m_aBuffers[b].lpData), kChunkSizeFrames, m_iLastCursorPos, GetPosition() );
+	this->Mix( (int16_t *) m_aBuffers[b].lpData, CHUNKSIZE_FRAMES, m_iLastCursorPos, GetPosition() );
 
 	MMRESULT ret = waveOutWrite( m_hWaveOut, &m_aBuffers[b], sizeof(m_aBuffers[b]) );
 	if( ret != MMSYSERR_NOERROR )
@@ -100,13 +83,12 @@ bool RageSoundDriver_WaveOut::GetData()
 		Init();
 		if (b_InitSuccess == false)
 		{
-			RString fail_message = WaveOutErrorToString( ret );
-			FAIL_M( fail_message.c_str() );
+			FAIL_M(wo_ssprintf(ret, "waveOutWrite failed"));
 		}
 	}
 
 	/* Increment m_iLastCursorPos. */
-	m_iLastCursorPos += kChunkSizeFrames;
+	m_iLastCursorPos += CHUNKSIZE_FRAMES;
 
 	return true;
 }
@@ -114,35 +96,28 @@ bool RageSoundDriver_WaveOut::GetData()
 void RageSoundDriver_WaveOut::SetupDecodingThread()
 {
 	if( !SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_ABOVE_NORMAL) )
-	{
 		LOG->Warn( werr_ssprintf(GetLastError(), "Failed to set sound thread priority") );
-	}
 }
 
 int64_t RageSoundDriver_WaveOut::GetPosition() const
 {
-	MMTIME tm = {};
+	MMTIME tm;
 	tm.wType = TIME_SAMPLES;
 	MMRESULT ret = waveOutGetPosition( m_hWaveOut, &tm, sizeof(tm) );
   	if( ret != MMSYSERR_NOERROR )
-	{
-		RString fail_message = WaveOutErrorToString( ret );
-		FAIL_M( fail_message.c_str() );
-	}
+		FAIL_M( wo_ssprintf(ret, "waveOutGetPosition failed") );
 
 	return tm.u.sample;
 }
 
 RageSoundDriver_WaveOut::RageSoundDriver_WaveOut()
-	: wo_num_chunks(1),
-	  wo_buffer_size_frames(0),
-	  wo_chunk_size(0),
-	  wo_buffer_size(0),
-	  m_bShutdown(false),
-	  m_iLastCursorPos(0),
-	  m_hSoundEvent(CreateEvent(nullptr, false, true, nullptr)),
-	  m_hWaveOut(nullptr)
 {
+	m_bShutdown = false;
+	m_iLastCursorPos = 0;
+
+	m_hSoundEvent = CreateEvent( nullptr, false, true, nullptr );
+
+	m_hWaveOut = nullptr;
 }
 
 RString RageSoundDriver_WaveOut::Init()
@@ -154,14 +129,9 @@ RString RageSoundDriver_WaveOut::Init()
 		m_iSampleRate = kFallbackSampleRate;
 	}
 
-	wo_num_chunks = CalculateBufferChunkSize( m_iSampleRate );
-	wo_buffer_size_frames = kChunkSizeFrames * wo_num_chunks;
-	wo_chunk_size = kChunkSizeFrames * kBytesPerFrame;
-	wo_buffer_size = wo_buffer_size_frames * kBytesPerFrame;
-
 	WAVEFORMATEX fmt;
 	fmt.wFormatTag = WAVE_FORMAT_PCM;
-	fmt.nChannels = kChannels;
+	fmt.nChannels = CHANNELS;
 	fmt.cbSize = 0;
 	fmt.nSamplesPerSec = m_iSampleRate;
 	fmt.wBitsPerSample = 16;
@@ -189,22 +159,18 @@ RString RageSoundDriver_WaveOut::Init()
 		}
 	}
 	if (ret != MMSYSERR_NOERROR) {
-		RString fail_message = WaveOutErrorToString(ret);
-		FAIL_M( fail_message.c_str() );
+		return wo_ssprintf( ret, "waveOutOpen failed" );
 	}
 
 
-	memset( &(m_aBuffers), 0, sizeof(m_aBuffers) );
-	for(int b = 0; b < wo_num_chunks; ++b)
+	ZERO( m_aBuffers );
+	for(int b = 0; b < NUM_CHUNKS; ++b)
 	{
-		m_aBuffers[b].dwBufferLength = wo_chunk_size;
-		m_aBuffers[b].lpData = new char[wo_chunk_size];
+		m_aBuffers[b].dwBufferLength = CHUNKSIZE;
+		m_aBuffers[b].lpData = new char[CHUNKSIZE];
 		ret = waveOutPrepareHeader( m_hWaveOut, &m_aBuffers[b], sizeof(m_aBuffers[b]) );
 		if( ret != MMSYSERR_NOERROR )
-		{
-			RString fail_message = WaveOutErrorToString(ret);
-			FAIL_M( fail_message.c_str() );
-		}
+			return wo_ssprintf( ret, "waveOutPrepareHeader failed" );
 		m_aBuffers[b].dwFlags |= WHDR_DONE;
 	}
 
@@ -212,7 +178,7 @@ RString RageSoundDriver_WaveOut::Init()
 
 	/* We have a very large writeahead; make sure we have a large enough decode
 	 * buffer to recover cleanly from underruns. */
-	SetDecodeBufferSize( wo_buffer_size_frames * 3/2 );
+	SetDecodeBufferSize( BUFFERSIZE_FRAMES * 3/2 );
 	StartDecodeThread();
 
 	MixingThread.SetName( "Mixer thread" );
@@ -236,7 +202,7 @@ RageSoundDriver_WaveOut::~RageSoundDriver_WaveOut()
 
 	if( m_hWaveOut != nullptr )
 	{
-		for( int b = 0; b < wo_num_chunks && m_aBuffers[b].lpData != nullptr; ++b )
+		for( int b = 0; b < NUM_CHUNKS && m_aBuffers[b].lpData != nullptr; ++b )
 		{
 			waveOutUnprepareHeader( m_hWaveOut, &m_aBuffers[b], sizeof(m_aBuffers[b]) );
 			delete [] m_aBuffers[b].lpData;
@@ -252,7 +218,7 @@ float RageSoundDriver_WaveOut::GetPlayLatency() const
 {
 	/* If we have a 1000-byte buffer, and we fill 100 bytes at a time, we
 	 * almost always have between 900 and 1000 bytes filled; on average, 950. */
-	return (wo_buffer_size_frames - kChunkSizeFrames/2) * (1.0f / m_iSampleRate);
+	return (BUFFERSIZE_FRAMES - CHUNKSIZE_FRAMES/2) * (1.0f / m_iSampleRate);
 }
 
 /*
