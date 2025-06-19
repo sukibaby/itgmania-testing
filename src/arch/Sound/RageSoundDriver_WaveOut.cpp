@@ -107,7 +107,7 @@ bool RageSoundDriver_WaveOut::GetData()
 
 void RageSoundDriver_WaveOut::SetupDecodingThread()
 {
-	if( !SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_ABOVE_NORMAL) )
+	if( !SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_BELOW_NORMAL) )
 		LOG->Warn( werr_ssprintf(GetLastError(), "Failed to set sound thread priority") );
 }
 
@@ -150,7 +150,7 @@ RString RageSoundDriver_WaveOut::Init()
 	wo_buffer_size_frames = kBlockSizeFrames * wo_num_blocks;
 	wo_block_size = kBlockSizeFrames * kBytesPerFrame;
 
-	WAVEFORMATEX fmt;
+	WAVEFORMATEX fmt = {};
 	fmt.wFormatTag = WAVE_FORMAT_PCM;
 	fmt.nChannels = kChannels;
 	fmt.cbSize = 0;
