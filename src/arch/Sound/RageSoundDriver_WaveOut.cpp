@@ -42,6 +42,21 @@ static RString wo_ssprintf( MMRESULT err, const char *szFmt, ...)
 	return s += ssprintf( "(%s)", szBuf );
 }
 
+void RageSoundDriver_WaveOut::LogMixerThreadError()
+{
+
+	switch (m_ThreadError)
+	{
+	case WaveOutMixerThreadError::SetPriorityFailed:
+		LOG->Warn( werr_ssprintf(GetLastError(), "Failed to set sound thread priority") );
+		break;
+	case WaveOutMixerThreadError::ConsoleWindowWarning:
+		break;
+	default:
+		break;
+	}
+}
+
 int RageSoundDriver_WaveOut::MixerThread_start( void *p )
 {
 	((RageSoundDriver_WaveOut *) p)->MixerThread();
@@ -50,9 +65,18 @@ int RageSoundDriver_WaveOut::MixerThread_start( void *p )
 
 void RageSoundDriver_WaveOut::MixerThread()
 {
-	if( !SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_ABOVE_NORMAL) )
-		LOG->Warn( werr_ssprintf(GetLastError(), "Failed to set sound thread priority") );
+	m_ThreadError = WaveOutMixerThreadError::None;
 
+	if( !SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_ABOVE_NORMAL) ) {
+		m_ThreadError = WaveOutMixerThreadError::SetPriorityFailed;
+	}
+
+
+	if( m_ThreadError != WaveOutMixerThreadError::None )
+	{
+		LogMixerThreadError();
+	}
+	
 	while( !m_bShutdown )
 	{
 		while( GetData() )
