@@ -101,7 +101,7 @@ void RageSoundDriver_WaveOut::SetupDecodingThread()
 
 int64_t RageSoundDriver_WaveOut::GetPosition() const
 {
-	MMTIME tm;
+	MMTIME tm = {};
 	tm.wType = TIME_SAMPLES;
 	MMRESULT ret = waveOutGetPosition( m_hWaveOut, &tm, sizeof(tm) );
   	if( ret != MMSYSERR_NOERROR )
