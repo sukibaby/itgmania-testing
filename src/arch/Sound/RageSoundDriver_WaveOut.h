@@ -33,6 +33,11 @@ private:
 	bool m_bShutdown;
 	int m_iLastCursorPos;
 	bool b_InitSuccess;
+
+	int wo_num_chunks;
+	int wo_buffer_size_frames;
+	int wo_chunk_size;
+	int wo_buffer_size;
 };
 
 #endif
