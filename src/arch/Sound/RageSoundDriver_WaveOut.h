@@ -9,15 +9,6 @@
 #include <windows.h>
 #include <mmsystem.h>
 
-enum class WaveOutMixerThreadError {
-	None,
-	SetPriorityFailed,
-	ConsoleWindowWarning,
-	Unknown
-};
-
-WaveOutMixerThreadError m_ThreadError;
-
 class RageSoundDriver_WaveOut: public RageSoundDriver
 {
 public:
@@ -27,7 +18,6 @@ public:
 	int64_t GetPosition() const;
 	float GetPlayLatency() const;
 	int GetSampleRate() const { return m_iSampleRate; }
-	void LogMixerThreadError();
 	static const int NUM_BUFFERS = 32;
 private:
 	static int MixerThread_start( void *p );
@@ -35,6 +25,7 @@ private:
 	RageThread MixingThread;
 	bool GetData();
 	void SetupDecodingThread();
+	void SetMixerPriority();
 
 	HWAVEOUT m_hWaveOut;
 	HANDLE m_hSoundEvent;
