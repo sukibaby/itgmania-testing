@@ -61,7 +61,9 @@ int RageSoundDriver_WaveOut::MixerThread_start( void *p )
 void RageSoundDriver_WaveOut::MixerThread()
 {
 	if( !SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_ABOVE_NORMAL) )
+	{
 		LOG->Warn( werr_ssprintf(GetLastError(), "Failed to set sound thread priority") );
+	}
 
 	while( !m_bShutdown )
 	{
@@ -77,12 +79,18 @@ void RageSoundDriver_WaveOut::MixerThread()
 bool RageSoundDriver_WaveOut::GetData()
 {
 	/* Look for a free buffer. */
-	int b;
-	for( b = 0; b < NUM_CHUNKS; ++b )
+	int b = 0;
+	for( b = 0; b < wo_num_chunks; ++b )
+	{
 		if( m_aBuffers[b].dwFlags & WHDR_DONE )
+		{
 			break;
-	if( b == NUM_CHUNKS )
+		}
+	}
+	if( b == wo_num_chunks )
+	{
 		return false;
+	}
 
 	/* Call the callback. */
 	this->Mix( (int16_t *) m_aBuffers[b].lpData, CHUNKSIZE_FRAMES, m_iLastCursorPos, GetPosition() );
@@ -99,7 +107,7 @@ bool RageSoundDriver_WaveOut::GetData()
 	}
 
 	/* Increment m_iLastCursorPos. */
-	m_iLastCursorPos += CHUNKSIZE_FRAMES;
+	m_iLastCursorPos += kChunkSizeFrames;
 
 	return true;
 }
@@ -107,12 +115,14 @@ bool RageSoundDriver_WaveOut::GetData()
 void RageSoundDriver_WaveOut::SetupDecodingThread()
 {
 	if( !SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_ABOVE_NORMAL) )
+	{
 		LOG->Warn( werr_ssprintf(GetLastError(), "Failed to set sound thread priority") );
+	}
 }
 
 int64_t RageSoundDriver_WaveOut::GetPosition() const
 {
-	MMTIME tm;
+	MMTIME tm = {};
 	tm.wType = TIME_SAMPLES;
 	MMRESULT ret = waveOutGetPosition( m_hWaveOut, &tm, sizeof(tm) );
   	if( ret != MMSYSERR_NOERROR )
@@ -150,7 +160,7 @@ RString RageSoundDriver_WaveOut::Init()
 
 	WAVEFORMATEX fmt;
 	fmt.wFormatTag = WAVE_FORMAT_PCM;
-	fmt.nChannels = CHANNELS;
+	fmt.nChannels = kChannels;
 	fmt.cbSize = 0;
 	fmt.nSamplesPerSec = m_iSampleRate;
 	fmt.wBitsPerSample = 16;
@@ -183,11 +193,11 @@ RString RageSoundDriver_WaveOut::Init()
 	}
 
 
-	ZERO( m_aBuffers );
-	for(int b = 0; b < NUM_CHUNKS; ++b)
+	memset( &(m_aBuffers), 0, sizeof(m_aBuffers) );
+	for(int b = 0; b < wo_num_chunks; ++b)
 	{
-		m_aBuffers[b].dwBufferLength = CHUNKSIZE;
-		m_aBuffers[b].lpData = new char[CHUNKSIZE];
+		m_aBuffers[b].dwBufferLength = wo_chunk_size;
+		m_aBuffers[b].lpData = new char[wo_chunk_size];
 		ret = waveOutPrepareHeader( m_hWaveOut, &m_aBuffers[b], sizeof(m_aBuffers[b]) );
 		if( ret != MMSYSERR_NOERROR )
 		{
@@ -201,7 +211,7 @@ RString RageSoundDriver_WaveOut::Init()
 
 	/* We have a very large writeahead; make sure we have a large enough decode
 	 * buffer to recover cleanly from underruns. */
-	SetDecodeBufferSize( BUFFERSIZE_FRAMES * 3/2 );
+	SetDecodeBufferSize( wo_buffer_size_frames * 3/2 );
 	StartDecodeThread();
 
 	MixingThread.SetName( "Mixer thread" );
@@ -225,7 +235,7 @@ RageSoundDriver_WaveOut::~RageSoundDriver_WaveOut()
 
 	if( m_hWaveOut != nullptr )
 	{
-		for( int b = 0; b < NUM_CHUNKS && m_aBuffers[b].lpData != nullptr; ++b )
+		for( int b = 0; b < wo_num_chunks && m_aBuffers[b].lpData != nullptr; ++b )
 		{
 			waveOutUnprepareHeader( m_hWaveOut, &m_aBuffers[b], sizeof(m_aBuffers[b]) );
 			delete [] m_aBuffers[b].lpData;
@@ -241,7 +251,7 @@ float RageSoundDriver_WaveOut::GetPlayLatency() const
 {
 	/* If we have a 1000-byte buffer, and we fill 100 bytes at a time, we
 	 * almost always have between 900 and 1000 bytes filled; on average, 950. */
-	return (BUFFERSIZE_FRAMES - CHUNKSIZE_FRAMES/2) * (1.0f / m_iSampleRate);
+	return (wo_buffer_size_frames - kChunkSizeFrames/2) * (1.0f / m_iSampleRate);
 }
 
 /*
