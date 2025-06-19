@@ -13,6 +13,8 @@
 #include "PrefsManager.h"
 #include "archutils/Win32/ErrorStrings.h"
 
+#include <windows.h>
+#include <mmsystem.h>
 #include <cstdint>
 #include <vector>
 
