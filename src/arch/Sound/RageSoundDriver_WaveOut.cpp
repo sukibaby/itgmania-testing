@@ -22,13 +22,24 @@
 REGISTER_SOUND_DRIVER_CLASS( WaveOut );
 
 namespace {
-	const int CHANNELS = 2;
-	const int BYTES_PER_FRAME = CHANNELS * 2; // 16 bit
-	const int BUFFERSIZE_FRAMES = 512 * RageSoundDriver_WaveOut::NUM_BUFFERS; // in frames
-	const int BUFFERSIZE = BUFFERSIZE_FRAMES * BYTES_PER_FRAME; // in bytes
-	const int NUM_CHUNKS = RageSoundDriver_WaveOut::NUM_BUFFERS;
-	const int CHUNKSIZE_FRAMES = BUFFERSIZE_FRAMES / NUM_CHUNKS; // in frames
-	const int CHUNKSIZE = CHUNKSIZE_FRAMES * BYTES_PER_FRAME; // in bytes
+	// WaveOut targets a specific latency calculated from the sample rate,
+	// number of buffers, and buffer size. For example, at 44100 Hz, with
+	// 15 buffers of 256 frames each, we get 3840 frames (~87 ms). At 48000 Hz,
+	// with 16 buffers of 256 frames each, we get 4096 frames (~85 ms).
+	// So we target a specific latency to ensure a consistent experience with
+	// both 44100 Hz and 44800 Hz sample rates.
+	// StepMania 5 had hardcoded math resulting in a latency of ~185 ms at
+	// 44100 Hz (about 23ms per chunk). So we set the target latency to 185 ms.
+	constexpr int kLatencyMilliseconds = 185;
+	constexpr int kChannels = 2;
+	constexpr int kChunkSizeFrames = 512;
+	constexpr int kBytesPerFrame = kChannels * 2;  // 16 bit
+
+	inline int CalculateBufferChunkSize( int sampleRate )
+	{
+	  return(sampleRate * kLatencyMilliseconds + (1000 * kChunkSizeFrames - 1)) /
+			 (1000 * kChunkSizeFrames);
+	}
 }  // namespace
 
 static RString wo_ssprintf( MMRESULT err, const char *szFmt, ...)
@@ -130,6 +141,11 @@ RString RageSoundDriver_WaveOut::Init()
 	{
 		m_iSampleRate = kFallbackSampleRate;
 	}
+
+	wo_num_chunks = CalculateBufferChunkSize( m_iSampleRate );
+	wo_buffer_size_frames = kChunkSizeFrames * wo_num_chunks;
+	wo_chunk_size = kChunkSizeFrames * kBytesPerFrame;
+	wo_buffer_size = wo_buffer_size_frames * kBytesPerFrame;
 
 	WAVEFORMATEX fmt;
 	fmt.wFormatTag = WAVE_FORMAT_PCM;
