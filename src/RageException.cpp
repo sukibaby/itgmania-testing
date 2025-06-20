@@ -46,7 +46,7 @@ void RageException::Throw( const char *sFmt, ... )
 	}
 	else
 	{
-		puts( msg.c_str() );
+		puts( msg );
 		fflush( stdout );
 	}
 

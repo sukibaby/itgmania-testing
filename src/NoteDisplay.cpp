@@ -146,7 +146,7 @@ struct NoteSkinAndPath
 	GameController gc;
 	bool operator<( const NoteSkinAndPath &other ) const
 	{
-		int cmp = strcmp(sNoteSkin.c_str(), other.sNoteSkin.c_str());
+		int cmp = strcmp(sNoteSkin, other.sNoteSkin);
 
 		if( cmp < 0 )
 		{

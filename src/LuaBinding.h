@@ -74,12 +74,12 @@ public:
 	// Get userdata from the Lua stack and return a pointer to T object.
 	static T *check( lua_State *L, int narg, bool bIsSelf = false )
 	{
-		if( !LuaBinding::CheckLuaObjectType(L, narg, m_sClassName.c_str()) )
+		if( !LuaBinding::CheckLuaObjectType(L, narg, m_sClassName) )
 		{
 			if( bIsSelf )
-				luaL_typerror( L, narg, m_sClassName.c_str() );
+				luaL_typerror( L, narg, m_sClassName );
 			else
-				LuaHelpers::TypeError( L, narg, m_sClassName.c_str() );
+				LuaHelpers::TypeError( L, narg, m_sClassName );
 		}
 
 		return get( L, narg );

@@ -148,30 +148,30 @@ class LunaGroup: public Luna<Group>
 public:
 	static int GetGroupName(T* p, lua_State *L)
 	{
-		lua_pushstring(L, p->GetGroupName().c_str());
+		lua_pushstring(L, p->GetGroupName());
 		return 1;
 	}
 	static int GetSortTitle(T* p, lua_State *L)
 	{
-		lua_pushstring(L, p->GetSortTitle().c_str());
+		lua_pushstring(L, p->GetSortTitle());
         return 1;
     }
 
     static int GetDisplayTitle(T* p, lua_State *L)
     {
-        lua_pushstring(L, p->GetDisplayTitle().c_str());
+        lua_pushstring(L, p->GetDisplayTitle());
         return 1;
     }
 
     static int GetTranslitTitle(T* p, lua_State *L)
     {
-        lua_pushstring(L, p->GetTranslitTitle().c_str());
+        lua_pushstring(L, p->GetTranslitTitle());
         return 1;
     }
 
     static int GetSeries(T* p, lua_State *L)
     {
-        lua_pushstring(L, p->GetSeries().c_str());
+        lua_pushstring(L, p->GetSeries());
         return 1;
     }
 
@@ -189,7 +189,7 @@ public:
 
     static int GetBannerPath(T* p, lua_State *L)
     {
-        lua_pushstring(L, p->GetBannerPath().c_str());
+        lua_pushstring(L, p->GetBannerPath());
         return 1;
     }
 

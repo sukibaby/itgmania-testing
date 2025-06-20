@@ -149,7 +149,7 @@ RString RageSoundDriver_JACK::ConnectPorts()
 		// "aliases" in the docs.)
 		for ( RString const &portName : portNames )
 		{
-			jack_port_t *out = jack_port_by_name( client, portName.c_str() );
+			jack_port_t *out = jack_port_by_name( client, portName );
 			// Make sure the port is a sink.
 			if( ! ( jack_port_flags( out ) & JackPortIsInput ) )
 				continue;

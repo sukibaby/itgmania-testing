@@ -380,7 +380,7 @@ void Sprite::LoadFromCached( const RString &sDir, const RString &sPath )
 {
 	if( sPath.empty() )
 	{
-		Load( THEME->GetPathG("Common","fallback %s", sDir.c_str()) );
+		Load( THEME->GetPathG("Common","fallback %s", sDir) );
 		return;
 	}
 
@@ -394,7 +394,7 @@ void Sprite::LoadFromCached( const RString &sDir, const RString &sPath )
 	else if( IsAFile(sPath) )
 		Load( sPath );
 	else
-		Load( THEME->GetPathG("Common","fallback %s", sDir.c_str()) );
+		Load( THEME->GetPathG("Common","fallback %s", sDir) );
 }
 
 void Sprite::LoadStatesFromTexture()
