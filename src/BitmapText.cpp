@@ -911,43 +911,71 @@ BitmapText::Attribute BitmapText::GetDefaultAttribute() const
 	return attr;
 }
 
+static size_t CalculateLineLength(const std::wstring& line)
+{
+	return line.length() + 1ULL; // +1 to account for implicit newline
+}
+
+static size_t AdjustPositionByLineLength(size_t position, size_t lineLength)
+{
+	return position > lineLength ? position - lineLength : 0;
+}
+
+int BitmapText::FixupLengthForNewLines(size_t adjustedPos, int inputLength) const {
+	std::vector<std::wstring>::const_iterator lineIter = m_wTextLines.cbegin();
+	size_t adjustedEndPos = adjustedPos + static_cast<size_t>(inputLength);
+
+	for (; lineIter != m_wTextLines.cend(); ++lineIter) {
+		size_t lineLength = CalculateLineLength(*lineIter);
+		if (lineLength > adjustedEndPos || lineLength == 0) {
+			break;
+		}
+		adjustedEndPos = AdjustPositionByLineLength(adjustedEndPos, lineLength);
+		inputLength -= 1;
+	}
+
+	return inputLength;
+}
+
+std::pair<size_t, int> BitmapText::AdjustPositionForNewLines(size_t inputPosition) const {
+	std::vector<std::wstring>::const_iterator lineIter = m_wTextLines.cbegin();
+
+	// The first value of the pair is the adjusted position.
+	// The second value of the pair is the line count.
+	std::pair<size_t, int> resultPair = std::make_pair(inputPosition, 0);
+
+	for (; lineIter != m_wTextLines.cend(); ++lineIter) {
+		size_t lineLength = CalculateLineLength(*lineIter);
+		if (lineLength > resultPair.first) {
+			break;
+		}
+		resultPair.first = AdjustPositionByLineLength(resultPair.first, lineLength);
+		++resultPair.second;
+	}
+
+	return resultPair;
+}
+
 void BitmapText::AddAttribute( size_t iPos, const Attribute &attr )
 {
 	// Fixup position for new lines.
 	Attribute newAttr = attr;
-	auto lineIter = m_wTextLines.cbegin();
 
-	int iLines = 0;
-	size_t iAdjustedPos = iPos;
+	// The first value of the pair is the adjusted position.
+	// The second value of the pair is the line count.
+	std::pair<size_t, int> adjustedPositions = AdjustPositionForNewLines(iPos);
 
-	for( ; lineIter != m_wTextLines.cend(); ++lineIter )
-	{
-		size_t length = lineIter->length() + 1; // +1 to account for implicit newline at the end
-		if( length > iAdjustedPos )
-			break;
-		iAdjustedPos -= length;
-		++iLines;
-	}
-
-	if( newAttr.length > 0 )
-	{
+	if (newAttr.length > 0)	{
 		// Fixup length for new lines.
-		size_t iAdjustedEndPos = iAdjustedPos + newAttr.length;
-		for( ; lineIter != m_wTextLines.cend(); ++lineIter )
-		{
-			size_t length = lineIter->length() + 1; // +1 to account for implicit newline at the end
-			if( length > iAdjustedEndPos || newAttr.length == 0 )
-				break;
-			iAdjustedEndPos -= length;
-			newAttr.length -= 1;
-		}
+		const int oldAttrLength = newAttr.length;
+		newAttr.length = FixupLengthForNewLines(adjustedPositions.first, oldAttrLength);
 	}
 
 	if( newAttr.length == 0 ) // Attribute doesn't cover any printable characters
 		return;
 
 	// Check if there are existing attributes overlapping this one. We might need to remove or fix them up.
-	const size_t iStartPos = iPos - iLines;
+	const size_t iStartPos = iPos - adjustedPositions.second;
 	const size_t iEndPos = iStartPos + newAttr.length;
 
 	// First attribute starting at the same position or further than the new attribute
