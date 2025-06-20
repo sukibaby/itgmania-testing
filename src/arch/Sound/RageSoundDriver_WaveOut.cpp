@@ -188,7 +188,7 @@ RString RageSoundDriver_WaveOut::Init()
 	}
 
 
-	ZERO( m_aBuffers );
+	memset( &(m_aBuffers), 0, sizeof(m_aBuffers) );
 	for(int b = 0; b < NUM_CHUNKS; ++b)
 	{
 		m_aBuffers[b].dwBufferLength = CHUNKSIZE;
