@@ -1,0 +1,145 @@
+https://web.archive.org/web/20081122035637/http://www.codeproject.com/system/EnumDeviceProperties.asp
+
+Introduction
+In the previous article, I showed you how you can enumerate installed devices. In this article, we want to enumerate properties of an installed device. For this purpose, we use Setup API. You must have the latest platform SDK and also DDK to compile the demo application.
+
+Setup API
+The Setup application programming interface (API) provides a set of functions that your setup application can call to perform installation operations or get several information about installed devices, their class, properties and also their GUID (a unique identifier for every device).
+
+The application requires the following APIs (description of these APIs was taken from MSDN):
+
+CMAPI CONFIGRET WINAPI CM_Get_Device_ID_Ex(DEVINST  dnDevInst, PTCHAR Buffer, 
+    ULONG BufferLen, ULONG ulFlags, HMACHINE Machine);
+The CM_Get_Device_ID_Ex function retrieves the device instance ID for a specified device instance, on a local or remote machine.
+
+CMAPI CONFIGRET WINAPI CM_Get_DevNode_Status_Ex(PULONG  pulStatus, 
+    PULONG  pulProblemNumber, DEVINST  dnDevInst, 
+    ULONG  ulFlags, HMACHINE hMachine);
+The CM_Get_DevNode_Status_Ex function obtains the status of a device instance from its device node, on a local or a remote machine's device tree.
+
+DWORD CM_Get_DevNode_Registry_Property_Ex(DEVINST dnDevInst, ULONG ulProperty, 
+    PULONG pulRegDataType, PVOID Buffer, PULONG pulLength, 
+    LONG ulFlags, HMACHINE hMachine);
+The CM_Get_DevNode_Registry_Property_Ex function retrieves a specified device property from the registry.
+
+Solution
+Enumerating properties of an installed device is done by only two functions. The first one specifies the property and then calls the second function. The second function calls CM_Get_DevNode_Registry_Property_Ex function to retrieve property from registry and format it in a good manner.
+
+Here are the two functions:
+
+ Collapse
+void EnumDeviceProperties(DEVNODE dn)
+{
+    int BufferSize = MAX_PATH + MAX_DEVICE_ID_LEN;
+    TCHAR Buffer[MAX_PATH + MAX_DEVICE_ID_LEN];
+    CString Temp;
+    
+    DeviceProperties Properties[26]=
+    {
+        ID_DEVICEID,            _T("Device ID: "), _T(""),
+        ID_STATUS,              _T("Status: "), _T(""),
+        ID_PROBLEM,             _T("Problem: "), _T(""),
+        ID_SERVICE,             _T("Service: "), _T(""),
+        ...
+    };
+
+    if (CM_Get_Device_ID_Ex(dn, Buffer, BufferSize, 0, m_hMachine) 
+            == CR_SUCCESS)
+    {
+        Temp=Buffer;
+    }
+    else
+    {
+        Temp=_T("Fail to retrieve Device ID");
+    }
+
+    ULONG Status, Problem;
+
+    if (CM_Get_DevNode_Status_Ex(&Status, &Problem, dn, 0, m_hMachine) 
+            == CR_SUCCESS)
+    {
+        Temp.Format(_T("0x%08x"), Status);
+        Temp.Format(_T("0x%08x"), Problem);
+    }
+    else
+    {
+        Temp=_T("Fail to retrieve Device Status/Problem");
+    }
+
+
+    Temp=GetProperty(dn, CM_DRP_SERVICE);
+    
+    Temp=GetProperty(dn, CM_DRP_CAPABILITIES);
+    
+    ...
+}
+
+
+CString GetProperty(DEVNODE dn, ULONG Property)
+{
+    CString Temp;
+    
+    TCHAR Buffer[REGSTR_VAL_MAX_HCID_LEN]=_T("");    
+    ULONG Type;
+    ULONG Size = sizeof(Buffer);
+    
+    if (CM_Get_DevNode_Registry_Property_Ex(dn, Property,
+                        &Type,
+                        Buffer,
+                        &Size,
+                        0, m_hMachine) == CR_SUCCESS)
+    {
+        if (Type == REG_DWORD || 
+            Type == REG_MULTI_SZ || 
+            Type == REG_SZ )
+        {
+            if (Type == REG_DWORD)
+            {
+                DWORD Data = *((DWORD*)Buffer);
+                wsprintf(Buffer, _T("0x%08x"), *((DWORD*) Buffer) );
+            }
+            else if (Type == REG_MULTI_SZ)
+            {
+                LPTSTR p = Buffer;
+                while (_T('\0') != *p)
+                {
+                    p += lstrlen(p);
+                    if (_T('\0') != *p)
+                    *p++ = _T(',');
+                }
+            }
+        }
+    }
+
+    Temp=Buffer;
+    return Temp;
+}
+Enjoy!
+
+License
+This article has no explicit license attached to it but may contain usage terms in the article text or the download files themselves. If in doubt please contact the author via the discussion board below.
+
+A list of licenses authors might use can be found here [https://web.archive.org/web/20081122035637/http://www.codeproject.com/info/Licenses.aspx]
+
+About the Author
+A. Riazi
+
+
+
+I was born in Shiraz, a very beautiful famous city in Iran. I started programming when I was 12 years old with GWBASIC. Since now, I worked with various programming languages from Basic, Foxpro, C/C++, Visual Basic, Pascal to MATLAB and now Visual C++.
+I graduated from Iran University of Science & Technology in Communication Eng., and now work as a system programmer for a telecommunication industry.
+I wrote several programs and drivers for Synthesizers, Power Amplifiers, GPIB, GPS devices, Radio cards, Data Acqusition cards and so many related devices.
+I'm author of several books like Learning C (primary and advanced), Learning Visual Basic, API application for VB, Teach Yourself Object Oriented Programming (OOP) and etc.
+I'm winner of January, May, August 2003 and April 2005 best article of month competetion, my articles are:
+
+Add GPS Support to your Desktop
+Solving Engineering Problem Using MATLAB C API
+Text2PDF
+Scan2PDF
+
+You can see list of my articles, by clicking here
+
+
+Occupation:	Software Developer (Senior)
+Company:	Misbah3Com
+Location:	Iran, Islamic Republic Of Iran, Islamic Republic Of
