@@ -13,6 +13,7 @@
 #include "PrefsManager.h"
 #include "archutils/Win32/ErrorStrings.h"
 
+#include <windows.h>
 #include <cstdint>
 #include <vector>
 
@@ -20,6 +21,8 @@
 REGISTER_SOUND_DRIVER_CLASS( WaveOut );
 
 namespace {
+CRITICAL_SECTION m_csWaveOut;
+
 	// We want to target a specific latency (118 ms) to ensure a consistent
 	// experience when using either 44100 or 48000 Hz sample rate.
 	// This value was chosen because it has the smallest difference in actual
@@ -92,7 +95,13 @@ bool RageSoundDriver_WaveOut::GetData()
 	/* Call the callback. */
 	this->Mix( (int16_t *) m_aBuffers[b].lpData, CHUNKSIZE_FRAMES, m_iLastCursorPos, GetPosition() );
 
+	// Protect waveOutWrite
+	// NOTE: experimental
+	EnterCriticalSection(&m_csWaveOut);
 	MMRESULT ret = waveOutWrite( m_hWaveOut, &m_aBuffers[b], sizeof(m_aBuffers[b]) );
+	LeaveCriticalSection(&m_csWaveOut);
+
+	// If waveOutWrite failed, attempt to reinitialize the driver.
 	if( ret != MMSYSERR_NOERROR )
 	{
 		Init();
@@ -144,6 +153,7 @@ RageSoundDriver_WaveOut::RageSoundDriver_WaveOut()
     , m_aBuffers{}
     , MixingThread()
 {
+	InitializeCriticalSection(&m_csWaveOut);
 }
 
 RString RageSoundDriver_WaveOut::Init()
@@ -246,6 +256,7 @@ RageSoundDriver_WaveOut::~RageSoundDriver_WaveOut()
 	}
 
 	CloseHandle( m_hSoundEvent );
+	DeleteCriticalSection(&m_csWaveOut);
 }
 
 float RageSoundDriver_WaveOut::GetPlayLatency() const
