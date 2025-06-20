@@ -1262,6 +1262,13 @@ RageSoundDriver_WDMKS::RageSoundDriver_WDMKS()
 	m_bShutdown = false;
 	m_iLastCursorPos = 0;
 	m_hSignal = CreateEvent( nullptr, FALSE, FALSE, nullptr ); /* abort event */
+
+	MessageBox(
+		nullptr,
+		"RageSoundDriver_WDMKS is deprecated and will be removed in a "
+		"future version. "
+		"Please switch to DirectSound-sw or WaveOut instead.",
+		"RageSoundDriver_WDMKS", MB_OK | MB_ICONWARNING);
 }
 
 RString RageSoundDriver_WDMKS::Init()
