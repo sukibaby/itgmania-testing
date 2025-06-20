@@ -150,6 +150,8 @@ static INT_PTR CALLBACK ErrorWndProc( HWND hWnd, UINT msg, WPARAM wParam, LPARAM
 			RString sMessage = g_sErrorString;
 			Replace(sMessage, "\n", "\r\n" );
 			SetWindowText( GetDlgItem(hWnd, IDC_EDIT_ERROR), sMessage.c_str() );
+			sMessage.Replace( "\n", "\r\n" );
+			SetWindowText( GetDlgItem(hWnd, IDC_EDIT_ERROR), sMessage );
 		}
 		break;
 	case WM_COMMAND:

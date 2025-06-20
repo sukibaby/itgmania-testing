@@ -13,8 +13,8 @@ RString WinErrorToString( int err )
 	// Why is FormatMessage returning text ending with \r\n? (who? -aj)
 	// Perhaps it's because you're on Windows, where newlines are \r\n. -aj
 	RString text = buf;
-	Replace(text, "\n", "" );
-	Replace(text, "\r", " " ); // foo\r\nbar -> foo bar
+	text.Replace( "\n", "" );
+	text.Replace( "\r", " " ); // foo\r\nbar -> foo bar
 	TrimRight( text ); // "foo\r\n" -> "foo"
 
 	return text;
