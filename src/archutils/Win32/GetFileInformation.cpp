@@ -91,7 +91,7 @@ bool GetProcessFileName( uint32_t iProcessID, RString &sName )
 	HANDLE hSnap = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE, iProcessID);
 	if (hSnap == INVALID_HANDLE_VALUE)
 	{
-		sName = werr_ssprintf(GetLastError(), "CreateToolhelp32Snapshot");
+		sName = WinErrorToString(GetLastError()) + " CreateToolhelp32Snapshot";
 		return false;
 	}
 
@@ -105,7 +105,7 @@ bool GetProcessFileName( uint32_t iProcessID, RString &sName )
 	}
 
 	CloseHandle(hSnap);
-	sName = werr_ssprintf(GetLastError(), "Module32First");
+	sName = WinErrorToString(GetLastError()) + " Module32First";
 	return false;
 }
 

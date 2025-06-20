@@ -244,7 +244,8 @@ static int GetNumJoysticksSlow()
 	HRESULT hr = g_dinput->EnumDevices( DI8DEVCLASS_GAMECTRL, CountDevicesCallback, &iCount, DIEDFL_ATTACHEDONLY );
 	if( hr != DI_OK )
 	{
-		LOG->Warn( hr_ssprintf(hr, "g_dinput->EnumDevices") );
+		RString error_string = HResultToString(hr) + "g_dinput->EnumDevices";
+		LOG->Warn( error_string.c_str() );
 	}
 	return iCount;
 }
@@ -279,24 +280,32 @@ InputHandler_DInput::InputHandler_DInput()
 
 	AppInstance inst;
 	HRESULT hr = DirectInput8Create(inst.Get(), DIRECTINPUT_VERSION, IID_IDirectInput8, (LPVOID *) &g_dinput, nullptr);
-	if( hr != DI_OK )
-		RageException::Throw( hr_ssprintf(hr, "InputHandler_DInput: DirectInputCreate") );
+	if( hr != DI_OK ) {
+		RString error_string = HResultToString(hr) + "InputHandler_DInput: DirectInputCreate";
+		RageException::Throw( error_string.c_str() );
+        }
 
 	LOG->Trace( "InputHandler_DInput: IDirectInput::EnumDevices(DIDEVTYPE_KEYBOARD)" );
 	hr = g_dinput->EnumDevices( DI8DEVCLASS_KEYBOARD, EnumDevicesCallback, nullptr, DIEDFL_ATTACHEDONLY );
-	if( hr != DI_OK )
-		RageException::Throw( hr_ssprintf(hr, "InputHandler_DInput: IDirectInput::EnumDevices") );
+	if( hr != DI_OK ) {
+		RString error_string = HResultToString(hr) + "InputHandler_DInput: IDirectInput::EnumDevices";
+		RageException::Throw( error_string.c_str() );
+        }
 
 	LOG->Trace( "InputHandler_DInput: IDirectInput::EnumDevices(DIDEVTYPE_JOYSTICK)" );
 	hr = g_dinput->EnumDevices( DI8DEVCLASS_GAMECTRL, EnumDevicesCallback, nullptr, DIEDFL_ATTACHEDONLY );
-	if( hr != DI_OK )
-		RageException::Throw( hr_ssprintf(hr, "InputHandler_DInput: IDirectInput::EnumDevices") );
+	if( hr != DI_OK ) {
+		RString error_string = HResultToString(hr) + "InputHandler_DInput: IDirectInput::EnumDevices";
+		RageException::Throw( error_string.c_str() );
+        }
 
 	// mouse
 	LOG->Trace( "InputHandler_DInput: IDirectInput::EnumDevices(DIDEVTYPE_MOUSE)" );
 	hr = g_dinput->EnumDevices( DI8DEVCLASS_POINTER, EnumDevicesCallback, nullptr, DIEDFL_ATTACHEDONLY );
-	if( hr != DI_OK )
-		RageException::Throw( hr_ssprintf(hr, "InputHandler_DInput: IDirectInput::EnumDevices") );
+	if( hr != DI_OK ) {
+		RString error_string = HResultToString(hr) + "InputHandler_DInput: IDirectInput::EnumDevices";
+		RageException::Throw( error_string.c_str() );
+        }
 
 	for( unsigned i = 0; i < Devices.size(); ++i )
 	{
@@ -428,7 +437,8 @@ static HRESULT GetDeviceState( LPDIRECTINPUTDEVICE8 dev, int size, void *ptr )
 		hr = dev->Acquire();
 		if( hr != DI_OK )
 		{
-			LOG->Trace( hr_ssprintf(hr, "?") );
+			RString trace_string = HResultToString(hr) + "?";
+			LOG->Trace( trace_string.c_str() );
 			return hr;
 		}
 
@@ -456,7 +466,8 @@ void InputHandler_DInput::UpdatePolled( DIDevice &device, const RageTimer &tm )
 
 			if( hr != DI_OK )
 			{
-				LOG->MapLog( "UpdatePolled", hr_ssprintf(hr, "Failures on polled keyboard update") );
+				RString maplog_result = HResultToString(hr) + "Failures on polled keyboard update";
+				LOG->MapLog( "UpdatePolled", maplog_result.c_str() );
 				return;
 			}
 
@@ -623,7 +634,8 @@ void InputHandler_DInput::UpdateBuffered( DIDevice &device, const RageTimer &tm 
 
 	if( hr != DI_OK )
 	{
-		LOG->Trace( hr_ssprintf(hr, "UpdateBuffered: IDirectInputDevice2_GetDeviceData") );
+		RString trace_string = HResultToString(hr) + "UpdateBuffered: IDirectInputDevice2_GetDeviceData";
+		LOG->Trace( trace_string.c_str() );
 		return;
 	}
 
@@ -946,8 +958,10 @@ bool InputHandler_DInput::DevicesChanged()
 
 void InputHandler_DInput::InputThreadMain()
 {
-	if(!SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_HIGHEST))
-		LOG->Warn(werr_ssprintf(GetLastError(), "Failed to set DirectInput thread priority"));
+	if(!SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_HIGHEST)) {
+		RString err_string = WinErrorToString(GetLastError()) + "Failed to set DirectInput thread priority";
+		LOG->Warn( err_string.c_str() );
+	}
 
 	// Enable priority boosting.
 	SetThreadPriorityBoost( GetCurrentThread(), FALSE );
@@ -963,8 +977,10 @@ void InputHandler_DInput::InputThreadMain()
 
 		Devices[i].Device->Unacquire();
 		HRESULT hr = Devices[i].Device->SetEventNotification( Handle );
-		if( FAILED(hr) )
-			LOG->Warn( "IDirectInputDevice2_SetEventNotification failed on %i", i );
+		if( FAILED(hr) ) {
+			RString warn_string = ssprintf("IDirectInputDevice2_SetEventNotification failed on %u", i);
+			LOG->Warn( warn_string.c_str() );
+		}
 		Devices[i].Device->Acquire();
 	}
 
@@ -979,7 +995,8 @@ void InputHandler_DInput::InputThreadMain()
 			int ret = WaitForSingleObjectEx( Handle, 50, true );
 			if( ret == -1 )
 			{
-				LOG->Trace( werr_ssprintf(GetLastError(), "WaitForSingleObjectEx failed") );
+				RString trace_string = WinErrorToString(GetLastError()) + " WaitForSingleObjectEx failed";
+				LOG->Trace( trace_string.c_str() );
 				continue;
 			}
 

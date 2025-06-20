@@ -9,7 +9,8 @@ AppInstance::AppInstance()
 	WCHAR szFullAppPath[MAX_PATH];
 	if (GetModuleFileNameW(nullptr, szFullAppPath, MAX_PATH) == 0)
 	{
-		LOG->Warn("GetModuleFileName failed: %s", werr_ssprintf(GetLastError(), "GetModuleFileName").c_str());
+		RString warn_string = "GetModuleFileName failed: " + WinErrorToString(GetLastError()) + "GetModuleFileName";
+		LOG->Warn(warn_string.c_str());
 		h = nullptr;
 		return;
 	}
@@ -17,7 +18,8 @@ AppInstance::AppInstance()
 	h = LoadLibraryW(szFullAppPath);
 	if (h == nullptr)
 	{
-		LOG->Warn("LoadLibrary failed: %s", werr_ssprintf(GetLastError(), "LoadLibrary").c_str());
+		RString warn_string = "LoadLibrary failed: " + WinErrorToString(GetLastError()) + "LoadLibrary";
+		LOG->Warn(warn_string.c_str());
 	}
 	/* h will be nullptr if this fails. Most operations that take an HINSTANCE
 	 * will still work without one (but may be missing graphics); that's OK. */

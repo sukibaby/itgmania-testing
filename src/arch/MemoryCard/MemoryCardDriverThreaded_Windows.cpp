@@ -57,7 +57,8 @@ bool MemoryCardDriverThreaded_Windows::TestWrite( UsbStorageDevice* pDevice )
 		if( hFile == INVALID_HANDLE_VALUE )
 		{
 			DWORD iError = GetLastError();
-			LOG->Warn( werr_ssprintf(iError, "Couldn't write to %s", pDevice->sOsMountDir.c_str()) );
+			RString error_string = WinErrorToString(iError) + ssprintf( "Couldn't write to %s", pDevice->sOsMountDir.c_str() );
+			LOG->Warn( error_string.c_str() );
 
 			if( iError == ERROR_FILE_EXISTS )
 				continue;
@@ -79,7 +80,8 @@ static bool IsFloppyDrive( const RString &sDrive )
 	int iRet = QueryDosDevice( sDrive.c_str(), szBuf, 1024 );
 	if( iRet == 0 )
 	{
-		LOG->Warn( werr_ssprintf(GetLastError(), "QueryDosDevice(%s)", sDrive.c_str()) );
+		RString warn_string = WinErrorToString(GetLastError()) + ssprintf( "QueryDosDevice(%s)", sDrive.c_str() );
+		LOG->Warn( warn_string.c_str() );
 		return false;
 	}
 
@@ -203,12 +205,16 @@ void MemoryCardDriverThreaded_Windows::Unmount( UsbStorageDevice* pDevice )
 
 	if( hDevice == INVALID_HANDLE_VALUE )
 	{
-		LOG->Warn( werr_ssprintf(GetLastError(), "Couldn't open memory card device to flush (%s): CreateFile", pDevice->sDevice.c_str()) );
+		RString warn_string = WinErrorToString(GetLastError()) + "Couldn't open memory card device to flush (%s): CreateFile" + pDevice->sDevice.c_str();
+		LOG->Warn( warn_string.c_str() );
 		return;
 	}
 
 	if( !FlushFileBuffers(hDevice) )
-		LOG->Warn( werr_ssprintf(GetLastError(), "Couldn't flush memory card device (%s): FlushFileBuffers", pDevice->sDevice.c_str()) );
+	{
+		RString warn_string = WinErrorToString(GetLastError()) + "Couldn't flush memory card device (%s): FlushFileBuffers" + pDevice->sDevice.c_str();
+		LOG->Warn( warn_string.c_str() );
+	}
 	CloseHandle( hDevice );
 }
 

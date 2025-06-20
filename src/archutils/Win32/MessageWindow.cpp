@@ -21,8 +21,10 @@ MessageWindow::MessageWindow( const RString &sClassName )
 		sClassName.c_str()			/* lpszClassName */
 	}; 
 
-	if( !RegisterClassA(&WindowClass) && GetLastError() != ERROR_CLASS_ALREADY_EXISTS )
-		RageException::Throw( "%s", werr_ssprintf( GetLastError(), "RegisterClass" ).c_str() );
+	if( !RegisterClassA(&WindowClass) && GetLastError() != ERROR_CLASS_ALREADY_EXISTS ) {
+		RString throw_string = WinErrorToString(GetLastError()) + " RegisterClass";
+		RageException::Throw( throw_string.c_str() );
+	}
 
 	// XXX: on 2k/XP, use HWND_MESSAGE as parent
 	m_hWnd = CreateWindow( sClassName.c_str(), sClassName.c_str(), WS_DISABLED, 0, 0, 0, 0, nullptr, nullptr, inst, nullptr );

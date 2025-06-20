@@ -4,7 +4,7 @@
 
 #include <windows.h>
 
-RString werr_ssprintf( int err, const char *fmt, ... )
+RString WinErrorToString( int err )
 {
 	char buf[1024] = "";
 	FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
@@ -17,12 +17,7 @@ RString werr_ssprintf( int err, const char *fmt, ... )
 	Replace(text, "\r", " " ); // foo\r\nbar -> foo bar
 	TrimRight( text ); // "foo\r\n" -> "foo"
 
-	va_list	va;
-	va_start(va, fmt);
-	RString s = vssprintf( fmt, va );
-	va_end(va);
-
-	return s += ssprintf( " (%s)", text.c_str() );
+	return text;
 }
 
 RString ConvertWstringToCodepage( std::wstring s, int iCodePage )
@@ -32,7 +27,11 @@ RString ConvertWstringToCodepage( std::wstring s, int iCodePage )
 
 	int iBytes = WideCharToMultiByte( iCodePage, 0, s.data(), s.size(), 
 					nullptr, 0, nullptr, FALSE );
-	ASSERT_M( iBytes > 0, werr_ssprintf( GetLastError(), "WideCharToMultiByte" ).c_str() );
+	if (iBytes <= 0) {
+		RString werr_string = WinErrorToString(GetLastError()) + " WideCharToMultiByte";
+		FAIL_M(werr_string.c_str());
+		return RString();
+	}
 
 	char * buf = new char[iBytes + 1];
 	std::fill(buf, buf + iBytes + 1, '\0');
@@ -54,7 +53,11 @@ std::wstring ConvertCodepageToWString( RString s, int iCodePage )
 		return std::wstring();
 
 	int iBytes = MultiByteToWideChar( iCodePage, 0, s.data(), s.size(), nullptr, 0 );
-	ASSERT_M( iBytes > 0, werr_ssprintf( GetLastError(), "MultiByteToWideChar" ).c_str() );
+	if (iBytes <= 0) {
+		RString werr_string = WinErrorToString(GetLastError()) + " MultiByteToWideChar";
+		FAIL_M(werr_string.c_str());
+		return std::wstring();
+	}
 
 	wchar_t *pTemp = new wchar_t[iBytes];
 	MultiByteToWideChar( iCodePage, 0, s.data(), s.size(), pTemp, iBytes );

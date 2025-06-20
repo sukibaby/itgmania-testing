@@ -10,15 +10,10 @@
 
 RString GetErrorString(HRESULT hr);
 
-RString hr_ssprintf( int hr, const char *fmt, ... )
+RString HResultToString( int hr )
 {
-	va_list	va;
-	va_start(va, fmt);
-	RString s = vssprintf( fmt, va );
-	va_end(va);
-
 	RString szError = GetErrorString(hr);
-	return s + ssprintf(" (%s)", szError.c_str());
+	return szError;
 }
 
 #define DXERRMSG(hrcode, dummy) case hrcode: return #hrcode;
