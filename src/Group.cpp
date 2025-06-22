@@ -34,12 +34,10 @@ Group::Group() {
     m_bHasPackIni = false;
     m_iYearReleased = 0;
     m_sBannerPath = "";
+	m_iVersion = INI_VERSION;
 }
 
-Group::~Group() 
-{
-
-}
+Group::~Group() = default;
 
 Group::Group(const RString& sDir, const RString& sGroupDirName, bool bFromProfile) {
     RString sPackIniPath;
