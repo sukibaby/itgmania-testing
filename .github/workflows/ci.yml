@@ -48,7 +48,7 @@ jobs:
         with:
           path: |
             build
-          key: ${{ runner.os }}-${{ runner.arch }}-cmake-build-ci-${{ hashFiles('**/CMakeLists.txt', '**/*.cmake') }}
+          key: ${{ runner.os }}-${{ runner.arch }}-cmake-build-ci-${{ hashFiles('**/CMakeLists.txt', '**/*.cmake') }}-week-${{ github.run_id | date('YYYY-ww') }}
           restore-keys: |
             ${{ runner.os }}-${{ runner.arch }}-cmake-build-ci-
       - name: Install dependencies
