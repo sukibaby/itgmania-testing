@@ -12,13 +12,14 @@
 
 #include <cmath>
 #include <cstdint>
+#include <mutex>
 
 #if defined(WIN32)
 #include "archutils/Win32/ErrorStrings.h"
 #include <windows.h>
 #endif
 
-
+std::mutex state_mutex_;
 static Preference<bool> g_bMovieTextureDirectUpdates("MovieTextureDirectUpdates", true);
 
 MovieTexture_Generic::MovieTexture_Generic(RageTextureID ID, std::unique_ptr<MovieDecoder> pDecoder) :
@@ -52,20 +53,32 @@ RString MovieTexture_Generic::Init()
 	decoder_->SetLooping(loop_);
 
 	decoding_thread_ = std::make_unique<std::thread>([this]() {
-		LOG->Trace("Beginning to decode video file \"%s\"", GetID().filename.c_str());
+		//LOG->Trace("Beginning to decode video file \"%s\"", GetID().filename.c_str());
 		auto timer = RageTimer();
 
 		int ret = decoder_->DecodeMovie();
-		if (ret == -1) {
-			failure_ = true;
+
+		std::lock_guard<std::mutex> lock(state_mutex_);
+		switch(ret)
+		{
+			case 1:
+				failure_ = true;
+				break;
+			case 2:
+				failure_ = false;
+				break;
+			default:
+				LOG->Warn("MovieDecoder::DecodeMovie returned unexpected value %d", ret);
+				failure_ = true;
+				break;
 		}
 
-		LOG->Trace("Done decoding video file \"%s\", took %f seconds", GetID().filename.c_str(), timer.Ago());
+		//LOG->Trace("Done decoding video file \"%s\", took %f seconds", GetID().filename.c_str(), timer.Ago());
 		});
 
-	LOG->Trace("Resolution: %ix%i (%ix%i, %ix%i)",
-		m_iSourceWidth, m_iSourceHeight,
-		m_iImageWidth, m_iImageHeight, m_iTextureWidth, m_iTextureHeight);
+	//LOG->Trace("Resolution: %ix%i (%ix%i, %ix%i)",
+	//	m_iSourceWidth, m_iSourceHeight,
+	//	m_iImageWidth, m_iImageHeight, m_iTextureWidth, m_iTextureHeight);
 
 	CHECKPOINT_M("Generic initialization completed. No errors found.");
 
@@ -310,9 +323,13 @@ float MovieTexture_Generic::CheckFrameTime()
 void MovieTexture_Generic::UpdateMovie(float seconds)
 {
 	// Quick exit in case we failed to decode the movie.
-	if (failure_) {
-		return;
+	{
+		std::lock_guard<std::mutex> lock(state_mutex_);
+		if (failure_) {
+			return;
+		}
 	}
+
 	clock_ += seconds * rate_;
 
 	// If the frame isn't ready, don't update. This does mean the video

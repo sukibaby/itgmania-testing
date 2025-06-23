@@ -148,7 +148,7 @@ private:
 	avcodec::SwsContext* av_sws_context_;
 	avcodec::AVCodecContext* av_stream_codec_;
 	avcodec::AVFormatContext* av_format_context_;
-	std::size_t total_frames_; // Total number of frames in the movie.
+	std::atomic<std::size_t> total_frames_; // Total number of frames in the movie.
 
 	unsigned char* av_buffer_;
 	avcodec::AVIOContext* av_io_context_;

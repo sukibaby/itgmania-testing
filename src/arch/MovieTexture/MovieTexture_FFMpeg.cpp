@@ -11,6 +11,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <thread>
+#include <atomic>
 
 static void FixLilEndian()
 {
@@ -197,7 +198,8 @@ bool MovieDecoder_FFMpeg::IsCurrentFrameReady() {
 	// opposites. If the frame hasn't been displayed, it's ready. If it has
 	// been displayed, then it hasn't been overwritten and reset yet.
 	if (frame->displayed) {
-		LOG->Info("Frame %zu not decoded, total frames: %zu", display_frame_num_, total_frames_);
+		const size_t frames = total_frames_.load();
+		LOG->Info("Frame %zu not decoded, total frames: %zu", display_frame_num_, frames);
 	}
 	return !frame->displayed;
 }
@@ -289,7 +291,7 @@ int MovieDecoder_FFMpeg::DecodeMovie()
 		// there actually are. Increment to keep up so we don't end the video
 		// early during display.
 		if (packet_buffer_position_ >= total_frames_ - 1 && !end_of_file_) {
-			total_frames_++;
+			std::atomic_fetch_add(&total_frames_, 1);
 		}
 	}
 
@@ -567,29 +569,32 @@ RString MovieDecoder_FFMpeg::Open(RString file)
 	LOG->Trace("Bitrate: %i", static_cast<int>(av_stream_codec_->bit_rate));
 	LOG->Trace("Codec pixel format: %s", avcodec::av_get_pix_fmt_name(av_stream_codec_->pix_fmt));
 	total_frames_ = av_stream_->nb_frames;
+	size_t frame_count = total_frames_.load();
 
 	// Sometimes we might not get a correct frame count.
 	// In that case, approximate and fix it later.
-	if (total_frames_ <= 0) {
+	if (frame_count <= 0) {
 		total_frames_ = av_format_context_->duration // microseconds
 			* (av_stream_->avg_frame_rate.num) / (av_stream_->avg_frame_rate.den) / (1000000);
 		LOG->Trace("Number of frames provided is inaccurate, estimating.");
 	}
 
+	frame_count = total_frames_.load();
 	// This implies the video file might be missing some information, but it
 	// might still be playable. Set total_frames_ to an arbitrary value and
 	// the code will expand or shrink it later. Empty packets are cheap to
 	// store, so it's fine if this value overshoots.
-	if (total_frames_ <= 0) {
+	if (frame_count <= 0) {
 		LOG->Trace("Unable to estimate the total number of frames. Setting to 2000.");
 		total_frames_ = 2000;
 	}
 
-	if (total_frames_ < frame_buffer_.size()) {
+	frame_count = total_frames_.load();
+	if (frame_count < frame_buffer_.size()) {
 		LOG->Trace("Video shorter than frame buffer, shrinking the buffer.");
-		frame_buffer_.resize(total_frames_);
+		frame_buffer_.resize(frame_count);
 	}
-	LOG->Trace("Number of frames detected: %zu", total_frames_);
+	LOG->Trace("Number of frames detected: %zu", frame_count);
 
 	return RString();
 }
