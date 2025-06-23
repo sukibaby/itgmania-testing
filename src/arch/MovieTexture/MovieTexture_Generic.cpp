@@ -324,10 +324,13 @@ float MovieTexture_Generic::CheckFrameTime()
 void MovieTexture_Generic::UpdateMovie(float seconds)
 {
 	// Quick exit in case we failed to decode the movie.
-	if (failure_) {
-		return;
+	{
+		std::lock_guard<std::mutex> lock(state_mutex_);
+		if (failure_) {
 			return;
+		}
 	}
+
 	clock_ += seconds * rate_;
 
 	// If the frame isn't ready, don't update. This does mean the video
