@@ -129,7 +129,7 @@ RageSoundDriver_WaveOut::RageSoundDriver_WaveOut()
 	, wo_shutdown_(false)
 	, wo_last_cursor_position_(0)
 	, wo_init_success_(false)
-	, wo_frames_per_block_(0)
+	, wo_total_frames(0)
 	, wo_num_blocks_(1)
 	, wo_blocksize_(0)
 {
@@ -153,7 +153,7 @@ RString RageSoundDriver_WaveOut::Init()
 		wo_num_blocks_ = std::clamp(wo_num_blocks_, 1, kMaximumNumBlocks);
 	}
 
-	wo_frames_per_block_ = kBlockSizeFrames * wo_num_blocks_;
+	wo_total_frames = kBlockSizeFrames * wo_num_blocks_;
 	wo_blocksize_ = kBlockSizeFrames * kBytesPerFrame;
 
 	WAVEFORMATEX fmt;
@@ -205,7 +205,7 @@ RString RageSoundDriver_WaveOut::Init()
 
 	/* We have a very large writeahead; make sure we have a large enough decode
 	 * buffer to recover cleanly from underruns. */
-	SetDecodeBufferSize( wo_frames_per_block_ * 3/2 );
+	SetDecodeBufferSize( wo_total_frames * 3/2 );
 	StartDecodeThread();
 
 	MixingThread.SetName( "Mixer thread" );
@@ -245,7 +245,7 @@ float RageSoundDriver_WaveOut::GetPlayLatency() const
 {
 	/* If we have a 1000-byte buffer, and we fill 100 bytes at a time, we
 	 * almost always have between 900 and 1000 bytes filled; on average, 950. */
-	return (wo_frames_per_block_ - kBlockSizeFrames/2) * (1.0f / wo_samplerate_);
+	return (wo_total_frames - kBlockSizeFrames/2) * (1.0f / wo_samplerate_);
 }
 
 /*

@@ -39,7 +39,7 @@ private:
 	bool wo_shutdown_;
 	int wo_last_cursor_position_;
 	bool wo_init_success_;
-	int wo_frames_per_block_;
+	int wo_total_frames;
 	int wo_num_blocks_;
 	int wo_blocksize_;
 };
