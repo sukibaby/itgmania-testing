@@ -36,12 +36,14 @@ jobs:
             build: cmake --build build --parallel "$(sysctl -n hw.logicalcpu)"
           - os: windows-latest
             name: Windows
-            install: ""
+            if: matrix.os == 'windows-latest'
+            uses: microsoft/setup-msbuild@v2
+            with:
+              msbuild-architecture: x64
             configure: cmake -B build -DWITH_FFMPEG_JOBS="$env:NUMBER_OF_PROCESSORS"
             build: cmake --build build --parallel "$env:NUMBER_OF_PROCESSORS"
+    name: ${{ matrix.name }}
     steps:
-      - name: Clear CMake cache
-        run: rm -rf build
       - uses: actions/checkout@v4
         with:
           submodules: recursive
@@ -56,11 +58,6 @@ jobs:
       - name: Install dependencies
         if: matrix.os != 'windows-latest'
         run: ${{ matrix.install }}
-      - name: Add msbuild to PATH
-        if: matrix.os == 'windows-latest'
-        uses: microsoft/setup-msbuild@v2
-        with:
-          msbuild-architecture: x64
       - name: Configure
         run: ${{ matrix.configure }}
       - name: Build
