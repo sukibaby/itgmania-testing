@@ -275,6 +275,10 @@ int MovieDecoder_FFMpeg::DecodeMovie()
 	// Never exit when the movie is looping. Otherwise exit when the last frame
 	// is added to the FrameBuffer.
 	while (looping_ || (!looping_ && display_frame_num_ < total_frames_)) {
+		if (cancel_) {
+			return -2;
+		}
+    
 		if (reset_) {
 			HandleReset();
 		}
