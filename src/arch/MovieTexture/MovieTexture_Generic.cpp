@@ -71,8 +71,7 @@ RString MovieTexture_Generic::Init()
 				failure_ = true;
 				break;
 		}
-
-		});
+	});
 
 	CHECKPOINT_M("Generic initialization completed. No errors found.");
 
