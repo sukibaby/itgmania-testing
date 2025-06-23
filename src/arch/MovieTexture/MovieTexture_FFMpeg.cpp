@@ -577,27 +577,28 @@ RString MovieDecoder_FFMpeg::Open(RString file)
 
 	// Sometimes we might not get a correct frame count.
 	// In that case, approximate and fix it later.
-	if (frame_count <= 0) {
-		total_frames_ = av_format_context_->duration // microseconds
-			* (av_stream_->avg_frame_rate.num) / (av_stream_->avg_frame_rate.den) / (1000000);
-		LOG->Trace("Number of frames provided is inaccurate, estimating.");
+	if (frame_count == 0) {
+		frame_count = av_format_context_->duration * av_stream_->avg_frame_rate.num /
+					  (av_stream_->avg_frame_rate.den * 1000000);
+		// This implies the video file might be missing some information, but it
+		// might still be playable. Set total_frames_ to an arbitrary value and
+		// the code will expand or shrink it later. Empty packets are cheap to
+		// store, so it's fine if this value overshoots.
+		if (frame_count > 0) {
+			total_frames_ = frame_count;
+			LOG->Trace("Number of frames provided is inaccurate, estimating.");
+		} else {
+			frame_count = 2000;
+			total_frames_ = 2000;
+			LOG->Trace("Unable to estimate the total number of frames. Setting to 2000.");
+		}
 	}
 
-	frame_count = total_frames_.load();
-	// This implies the video file might be missing some information, but it
-	// might still be playable. Set total_frames_ to an arbitrary value and
-	// the code will expand or shrink it later. Empty packets are cheap to
-	// store, so it's fine if this value overshoots.
-	if (frame_count <= 0) {
-		LOG->Trace("Unable to estimate the total number of frames. Setting to 2000.");
-		total_frames_ = 2000;
-	}
-
-	frame_count = total_frames_.load();
 	if (frame_count < frame_buffer_.size()) {
 		LOG->Trace("Video shorter than frame buffer, shrinking the buffer.");
 		frame_buffer_.resize(frame_count);
 	}
+
 	LOG->Trace("Number of frames detected: %zu", frame_count);
 
 	return RString();

@@ -61,10 +61,10 @@ RString MovieTexture_Generic::Init()
 		std::lock_guard<std::mutex> lock(state_mutex_);
 		switch(ret)
 		{
-			case 1:
+			case -1:
 				failure_ = true;
 				break;
-			case 2:
+			case -2:
 				failure_ = false;
 				break;
 			default:
