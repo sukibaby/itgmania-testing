@@ -58,12 +58,24 @@ RString MovieTexture_Generic::Init()
 		auto timer = RageTimer();
 
 		int ret = decoder_->DecodeMovie();
-		if (ret == -1) {
+
+		std::lock_guard<std::mutex> lock(state_mutex_);
+		switch(ret)
+		{
+		case -1:
 			failure_ = true;
+			break;
+		case -2:
+			failure_ = false;
+			break;
+		default:
+			LOG->Warn("MovieDecoder::DecodeMovie returned unexpected value %d", ret);
+			failure_ = true;
+			break;
 		}
 
 		LOG->Trace("Done decoding video file \"%s\", took %f seconds", GetID().filename.c_str(), timer.Ago());
-		});
+	});
 
 	LOG->Trace("Resolution: %ix%i (%ix%i, %ix%i)",
 		m_iSourceWidth, m_iSourceHeight,
@@ -314,6 +326,7 @@ void MovieTexture_Generic::UpdateMovie(float seconds)
 	// Quick exit in case we failed to decode the movie.
 	if (failure_) {
 		return;
+			return;
 	}
 	clock_ += seconds * rate_;
 
