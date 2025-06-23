@@ -560,6 +560,9 @@ RString MovieDecoder_FFMpeg::Open(RString file)
 		return "Couldn't find any video streams";
 	av_stream_ = av_format_context_->streams[stream_idx];
 	av_stream_codec_ = avcodec::avcodec_alloc_context3(nullptr);
+	if (!av_stream_codec_)
+		return "Failed to allocate codec context";
+            
 	if (avcodec::avcodec_parameters_to_context(av_stream_codec_, av_stream_->codecpar) < 0)
 		return ssprintf("Could not get context from parameters");
 
@@ -572,28 +575,29 @@ RString MovieDecoder_FFMpeg::Open(RString file)
 
 	LOG->Trace("Bitrate: %i", static_cast<int>(av_stream_codec_->bit_rate));
 	LOG->Trace("Codec pixel format: %s", avcodec::av_get_pix_fmt_name(av_stream_codec_->pix_fmt));
-	total_frames_ = av_stream_->nb_frames;
-	size_t frame_count = total_frames_.load();
+
+	size_t nb_frames = av_stream_->nb_frames;
+	total_frames_ = nb_frames;
+	size_t frame_count = total_frames_.load(std::memory_order_acquire);
 
 	// Sometimes we might not get a correct frame count.
 	// In that case, approximate and fix it later.
-	if (frame_count == 0) {
-		frame_count = av_format_context_->duration * av_stream_->avg_frame_rate.num /
-					  (av_stream_->avg_frame_rate.den * 1000000);
-		// This implies the video file might be missing some information, but it
-		// might still be playable. Set total_frames_ to an arbitrary value and
-		// the code will expand or shrink it later. Empty packets are cheap to
-		// store, so it's fine if this value overshoots.
-		if (frame_count > 0) {
-			total_frames_ = frame_count;
-			LOG->Trace("Number of frames provided is inaccurate, estimating.");
-		} else {
-			frame_count = 2000;
-			total_frames_ = 2000;
-			LOG->Trace("Unable to estimate the total number of frames. Setting to 2000.");
-		}
+	if (frame_count <= 0 && av_format_context_->duration > 0 && av_stream_->avg_frame_rate.num > 0 && av_stream_->avg_frame_rate.den > 0) {
+		size_t estimated_frames = static_cast<size_t>(av_format_context_->duration) * static_cast<size_t>(av_stream_->avg_frame_rate.num) / static_cast<size_t>(av_stream_->avg_frame_rate.den) / 1000000ULL;
+		total_frames_.store(estimated_frames, std::memory_order_release);
+		LOG->Trace("Number of frames provided is inaccurate, estimating: %zu", estimated_frames);
 	}
 
+	// This implies the video file might be missing some information, but it
+	// might still be playable. Set total_frames_ to an arbitrary value and
+	// the code will expand or shrink it later. Empty packets are cheap to
+	// store, so it's fine if this value overshoots.
+	if (total_frames_.load(std::memory_order_acquire) <= 0) {
+		LOG->Trace("Unable to estimate the total number of frames. Setting to 2000.");
+		total_frames_.store(2000, std::memory_order_release);
+	}
+
+	frame_count = total_frames_.load(std::memory_order_acquire);
 	if (frame_count < frame_buffer_.size()) {
 		LOG->Trace("Video shorter than frame buffer, shrinking the buffer.");
 		frame_buffer_.resize(frame_count);
