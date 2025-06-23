@@ -53,7 +53,6 @@ RString MovieTexture_Generic::Init()
 	decoder_->SetLooping(loop_);
 
 	decoding_thread_ = std::make_unique<std::thread>([this]() {
-		//LOG->Trace("Beginning to decode video file \"%s\"", GetID().filename.c_str());
 		auto timer = RageTimer();
 
 		int ret = decoder_->DecodeMovie();
@@ -73,12 +72,7 @@ RString MovieTexture_Generic::Init()
 				break;
 		}
 
-		//LOG->Trace("Done decoding video file \"%s\", took %f seconds", GetID().filename.c_str(), timer.Ago());
 		});
-
-	//LOG->Trace("Resolution: %ix%i (%ix%i, %ix%i)",
-	//	m_iSourceWidth, m_iSourceHeight,
-	//	m_iImageWidth, m_iImageHeight, m_iTextureWidth, m_iTextureHeight);
 
 	CHECKPOINT_M("Generic initialization completed. No errors found.");
 
