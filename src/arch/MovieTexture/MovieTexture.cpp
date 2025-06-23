@@ -45,20 +45,35 @@ bool RageMovieTexture::GetFourCC( RString fn, RString &handler, RString &type )
 	}
 
 	RageFile file;
-	if( !file.Open(fn) )
-		HANDLE_ERROR("Could not open file.");
-	if( !file.Seek(0x70) )
-		HANDLE_ERROR("Could not seek.");
+	if( !file.Open(fn) ) {
+          LOG->Warn("Error reading %s: %s", fn.c_str(), "Could not open file.");
+          handler = type = "";
+          return false;
+        };
+	if( !file.Seek(0x70) ) {
+          LOG->Warn("Error reading %s: %s", fn.c_str(), "Could not seek.");
+          handler = type = "";
+          return false;
+        };
 	type = "    ";
-	if( file.Read((char *)type.c_str(), 4) != 4 )
-		HANDLE_ERROR("Could not read.");
+	if( file.Read((char *)type.c_str(), 4) != 4 ) {
+          LOG->Warn("Error reading %s: %s", fn.c_str(), "Could not read.");
+          handler = type = "";
+          return false;
+        };
 	ForceToAscii( type );
 
-	if( file.Seek(0xBC) != 0xBC )
-		HANDLE_ERROR("Could not seek.");
+	if( file.Seek(0xBC) != 0xBC ) {
+          LOG->Warn("Error reading %s: %s", fn.c_str(), "Could not seek.");
+          handler = type = "";
+          return false;
+        };
 	handler = "    ";
-	if( file.Read((char *)handler.c_str(), 4) != 4 )
-		HANDLE_ERROR("Could not read.");
+	if( file.Read((char *)handler.c_str(), 4) != 4 ) {
+          LOG->Warn("Error reading %s: %s", fn.c_str(), "Could not read.");
+          handler = type = "";
+          return false;
+        };
 	ForceToAscii( handler );
 
 	return true;
