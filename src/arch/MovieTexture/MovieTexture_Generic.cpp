@@ -12,12 +12,14 @@
 
 #include <cmath>
 #include <cstdint>
+#include <mutex>
 
 #if defined(WIN32)
 #include "archutils/Win32/ErrorStrings.h"
 #include <windows.h>
 #endif
 
+std::mutex state_mutex_;
 
 static Preference<bool> g_bMovieTextureDirectUpdates("MovieTextureDirectUpdates", true);
 
