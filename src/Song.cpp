@@ -477,15 +477,22 @@ bool Song::LoadFromSongDir(RString sDir, bool load_autosave, ProfileSlot from_pr
 // the cached file here. This will potentially clear cached song data and reload from disk!
 bool Song::ReloadFromSongDir( const RString &sDir )
 {
-	// Store the hash of the cached file before forcing a reload from disk.
-	RString currentHash = m_sFileHash;
-	FILEMAN->Remove(GetCacheFilePath());
+	// Get the current hash without modifying any files first.
+	// If the hashes match, then return early.
+	// Note, this is scoped because we want to ensure we finish up operations on
+	// m_sFileHash before anything else might try to access that file's hash.
+	{
+		RString newHash = GetFileHash();
 
-	// Hash comparison. If it's a match, return early without changing anything.
-	m_sFileHash = GetFileHash();
-	if (currentHash == m_sFileHash) {
-		return true;
+		if (!m_sFileHash.empty() && newHash == m_sFileHash) {
+			return true;
+		}
+
+		m_sFileHash = newHash;
 	}
+	
+	// We're going to reload, so we have to clear the cache file first.
+	FILEMAN->Remove(GetCacheFilePath());
 
 	// Clear out all old data to prepare for a reload from disk.
 	// m_vpSteps represent known charts for a given difficulty or mode.
