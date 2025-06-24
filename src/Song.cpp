@@ -509,32 +509,22 @@ bool Song::ReloadFromSongDir( const RString &sDir )
 	{
 		AddAutoGenNotes();
 
-		// Reload associated images.
-		const RString* const toReload[] = {
-			&m_sBannerFile,
-			&m_sJacketFile,
-			&m_sCDFile,
-			&m_sDiscFile,
-			&m_sBackgroundFile,
-			&m_sCDTitleFile,
-			&m_sPreviewVidFile
+		const RString* const toReload[] = { 
+			&m_sBannerFile, &m_sJacketFile, &m_sCDFile, 
+			&m_sDiscFile, &m_sBackgroundFile, &m_sCDTitleFile, &m_sPreviewVidFile 
 		};
 
-		for (const RString *file : toReload)
-		{
+		for (const RString* file : toReload) {
 			RageTextureID id(*file);
-			if (TEXTUREMAN->IsTextureRegistered(id))
-			{
-				RageTexture* tex = TEXTUREMAN->LoadTexture(id);
-				if (tex)
-				{
-					tex->Reload();
+			if (TEXTUREMAN->IsTextureRegistered(id)) {
+				if (RageTexture* tex = TEXTUREMAN->LoadTexture(id)) {
+					if (tex) {
+						tex->Reload();
+					}
 				}
 			}
 		}
-	}
-	else
-	{
+	} else {
 		LOG->Trace("Failed to reload song from directory: %s", sDir.c_str());
 		return false;
 	}
