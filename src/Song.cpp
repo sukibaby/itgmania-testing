@@ -509,6 +509,10 @@ bool Song::ReloadFromSongDir( const RString &sDir )
 	{
 		AddAutoGenNotes();
 
+		// TODO: move graphics reloading logic elsewhere, and hash these files as well,
+		// so we can effectively determine if the graphics have changed even when the
+		// simfile hasn't. As it is, we only reload graphics automatically when the
+		// simfile has changed.
 		const RString* const toReload[] = { 
 			&m_sBannerFile, &m_sJacketFile, &m_sCDFile, 
 			&m_sDiscFile, &m_sBackgroundFile, &m_sCDTitleFile, &m_sPreviewVidFile 
