@@ -498,18 +498,20 @@ bool Song::ReloadFromSongDir( const RString &sDir )
 	// m_vpSteps represent known charts for a given difficulty or mode.
 	// m_UnknownStyleSteps represent things like unfilled difficulty blocks.
 	RemoveAutoGenNotes();
-	
+
+	m_vpSteps.clear();
 	for (Steps* step : m_vpSteps) {
 		delete step;
 	}
-	m_vpSteps.clear();
-	FOREACH_ENUM( StepsType, i )
-		m_vpStepsByType[i].clear();
 
+	m_UnknownStyleSteps.clear();
 	for (Steps* step : m_UnknownStyleSteps) {
 		delete step;
 	}
-	m_UnknownStyleSteps.clear();
+
+	FOREACH_ENUM(StepsType, i) {
+		m_vpStepsByType[i].clear();
+	}
 
 	// Freshly load into cache directly from disk.
 	if( LoadFromSongDir(sDir) )
