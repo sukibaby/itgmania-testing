@@ -1501,7 +1501,7 @@ bool Regex::Replace( const RString &sReplacement, const RString &sSubject, RStri
 	{
 		RString sFrom = ssprintf( "\\${%d}", i );
 		RString sTo = asMatches[i];
-		Replace(sOut, sFrom, sTo);
+		::Replace(sOut, sFrom, sTo);
 	}
 
 	return true;
