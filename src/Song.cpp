@@ -509,9 +509,8 @@ bool Song::ReloadFromSongDir( const RString &sDir )
 		delete step;
 	}
 
-	FOREACH_ENUM(StepsType, i) {
+	FOREACH_ENUM( StepsType, i )
 		m_vpStepsByType[i].clear();
-	}
 
 	// Freshly load into cache directly from disk.
 	if( LoadFromSongDir(sDir) )
