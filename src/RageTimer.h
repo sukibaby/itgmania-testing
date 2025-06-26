@@ -28,6 +28,10 @@ public:
 	/* Get a timer representing half of the time ago as this one. */
 	RageTimer Half() const;
 
+	/* Getters for the time variables. */
+	int64_t GetSecs() const { return m_secs; }
+	int64_t GetUS() const { return m_us; }
+
 	/* Add (or subtract) a duration from a timestamp.  The result is another timestamp. */
 	RageTimer operator+( float tm ) const;
 	RageTimer operator-( float tm ) const { return *this + -tm; }
