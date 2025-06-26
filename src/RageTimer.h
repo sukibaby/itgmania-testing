@@ -43,9 +43,10 @@ public:
 	 * microseconds values into two integers and combining them later allows for
 	 * better precision. Use caution when changing data types, since resolution
 	 * mismatch errors are easy to cause when changing things in RageTimer. */
-	int64_t m_secs, m_us;
+
 
 private:
+	int64_t m_secs, m_us;
 	static RageTimer Sum( const RageTimer &lhs, float tm );
 	static double Difference( const RageTimer &lhs, const RageTimer &rhs );
 };
