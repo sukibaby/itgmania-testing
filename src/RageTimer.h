@@ -9,11 +9,9 @@
 class RageTimer
 {
 public:
-	// A RageTimer is a pair of 64-bit signed integers, representing
-	// the seconds and microseconds parts of a time value.
-	//
-	// The first part of the std::pair stores the seconds.
-	// The second part stores the microseconds.
+	/* We store the seconds and microseconds parts of the time in separate 64-bit integers.
+	 * m_time.first refers to the seconds part, and m_time.second refers to the microseconds part. */
+	using RageTimerPair = std::pair<int64_t, int64_t>;
 
 	/* Default & parameterized constructors */
 	RageTimer() {Touch();}
@@ -22,7 +20,7 @@ public:
 	/* Getters to protect encapsulation */
 	inline int64_t GetSecs() const { return m_time.first; }
 	inline int64_t GetUs() const { return m_time.second; }
-	
+
 	/* Time ago this RageTimer represents. */
 	float Ago() const;
 	void Touch();
@@ -50,7 +48,7 @@ public:
 
 	bool operator<( const RageTimer &rhs ) const;
 private:
-	std::pair<int64_t,int64_t> m_time;
+	RageTimerPair m_time;
 
 	static RageTimer Sum( const RageTimer &lhs, float tm );
 	static double Difference( const RageTimer &lhs, const RageTimer &rhs );
