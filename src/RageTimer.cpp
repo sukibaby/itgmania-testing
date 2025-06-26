@@ -27,7 +27,6 @@
 
 #include "arch/ArchHooks/ArchHooks.h"
 
-#include <cmath>
 #include <cstdint>
 
 // Intialize important variables and definitions
