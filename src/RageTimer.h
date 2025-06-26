@@ -15,8 +15,8 @@ public:
 	/* Time ago this RageTimer represents. */
 	float Ago() const;
 	void Touch();
-	inline bool IsZero() const { return m_secs == 0 && m_us == 0; }
-	inline void SetZero() { m_secs = m_us = 0; }
+	inline bool IsZero() const { return m_time.first == 0 && m_time.second == 0; }
+	inline void SetZero() { m_time = { 0, 0 }; }
 
 	/* Time between last call to GetDeltaTime() (Ago() + Touch()): */
 	float GetDeltaTime();
