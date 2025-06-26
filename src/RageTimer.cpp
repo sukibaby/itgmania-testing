@@ -126,7 +126,7 @@ RageTimer RageTimer::Sum(const RageTimer& lhs, float tm)
 	/* Calculate the seconds and microseconds from the time:
 	 * tm == 5.25  -> secs =  5, us = 5.25  - ( 5) = .25
 	 * tm == -1.25 -> secs = -2, us = -1.25 - (-2) = .75 */
-	int64_t seconds = std::floor(tm);
+	int64_t seconds = static_cast<int64_t>(tm);
 	int64_t us = static_cast<int64_t>((tm - seconds) * ONE_SECOND_IN_MICROSECONDS_LL);
 
 	// Prevent unnecessarily checking the time
