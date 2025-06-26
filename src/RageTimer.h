@@ -4,28 +4,19 @@
 #define RAGE_TIMER_H
 
 #include <cstdint>
-#include <utility>
 
 class RageTimer
 {
 public:
-	/* We store the seconds and microseconds parts of the time in separate 64-bit integers.
-	 * m_time.first refers to the seconds part, and m_time.second refers to the microseconds part. */
-	using RageTimerPair = std::pair<int64_t, int64_t>;
-
-	/* Default & parameterized constructors */
-	RageTimer() {Touch();}
-	RageTimer(int64_t secs, int64_t us) : m_time(secs, us) {}
-
-	/* Getters to protect encapsulation */
-	inline int64_t GetSecs() const { return m_time.first; }
-	inline int64_t GetUs() const { return m_time.second; }
+	/* Initialize the m_secs and m_us values to 0 and then fill them with the current time. */
+	RageTimer(): m_secs(0), m_us(0) { Touch(); }
+	RageTimer( int64_t secs, int64_t us ): m_secs(secs), m_us(us) { }
 
 	/* Time ago this RageTimer represents. */
 	float Ago() const;
 	void Touch();
-	inline bool IsZero() const { return m_time.first == 0 && m_time.second == 0; }
-	inline void SetZero() { m_time = { 0, 0 }; }
+	inline bool IsZero() const { return m_secs == 0 && m_us == 0; }
+	inline void SetZero() { m_secs = m_us = 0; }
 
 	/* Time between last call to GetDeltaTime() (Ago() + Touch()): */
 	float GetDeltaTime();
@@ -47,9 +38,14 @@ public:
 	float operator-( const RageTimer &rhs ) const;
 
 	bool operator<( const RageTimer &rhs ) const;
-private:
-	RageTimerPair m_time;
 
+	/* The following is a "time since start" RageTimer. Splitting the seconds and
+	 * microseconds values into two integers and combining them later allows for
+	 * better precision. Use caution when changing data types, since resolution
+	 * mismatch errors are easy to cause when changing things in RageTimer. */
+	uint64_t m_secs, m_us;
+
+private:
 	static RageTimer Sum( const RageTimer &lhs, float tm );
 	static double Difference( const RageTimer &lhs, const RageTimer &rhs );
 };
