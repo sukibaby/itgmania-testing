@@ -71,8 +71,8 @@ void RageTimer::Touch()
 {
 	uint64_t usecs = GetTime();
 
-	this->m_secs = uint64_t(usecs / ONE_SECOND_IN_MICROSECONDS_ULL);
-	this->m_us = uint64_t(usecs % ONE_SECOND_IN_MICROSECONDS_ULL);
+	this->m_secs = int64_t(usecs / ONE_SECOND_IN_MICROSECONDS_ULL);
+	this->m_us = int64_t(usecs % ONE_SECOND_IN_MICROSECONDS_ULL);
 }
 
 float RageTimer::Ago() const
