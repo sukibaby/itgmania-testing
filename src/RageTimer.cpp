@@ -22,8 +22,6 @@
 #include "global.h"
 
 #include "RageTimer.h"
-#include "RageLog.h"
-#include "RageUtil.h"
 
 #include "arch/ArchHooks/ArchHooks.h"
 
@@ -69,10 +67,12 @@ uint64_t RageTimer::GetTimeSinceStartMicroseconds()
 
 void RageTimer::Touch()
 {
+	// This is in microseconds
 	uint64_t usecs = GetTime();
 
-	m_time.first = usecs / ONE_SECOND_IN_MICROSECONDS_ULL; // seconds
-	m_time.second = usecs % ONE_SECOND_IN_MICROSECONDS_ULL; // microseconds
+	// Split into seconds (m_time.first) and microseconds (m_time.second)
+	m_time.first = usecs / ONE_SECOND_IN_MICROSECONDS_ULL;
+	m_time.second = usecs % ONE_SECOND_IN_MICROSECONDS_ULL;
 }
 
 float RageTimer::Ago() const
