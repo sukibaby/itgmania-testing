@@ -50,3 +50,7 @@
 	path = extern/hidapi
 	url = https://github.com/libusb/hidapi.git
 	shallow = true
+[submodule "extern/wix"]
+	path = extern/wix
+	url = https://github.com/sukibaby/wix.git
+	shallow = true
