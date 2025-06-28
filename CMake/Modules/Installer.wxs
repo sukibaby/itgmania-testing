@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <Product Id="*" Name="ITGmania" Language="1033" Version="1.1.0" Manufacturer="ITGmania Team" UpgradeCode="298365c2-6be3-4fba-a617-82a145e1eda3">
+    <Package InstallerVersion="500" Compressed="yes" InstallScope="perMachine" />
+
+    <!-- Define the directory structure -->
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="ProgramFilesFolder">
+        <Directory Id="INSTALLFOLDER" Name="ITGmania" />
+      </Directory>
+    </Directory>
+
+    <!-- Define the UI with License and Install Directory dialogs -->
+    <UI>
+      <UIRef Id="WixUI_InstallDir" />
+      <UIRef Id="WixUI_ErrorProgressText" />
+      <Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER" />
+    </UI>
+
+    <!-- Include the license file -->
+    <WixVariable Id="WixUILicenseRtf" Value="license.rtf" />
+
+    <!-- Define the components to install -->
+    <Feature Id="ProductFeature" Title="Main Feature" Level="1">
+      <ComponentGroupRef Id="ProductComponents" />
+    </Feature>
+
+    <!-- Uninstall old version if exists -->
+    <MajorUpgrade DowngradeErrorMessage="A newer version of this application is already installed." />
+    <CustomAction Id="RemoveOldVersion" Execute="immediate" Return="check" Impersonate="no" ExeCommand="msiexec.exe /x [ProductCode] /qn" />
+
+    <!-- Define the files to install -->
+    <ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
+      <!-- Add your files here -->
+    </ComponentGroup>
+  </Product>
+
+  <Fragment>
+    <Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER" />
+  </Fragment>
+</Wix>
