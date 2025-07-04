@@ -313,6 +313,9 @@ Lua *LuaManager::Get()
 
 void LuaManager::Release( Lua *&p )
 {
+	// clear the stack
+	lua_settop(p, 0);
+
 	pImpl->g_FreeStateList.push_back( p );
 
 	ASSERT( lua_gettop(p) == 0 );
