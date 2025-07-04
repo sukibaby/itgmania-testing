@@ -465,6 +465,15 @@ bool Song::LoadFromSongDir(RString sDir, bool load_autosave, ProfileSlot from_pr
 		LOG->UserLog( "Song", sDir, "has no music; ignored." );
 		return false;	// don't load this song
 	}
+
+	// Populate the CRC32 hash for the song.
+	m_sFileHash = GetFileHash();
+    if (m_sFileHash.empty()) {
+        LOG->Warn("LoadFromSongDir: Failed to compute initial hash for song '%s'.", m_sMainTitle.c_str());
+    } else {
+        LOG->Trace("LoadFromSongDir: Initial hash for song '%s': %s", m_sMainTitle.c_str(), m_sFileHash.c_str());
+    }
+
 	return true;	// do load this song
 }
 
