@@ -1771,13 +1771,42 @@ RString Song::GetFileHash()
 		"ssc", "sm", "dwi", "sma", "bms", "ksf", "json", "jso"
 	};
 
-	if (m_sFileHash.empty()) {
-		for (const RString& ext : extensions) {
-			RString sPath = SetExtension(GetSongFilePath(), ext);
-			if (IsAFile(sPath)) {
-				m_sFileHash = BinaryToHex(CRYPTMAN->GetSHA1ForFile(sPath));
+	for (const RString& ext : extensions) {
+		RString song_file_path = SetExtension(GetSongFilePath(), ext);
+		if (IsAFile(song_file_path)) {
+			RageFile file;
+			if (!file.Open(song_file_path, RageFile::READ)) {
+				LOG->Warn("GetFileHash: Failed to open file '%s': %s", song_file_path.c_str(), file.GetError().c_str());
+				m_sFileHash = "";
 				return m_sFileHash;
 			}
+
+			if (file.GetFileSize() == 0) {
+				LOG->Warn("GetFileHash: File '%s' is empty.", song_file_path.c_str());
+				m_sFileHash = "";
+				return m_sFileHash;
+			}
+
+			file.EnableCRC32(true);
+
+			const int buffer_size = 4096;
+			char buffer[buffer_size];
+			int bytes_read;
+			while ((bytes_read = file.Read(buffer, buffer_size)) > 0) {}
+			if (bytes_read < 0) {
+				LOG->Warn("GetFileHash: Error reading file '%s': %s", song_file_path.c_str(), file.GetError().c_str());
+				m_sFileHash = "";
+				return m_sFileHash;
+			}
+
+			m_sFileHash = file.GetCRC32AsString();
+			if (m_sFileHash.empty()) {
+				LOG->Warn("GetFileHash: Failed to compute CRC32 for file '%s'", song_file_path.c_str());
+				return m_sFileHash;
+			}
+
+			LOG->Info("CRC32 hash for file '%s': %s", song_file_path.c_str(), m_sFileHash.c_str());
+			return m_sFileHash;
 		}
 	}
 
