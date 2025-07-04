@@ -478,15 +478,29 @@ bool Song::ReloadFromSongDir( RString sDir )
 	// Note, this is scoped because we want to ensure we finish up operations on
 	// m_sFileHash before anything else might try to access that file's hash.
 	{
-		const RString oldHash = m_sFileHash;
+		RString oldHash = m_sFileHash;
 		RString newHash = GetFileHash();
+                LOG->Trace(
+                    "ReloadFromSongDir: oldHash='%s', newHash='%s'",
+                    oldHash.c_str(), newHash.c_str());
 
-		if (!m_sFileHash.empty() && newHash == oldHash) {
-			LOG->Trace("ReloadFromSongDir: Hashes match, not reloading song %s.", m_sMainTitle.c_str());
-			return true;
-		}
+				RString oldHashTrimmed = oldHash;
+                RString newHashTrimmed = newHash;
+                Trim(oldHashTrimmed);
+                Trim(newHashTrimmed);
 
-		LOG->Trace("ReloadFromSongDir: Hashes do not match, reloading song %s.", m_sMainTitle.c_str());
+
+if (!oldHashTrimmed.empty() && CompareNoCase(oldHashTrimmed, newHashTrimmed) == 0) {
+    LOG->Trace("ReloadFromSongDir: Hashes match, not reloading song '%s'.", m_sMainTitle.c_str());
+    return true;
+}
+
+    if (newHashTrimmed.empty()) {
+        LOG->Warn("ReloadFromSongDir: Failed to compute new hash for song '%s'.", m_sMainTitle.c_str());
+        return false;
+    }
+
+		LOG->Trace("ReloadFromSongDir: Hashes do not match, reloading song '%s'.", m_sMainTitle.c_str());
 		m_sFileHash = newHash;
 	}
 
