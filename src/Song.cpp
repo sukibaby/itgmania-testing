@@ -1763,20 +1763,21 @@ RString Song::GetFileHash() {
 		"ssc", "sm", "dwi", "sma", "bms", "ksf", "json", "jso"
 	};
 
+	RString new_hash;
 	for (const RString& ext : extensions) {
 		RString song_file_path = SetExtension(GetSongFilePath(), ext);
 		if (IsAFile(song_file_path)) {
 			RageFile file;
 			if (!file.Open(song_file_path, RageFile::READ)) {
 				LOG->Warn("GetFileHash: Failed to open file '%s': %s", song_file_path.c_str(), file.GetError().c_str());
-				m_sFileHash = "";
-				return m_sFileHash;
+				new_hash = "";
+				return new_hash;
 			}
 
 			if (file.GetFileSize() == 0) {
 				LOG->Warn("GetFileHash: File '%s' is empty.", song_file_path.c_str());
-				m_sFileHash = "";
-				return m_sFileHash;
+				new_hash = "";
+				return new_hash;
 			}
 
 			file.EnableCRC32(true);
@@ -1787,23 +1788,23 @@ RString Song::GetFileHash() {
 			while ((bytes_read = file.Read(buffer, buffer_size)) > 0) {}
 			if (bytes_read < 0) {
 				LOG->Warn("GetFileHash: Error reading file '%s': %s", song_file_path.c_str(), file.GetError().c_str());
-				m_sFileHash = "";
-				return m_sFileHash;
+				new_hash = "";
+				return new_hash;
 			}
 
-			m_sFileHash = file.GetCRC32AsString();
-			if (m_sFileHash.empty()) {
+			new_hash = file.GetCRC32AsString();
+			if (new_hash.empty()) {
 				LOG->Warn("GetFileHash: Failed to compute CRC32 for file '%s'", song_file_path.c_str());
-				return m_sFileHash;
+				return new_hash;
 			}
 
-			LOG->Info("CRC32 hash for file '%s': %s", song_file_path.c_str(), m_sFileHash.c_str());
-			return m_sFileHash;
+			LOG->Info("CRC32 hash for file '%s': %s", song_file_path.c_str(), new_hash.c_str());
+			return new_hash;
 		}
 	}
 
-	m_sFileHash = "";
-	return m_sFileHash;
+	new_hash = "";
+	return new_hash;
 }
 
 std::vector<RString> Song::GetInstrumentTracksToVectorString() const
