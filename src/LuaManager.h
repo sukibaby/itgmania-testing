@@ -46,6 +46,9 @@ public:
 	// There's no harm in registering when already registered.
 	void RegisterTypes();
 
+	// diagnostics
+	void CollectGarbage();
+
 	void SetGlobal( const RString &sName, int val );
 	void SetGlobal( const RString &sName, const RString &val );
 	void UnsetGlobal( const RString &sName );
