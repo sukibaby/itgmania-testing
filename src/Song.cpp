@@ -477,6 +477,22 @@ bool Song::LoadFromSongDir(RString sDir, bool load_autosave, ProfileSlot from_pr
 	return true;	// do load this song
 }
 
+static bool DoHashesMatch(const RString& old_hash, const RString& new_hash)
+{
+	if (!old_hash.empty() && CompareNoCase(old_hash, new_hash) == 0) {
+		LOG->Trace("DoHashesMatch: Song hashes match, not reloading song.");
+		return true;
+	}
+
+	if (new_hash.empty() || new_hash == RString("00000000")) {
+		LOG->Warn("DoHashesMatch: Failure when computing hash");
+		return false;
+	}
+
+	LOG->Trace("DoHashesMatch: Hashes do not match.");
+	return false;
+}
+
 /* This function feels EXTREMELY hacky - copying things on top of pointers so
  * they don't break elsewhere.  Maybe it could be rewritten to politely ask the
  * Song/Steps objects to reload themselves. -- djpohly */
@@ -487,27 +503,13 @@ bool Song::ReloadFromSongDir( RString sDir )
 	// Note, this is scoped because we want to ensure we finish up operations on
 	// m_sFileHash before anything else might try to access that file's hash.
 	{
-		RString oldHash = m_sFileHash;
-		RString newHash = GetFileHash();
-                LOG->Trace(
-                    "ReloadFromSongDir: oldHash='%s', newHash='%s'",
-                    oldHash.c_str(), newHash.c_str());
+		const RString oldHash = m_sFileHash;
+		const RString newHash = GetFileHash();
 
-				RString oldHashTrimmed = oldHash;
-                RString newHashTrimmed = newHash;
-                Trim(oldHashTrimmed);
-                Trim(newHashTrimmed);
-
-
-if (!oldHashTrimmed.empty() && CompareNoCase(oldHashTrimmed, newHashTrimmed) == 0) {
-    LOG->Trace("ReloadFromSongDir: Hashes match, not reloading song '%s'.", m_sMainTitle.c_str());
-    return true;
-}
-
-    if (newHashTrimmed.empty()) {
-        LOG->Warn("ReloadFromSongDir: Failed to compute new hash for song '%s'.", m_sMainTitle.c_str());
-        return false;
-    }
+		// If DoHashesMatch returns true, that means the hashes match.
+		if (DoHashesMatch(oldHash, newHash)) {
+			return true;
+		}
 
 		LOG->Trace("ReloadFromSongDir: Hashes do not match, reloading song '%s'.", m_sMainTitle.c_str());
 		m_sFileHash = newHash;
