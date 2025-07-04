@@ -289,6 +289,9 @@ void ScreenSelectMusic::BeginScreen()
 	SOUND->PlayOnceFromAnnouncer( "select music intro" );
 
 	ScreenWithMenuElements::BeginScreen();
+
+	// Do Lua garbage collection here, so that the screen starts with a clean slate.
+	LUA->CollectGarbage();
 }
 
 ScreenSelectMusic::~ScreenSelectMusic()
