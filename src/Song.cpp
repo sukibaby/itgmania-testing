@@ -473,6 +473,23 @@ bool Song::LoadFromSongDir(RString sDir, bool load_autosave, ProfileSlot from_pr
  * Song/Steps objects to reload themselves. -- djpohly */
 bool Song::ReloadFromSongDir( RString sDir )
 {
+	// Get the current hash without modifying any files first.
+	// If the hashes match, then return early.
+	// Note, this is scoped because we want to ensure we finish up operations on
+	// m_sFileHash before anything else might try to access that file's hash.
+	{
+		const RString oldHash = m_sFileHash;
+		RString newHash = GetFileHash();
+
+		if (!m_sFileHash.empty() && newHash == oldHash) {
+			LOG->Trace("ReloadFromSongDir: Hashes match, not reloading song %s.", m_sMainTitle.c_str());
+			return true;
+		}
+
+		LOG->Trace("ReloadFromSongDir: Hashes do not match, reloading song %s.", m_sMainTitle.c_str());
+		m_sFileHash = newHash;
+	}
+
 	// Remove the cache file to force the song to reload from its dir instead
 	// of loading from the cache. -Kyz
 	FILEMAN->Remove(GetCacheFilePath());
@@ -494,30 +511,22 @@ bool Song::ReloadFromSongDir( RString sDir )
 		LOG->Warn("Song %s has no group, using default sync offset.", m_sMainTitle.c_str());
 	}
 
-	/* Go through the steps, first setting their Song pointer to this song
-	 * (instead of the copy used above), and constructing a map to let us
-	 * easily find the new steps. */
+	// Reassign Steps
 	std::map<StepsID, Steps*> mNewSteps;
-	for( std::vector<Steps*>::const_iterator it = m_vpSteps.begin(); it != m_vpSteps.end(); ++it )
-	{
-		(*it)->m_pSong = this;
+	for (Steps* step : m_vpSteps) {
+		step->m_pSong = this;
 		StepsID id;
-		id.FromSteps( *it );
-		mNewSteps[id] = *it;
+		id.FromSteps(step);
+		mNewSteps[id] = step;
 
 		// Reapply the Group Offset if the steps have their own timing data.
-		if( mNewSteps[id]->m_Timing.empty() )
-		{
-			continue;
-		}
-		if (SONGMAN->GetGroup(this) != nullptr)
-		{
-			mNewSteps[id]->m_Timing.m_fBeat0GroupOffsetInSeconds = SONGMAN->GetGroup(this)->GetSyncOffset();
-		}
-		else
-		{
-			mNewSteps[id]->m_Timing.m_fBeat0GroupOffsetInSeconds = PREFSMAN->m_DefaultSyncOffset == SyncOffset_NULL ? 0 : -0.009;
-			LOG->Warn("Song %s has no group, using default sync offset.", m_sMainTitle.c_str());
+		if (!step->m_Timing.empty()) {
+			if (SONGMAN->GetGroup(this) != nullptr) {
+				step->m_Timing.m_fBeat0GroupOffsetInSeconds = SONGMAN->GetGroup(this)->GetSyncOffset();
+			} else {
+				step->m_Timing.m_fBeat0GroupOffsetInSeconds = PREFSMAN->m_DefaultSyncOffset == SyncOffset_NULL ? 0 : -0.009;
+				LOG->Warn("Song %s has no group, using default sync offset.", m_sMainTitle.c_str());
+			}
 		}
 	}
 
@@ -526,37 +535,24 @@ bool Song::ReloadFromSongDir( RString sDir )
 	FOREACH_ENUM( StepsType, i )
 		m_vpStepsByType[i].clear();
 
-	/* Then we copy as many Steps as possible on top of the old pointers.
-	 * The only pointers that change are pointers to Steps that are not in the
-	 * reverted file, which we delete, and pointers to Steps that are in the
-	 * reverted file but not the original *this, which we create new copies of.
-	 * We have to go through these hoops because many places assume the Steps
-	 * pointers don't change - even though there are other ways they can change,
-	 * such as deleting a Steps via the editor. */
-	for( std::vector<Steps*>::const_iterator itOld = vOldSteps.begin(); itOld != vOldSteps.end(); ++itOld )
-	{
+	for (Steps* oldStep : vOldSteps) {
 		StepsID id;
-		id.FromSteps( *itOld );
-		std::map<StepsID, Steps*>::iterator itNew = mNewSteps.find( id );
-		if( itNew == mNewSteps.end() )
-		{
-			// This stepchart didn't exist in the file we reverted from
-			delete *itOld;
-		}
-		else
-		{
-			Steps *OldSteps = *itOld;
-			*OldSteps = *(itNew->second);
-			AddSteps( OldSteps );
-			mNewSteps.erase( itNew );
+		id.FromSteps(oldStep);
+		auto itNew = mNewSteps.find(id);
+		if (itNew == mNewSteps.end()) {
+			delete oldStep;
+		} else {
+			Steps* oldSteps = oldStep;
+			*oldSteps = *(itNew->second);
+			AddSteps(oldSteps);
+			mNewSteps.erase(itNew);
 		}
 	}
-	// The leftovers in the map are steps that didn't exist before we reverted
-	for( std::map<StepsID, Steps*>::const_iterator it = mNewSteps.begin(); it != mNewSteps.end(); ++it )
-	{
-		Steps *NewSteps = new Steps(this);
-		*NewSteps = *(it->second);
-		AddSteps( NewSteps );
+
+	for (auto& it : mNewSteps) {
+		Steps* newSteps = new Steps(this);
+		*newSteps = *(it.second);
+		AddSteps(newSteps);
 	}
 
 	AddAutoGenNotes();
