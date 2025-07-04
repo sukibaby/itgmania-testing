@@ -118,6 +118,21 @@ bool RageFile::GetCRC32( uint32_t *iRet )
 	return m_File->GetCRC32( iRet );
 }
 
+RString RageFile::GetCRC32AsString()
+{
+	ASSERT_OPEN;
+
+	uint32_t crc = 0;
+	if (!m_File->GetCRC32(&crc)) {
+		LOG->Warn(
+			"GetCRC32AsString: Failed to compute CRC32 for file '%s'",
+			m_Path.c_str());
+		return "";
+	}
+
+	// Convert the CRC32 value to a hexadecimal string
+	return ssprintf("%08x", crc);
+}
 
 bool RageFile::AtEOF() const
 {
