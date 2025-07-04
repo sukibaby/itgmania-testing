@@ -45,9 +45,6 @@
 #include <set>
 #include <vector>
 
-//-Nick12 Used for song file hashing
-#include <CryptManager.h>
-
 /**
  * @brief The internal version of the cache for StepMania.
  *
