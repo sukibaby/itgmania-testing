@@ -56,6 +56,13 @@ namespace LuaHelpers
 	bool InReportScriptError= false;
 }
 
+void LuaManager::CollectGarbage()
+{
+    Lua *L = Get();
+    lua_gc(L, LUA_GCCOLLECT, 0);
+    Release(L);
+}
+
 void LuaManager::SetGlobal( const RString &sName, int val )
 {
 	Lua *L = Get();
