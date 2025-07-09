@@ -9,7 +9,10 @@
 
 #include <cstdint>
 
-constexpr int kFallbackSampleRate = 44100;
+// We might want to overwrite this, but only if we can determine that OS's sample rate.
+// We also only want there to be one copy of this variable for everyone to use.
+#include <atomic>
+extern std::atomic<int> g_FallbackSampleRate;
 
 class RageSoundReader;
 struct lua_State;

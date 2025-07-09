@@ -28,7 +28,7 @@ RageSoundReader_Chain::RageSoundReader_Chain()
 	m_iPreferredSampleRate = PREFSMAN->m_iSoundPreferredSampleRate;
 	if (m_iPreferredSampleRate == 0)
 	{
-		m_iPreferredSampleRate = kFallbackSampleRate;
+		m_iPreferredSampleRate = g_FallbackSampleRate.load();
 	}
 	
 	m_iActualSampleRate = -1;

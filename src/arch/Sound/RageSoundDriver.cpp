@@ -33,15 +33,26 @@ namespace
 			LOG->Warn(
 				"RageSoundDriver: unknown error when trying to receive "
 				"OS reported sample rate.");
-			reported_sample_rate = kFallbackSampleRate;
+			reported_sample_rate = g_FallbackSampleRate.load();
 		}
 		else if (reported_sample_rate == 0)
 		{
 			LOG->Warn(
-				"RageSoundDriver:  OS reported sample rate is 0, using "
-				"fallback value of %u",
-				kFallbackSampleRate);
+				"RageSoundDriver:  OS reported sample rate is 0, using fallback value");
 		}
+
+		// Overwrite g_FallbackSampleRate with the reported sample rate
+		// to ensure that all sounds will use the expected sample rate.
+		if (reported_sample_rate != static_cast<uint32_t>(g_FallbackSampleRate.load()))
+		{
+			g_FallbackSampleRate = reported_sample_rate;
+                  LOG->Info(
+                      "g_FallbackSampleRate set to match reported sample rate");
+				  LOG->Info(
+					  "RageSoundDriver: OS reported sample rate is %u",
+                      reported_sample_rate);
+		}
+
 		return reported_sample_rate;
 	}
 
@@ -105,14 +116,14 @@ RageSoundDriver *RageSoundDriver::Create( const RString& drivers )
 		ASSERT( pRet != nullptr );
 
 		const RString sError = pRet->Init();
-		if( sError.empty() )
-		{
-			LOG->Info( "Sound driver: %s", driverString );
-                 uint32_t sample_rate = TryToGetSampleRate();
-                        LOG->Info("Sound sample rate: %u", sample_rate);
 
+		if( sError.empty() ) // success
+		{
+			uint32_t sample_rate = TryToGetSampleRate();
+			LOG->Info( "Sound driver: %s (sample rate: %u)", driverString, sample_rate );
 			return pRet;
 		}
+
 		LOG->Info( "Couldn't load driver %s: %s", driverString, sError.c_str() );
 		RageUtil::SafeDelete( pRet );
 	}
