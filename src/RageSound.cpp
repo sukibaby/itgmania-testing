@@ -38,6 +38,9 @@
 
 #include <cmath>
 #include <cstdint>
+#include <atomic>
+
+std::atomic<int> g_FallbackSampleRate{44100};
 
 RageSoundParams::RageSoundParams():
 	m_StartSecond(0), m_LengthSeconds(-1), m_fFadeInSeconds(0),
@@ -147,7 +150,7 @@ public:
 	int SetPosition( int iFrame )  { return 1; }
 	int Read( float *pBuf, int iFrames ) { return RageSoundReader::END_OF_FILE; }
 	RageSoundReader *Copy() const { return new RageSoundReader_Silence; }
-	int GetSampleRate() const { return kFallbackSampleRate; }
+	int GetSampleRate() const { return g_FallbackSampleRate.load(); }
 	unsigned GetNumChannels() const { return 1; }
 	int GetNextSourceFrame() const { return 0; }
 	float GetStreamToSourceRatio() const { return 1.0f; }

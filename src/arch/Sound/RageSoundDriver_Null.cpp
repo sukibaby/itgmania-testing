@@ -32,7 +32,7 @@ RageSoundDriver_Null::RageSoundDriver_Null()
 {
 	m_iSampleRate = PREFSMAN->m_iSoundPreferredSampleRate;
 	{
-    	m_iSampleRate = kFallbackSampleRate;
+    	m_iSampleRate = g_FallbackSampleRate.load();
 	}
 	m_iLastCursorPos = GetPosition();
 	StartDecodeThread();
