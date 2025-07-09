@@ -1,7 +1,9 @@
 #ifndef ARCH_HOOKS_WIN32_H
 #define ARCH_HOOKS_WIN32_H
-
 #include "ArchHooks.h"
+
+#include <cstdint>
+
 class RageMutex;
 
 class ArchHooks_Win32: public ArchHooks
@@ -19,6 +21,8 @@ public:
 	void BoostPriority();
 	void UnBoostPriority();
 	void SetupConcurrentRenderingThread();
+
+	uint32_t DetermineSampleRate() const override;
 
 	virtual float GetDisplayAspectRatio();
 	RString GetClipboard();
