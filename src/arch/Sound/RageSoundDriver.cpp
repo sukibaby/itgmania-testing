@@ -115,7 +115,7 @@ RageSoundDriver *RageSoundDriver::Create( const RString& drivers )
 		const RString sError = pRet->Init();
 		if( sError.empty() )
 		{
-			LOG->Info( "Sound driver: %s (sample rate: %u)", driverString, validated_samplerate );
+			LOG->Info( "Sound driver: %s", driverString );
 			return pRet;
 		}
 		LOG->Info( "Couldn't load driver %s: %s", driverString, sError.c_str() );
