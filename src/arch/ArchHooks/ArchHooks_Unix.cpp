@@ -13,6 +13,8 @@
 #include "archutils/Unix/AssertionHandler.h"
 
 #include <cstdint>
+#include <cstdio>
+#include <cstdlib>
 
 #if defined(HAVE_UNISTD_H)
 #include <unistd.h>
@@ -402,6 +404,33 @@ void ArchHooks::MountUserFilesystems( const RString &sDirOfExecutable )
 	FILEMAN->Mount( "dir", sUserDataPath + "/Songs", "/Songs" );
 	FILEMAN->Mount( "dir", sUserDataPath + "/RandomMovies", "/RandomMovies" );
 	FILEMAN->Mount( "dir", sUserDataPath + "/Themes", "/Themes" );
+}
+
+// ugly, but not sure how to do this better without including PulseAudio and/or ALSA headers...?
+// For now, see if pactl is available, and if so, use it to get the sample rate.
+uint32_t ArchHooks_Unix::DetermineSampleRate() const {
+	if (system("which pactl > /dev/null 2>&1") == 0) {
+
+		FILE* fp = popen("pactl info | grep 'Sample Rate' | awk '{print $3}'", "r");
+		if (!fp) {
+			return 0;
+		}
+
+		// Set up a buffer to read the output from pactl
+		char buf[32];
+		if (!fgets(buf, sizeof(buf), fp)) {
+			pclose(fp);
+			return 0;
+		}
+
+		// Close the pipe
+		pclose(fp);
+
+		// atoi will convert the string to an integer, and then we
+		// cast it to uint32_t before returning
+		return static_cast<uint32_t>(atoi(buf));
+	}
+	return 0; // pactl not available
 }
 
 /*
