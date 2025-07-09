@@ -21,6 +21,8 @@ public:
 	static clockid_t GetClock();
 
 	RString GetClipboard();
+
+	uint32_t OSReportedSampleRate() const override;
 };
 
 #ifdef ARCH_HOOKS

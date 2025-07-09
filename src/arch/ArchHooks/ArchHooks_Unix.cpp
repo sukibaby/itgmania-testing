@@ -13,6 +13,8 @@
 #include "archutils/Unix/AssertionHandler.h"
 
 #include <cstdint>
+#include <cstdio>
+#include <cstdlib>
 
 #if defined(HAVE_UNISTD_H)
 #include <unistd.h>
@@ -402,6 +404,39 @@ void ArchHooks::MountUserFilesystems( const RString &sDirOfExecutable )
 	FILEMAN->Mount( "dir", sUserDataPath + "/Songs", "/Songs" );
 	FILEMAN->Mount( "dir", sUserDataPath + "/RandomMovies", "/RandomMovies" );
 	FILEMAN->Mount( "dir", sUserDataPath + "/Themes", "/Themes" );
+}
+
+uint32_t ArchHooks_Unix::OSReportedSampleRate() const {
+	// Check if pactl is available on this system.
+	// If it isn't, we will return 0
+	// In theory we could check ALSA too, but IIRC that would require
+	// including the ALSA headers here
+	if (system("which pactl > /dev/null 2>&1") == 0) {
+
+		// pactl is available, let's try to get the sample rate
+		FILE* fp = popen("pactl info | grep 'Sample Rate' | awk '{print $3}'", "r");
+		if (!fp) {
+			return 0;
+		}
+
+		// Set up a buffer to read the output from pactl
+		char buf[32];
+		if (!fgets(buf, sizeof(buf), fp)) {
+			pclose(fp);
+			return 0;
+		}
+
+		// Close the pipe
+		pclose(fp);
+
+		// atoi will convert the string to an integer, and then we
+		// cast it to uint32_t before returning
+		return static_cast<uint32_t>(atoi(buf));
+	} else {
+		// PulseAudio doesn't seem to be available.
+		// Let's return 0 so that the fallback sample rate is used.
+		return 0;
+	}
 }
 
 /*

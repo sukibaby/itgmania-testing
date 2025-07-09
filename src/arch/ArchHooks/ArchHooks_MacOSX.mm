@@ -379,11 +379,43 @@ static inline int GetIntValue( CFTypeRef r )
 	return ret;
 }
 
-
 float ArchHooks_MacOSX::GetDisplayAspectRatio()
 {
 	NSScreen *screen = [NSScreen mainScreen];
 	return screen.frame.size.width / screen.frame.size.height;
+}
+
+// UNTESTED!!!!! no access to a Mac
+#include <CoreAudio/CoreAudio.h>
+uint32_t ArchHooks_MacOSX::OSReportedSampleRate() const;
+{
+	// addr is used to get the default output device
+	AudioDeviceID deviceID = 0;
+	UInt32 size = sizeof(deviceID); // Thanks, apple 
+	AudioObjectPropertyAddress addr = {
+		kAudioHardwarePropertyDefaultOutputDevice, // The default output device, obviously
+		kAudioObjectPropertyScopeGlobal,  // global implies settings which are not input or output specific
+		kAudioObjectPropertyElementMaster  
+	};
+
+	// Return 0 if any error was encountered when asking for the default output device
+	if (AudioObjectGetPropertyData(kAudioObjectSystemObject, &addr, 0, nullptr, &size, &deviceID) != noErr)
+		return 0;
+
+	// Prepare to get the sample rate
+	Float64 sampleRate = 0;
+	size = sizeof(sampleRate);
+	AudioObjectPropertyAddress rateAddr = {
+		kAudioDevicePropertyNominalSampleRate,
+		kAudioObjectPropertyScopeGlobal,
+		kAudioObjectPropertyElementMaster
+	};
+
+	// Get the sample rate
+	if (AudioObjectGetPropertyData(deviceID, &rateAddr, 0, nullptr, &size, &sampleRate) != noErr)
+		return 0;
+
+	return static_cast<uint32_t>(sampleRate);
 }
 
 /*

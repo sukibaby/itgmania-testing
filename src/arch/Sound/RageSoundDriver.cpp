@@ -8,6 +8,7 @@
 
 #include <cstddef>
 #include <vector>
+#include <cstdint>
 
 namespace
 {
@@ -19,6 +20,31 @@ namespace
 		LOG->Trace("%s", trace.c_str());
 		LOG->Trace(" - Make sure the driver entry is spelled correctly, and is supported on your OS.");
 	}
+
+	uint32_t TryToGetSampleRate()
+	{
+		uint32_t reported_sample_rate = HOOKS->OSReportedSampleRate();
+
+		// UINT32_MAX is a possible error code, because 0 is a valid sample rate
+		// that the driver could return. It would still be an error, but this helps
+		// us know if the error came from the OS or the driver.
+		if (reported_sample_rate == UINT32_MAX)
+		{
+			LOG->Warn(
+				"RageSoundDriver: unknown error when trying to receive "
+				"OS reported sample rate.");
+			reported_sample_rate = kFallbackSampleRate;
+		}
+		else if (reported_sample_rate == 0)
+		{
+			LOG->Warn(
+				"RageSoundDriver:  OS reported sample rate is 0, using "
+				"fallback value of %u",
+				kFallbackSampleRate);
+		}
+		return reported_sample_rate;
+	}
+
 }  // namespace
 
 DriverList RageSoundDriver::m_pDriverList;
@@ -82,6 +108,9 @@ RageSoundDriver *RageSoundDriver::Create( const RString& drivers )
 		if( sError.empty() )
 		{
 			LOG->Info( "Sound driver: %s", driverString );
+                 uint32_t sample_rate = TryToGetSampleRate();
+                        LOG->Info("Sound sample rate: %u", sample_rate);
+
 			return pRet;
 		}
 		LOG->Info( "Couldn't load driver %s: %s", driverString, sError.c_str() );

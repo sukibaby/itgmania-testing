@@ -89,6 +89,13 @@ public:
 	 */
 	static int64_t GetSystemTimeInMicroseconds();
 
+	// Determine the sample rate of the default audio endpoint.
+	// UINT32_MAX is a possible error code, because 0 is a valid sample rate
+	// that the driver could return. UINT32_MAX specifically indicates that
+	// the override function could not be used. Otherwise 0 means the function
+	// did its job, but the OS returned 0 itself.
+	virtual uint32_t OSReportedSampleRate() const { return UINT32_MAX; }
+
 	/*
 	 * Add file search paths, higher priority first.
 	 */

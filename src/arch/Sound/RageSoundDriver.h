@@ -15,50 +15,47 @@ class RageTimer;
 class RageSoundMixBuffer;
 static const int samples_per_block = 512;
 
-class RageSoundDriver: public RageDriver
-{
-public:
-	/* Pass an empty string to get the default sound driver list. */
-	static RageSoundDriver *Create( const RString &sDrivers );
-	static DriverList m_pDriverList;
-	static std::vector<RString> GetSoundDriverList();
+class RageSoundDriver : public RageDriver {
+ public:
+  /* Pass an empty string to get the default sound driver list. */
+  static RageSoundDriver* Create(const RString& sDrivers);
+  static DriverList m_pDriverList;
+  static std::vector<RString> GetSoundDriverList();
 
-	friend class RageSoundManager;
+  friend class RageSoundManager;
 
-	RageSoundDriver();
-	virtual ~RageSoundDriver();
+  RageSoundDriver();
+  virtual ~RageSoundDriver();
 
-	/* Initialize.  On failure, an error message is returned. */
-	virtual RString Init() { return RString(); }
+  /* Initialize.  On failure, an error message is returned. */
+  virtual RString Init() { return RString(); }
 
-	/* A RageSound calls this to request to be played.
-	 * XXX: define what we should do when it can't be played (eg. out of
-	 * channels) */
-	void StartMixing( RageSoundBase *pSound );
+  /* A RageSound calls this to request to be played.
+   * XXX: define what we should do when it can't be played (eg. out of
+   * channels) */
+  void StartMixing(RageSoundBase* pSound);
 
-	/* A RageSound calls this to request it not be played.  When this function
-	 * returns, snd is no longer valid; ensure no running threads are still
-	 * accessing it before returning.  This must handle gracefully the case where
-	 * snd was not actually being played, though it may print a warning. */
-	void StopMixing( RageSoundBase *pSound );
+  /* A RageSound calls this to request it not be played.  When this function
+   * returns, snd is no longer valid; ensure no running threads are still
+   * accessing it before returning.  This must handle gracefully the case where
+   * snd was not actually being played, though it may print a warning. */
+  void StopMixing(RageSoundBase* pSound);
 
-	/* Pause or unpause the given sound.  If the sound was stopped (not paused),
-	 * return false and do nothing; otherwise return true and pause or unpause
-	 * the sound.  Unlike StopMixing, pausing and unpause a sound will not lose
-	 * any buffered sound (but will not release any resources associated with
-	 * playing the sound, either). */
-	bool PauseMixing( RageSoundBase *pSound, bool bStop );
+  /* Pause or unpause the given sound.  If the sound was stopped (not paused),
+   * return false and do nothing; otherwise return true and pause or unpause
+   * the sound.  Unlike StopMixing, pausing and unpause a sound will not lose
+   * any buffered sound (but will not release any resources associated with
+   * playing the sound, either). */
+  bool PauseMixing(RageSoundBase* pSound, bool bStop);
 
-	/* Get the current hardware frame position, in the same time base as passed to
-	 * RageSound::CommitPlayingPosition. */
-	int64_t GetHardwareFrame( RageTimer *pTimer ) const;
-	virtual int64_t GetPosition() const = 0;
+  /* Get the current hardware frame position, in the same time base as passed to
+   * RageSound::CommitPlayingPosition. */
+  int64_t GetHardwareFrame(RageTimer* pTimer) const;
+  virtual int64_t GetPosition() const = 0;
 
-	/* When a sound is finished playing (GetDataToPlay returns 0) and the sound has
-	 * been completely flushed (so GetPosition is no longer meaningful), call
-	 * RageSoundBase::SoundIsFinishedPlaying(). */
-
-
+  /* When a sound is finished playing (GetDataToPlay returns 0) and the sound
+   * has been completely flushed (so GetPosition is no longer meaningful), call
+   * RageSoundBase::SoundIsFinishedPlaying(). */
 
 	/* Optional, if needed:  */
 	virtual void Update();
