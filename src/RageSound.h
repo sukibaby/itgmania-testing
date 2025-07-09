@@ -8,8 +8,14 @@
 #include "RageSoundPosMap.h"
 
 #include <cstdint>
+#include <atomic>
 
-constexpr int kFallbackSampleRate = 44100;
+// The default sample rate, global scope.
+// First, RageSound.cpp will populate this with 44100 (as in 44.1 kHz).
+// Later on, when RageSoundDriver chooses a driver, the sample rate detection
+// code will overwrite this if it can determine a sample rate from the OS,
+// unless that value is different from 44100.
+extern std::atomic<int> g_FallbackSampleRate;
 
 class RageSoundReader;
 struct lua_State;

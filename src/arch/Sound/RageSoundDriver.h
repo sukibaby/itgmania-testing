@@ -67,7 +67,7 @@ public:
 	 * hearing it.  (This isn't necessarily the same as the buffer latency.) */
 	virtual float GetPlayLatency() const { return 0.0f; }
 
-	virtual int GetSampleRate() const { return kFallbackSampleRate; }
+	virtual int GetSampleRate() const { return g_FallbackSampleRate.load(); }
 
 protected:
 	/* Start the decoding.  This should be called once the hardware is set up and
