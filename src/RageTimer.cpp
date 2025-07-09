@@ -136,7 +136,7 @@ RageTimer RageTimer::Sum(const RageTimer& lhs, float tm)
 	ret.m_secs = seconds + lhs.m_secs;
 	ret.m_us = us + lhs.m_us;
 
-	// Adjust the seconds and microseconds if microseconds is greater than or equal to TIMESTAMP_RESOLUTION
+	// Adjust the seconds and microseconds if microseconds is greater than or equal to 1000000
 	if (ret.m_us >= ONE_SECOND_IN_MICROSECONDS_ULL)
 	{
 		ret.m_us -= ONE_SECOND_IN_MICROSECONDS_ULL;
