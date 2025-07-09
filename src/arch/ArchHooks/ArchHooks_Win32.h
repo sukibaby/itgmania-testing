@@ -1,5 +1,6 @@
 #ifndef ARCH_HOOKS_WIN32_H
 #define ARCH_HOOKS_WIN32_H
+
 #include "ArchHooks.h"
 
 #include <cstdint>
