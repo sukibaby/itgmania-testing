@@ -8,6 +8,7 @@
 
 #include <cstddef>
 #include <vector>
+#include <cstdint>
 
 namespace
 {
@@ -19,6 +20,37 @@ namespace
 		LOG->Trace("%s", trace.c_str());
 		LOG->Trace(" - Make sure the driver entry is spelled correctly, and is supported on your OS.");
 	}
+
+	uint32_t TryToGetSampleRate()
+	{
+		const uint32_t kMin = 44100;   // Minimum supported sample rate (44.1 kHz)
+		const uint32_t kMax = 192000; // Maximum supported sample rate (192 kHz)
+		uint32_t osReportedValue = HOOKS->DetermineSampleRate();
+
+		// Check if a failure code was returned
+		if (osReportedValue == UINT32_MAX || osReportedValue == 0)
+		{
+			// If the OS couldn't determine the sample rate, use the fallback value
+			LOG->Trace("RageSoundDriver: Using fallback sample rate %u", g_FallbackSampleRate.load());
+		}
+
+		// Clamp the sample rate to a reasonable range
+		if (osReportedValue < kMin || osReportedValue > kMax)
+		{
+			LOG->Warn("RageSoundDriver: OS reported sample rate %u is out of range", osReportedValue);
+			osReportedValue = std::clamp(osReportedValue, kMin, kMax);
+		}
+
+		// Update g_FallbackSampleRate if necessary
+		const uint32_t currentFallbackSampleRate = g_FallbackSampleRate.load();
+		if (osReportedValue != currentFallbackSampleRate)
+		{
+			g_FallbackSampleRate.store(osReportedValue);
+		}
+
+		return osReportedValue;
+	}
+
 }  // namespace
 
 DriverList RageSoundDriver::m_pDriverList;
@@ -65,6 +97,8 @@ RageSoundDriver *RageSoundDriver::Create( const RString& drivers )
 		}
 	}
 
+	const uint32_t validated_samplerate = TryToGetSampleRate();
+	LOG->Info("RageSoundDriver: Sample rate set to %u", validated_samplerate);
 	for (RString const &Driver : driversToTry)
 	{
 		RageDriver *pDriver = m_pDriverList.Create( Driver );
@@ -81,7 +115,7 @@ RageSoundDriver *RageSoundDriver::Create( const RString& drivers )
 		const RString sError = pRet->Init();
 		if( sError.empty() )
 		{
-			LOG->Info( "Sound driver: %s", driverString );
+			LOG->Info( "Sound driver: %s (sample rate: %u)", driverString, validated_samplerate );
 			return pRet;
 		}
 		LOG->Info( "Couldn't load driver %s: %s", driverString, sError.c_str() );
