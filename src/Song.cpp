@@ -45,9 +45,6 @@
 #include <set>
 #include <vector>
 
-//-Nick12 Used for song file hashing
-#include <CryptManager.h>
-
 /**
  * @brief The internal version of the cache for StepMania.
  *
@@ -468,7 +465,32 @@ bool Song::LoadFromSongDir(RString sDir, bool load_autosave, ProfileSlot from_pr
 		LOG->UserLog( "Song", sDir, "has no music; ignored." );
 		return false;	// don't load this song
 	}
+
+	// Populate the CRC32 hash for the song.
+	m_sFileHash = GetFileHash();
+    if (m_sFileHash.empty()) {
+        LOG->Warn("LoadFromSongDir: Failed to compute initial hash for song '%s'.", m_sMainTitle.c_str());
+    } else {
+        LOG->Trace("LoadFromSongDir: Initial hash for song '%s': %s", m_sMainTitle.c_str(), m_sFileHash.c_str());
+    }
+
 	return true;	// do load this song
+}
+
+static bool DoHashesMatch(const RString& old_hash, const RString& new_hash)
+{
+	if (!old_hash.empty() && CompareNoCase(old_hash, new_hash) == 0) {
+		LOG->Trace("DoHashesMatch: Song hashes match, not reloading song.");
+		return true;
+	}
+
+	if (new_hash.empty() || new_hash == RString("00000000")) {
+		LOG->Warn("DoHashesMatch: Failure when computing hash");
+		return false;
+	}
+
+	LOG->Trace("DoHashesMatch: Hashes do not match.");
+	return false;
 }
 
 /* This function feels EXTREMELY hacky - copying things on top of pointers so
@@ -476,6 +498,23 @@ bool Song::LoadFromSongDir(RString sDir, bool load_autosave, ProfileSlot from_pr
  * Song/Steps objects to reload themselves. -- djpohly */
 bool Song::ReloadFromSongDir( RString sDir )
 {
+	// Get the current hash without modifying any files first.
+	// If the hashes match, then return early.
+	// Note, this is scoped because we want to ensure we finish up operations on
+	// m_sFileHash before anything else might try to access that file's hash.
+	{
+		const RString oldHash = m_sFileHash;
+		const RString newHash = GetFileHash();
+
+		// If DoHashesMatch returns true, that means the hashes match.
+		if (DoHashesMatch(oldHash, newHash)) {
+			return true;
+		}
+
+		LOG->Trace("ReloadFromSongDir: Hashes do not match, reloading song '%s'.", m_sMainTitle.c_str());
+		m_sFileHash = newHash;
+	}
+
 	// Remove the cache file to force the song to reload from its dir instead
 	// of loading from the cache. -Kyz
 	FILEMAN->Remove(GetCacheFilePath());
@@ -497,30 +536,22 @@ bool Song::ReloadFromSongDir( RString sDir )
 		LOG->Warn("Song %s has no group, using default sync offset.", m_sMainTitle.c_str());
 	}
 
-	/* Go through the steps, first setting their Song pointer to this song
-	 * (instead of the copy used above), and constructing a map to let us
-	 * easily find the new steps. */
+	// Reassign Steps
 	std::map<StepsID, Steps*> mNewSteps;
-	for( std::vector<Steps*>::const_iterator it = m_vpSteps.begin(); it != m_vpSteps.end(); ++it )
-	{
-		(*it)->m_pSong = this;
+	for (Steps* step : m_vpSteps) {
+		step->m_pSong = this;
 		StepsID id;
-		id.FromSteps( *it );
-		mNewSteps[id] = *it;
+		id.FromSteps(step);
+		mNewSteps[id] = step;
 
 		// Reapply the Group Offset if the steps have their own timing data.
-		if( mNewSteps[id]->m_Timing.empty() )
-		{
-			continue;
-		}
-		if (SONGMAN->GetGroup(this) != nullptr)
-		{
-			mNewSteps[id]->m_Timing.m_fBeat0GroupOffsetInSeconds = SONGMAN->GetGroup(this)->GetSyncOffset();
-		}
-		else
-		{
-			mNewSteps[id]->m_Timing.m_fBeat0GroupOffsetInSeconds = PREFSMAN->m_DefaultSyncOffset == SyncOffset_NULL ? 0 : -0.009;
-			LOG->Warn("Song %s has no group, using default sync offset.", m_sMainTitle.c_str());
+		if (!step->m_Timing.empty()) {
+			if (SONGMAN->GetGroup(this) != nullptr) {
+				step->m_Timing.m_fBeat0GroupOffsetInSeconds = SONGMAN->GetGroup(this)->GetSyncOffset();
+			} else {
+				step->m_Timing.m_fBeat0GroupOffsetInSeconds = PREFSMAN->m_DefaultSyncOffset == SyncOffset_NULL ? 0 : -0.009;
+				LOG->Warn("Song %s has no group, using default sync offset.", m_sMainTitle.c_str());
+			}
 		}
 	}
 
@@ -529,37 +560,24 @@ bool Song::ReloadFromSongDir( RString sDir )
 	FOREACH_ENUM( StepsType, i )
 		m_vpStepsByType[i].clear();
 
-	/* Then we copy as many Steps as possible on top of the old pointers.
-	 * The only pointers that change are pointers to Steps that are not in the
-	 * reverted file, which we delete, and pointers to Steps that are in the
-	 * reverted file but not the original *this, which we create new copies of.
-	 * We have to go through these hoops because many places assume the Steps
-	 * pointers don't change - even though there are other ways they can change,
-	 * such as deleting a Steps via the editor. */
-	for( std::vector<Steps*>::const_iterator itOld = vOldSteps.begin(); itOld != vOldSteps.end(); ++itOld )
-	{
+	for (Steps* oldStep : vOldSteps) {
 		StepsID id;
-		id.FromSteps( *itOld );
-		std::map<StepsID, Steps*>::iterator itNew = mNewSteps.find( id );
-		if( itNew == mNewSteps.end() )
-		{
-			// This stepchart didn't exist in the file we reverted from
-			delete *itOld;
-		}
-		else
-		{
-			Steps *OldSteps = *itOld;
-			*OldSteps = *(itNew->second);
-			AddSteps( OldSteps );
-			mNewSteps.erase( itNew );
+		id.FromSteps(oldStep);
+		auto itNew = mNewSteps.find(id);
+		if (itNew == mNewSteps.end()) {
+			delete oldStep;
+		} else {
+			Steps* oldSteps = oldStep;
+			*oldSteps = *(itNew->second);
+			AddSteps(oldSteps);
+			mNewSteps.erase(itNew);
 		}
 	}
-	// The leftovers in the map are steps that didn't exist before we reverted
-	for( std::map<StepsID, Steps*>::const_iterator it = mNewSteps.begin(); it != mNewSteps.end(); ++it )
-	{
-		Steps *NewSteps = new Steps(this);
-		*NewSteps = *(it->second);
-		AddSteps( NewSteps );
+
+	for (auto& it : mNewSteps) {
+		Steps* newSteps = new Steps(this);
+		*newSteps = *(it.second);
+		AddSteps(newSteps);
 	}
 
 	AddAutoGenNotes();
@@ -1765,24 +1783,53 @@ RString Song::GetCacheFile(RString sType)
 	return "";
 }
 
-RString Song::GetFileHash()
-{
+RString Song::GetFileHash() {
 	static const std::vector<RString> extensions = {
 		"ssc", "sm", "dwi", "sma", "bms", "ksf", "json", "jso"
 	};
 
-	if (m_sFileHash.empty()) {
-		for (const RString& ext : extensions) {
-			RString sPath = SetExtension(GetSongFilePath(), ext);
-			if (IsAFile(sPath)) {
-				m_sFileHash = BinaryToHex(CRYPTMAN->GetSHA1ForFile(sPath));
-				return m_sFileHash;
+	RString new_hash;
+	for (const RString& ext : extensions) {
+		RString song_file_path = SetExtension(GetSongFilePath(), ext);
+		if (IsAFile(song_file_path)) {
+			RageFile file;
+			if (!file.Open(song_file_path, RageFile::READ)) {
+				LOG->Warn("GetFileHash: Failed to open file '%s': %s", song_file_path.c_str(), file.GetError().c_str());
+				new_hash = "";
+				return new_hash;
 			}
+
+			if (file.GetFileSize() == 0) {
+				LOG->Warn("GetFileHash: File '%s' is empty.", song_file_path.c_str());
+				new_hash = "";
+				return new_hash;
+			}
+
+			file.EnableCRC32(true);
+
+			const int buffer_size = 4096;
+			char buffer[buffer_size];
+			int bytes_read;
+			while ((bytes_read = file.Read(buffer, buffer_size)) > 0) {}
+			if (bytes_read < 0) {
+				LOG->Warn("GetFileHash: Error reading file '%s': %s", song_file_path.c_str(), file.GetError().c_str());
+				new_hash = "";
+				return new_hash;
+			}
+
+			new_hash = file.GetCRC32AsString();
+			if (new_hash.empty()) {
+				LOG->Warn("GetFileHash: Failed to compute CRC32 for file '%s'", song_file_path.c_str());
+				return new_hash;
+			}
+
+			LOG->Info("CRC32 hash for file '%s': %s", song_file_path.c_str(), new_hash.c_str());
+			return new_hash;
 		}
 	}
 
-	m_sFileHash = "";
-	return m_sFileHash;
+	new_hash = "";
+	return new_hash;
 }
 
 std::vector<RString> Song::GetInstrumentTracksToVectorString() const

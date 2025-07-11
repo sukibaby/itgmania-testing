@@ -56,6 +56,13 @@ namespace LuaHelpers
 	bool InReportScriptError= false;
 }
 
+void LuaManager::CollectGarbage()
+{
+    Lua *L = Get();
+    lua_gc(L, LUA_GCCOLLECT, 0);
+    Release(L);
+}
+
 void LuaManager::SetGlobal( const RString &sName, int val )
 {
 	Lua *L = Get();
@@ -313,6 +320,9 @@ Lua *LuaManager::Get()
 
 void LuaManager::Release( Lua *&p )
 {
+	// clear the stack
+	lua_settop(p, 0);
+
 	pImpl->g_FreeStateList.push_back( p );
 
 	ASSERT( lua_gettop(p) == 0 );
