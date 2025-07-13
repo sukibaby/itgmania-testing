@@ -12,6 +12,7 @@
 
 #include <set>
 #include <vector>
+#include <cstdint>
 
 
 class Style;
@@ -199,8 +200,8 @@ public:
 	RString m_sArtistTranslit;
 
 
-	RString m_sFileHash;
-	RString GetFileHash();
+	uint32_t m_sFileHash;
+	uint32_t GetFileHash();
 
 	/* If PREFSMAN->m_bShowNative is off, these are the same as GetTranslit*
 	 * below. Otherwise, they return the main titles. */
