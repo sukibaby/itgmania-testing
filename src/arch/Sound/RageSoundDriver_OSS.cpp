@@ -195,7 +195,6 @@ RString RageSoundDriver_OSS::Init()
 
 	// Determine the target sample rate based on preference
 	int targetSampleRate = g_FallbackSampleRate.load();
-	WHATS_THAT_SAMPLE_RATE;
 	samplerate = targetSampleRate; // Attempt to set this rate
 	if(ioctl(fd, SNDCTL_DSP_SPEED, &samplerate) == -1 ) // Pass 'samplerate' (member var) by address
 		return ssprintf( "RageSoundDriver_OSS: ioctl(SNDCTL_DSP_SPEED, %i): %s", targetSampleRate, strerror(errno) );
