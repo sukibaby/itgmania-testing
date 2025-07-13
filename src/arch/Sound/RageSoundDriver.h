@@ -12,7 +12,7 @@
 class RageSoundBase;
 class RageTimer;
 class RageSoundMixBuffer;
-static const int samples_per_block = 512;
+constexpr int samples_per_block = 512;
 
 class RageSoundDriver: public RageDriver
 {
