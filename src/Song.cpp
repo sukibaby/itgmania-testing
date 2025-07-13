@@ -37,6 +37,7 @@
 #include "LyricsLoader.h"
 #include "ActorUtil.h"
 #include "CommonMetrics.h"
+#include "RageTextureID.h"
 
 #include <cfloat>
 #include <cmath>
@@ -472,7 +473,7 @@ bool Song::LoadFromSongDir(RString sDir, bool load_autosave, ProfileSlot from_pr
     if (m_sFileHash == 0u) {
         LOG->Warn("LoadFromSongDir: Failed to compute initial hash for song '%s'.", m_sMainTitle.c_str());
     } else {
-        LOG->Trace("LoadFromSongDir: Initial hash for song '%s': %u", m_sMainTitle.c_str(), m_sFileHash);
+        LOG->Trace("LoadFromSongDir: Initial hash for song '%s': %08X", m_sMainTitle.c_str(), m_sFileHash);
     }
 
 	return true;	// do load this song
