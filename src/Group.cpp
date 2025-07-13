@@ -78,7 +78,6 @@ Group::Group(const RString& sDir, const RString& sGroupDirName, bool bFromProfil
     }
     m_sSortTitle = m_sGroupName;
     m_sTranslitTitle = m_sGroupName;
-
     if (FILEMAN->DoesFileExist(sPackIniPath)) {
         IniFile ini;
         if (!ini.ReadFile(sPackIniPath)) {
