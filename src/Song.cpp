@@ -1787,7 +1787,7 @@ RString Song::GetCacheFile(RString sType)
 	return "";
 }
 
-uint32_t Song::GetFileHash()
+uint32_t Song::GetFileHash() const
 {
 	constexpr const char* extensions[] = {
 		"ssc", "sm", "dwi", "sma", "bms", "ksf", "json", "jso"
@@ -1816,6 +1816,12 @@ uint32_t Song::GetFileHash()
 		}
 
 		file.EnableCRC32(true);
+		std::vector<char> buffer(static_cast<size_t>(file_size));
+		if (file.Read(&buffer[0], file_size) != file_size)
+		{
+			LOG->Warn("GetFileHash: Failed to read file '%s'", song_file_path.c_str());
+			continue;
+		}
 
 		uint32_t file_crc32 = 0;
 		if (!file.GetCRC32(&file_crc32))
