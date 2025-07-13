@@ -44,6 +44,7 @@
 #include <ctime>
 #include <set>
 #include <vector>
+#include <cstdint>
 
 /**
  * @brief The internal version of the cache for StepMania.
@@ -468,28 +469,27 @@ bool Song::LoadFromSongDir(RString sDir, bool load_autosave, ProfileSlot from_pr
 
 	// Populate the CRC32 hash for the song.
 	m_sFileHash = GetFileHash();
-    if (m_sFileHash.empty()) {
+    if (m_sFileHash == 0u) {
         LOG->Warn("LoadFromSongDir: Failed to compute initial hash for song '%s'.", m_sMainTitle.c_str());
     } else {
-        LOG->Trace("LoadFromSongDir: Initial hash for song '%s': %s", m_sMainTitle.c_str(), m_sFileHash.c_str());
+        LOG->Trace("LoadFromSongDir: Initial hash for song '%s': %u", m_sMainTitle.c_str(), m_sFileHash);
     }
 
 	return true;	// do load this song
 }
 
-static bool DoHashesMatch(const RString& old_hash, const RString& new_hash)
+static bool DoHashesMatch(const uint32_t old_hash, const uint32_t new_hash)
 {
-	if (!old_hash.empty() && CompareNoCase(old_hash, new_hash) == 0) {
-		LOG->Trace("DoHashesMatch: Song hashes match, not reloading song.");
+	constexpr uint32_t empty_hash = 0u;
+	if (old_hash != empty_hash && old_hash == new_hash) {
 		return true;
 	}
 
-	if (new_hash.empty() || new_hash == RString("00000000")) {
+	if (new_hash == empty_hash) {
 		LOG->Warn("DoHashesMatch: Failure when computing hash");
 		return false;
 	}
 
-	LOG->Trace("DoHashesMatch: Hashes do not match.");
 	return false;
 }
 
@@ -503,15 +503,16 @@ bool Song::ReloadFromSongDir( RString sDir )
 	// Note, this is scoped because we want to ensure we finish up operations on
 	// m_sFileHash before anything else might try to access that file's hash.
 	{
-		const RString oldHash = m_sFileHash;
-		const RString newHash = GetFileHash();
+		const uint32_t oldHash = m_sFileHash;
+		const uint32_t newHash = GetFileHash();
 
 		// If DoHashesMatch returns true, that means the hashes match.
 		if (DoHashesMatch(oldHash, newHash)) {
 			return true;
 		}
 
-		LOG->Trace("ReloadFromSongDir: Hashes do not match, reloading song '%s'.", m_sMainTitle.c_str());
+		LOG->Trace("ReloadFromSongDir: Hashes do not match, reloading song '%s'."
+			"old hash: %u, new hash: %u", m_sMainTitle.c_str(), oldHash, newHash);
 		m_sFileHash = newHash;
 	}
 
@@ -1786,53 +1787,48 @@ RString Song::GetCacheFile(RString sType)
 	return "";
 }
 
-RString Song::GetFileHash() {
-	static const std::vector<RString> extensions = {
+uint32_t Song::GetFileHash()
+{
+	constexpr const char* extensions[] = {
 		"ssc", "sm", "dwi", "sma", "bms", "ksf", "json", "jso"
 	};
+	constexpr size_t extensions_count = sizeof(extensions) / sizeof(extensions[0]);
 
-	RString new_hash;
-	for (const RString& ext : extensions) {
+	for (size_t i = 0; i < extensions_count; ++i)
+	{
+		const char* ext = extensions[i];
 		RString song_file_path = SetExtension(GetSongFilePath(), ext);
-		if (IsAFile(song_file_path)) {
-			RageFile file;
-			if (!file.Open(song_file_path, RageFile::READ)) {
-				LOG->Warn("GetFileHash: Failed to open file '%s': %s", song_file_path.c_str(), file.GetError().c_str());
-				new_hash = "";
-				return new_hash;
-			}
 
-			if (file.GetFileSize() == 0) {
-				LOG->Warn("GetFileHash: File '%s' is empty.", song_file_path.c_str());
-				new_hash = "";
-				return new_hash;
-			}
+		if (!IsAFile(song_file_path)) continue;
 
-			file.EnableCRC32(true);
-
-			const int buffer_size = 4096;
-			char buffer[buffer_size];
-			int bytes_read;
-			while ((bytes_read = file.Read(buffer, buffer_size)) > 0) {}
-			if (bytes_read < 0) {
-				LOG->Warn("GetFileHash: Error reading file '%s': %s", song_file_path.c_str(), file.GetError().c_str());
-				new_hash = "";
-				return new_hash;
-			}
-
-			new_hash = file.GetCRC32AsString();
-			if (new_hash.empty()) {
-				LOG->Warn("GetFileHash: Failed to compute CRC32 for file '%s'", song_file_path.c_str());
-				return new_hash;
-			}
-
-			LOG->Info("CRC32 hash for file '%s': %s", song_file_path.c_str(), new_hash.c_str());
-			return new_hash;
+		RageFile file;
+		if (!file.Open(song_file_path, RageFile::READ))
+		{
+			LOG->Warn("GetFileHash: Failed to open file '%s': %s", song_file_path.c_str(), file.GetError().c_str());
+			continue;
 		}
+
+		int file_size = file.GetFileSize();
+		if (file_size <= 0)
+		{
+			LOG->Warn("GetFileHash: File '%s' is empty.", song_file_path.c_str());
+			continue;
+		}
+
+		file.EnableCRC32(true);
+
+		uint32_t file_crc32 = 0;
+		if (!file.GetCRC32(&file_crc32))
+		{
+			LOG->Warn("GetFileHash: Failed to compute CRC32 for file '%s'", song_file_path.c_str());
+			continue;
+		}
+
+		LOG->Info("CRC32 hash for file '%s': %08X", song_file_path.c_str(), file_crc32); // %08X gives a prettier output than %u
+		return file_crc32;
 	}
 
-	new_hash = "";
-	return new_hash;
+	return 0;
 }
 
 std::vector<RString> Song::GetInstrumentTracksToVectorString() const
