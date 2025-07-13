@@ -79,7 +79,6 @@ public:
 
 	void EnableCRC32( bool on=true );
 	bool GetCRC32( uint32_t *iRet );
-	RString GetCRC32AsString();
 
 	// Lua
 	virtual void PushSelf( lua_State *L );
