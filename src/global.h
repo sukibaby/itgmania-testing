@@ -111,12 +111,8 @@ void ShowWarningOrTrace( const char *file, int line, const char *message, bool b
 #define SM_UNIQUE_NAME(x) SM_UNIQUE_NAME2(x, __LINE__)
 
 // (ᵕ—ᴗ—)
-#include <iostream>
 #include <atomic>
 extern std::atomic<int> g_FallbackSampleRate;
-#define WHATS_THAT_SAMPLE_RATE                                              \
-  std::cout << "!! Sample Rate : " << g_FallbackSampleRate.load() << " in " \
-            << __FUNCTION__ << std::endl
 
 
 #include "RageException.h"

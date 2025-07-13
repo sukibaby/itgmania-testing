@@ -140,7 +140,6 @@ int RageSoundManager::GetDriverSampleRate() const
 		          "g_FallbackSampleRate: %d, driver sample rate: %d",
 		          global_value, driver_value);
 	}
-	WHATS_THAT_SAMPLE_RATE;
 	return global_value;
 }
 

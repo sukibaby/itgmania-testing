@@ -96,7 +96,6 @@ RString RageSoundDriver_DSound_Software::Init()
 	/* Create a DirectSound stream, but don't force it into hardware. */
 	m_pPCM = new DSoundBuf;
 	m_iSampleRate = g_FallbackSampleRate.load();
-		WHATS_THAT_SAMPLE_RATE;
 	// This m_iSampleRate (driver's) is then passed as the iSampleRate parameter to DSoundBuf::Init()
 	sError = m_pPCM->Init( ds, DSoundBuf::HW_DONT_CARE, channels, m_iSampleRate, 16, g_iMaxWriteahead );
 	if( sError != "" )
