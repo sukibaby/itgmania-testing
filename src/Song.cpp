@@ -481,12 +481,11 @@ bool Song::LoadFromSongDir(RString sDir, bool load_autosave, ProfileSlot from_pr
 
 static bool DoHashesMatch(const uint32_t old_hash, const uint32_t new_hash)
 {
-	constexpr uint32_t empty_hash = 0u;
-	if (old_hash != empty_hash && old_hash == new_hash) {
+	if (old_hash != 0u && old_hash == new_hash) {
 		return true;
 	}
 
-	if (new_hash == empty_hash) {
+	if (new_hash == 0u) {
 		LOG->Warn("DoHashesMatch: Failure when computing hash");
 		return false;
 	}
@@ -1816,7 +1815,7 @@ uint32_t Song::GetFileHash() const
 			continue;
 		}
 
-		file.EnableCRC32(true);
+		//file.EnableCRC32(true);
 		std::vector<char> buffer(static_cast<size_t>(file_size));
 		if (file.Read(&buffer[0], file_size) != file_size)
 		{
@@ -1831,7 +1830,7 @@ uint32_t Song::GetFileHash() const
 			continue;
 		}
 
-		LOG->Info("CRC32 hash for file '%s': %08X", song_file_path.c_str(), file_crc32); // %08X gives a prettier output than %u
+		LOG->Info("CRC32 hash for file '%s': %08X", song_file_path.c_str(), file_crc32);
 		return file_crc32;
 	}
 
