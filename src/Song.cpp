@@ -512,8 +512,8 @@ bool Song::ReloadFromSongDir( RString sDir )
 			return true;
 		}
 
-		LOG->Trace("ReloadFromSongDir: Hashes do not match, reloading song '%s'."
-			"old hash: %u, new hash: %u", m_sMainTitle.c_str(), oldHash, newHash);
+		LOG->Trace("ReloadFromSongDir: Hashes do not match, reloading song"
+			"'%s'. new hash: %08X", m_sMainTitle.c_str(), newHash);
 		m_sFileHash = newHash;
 	}
 
