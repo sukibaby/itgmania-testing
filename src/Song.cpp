@@ -46,6 +46,7 @@
 #include <set>
 #include <vector>
 #include <cstdint>
+#include <utility>
 
 /**
  * @brief The internal version of the cache for StepMania.
