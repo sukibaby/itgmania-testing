@@ -411,7 +411,7 @@ void ArchHooks::MountUserFilesystems( const RString &sDirOfExecutable )
 uint32_t ArchHooks_Unix::DetermineSampleRate() const {
 	if (system("which pactl > /dev/null 2>&1") == 0) {
 
-		FILE* fp = popen("pactl info | grep 'Sample Rate' | awk '{print $3}'", "r");
+		FILE* fp = popen("pactl list sources | grep 'Sample Specification' | awk '{print $NF}' | sed 's/[^0-9]//g'", "r");
 		if (!fp) {
 			return 0;
 		}
@@ -428,7 +428,9 @@ uint32_t ArchHooks_Unix::DetermineSampleRate() const {
 
 		// atoi will convert the string to an integer, and then we
 		// cast it to uint32_t before returning
-		return static_cast<uint32_t>(atoi(buf));
+		const uint32_t sampleRate = atoi(buf);
+		LOG->Trace("Determined sample rate: %u", sampleRate);
+		return sampleRate;
 	}
 	return 0; // pactl not available
 }
