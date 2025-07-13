@@ -469,29 +469,10 @@ bool Song::LoadFromSongDir(RString sDir, bool load_autosave, ProfileSlot from_pr
 	}
 
 	// Populate the CRC32 hash for the song.
+	// GetFileHash() will handle error states etc.
 	m_sFileHash = GetFileHash();
-    if (m_sFileHash == 0u) {
-        LOG->Warn("LoadFromSongDir: Failed to compute initial hash for song '%s'.", m_sMainTitle.c_str());
-    } else {
-        LOG->Trace("LoadFromSongDir: Initial hash for song '%s': %08X", m_sMainTitle.c_str(), m_sFileHash);
-    }
 
 	return true;	// do load this song
-}
-
-static bool DoHashesMatch(const uint32_t old_hash, const uint32_t new_hash)
-{
-	constexpr uint32_t empty_hash = 0u;
-	if (old_hash != empty_hash && old_hash == new_hash) {
-		return true;
-	}
-
-	if (new_hash == empty_hash) {
-		LOG->Warn("DoHashesMatch: Failure when computing hash");
-		return false;
-	}
-
-	return false;
 }
 
 /* This function feels EXTREMELY hacky - copying things on top of pointers so
@@ -507,10 +488,8 @@ bool Song::ReloadFromSongDir( RString sDir )
 		const uint32_t oldHash = m_sFileHash;
 		const uint32_t newHash = GetFileHash();
 
-		// If DoHashesMatch returns true, that means the hashes match.
-		if (DoHashesMatch(oldHash, newHash)) {
-			return true;
-		}
+		// If the old hash is 0, then we don't have a valid hash to compare against.
+		if (oldHash != 0u && oldHash == newHash) return true;
 
 		LOG->Trace("ReloadFromSongDir: Hashes do not match, reloading song"
 			"'%s'. new hash: %08X", m_sMainTitle.c_str(), newHash);
@@ -586,6 +565,7 @@ bool Song::ReloadFromSongDir( RString sDir )
 	}
 
 	AddAutoGenNotes();
+
 	// Reload any images associated with the song. -Kyz
 	std::vector<RString> to_reload;
 	to_reload.reserve(7);
@@ -608,6 +588,7 @@ bool Song::ReloadFromSongDir( RString sDir )
 			}
 		}
 	}
+
 	return true;
 }
 
@@ -1816,7 +1797,6 @@ uint32_t Song::GetFileHash() const
 			continue;
 		}
 
-		file.EnableCRC32(true);
 		std::vector<char> buffer(static_cast<size_t>(file_size));
 		if (file.Read(&buffer[0], file_size) != file_size)
 		{
@@ -1831,7 +1811,7 @@ uint32_t Song::GetFileHash() const
 			continue;
 		}
 
-		LOG->Info("CRC32 hash for file '%s': %08X", song_file_path.c_str(), file_crc32); // %08X gives a prettier output than %u
+		LOG->Info("CRC32 hash for file '%s': %08X", song_file_path.c_str(), file_crc32);
 		return file_crc32;
 	}
 
