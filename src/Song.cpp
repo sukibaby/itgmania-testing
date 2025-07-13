@@ -1814,11 +1814,8 @@ uint32_t Song::GetFileHash() const
 			LOG->Warn("GetFileHash: Failed to compute CRC32 for file '%s'", song_file_path.c_str());
 			continue;
 		}
-
-		LOG->Info("CRC32 hash for file '%s': %08X", song_file_path.c_str(), file_crc32);
 		return file_crc32;
 	}
-
 	return 0;
 }
 
