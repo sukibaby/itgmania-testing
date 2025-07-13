@@ -1,6 +1,8 @@
 #include "global.h"
 
 #include <cstdlib>
+#include <atomic>
+
 
 #if defined(HAVE_UNISTD_H)
     #include <unistd.h>
@@ -61,6 +63,8 @@ void sm_crash( const char *reason )
 	_exit( 1 );
 #endif
 }
+
+std::atomic<int> g_FallbackSampleRate{44100};
 
 /*
  * (c) 2004 Glenn Maynard
