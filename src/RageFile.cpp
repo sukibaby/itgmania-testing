@@ -119,6 +119,7 @@ bool RageFile::GetCRC32( uint32_t *iRet )
 	return m_File->GetCRC32( iRet );
 }
 
+
 bool RageFile::AtEOF() const
 {
 	ASSERT_READ;
