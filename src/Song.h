@@ -201,7 +201,7 @@ public:
 
 
 	uint32_t m_sFileHash;
-	uint32_t GetFileHash();
+	uint32_t GetFileHash() const;
 
 	/* If PREFSMAN->m_bShowNative is off, these are the same as GetTranslit*
 	 * below. Otherwise, they return the main titles. */
