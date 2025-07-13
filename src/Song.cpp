@@ -555,7 +555,10 @@ bool Song::ReloadFromSongDir( RString sDir )
 		}
 	}
 
-	// Now we wipe out the new pointers, which were shallow copied and not deep copied...
+	// Clear existing steps, and fill with the new steps.
+	// Steps that haven't changed will be reused, to avoid
+	// unnecessary memory operations. Steps that have been
+	// reused will have their pointers updated, though.
 	m_vpSteps.clear();
 	FOREACH_ENUM( StepsType, i )
 		m_vpStepsByType[i].clear();
