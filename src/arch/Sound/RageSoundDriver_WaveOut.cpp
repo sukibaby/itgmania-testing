@@ -138,12 +138,8 @@ RageSoundDriver_WaveOut::RageSoundDriver_WaveOut()
 RString RageSoundDriver_WaveOut::Init()
 {
 	wo_init_success_ = false;
-	wo_samplerate_ = PREFSMAN->m_iSoundPreferredSampleRate;
-	if( wo_samplerate_ == 0 )
-	{
-		wo_samplerate_ = g_FallbackSampleRate.load();
-	}
-
+	wo_samplerate_ = g_FallbackSampleRate.load();
+	WHATS_THAT_SAMPLE_RATE;
 	wo_num_blocks_ = CalculateNumBlocks( wo_samplerate_ );
 
 	// Clamp wo_num_blocks_ to the range of kMaximumNumBlocks.
