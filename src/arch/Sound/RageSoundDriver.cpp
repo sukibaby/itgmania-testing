@@ -9,6 +9,7 @@
 #include <cstddef>
 #include <vector>
 #include <cstdint>
+#include <algorithm>
 
 namespace
 {
@@ -28,23 +29,24 @@ namespace
 		uint32_t osReportedValue = HOOKS->DetermineSampleRate();
 
 		// Check if a failure code was returned
-		if (osReportedValue == UINT32_MAX || osReportedValue == 0)
-		{
-			// If the OS couldn't determine the sample rate, use the fallback value
+		// Assume we'll get a 0 or -1 value if the OS can't determine the sample rate.
+		// Since the value is stored in an unsigned int, -1 would become UINT32_MAX.
+		if (osReportedValue == UINT32_MAX || osReportedValue == 0) {
 			LOG->Trace("RageSoundDriver: Using fallback sample rate %u", g_FallbackSampleRate.load());
 		}
 
 		// Clamp the sample rate to a reasonable range
-		if (osReportedValue < kMin || osReportedValue > kMax)
-		{
+		// Honestly, even 192000 is a bit high, but I don't want to be overly restrictive here.
+		// Remember, this is what everything will be resampled to.
+		// We don't raise this value to handle audio files at a higher sample rate.
+		if (osReportedValue < kMin || osReportedValue > kMax) {
 			LOG->Warn("RageSoundDriver: OS reported sample rate %u is out of range", osReportedValue);
 			osReportedValue = std::clamp(osReportedValue, kMin, kMax);
 		}
 
-		// Update g_FallbackSampleRate if necessary
+		// Update the global sample rate variable with the clamped value.
 		const uint32_t currentFallbackSampleRate = g_FallbackSampleRate.load();
-		if (osReportedValue != currentFallbackSampleRate)
-		{
+		if (osReportedValue != currentFallbackSampleRate) {
 			g_FallbackSampleRate.store(osReportedValue);
 		}
 
@@ -97,8 +99,11 @@ RageSoundDriver *RageSoundDriver::Create( const RString& drivers )
 		}
 	}
 
+	// Once TryToGetSampleRate() is called, g_FallbackSampleRate is rewritten.
+	// g_FallbackSampleRate will never be written to after this point!
 	const uint32_t validated_samplerate = TryToGetSampleRate();
 	LOG->Info("RageSoundDriver: Sample rate set to %u", validated_samplerate);
+
 	for (RString const &Driver : driversToTry)
 	{
 		RageDriver *pDriver = m_pDriverList.Create( Driver );
