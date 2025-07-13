@@ -236,7 +236,7 @@ RString Alsa9Buf::Init( int channels_,
 	{
 		samplerate = iSampleRate;
 	}
-
+	WHATS_THAT_SAMPLE_RATE;
 	GetSoundCardDebugInfo();
 
 	InitializeErrorHandler();
