@@ -27,11 +27,7 @@ m_LastPosition(0), m_Error(nullptr),
 m_Sem("Pulseaudio Synchronization Semaphore"),
 m_PulseMainLoop(nullptr), m_PulseCtx(nullptr), m_PulseStream(nullptr)
 {
-	m_ss.rate = PREFSMAN->m_iSoundPreferredSampleRate;
-	if( m_ss.rate == 0 )
-	{
-		m_ss.rate = g_FallbackSampleRate.load();
-	}
+	m_ss.rate = g_FallbackSampleRate.load();
 }
 
 RageSoundDriver_PulseAudio::~RageSoundDriver_PulseAudio()
