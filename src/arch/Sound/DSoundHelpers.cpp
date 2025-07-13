@@ -67,6 +67,7 @@ void DSound::SetPrimaryBufferMode()
 	waveformat.nSamplesPerSec = static_cast<DWORD>(g_FallbackSampleRate.load());
 	waveformat.nBlockAlign = (waveformat.nChannels * waveformat.wBitsPerSample) / 8;
 	waveformat.nAvgBytesPerSec = waveformat.nSamplesPerSec * waveformat.nBlockAlign;
+
 	// Set the primary buffer's format
 	hr = IDirectSoundBuffer_SetFormat( pBuffer, &waveformat );
 	if( FAILED(hr) )
