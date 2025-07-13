@@ -565,7 +565,6 @@ bool Song::ReloadFromSongDir( RString sDir )
 	}
 
 	AddAutoGenNotes();
-
 	// Reload any images associated with the song. -Kyz
 	std::vector<RString> to_reload;
 	to_reload.reserve(7);
@@ -588,7 +587,6 @@ bool Song::ReloadFromSongDir( RString sDir )
 			}
 		}
 	}
-
 	return true;
 }
 
