@@ -489,7 +489,7 @@ bool Song::ReloadFromSongDir( RString sDir )
 		const uint32_t newHash = GetFileHash();
 
 		// If the old hash is 0, then we don't have a valid hash to compare against.
-		if (oldHash != 0u && oldHash == newHash) return true;
+		if (oldHash != 0U && oldHash == newHash) return true;
 
 		LOG->Trace("ReloadFromSongDir: Hashes do not match, reloading song"
 			"'%s'. new hash: %08X", m_sMainTitle.c_str(), newHash);
