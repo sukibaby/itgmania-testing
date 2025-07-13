@@ -1813,7 +1813,7 @@ uint32_t Song::GetFileHash() const
 		return file_crc32;
 	}
 
-	return 0;
+	return 0U;
 }
 
 std::vector<RString> Song::GetInstrumentTracksToVectorString() const
