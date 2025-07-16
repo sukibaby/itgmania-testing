@@ -141,7 +141,7 @@ RString RageSoundDriver_AU::Init()
 
 	AudioStreamBasicDescription streamFormat;
 
-	streamFormat.mSampleRate = PREFSMAN->m_iSoundPreferredSampleRate;
+	streamFormat.mSampleRate = g_FallbackSampleRate.load();
 	streamFormat.mFormatID = kAudioFormatLinearPCM;
 	streamFormat.mFormatFlags = kFormatFlags;
 	streamFormat.mBytesPerPacket = kBytesPerPacket;
@@ -149,11 +149,6 @@ RString RageSoundDriver_AU::Init()
 	streamFormat.mBytesPerFrame = kBytesPerFrame;
 	streamFormat.mChannelsPerFrame = kChannelsPerFrame;
 	streamFormat.mBitsPerChannel = kBitsPerChannel;
-
-	if( streamFormat.mSampleRate <= 0.0 )
-	{
-		streamFormat.mSampleRate = g_FallbackSampleRate.load();
-	}
 	m_iSampleRate = int( streamFormat.mSampleRate );
 	m_TimeScale = streamFormat.mSampleRate / AudioGetHostClockFrequency();
 

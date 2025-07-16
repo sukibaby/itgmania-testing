@@ -64,12 +64,7 @@ void DSound::SetPrimaryBufferMode()
 	waveformat.wFormatTag = WAVE_FORMAT_PCM;
 	waveformat.wBitsPerSample = 16;
 	waveformat.nChannels = 2;
-	int preferredSampleRate = PREFSMAN->m_iSoundPreferredSampleRate;
-	if (preferredSampleRate == 0)
-	{
-		preferredSampleRate = g_FallbackSampleRate.load();
-	}
-	waveformat.nSamplesPerSec = preferredSampleRate;
+	waveformat.nSamplesPerSec = static_cast<DWORD>(g_FallbackSampleRate.load());
 	waveformat.nBlockAlign = (waveformat.nChannels * waveformat.wBitsPerSample) / 8;
 	waveformat.nAvgBytesPerSec = waveformat.nSamplesPerSec * waveformat.nBlockAlign;
 

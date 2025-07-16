@@ -115,7 +115,7 @@ RString RageSoundDriver_ALSA9_Software::Init()
 	sError = m_pPCM->Init( channels,
 			g_iMaxWriteahead,
 			g_iMaxWriteahead / num_chunks,
-			PREFSMAN->m_iSoundPreferredSampleRate );
+			g_FallbackSampleRate.load() );
 	if( sError != "" )
 		return sError;
 

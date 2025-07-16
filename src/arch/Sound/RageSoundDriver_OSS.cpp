@@ -194,12 +194,7 @@ RString RageSoundDriver_OSS::Init()
 		return ssprintf( "RageSoundDriver_OSS: Wanted %i channels, got %i instead", channels, channels_val );
 
 	// Determine the target sample rate based on preference
-	int targetSampleRate = PREFSMAN->m_iSoundPreferredSampleRate;
-	if (targetSampleRate == 0)
-	{
-		targetSampleRate = g_FallbackSampleRate.load();
-	}
-	
+	int targetSampleRate = g_FallbackSampleRate.load();
 	samplerate = targetSampleRate; // Attempt to set this rate
 	if(ioctl(fd, SNDCTL_DSP_SPEED, &samplerate) == -1 ) // Pass 'samplerate' (member var) by address
 		return ssprintf( "RageSoundDriver_OSS: ioctl(SNDCTL_DSP_SPEED, %i): %s", targetSampleRate, strerror(errno) );

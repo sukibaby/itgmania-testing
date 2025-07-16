@@ -40,8 +40,6 @@
 #include <cstdint>
 #include <atomic>
 
-std::atomic<int> g_FallbackSampleRate{44100};
-
 RageSoundParams::RageSoundParams():
 	m_StartSecond(0), m_LengthSeconds(-1), m_fFadeInSeconds(0),
 	m_fFadeOutSeconds(0), m_Volume(1.0f), m_fAttractVolume(1.0f),
