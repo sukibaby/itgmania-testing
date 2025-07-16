@@ -406,33 +406,39 @@ void ArchHooks::MountUserFilesystems( const RString &sDirOfExecutable )
 	FILEMAN->Mount( "dir", sUserDataPath + "/Themes", "/Themes" );
 }
 
-// ugly, but not sure how to do this better without including PulseAudio and/or ALSA headers...?
-// For now, see if pactl is available, and if so, use it to get the sample rate.
+// Determining the sample rate on Unix systems is a bit hacky.
+// To avoid including lots of headers for various audio libraries,
+// the next best thing is to query a command-line utility on the system.
+//
+// If the user has PulseAudio, we'll have access to pactl, which will
+// tell us the sample rate of the default audio device.
+//
+// If pactl is not available, we are most likely using ALSA, though
+// it's also possible that the user is using OSS or JACK.
+//
+// If JACK is being used, it has to run on top of PulseAudio or ALSA, so
+// we can assume that the sample rate will be the same as PulseAudio or ALSA,
+// or at least that the user will have set it up how they want it.
 uint32_t ArchHooks_Unix::DetermineSampleRate() const {
+	uint32_t sampleRate = 48000;
 	if (system("which pactl > /dev/null 2>&1") == 0) {
-
 		FILE* fp = popen("pactl list sources | grep 'Sample Specification' | awk '{print $NF}' | sed 's/[^0-9]//g'", "r");
-		if (!fp) {
-			return 0;
-		}
-
-		// Set up a buffer to read the output from pactl
-		char buf[32];
-		if (!fgets(buf, sizeof(buf), fp)) {
+		if (fp) {
+			char buf[32];
+			if (fgets(buf, sizeof(buf), fp)) {
+				sampleRate = static_cast<uint32_t>(atoi(buf));
+				LOG->Trace("Determined sample rate: %u", sampleRate);
+			}
 			pclose(fp);
-			return 0;
 		}
-
-		// Close the pipe
-		pclose(fp);
-
-		// atoi will convert the string to an integer, and then we
-		// cast it to uint32_t before returning
-		const uint32_t sampleRate = atoi(buf);
-		LOG->Trace("Determined sample rate: %u", sampleRate);
-		return sampleRate;
 	}
-	return 0; // pactl not available
+	// If pactl is not available, we will probably be using ALSA or OSS.
+	//
+	// In this case, we'll leave sampleRate as 48000 Hz. Since ALSA often
+	// negotiates 48 kHz with the hardware, regardless of what sample
+	// rate the driver has been initialized to, falling back to 48000 Hz
+	// is more likely to prevent ALSA from transparently resampling.
+	return sampleRate;
 }
 
 /*
