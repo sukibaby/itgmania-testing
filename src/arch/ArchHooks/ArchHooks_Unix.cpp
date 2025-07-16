@@ -434,10 +434,9 @@ uint32_t ArchHooks_Unix::DetermineSampleRate() const {
 	}
 	// If pactl is not available, we will probably be using ALSA or OSS.
 	//
-	// In this case, we'll leave sampleRate as 48000 Hz. Since ALSA often
-	// negotiates 48 kHz with the hardware, regardless of what sample
-	// rate the driver has been initialized to, falling back to 48000 Hz
-	// is more likely to prevent ALSA from transparently resampling.
+	// In this case, we'll leave sampleRate as 48000 Hz. ALSA often
+	// negotiates 48 kHz with the hardware, even if 44.1 kHz is requested
+	// (ALSA will do it own resampling). OSS also typically runs at 48000.
 	return sampleRate;
 }
 
