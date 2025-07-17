@@ -42,7 +42,7 @@ extern "C"
 #endif
 
 #if defined(HAS_PULSE)
-#include "pulse/pulseaudio.h"
+#include <pulse/pulseaudio.h>
 #endif
 
 static bool IsFatalSignal( int signal )
