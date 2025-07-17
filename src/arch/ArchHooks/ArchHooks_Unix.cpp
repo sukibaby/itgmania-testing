@@ -413,11 +413,11 @@ void ArchHooks::MountUserFilesystems( const RString &sDirOfExecutable )
 uint32_t ArchHooks_Unix::DetermineSampleRate() const {
 	constexpr uint32_t kDefaultSampleRate = 48000;
 #if defined(HAS_PULSE)
-	LOG->Warn(
-		"PulseAudio support is not implemented yet, using default sample rate.");
+	LOG->Trace("Detecting default sample rate using PulseAudio.");
 	return kDefaultSampleRate;
 #else
-        LOG->Warn("Pulseaudio failure");
+    LOG->Trace("ITGmania does not seem to have been build with PulseAudio support."
+		" Using fallback sample rate.");
 	return kDefaultSampleRate;
 #endif
 }
