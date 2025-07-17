@@ -480,21 +480,11 @@ bool Song::LoadFromSongDir(RString sDir, bool load_autosave, ProfileSlot from_pr
  * Song/Steps objects to reload themselves. -- djpohly */
 bool Song::ReloadFromSongDir( RString sDir )
 {
-	// Get the current hash without modifying any files first.
-	// If the hashes match, then return early.
-	// Note, this is scoped because we want to ensure we finish up operations on
-	// m_sFileHash before anything else might try to access that file's hash.
-	{
-		const uint32_t oldHash = m_sFileHash;
-		const uint32_t newHash = GetFileHash();
-
-		// If the old hash is 0, then we don't have a valid hash to compare against.
-		if (oldHash != 0u && oldHash == newHash) return true;
-
-		LOG->Trace("ReloadFromSongDir: Hashes do not match, reloading song"
-			"'%s'. new hash: %08X", m_sMainTitle.c_str(), newHash);
-		m_sFileHash = newHash;
-	}
+	const uint32_t oldHash = m_sFileHash;
+	const uint32_t newHash = GetFileHash();
+	if (oldHash != 0U && oldHash == newHash)
+		return true;
+	m_sFileHash = newHash;
 
 	// Remove the cache file to force the song to reload from its dir instead
 	// of loading from the cache. -Kyz
