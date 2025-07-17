@@ -413,11 +413,72 @@ void ArchHooks::MountUserFilesystems( const RString &sDirOfExecutable )
 uint32_t ArchHooks_Unix::DetermineSampleRate() const {
 	constexpr uint32_t kDefaultSampleRate = 48000;
 #if defined(HAS_PULSE)
-	LOG->Trace("Detecting default sample rate using PulseAudio.");
-	return kDefaultSampleRate;
+	pa_mainloop* mainloop = pa_mainloop_new();
+	if (!mainloop) {
+		LOG->Warn("Failed to create PulseAudio mainloop, using default sample rate.");
+		return kDefaultSampleRate;
+	}
+
+	pa_context* context = pa_context_new(pa_mainloop_get_api(mainloop), "SampleRateQuery");
+	if (!context) {
+		LOG->Warn("Failed to create PulseAudio context, using default sample rate.");
+		pa_mainloop_free(mainloop);
+		return kDefaultSampleRate;
+	}
+
+	uint32_t sampleRate = kDefaultSampleRate;
+	bool done = false;
+
+	pa_context_set_state_callback(context, [](pa_context* c, void* userdata) {
+		auto* sampleRatePtr = static_cast<uint32_t*>(userdata);
+		switch (pa_context_get_state(c)) {
+			case PA_CONTEXT_READY: {
+				pa_operation* op = pa_context_get_server_info(c, [](pa_context* c, const pa_server_info* info, void* userdata) {
+					if (!info) return;
+					auto* sampleRatePtr = static_cast<uint32_t*>(userdata);
+					pa_operation* op = pa_context_get_sink_info_by_name(c, info->default_sink_name,
+						[](pa_context*, const pa_sink_info* sink, int eol, void* userdata) {
+							if (!eol && sink) {
+								*static_cast<uint32_t*>(userdata) = sink->sample_spec.rate;
+							}
+						}, userdata);
+					if (op) {
+						pa_operation_unref(op);
+					}
+				}, userdata);
+				if (op) {
+					pa_operation_unref(op);
+				}
+				break;
+			}
+			case PA_CONTEXT_FAILED:
+			case PA_CONTEXT_TERMINATED:
+				*static_cast<bool*>(userdata) = true;
+				break;
+			default:
+				break;
+		}
+	}, &sampleRate);
+
+	if (pa_context_connect(context, nullptr, PA_CONTEXT_NOFLAGS, nullptr) < 0) {
+		LOG->Warn("Failed to connect to PulseAudio, using default sample rate.");
+		pa_context_unref(context);
+		pa_mainloop_free(mainloop);
+		return kDefaultSampleRate;
+	}
+
+	while (!done) {
+		if (pa_mainloop_iterate(mainloop, 1, nullptr) < 0) {
+			break;
+		}
+	}
+
+	pa_context_disconnect(context);
+	pa_context_unref(context);
+	pa_mainloop_free(mainloop);
+
+	return sampleRate;
 #else
-    LOG->Trace("ITGmania does not seem to have been build with PulseAudio support."
-		" Using fallback sample rate.");
 	return kDefaultSampleRate;
 #endif
 }
