@@ -417,6 +417,7 @@ uint32_t ArchHooks_Unix::DetermineSampleRate() const {
 		"PulseAudio support is not implemented yet, using default sample rate.");
 	return kDefaultSampleRate;
 #else
+        LOG->Warn("Pulseaudio failure");
 	return kDefaultSampleRate;
 #endif
 }
