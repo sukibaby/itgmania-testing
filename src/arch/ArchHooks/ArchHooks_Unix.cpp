@@ -413,82 +413,9 @@ void ArchHooks::MountUserFilesystems( const RString &sDirOfExecutable )
 uint32_t ArchHooks_Unix::DetermineSampleRate() const {
 	constexpr uint32_t kDefaultSampleRate = 48000;
 #if defined(HAS_PULSE)
-	struct PulseWrapper {
-		pa_mainloop* mainloop = nullptr;
-		pa_context* context = nullptr;
-		uint32_t sampleRate = kDefaultSampleRate;
-		bool done = false;
-        
-		~PulseWrapper() {
-			if (context) {
-				pa_context_disconnect(context);
-				pa_context_unref(context);
-			}
-			if (mainloop) {
-				pa_mainloop_free(mainloop);
-			}
-		}
-	} pulse;
-
-	if (!(pulse.mainloop = pa_mainloop_new())) {
-		LOG->Warn("Failed to create PulseAudio mainloop");
-		return kDefaultSampleRate;
-	}
-
-	if (!(pulse.context = pa_context_new(pa_mainloop_get_api(pulse.mainloop), "SampleRateQuery"))) {
-		LOG->Warn("Failed to create PulseAudio context");
-		return kDefaultSampleRate;
-	}
-
-	pa_context_set_state_callback(pulse.context, [](pa_context* c, void* userdata) {
-		auto* pw = static_cast<PulseWrapper*>(userdata);
-        
-		switch (pa_context_get_state(c)) {
-			case PA_CONTEXT_READY: {
-				// Query default sink
-				auto* op = pa_context_get_server_info(c, [](pa_context* c, const pa_server_info* info, void* userdata) {
-					if (!info) return;
-                    
-					auto* pw = static_cast<PulseWrapper*>(userdata);
-					auto* op = pa_context_get_sink_info_by_name(c, info->default_sink_name,
-						[](pa_context*, const pa_sink_info* sink, int eol, void* userdata) {
-							auto* pw = static_cast<PulseWrapper*>(userdata);
-							if (!eol && sink) {
-								pw->sampleRate = sink->sample_spec.rate;
-							}
-							pw->done = true;
-						}, userdata);
-					if (op) {
-						pa_operation_unref(op);
-					}
-				}, userdata);
-                
-				if (op) {
-					pa_operation_unref(op);
-				}
-				break;
-			}
-			case PA_CONTEXT_FAILED:
-			case PA_CONTEXT_TERMINATED:
-				pw->done = true;
-				break;
-			default:
-				break;
-		}
-	}, &pulse);
-
-	if (pa_context_connect(pulse.context, nullptr, PA_CONTEXT_NOFLAGS, nullptr) < 0) {
-		LOG->Warn("Failed to connect to PulseAudio");
-		return kDefaultSampleRate;
-	}
-
-	while (!pulse.done) {
-		if (pa_mainloop_iterate(pulse.mainloop, 1, nullptr) < 0) {
-			break;
-		}
-	}
-
-	return pulse.sampleRate;
+	LOG->Warn(
+		"PulseAudio support is not implemented yet, using default sample rate.");
+	return kDefaultSampleRate;
 #else
 	return kDefaultSampleRate;
 #endif
