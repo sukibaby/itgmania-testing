@@ -130,26 +130,17 @@ float RageSoundManager::GetPlayLatency() const
 	return m_pDriver->GetPlayLatency();
 }
 
-// Since the sample rate is locked in before the driver is initialized,
-// the driver value shouldn't be different from the global value.
-// However, we'll make sure they match before returning a value.
 int RageSoundManager::GetDriverSampleRate() const
 {
-	int global_value, driver_value;
-	global_value= g_FallbackSampleRate.load();
-	
-	if (m_pDriver == nullptr) {
-		return global_value;
-	}
-	
-	driver_value= m_pDriver->GetSampleRate();
+	int global_value= g_FallbackSampleRate.load();
+	int driver_value= m_pDriver->GetSampleRate();
 	if (global_value != driver_value)
 	{
 		LOG->Warn("RageSoundManager::GetDriverSampleRate value mismatch!! "
-				  "g_FallbackSampleRate: %d, driver sample rate: %d",
-				  global_value, driver_value);
+		          "g_FallbackSampleRate: %d, driver sample rate: %d",
+		          global_value, driver_value);
 	}
-	return driver_value;
+	return global_value;
 }
 
 /* If the given path is loaded, return a copy; otherwise return nullptr.
