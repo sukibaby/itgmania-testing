@@ -411,7 +411,8 @@ void ArchHooks::MountUserFilesystems( const RString &sDirOfExecutable )
 }
 
 uint32_t ArchHooks_Unix::DetermineSampleRate() const {
-	uint32_t sample_rate = 48000;
+    uint32_t sample_rate = 48000; // Default sample rate
+
 #if defined(HAS_PULSE)
     pa_mainloop* mainloop = pa_mainloop_new();
     pa_mainloop_api* mainloop_api = pa_mainloop_get_api(mainloop);
@@ -419,11 +420,13 @@ uint32_t ArchHooks_Unix::DetermineSampleRate() const {
 
     pa_context_connect(context, nullptr, PA_CONTEXT_NOFLAGS, nullptr);
 
+    bool operation_done = false;
     pa_context_set_state_callback(context, [](pa_context* c, void* userdata) {
         if (pa_context_get_state(c) == PA_CONTEXT_READY) {
             pa_operation* op = pa_context_get_server_info(c, [](pa_context* c, const pa_server_info* info, void* userdata) {
                 uint32_t* sample_rate_ptr = static_cast<uint32_t*>(userdata);
                 *sample_rate_ptr = info->sample_spec.rate;
+                *static_cast<bool*>(userdata + sizeof(uint32_t)) = true; // Mark operation as done
             }, userdata);
             if (op) {
                 pa_operation_unref(op);
@@ -431,13 +434,23 @@ uint32_t ArchHooks_Unix::DetermineSampleRate() const {
         }
     }, &sample_rate);
 
-    pa_mainloop_run(mainloop, nullptr);
+    int timeout = 100; // Timeout in milliseconds
+    while (!operation_done && timeout > 0) {
+        pa_mainloop_iterate(mainloop, 0, nullptr);
+        usleep(1000); // Sleep for 1ms
+        timeout--;
+    }
 
     pa_context_disconnect(context);
     pa_context_unref(context);
     pa_mainloop_free(mainloop);
+
+    if (!operation_done) {
+        LOG->Warn("PulseAudio sample rate query timed out. Using default sample rate.");
+    }
 #endif
-	return sample_rate;
+
+    return sample_rate;
 }
 
 /*
