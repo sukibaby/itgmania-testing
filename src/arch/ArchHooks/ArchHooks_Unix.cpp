@@ -411,75 +411,33 @@ void ArchHooks::MountUserFilesystems( const RString &sDirOfExecutable )
 }
 
 uint32_t ArchHooks_Unix::DetermineSampleRate() const {
-	constexpr uint32_t kDefaultSampleRate = 48000;
+	uint32_t sample_rate = 48000;
 #if defined(HAS_PULSE)
-	pa_mainloop* mainloop = pa_mainloop_new();
-	if (!mainloop) {
-		LOG->Warn("Failed to create PulseAudio mainloop, using default sample rate.");
-		return kDefaultSampleRate;
-	}
+    pa_mainloop* mainloop = pa_mainloop_new();
+    pa_mainloop_api* mainloop_api = pa_mainloop_get_api(mainloop);
+    pa_context* context = pa_context_new(mainloop_api, "SampleRateQuery");
 
-	pa_context* context = pa_context_new(pa_mainloop_get_api(mainloop), "SampleRateQuery");
-	if (!context) {
-		LOG->Warn("Failed to create PulseAudio context, using default sample rate.");
-		pa_mainloop_free(mainloop);
-		return kDefaultSampleRate;
-	}
+    pa_context_connect(context, nullptr, PA_CONTEXT_NOFLAGS, nullptr);
 
-	uint32_t sampleRate = kDefaultSampleRate;
-	bool done = false;
+    pa_context_set_state_callback(context, [](pa_context* c, void* userdata) {
+        if (pa_context_get_state(c) == PA_CONTEXT_READY) {
+            pa_operation* op = pa_context_get_server_info(c, [](pa_context* c, const pa_server_info* info, void* userdata) {
+                uint32_t* sample_rate_ptr = static_cast<uint32_t*>(userdata);
+                *sample_rate_ptr = info->sample_spec.rate;
+            }, userdata);
+            if (op) {
+                pa_operation_unref(op);
+            }
+        }
+    }, &sample_rate);
 
-	pa_context_set_state_callback(context, [](pa_context* c, void* userdata) {
-		auto* sampleRatePtr = static_cast<uint32_t*>(userdata);
-		switch (pa_context_get_state(c)) {
-			case PA_CONTEXT_READY: {
-				pa_operation* op = pa_context_get_server_info(c, [](pa_context* c, const pa_server_info* info, void* userdata) {
-					if (!info) return;
-					auto* sampleRatePtr = static_cast<uint32_t*>(userdata);
-					pa_operation* op = pa_context_get_sink_info_by_name(c, info->default_sink_name,
-						[](pa_context*, const pa_sink_info* sink, int eol, void* userdata) {
-							if (!eol && sink) {
-								*static_cast<uint32_t*>(userdata) = sink->sample_spec.rate;
-							}
-						}, userdata);
-					if (op) {
-						pa_operation_unref(op);
-					}
-				}, userdata);
-				if (op) {
-					pa_operation_unref(op);
-				}
-				break;
-			}
-			case PA_CONTEXT_FAILED:
-			case PA_CONTEXT_TERMINATED:
-				*static_cast<bool*>(userdata) = true;
-				break;
-			default:
-				break;
-		}
-	}, &sampleRate);
+    pa_mainloop_run(mainloop, nullptr);
 
-	if (pa_context_connect(context, nullptr, PA_CONTEXT_NOFLAGS, nullptr) < 0) {
-		LOG->Warn("Failed to connect to PulseAudio, using default sample rate.");
-		pa_context_unref(context);
-		pa_mainloop_free(mainloop);
-		return kDefaultSampleRate;
-	}
-
-	while (!done) {
-		if (pa_mainloop_iterate(mainloop, 1, nullptr) < 0) {
-			break;
-		}
-	}
-
-	pa_context_disconnect(context);
-	pa_context_unref(context);
-	pa_mainloop_free(mainloop);
-
-	return sampleRate;
+    pa_context_disconnect(context);
+    pa_context_unref(context);
+    pa_mainloop_free(mainloop);
 #else
-	return kDefaultSampleRate;
+	return sample_rate;
 #endif
 }
 
