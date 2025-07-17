@@ -410,38 +410,16 @@ void ArchHooks::MountUserFilesystems( const RString &sDirOfExecutable )
 	FILEMAN->Mount( "dir", sUserDataPath + "/Themes", "/Themes" );
 }
 
-// Determining the sample rate on Unix systems is a bit hacky.
-// To avoid including lots of headers for various audio libraries,
-// the next best thing is to query a command-line utility on the system.
-//
-// If the user has PulseAudio, we'll have access to pactl, which will
-// tell us the sample rate of the default audio device.
-//
-// If pactl is not available, we are most likely using ALSA, though
-// it's also possible that the user is using OSS or JACK.
-//
-// If JACK is being used, it has to run on top of PulseAudio or ALSA, so
-// we can assume that the sample rate will be the same as PulseAudio or ALSA,
-// or at least that the user will have set it up how they want it.
 uint32_t ArchHooks_Unix::DetermineSampleRate() const {
-	uint32_t sampleRate = 48000;
-	if (system("which pactl > /dev/null 2>&1") == 0) {
-		FILE* fp = popen("pactl list sources | grep 'Sample Specification' | awk '{print $NF}' | sed 's/[^0-9]//g'", "r");
-		if (fp) {
-			char buf[32];
-			if (fgets(buf, sizeof(buf), fp)) {
-				sampleRate = static_cast<uint32_t>(atoi(buf));
-				LOG->Trace("Determined sample rate: %u", sampleRate);
-			}
-			pclose(fp);
-		}
-	}
-	// If pactl is not available, we will probably be using ALSA or OSS.
-	//
-	// In this case, we'll leave sampleRate as 48000 Hz. ALSA often
-	// negotiates 48 kHz with the hardware, even if 44.1 kHz is requested
-	// (ALSA will do it own resampling). OSS also typically runs at 48000.
-	return sampleRate;
+#if defined(HAS_PULSE)
+	LOG->Warn("PulseAudio auto-detection is not implemented yet. \n"
+		"Using default sample rate of 48000 Hz.");
+#else
+	LOG->Trace("PulseAudio auto-detection is not available. \n"
+		"Using default sample rate of 48000 Hz.");
+#endif
+	// 48khz is likely to prevent ALSA or OSS from having to resample on its own.
+	return 48000;
 }
 
 /*
