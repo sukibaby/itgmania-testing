@@ -295,6 +295,7 @@ ScreenSelectMusic::~ScreenSelectMusic()
 {
 	LOG->Trace( "ScreenSelectMusic::~ScreenSelectMusic()" );
 	IMAGECACHE->Undemand("Banner");
+	LUA->CollectGarbage();
 }
 
 // If bForce is true, the next request will be started even if it might cause a skip.
