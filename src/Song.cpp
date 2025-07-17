@@ -37,7 +37,6 @@
 #include "LyricsLoader.h"
 #include "ActorUtil.h"
 #include "CommonMetrics.h"
-#include "RageTextureID.h"
 
 #include <cfloat>
 #include <cmath>
