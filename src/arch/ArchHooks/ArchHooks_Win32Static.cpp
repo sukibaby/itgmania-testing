@@ -13,6 +13,8 @@
 // for QueryPerformanceCounter
 #include <windows.h>
 #include <mmsystem.h>
+#include <string>
+#include <winnls.h>
 #if defined(_MSC_VER)
 #pragma comment(lib, "winmm.lib")
 #endif
@@ -90,7 +92,6 @@ void MountDirectories(const RString& baseDir) {
 void ArchHooks::MountInitialFilesystems(const RString& sDirOfExecutable) {
 	RString sDir = GetMountDir(sDirOfExecutable);
 	FILEMAN->Mount("dirro", sDir, "/");
-
 	if (DoesFileExist("/Portable.ini")) {
 		MountDirectories(sDir);
 	}
@@ -101,110 +102,54 @@ void ArchHooks::MountUserFilesystems(const RString& sDirOfExecutable) {
 	MountDirectories(sAppDataDir);
 }
 
-static RString LangIdToString( LANGID l )
-{
-	switch( PRIMARYLANGID(l) )
-	{
-	case LANG_ARABIC: return "ar";
-	case LANG_BULGARIAN: return "bg";
-	case LANG_CATALAN: return "ca";
-	case LANG_CHINESE:
-	{
-		switch (SUBLANGID(l))
-		{
-		case SUBLANG_CHINESE_TRADITIONAL:
-		case SUBLANG_CHINESE_HONGKONG:
-		case SUBLANG_CHINESE_MACAU:
-			return "zh-Hant";
-		case SUBLANG_CHINESE_SIMPLIFIED:
-		case SUBLANG_CHINESE_SINGAPORE:
-			return "zh-Hans";
-		}
-	}
-	case LANG_CZECH: return "cs";
-	case LANG_DANISH: return "da";
-	case LANG_GERMAN: return "de";
-	case LANG_GREEK: return "el";
-	case LANG_SPANISH: return "es";
-	case LANG_FINNISH: return "fi";
-	case LANG_FRENCH: return "fr";
-	case LANG_HEBREW: return "iw";
-	case LANG_HUNGARIAN: return "hu";
-	case LANG_ICELANDIC: return "is";
-	case LANG_ITALIAN: return "it";
-	case LANG_JAPANESE: return "ja";
-	case LANG_KOREAN: return "ko";
-	case LANG_DUTCH: return "nl";
-	case LANG_NORWEGIAN: return "no";
-	case LANG_POLISH: return "pl";
-	case LANG_PORTUGUESE: return "pt";
-	case LANG_ROMANIAN: return "ro";
-	case LANG_RUSSIAN: return "ru";
-	case LANG_CROATIAN: return "hr";
-	// case LANG_SERBIAN: return "sr"; // same as LANG_CROATIAN?
-	case LANG_SLOVAK: return "sk";
-	case LANG_ALBANIAN: return "sq";
-	case LANG_SWEDISH: return "sv";
-	case LANG_THAI: return "th";
-	case LANG_TURKISH: return "tr";
-	case LANG_URDU: return "ur";
-	case LANG_INDONESIAN: return "in";
-	case LANG_UKRAINIAN: return "uk";
-	case LANG_SLOVENIAN: return "sl";
-	case LANG_ESTONIAN: return "et";
-	case LANG_LATVIAN: return "lv";
-	case LANG_LITHUANIAN: return "lt";
-	case LANG_VIETNAMESE: return "vi";
-	case LANG_ARMENIAN: return "hy";
-	case LANG_BASQUE: return "eu";
-	case LANG_MACEDONIAN: return "mk";
-	case LANG_AFRIKAANS: return "af";
-	case LANG_GEORGIAN: return "ka";
-	case LANG_FAEROESE: return "fo";
-	case LANG_HINDI: return "hi";
-	case LANG_MALAY: return "ms";
-	case LANG_KAZAK: return "kk";
-	case LANG_SWAHILI: return "sw";
-	case LANG_UZBEK: return "uz";
-	case LANG_TATAR: return "tt";
-	case LANG_PUNJABI: return "pa";
-	case LANG_GUJARATI: return "gu";
-	case LANG_TAMIL: return "ta";
-	case LANG_KANNADA: return "kn";
-	case LANG_MARATHI: return "mr";
-	case LANG_SANSKRIT: return "sa";
-	// These aren't present in the VC6 headers. We'll never have translations to these languages anyway. -C
-	//case LANG_MONGOLIAN: return "mn";
-	//case LANG_GALICIAN: return "gl";
-	default: LOG->Warn("Unable to determine system language. Using English.");
-	case LANG_ENGLISH: return "en";
-	}
-}
-
-static LANGID GetLanguageID()
-{
-	HINSTANCE hDLL = LoadLibrary( "kernel32.dll" );
-	if( hDLL )
-	{
-		typedef LANGID(GET_USER_DEFAULT_UI_LANGUAGE)(void);
-
-		GET_USER_DEFAULT_UI_LANGUAGE *pGetUserDefaultUILanguage = (GET_USER_DEFAULT_UI_LANGUAGE*) GetProcAddress( hDLL, "GetUserDefaultUILanguage" );
-		if( pGetUserDefaultUILanguage )
-		{
-			LANGID ret = pGetUserDefaultUILanguage();
-			FreeLibrary( hDLL );
-			return ret;
-		}
-		FreeLibrary( hDLL );
-	}
-
-	return GetUserDefaultLangID();
-}
-
 RString ArchHooks::GetPreferredLanguage()
 {
-	return LangIdToString( GetLanguageID() );
+	// Buffer to store language names which will be separated by semicolon.
+	wchar_t lang_buffer[128] = {0};
+	ULONG num_languages = 0;
+	DWORD lang_buffer_size = static_cast<DWORD>(sizeof(lang_buffer) / sizeof(wchar_t));
+	if (!GetUserPreferredUILanguages(MUI_LANGUAGE_NAME, &num_languages, lang_buffer, &lang_buffer_size)) {
+		LOG->Warn("GetUserPreferredUILanguages failed, defaulting to 'en'");
+		return "en";
+	}
+
+	// Get the first entry.
+	const wchar_t* first_lang = lang_buffer;
+	if (first_lang[0] == L'\0') {
+		LOG->Warn("No preferred UI language found, defaulting to 'en'");
+		return "en";
+	}
+
+	// Extract the language part (e.g., "fr-BE" -> "fr")
+	wchar_t iso_code[9] = {0};
+	int i = 0;
+	while (first_lang[i] && first_lang[i] != L'-' && i < 8) {
+		iso_code[i] = first_lang[i];
+		++i;
+	}
+	iso_code[i] = L'\0';
+
+	// Convert to UTF-8
+	char utf8iso_code[9] = {0};
+	int bytes_written = WideCharToMultiByte(CP_UTF8, 0, iso_code, -1, utf8iso_code, sizeof(utf8iso_code), nullptr, nullptr);
+	if (bytes_written == 0) {
+		LOG->Warn("WideCharToMultiByte failed, defaulting to 'en'");
+		return "en";
+	}
+
+	// If "zh" is detected, determine Simplified or Traditional
+	if (strcmp(utf8iso_code, "zh") == 0) {
+		if (wcsstr(first_lang, L"Hans")) {
+			strncpy(utf8iso_code, "zh-Hans", sizeof(utf8iso_code) - 1);
+		} else if (wcsstr(first_lang, L"Hant")) {
+			strncpy(utf8iso_code, "zh-Hant", sizeof(utf8iso_code) - 1);
+		}
+		utf8iso_code[sizeof(utf8iso_code) - 1] = '\0';
+	}
+
+	return utf8iso_code;
 }
+
 
 /*
  * (c) 2003-2004 Chris Danford
