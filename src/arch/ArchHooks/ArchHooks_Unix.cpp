@@ -436,9 +436,8 @@ uint32_t ArchHooks_Unix::DetermineSampleRate() const {
     pa_context_disconnect(context);
     pa_context_unref(context);
     pa_mainloop_free(mainloop);
-#else
-	return sample_rate;
 #endif
+	return sample_rate;
 }
 
 /*
