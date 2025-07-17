@@ -41,6 +41,10 @@ extern "C"
 #include <X11/Xatom.h>
 #endif
 
+#if defined(HAS_PULSE)
+#include <pulse/pulseaudio.h>
+#endif
+
 static bool IsFatalSignal( int signal )
 {
 	switch( signal )
