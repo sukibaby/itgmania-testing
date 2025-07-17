@@ -41,6 +41,10 @@ extern "C"
 #include <X11/Xatom.h>
 #endif
 
+#if defined(HAS_PULSE)
+#include "pulse/pulseaudio.h"
+#endif
+
 static bool IsFatalSignal( int signal )
 {
 	switch( signal )
@@ -406,38 +410,40 @@ void ArchHooks::MountUserFilesystems( const RString &sDirOfExecutable )
 	FILEMAN->Mount( "dir", sUserDataPath + "/Themes", "/Themes" );
 }
 
-// Determining the sample rate on Unix systems is a bit hacky.
-// To avoid including lots of headers for various audio libraries,
-// the next best thing is to query a command-line utility on the system.
-//
-// If the user has PulseAudio, we'll have access to pactl, which will
-// tell us the sample rate of the default audio device.
-//
-// If pactl is not available, we are most likely using ALSA, though
-// it's also possible that the user is using OSS or JACK.
-//
-// If JACK is being used, it has to run on top of PulseAudio or ALSA, so
-// we can assume that the sample rate will be the same as PulseAudio or ALSA,
-// or at least that the user will have set it up how they want it.
 uint32_t ArchHooks_Unix::DetermineSampleRate() const {
-	uint32_t sampleRate = 48000;
-	if (system("which pactl > /dev/null 2>&1") == 0) {
-		FILE* fp = popen("pactl list sources | grep 'Sample Specification' | awk '{print $NF}' | sed 's/[^0-9]//g'", "r");
-		if (fp) {
-			char buf[32];
-			if (fgets(buf, sizeof(buf), fp)) {
-				sampleRate = static_cast<uint32_t>(atoi(buf));
-				LOG->Trace("Determined sample rate: %u", sampleRate);
-			}
-			pclose(fp);
-		}
-	}
-	// If pactl is not available, we will probably be using ALSA or OSS.
-	//
-	// In this case, we'll leave sampleRate as 48000 Hz. ALSA often
-	// negotiates 48 kHz with the hardware, even if 44.1 kHz is requested
-	// (ALSA will do it own resampling). OSS also typically runs at 48000.
-	return sampleRate;
+    uint32_t sampleRate = 48000; // Safe default for ALSA or OSS
+#if defined(HAS_PULSE)
+    pa_mainloop* mainloop = pa_mainloop_new();
+    pa_context* context = pa_context_new(pa_mainloop_get_api(mainloop), "SampleRateQuery");
+
+    auto context_state_callback = [](pa_context* context, void* userdata) {
+        uint32_t* sampleRatePtr = static_cast<uint32_t*>(userdata);
+        if (pa_context_get_state(context) == PA_CONTEXT_READY) {
+            // Query the default sink (audio output device)
+            pa_operation* op = pa_context_get_sink_info_by_name(
+                context, "@DEFAULT_SINK@", [](pa_context* c, const pa_sink_info* info, int eol, void* userdata) {
+                    if (eol == 0 && info) {
+                        uint32_t* sampleRatePtr = static_cast<uint32_t*>(userdata);
+                        *sampleRatePtr = info->sample_spec.rate;
+                    }
+                },
+                userdata);
+            if (op) {
+                pa_operation_unref(op);
+            }
+        }
+    };
+
+    pa_context_set_state_callback(context, context_state_callback, &sampleRate);
+    pa_context_connect(context, nullptr, PA_CONTEXT_NOFLAGS, nullptr);
+
+    pa_mainloop_run(mainloop, nullptr);
+
+    pa_context_disconnect(context);
+    pa_context_unref(context);
+    pa_mainloop_free(mainloop);
+#endif
+    return sampleRate;
 }
 
 /*
