@@ -121,9 +121,8 @@ extern std::atomic<int> g_FallbackSampleRate;
 
 #include "RageException.h"
 
-// NOTE -  Follow up commit will move this into
-// its own header file to be included in its call sites,
-// e.g. `RepeatingCall.h`
+// Call a function every `n` frames.
+// Each call site will get its own counter.
 #include <utility>
 template <typename Func, typename... Args>
 void CallEveryNFrames(int n, Func&& f, Args&&... args) {
