@@ -38,7 +38,6 @@
 
 #include <cmath>
 #include <cstdint>
-#include <atomic>
 
 RageSoundParams::RageSoundParams():
 	m_StartSecond(0), m_LengthSeconds(-1), m_fFadeInSeconds(0),
