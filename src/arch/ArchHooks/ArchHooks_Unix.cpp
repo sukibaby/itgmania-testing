@@ -412,7 +412,6 @@ void ArchHooks::MountUserFilesystems( const RString &sDirOfExecutable )
 
 uint32_t ArchHooks_Unix::DetermineSampleRate() const {
 	return 48000;
-#endif
 }
 
 /*
