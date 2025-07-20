@@ -411,12 +411,7 @@ void ArchHooks::MountUserFilesystems( const RString &sDirOfExecutable )
 }
 
 uint32_t ArchHooks_Unix::DetermineSampleRate() const {
-	uint32_t sample_rate = 48000;
-#if defined(HAS_PULSE)
-        LOG->Warn("PulseAudio auto-detection is not implemented yet. \n"
-            "Using default sample rate of 48000 Hz.");
-#else
-	return sample_rate;
+	return 48000;
 #endif
 }
 
