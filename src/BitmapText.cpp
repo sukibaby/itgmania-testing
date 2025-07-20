@@ -916,8 +916,8 @@ void BitmapText::AddAttribute( size_t iPos, const Attribute &attr )
 	// Fixup position for new lines.
 	int iLines = 0;
 	size_t iAdjustedPos = iPos;
-	
-	for (wstring const & line : m_wTextLines)
+
+	for( const std::wstring& line : m_wTextLines )
 	{
 		size_t length = line.length();
 		if( length >= iAdjustedPos )
@@ -925,8 +925,33 @@ void BitmapText::AddAttribute( size_t iPos, const Attribute &attr )
 		iAdjustedPos -= length;
 		++iLines;
 	}
-	m_mAttributes[iPos-iLines] = attr;
-	m_bHasGlowAttribute = m_bHasGlowAttribute || attr.glow.a > 0.0001f;
+	size_t start = iPos - iLines;
+	int len = attr.length;
+	if( len < 0 ) len = 1; // Default to 1 if not set
+
+	size_t end = start + len;
+
+	std::vector<size_t> toErase;
+	for( const auto& kv : m_mAttributes )
+	{
+		size_t existingStart = kv.first;
+		int existingLen = kv.second.length;
+		if( existingLen < 0 ) existingLen = 1;
+		size_t existingEnd = existingStart + existingLen;
+
+		if( !( end <= existingStart || start >= existingEnd ) )
+		{
+			toErase.push_back( existingStart );
+		}
+	}
+	for( size_t pos : toErase )
+	{
+		m_mAttributes.erase( pos );
+	}
+
+	m_mAttributes[start] = attr;
+	if( attr.glow.a > 0.0001f )
+		m_bHasGlowAttribute = true;
 }
 
 void BitmapText::ClearAttributes()
