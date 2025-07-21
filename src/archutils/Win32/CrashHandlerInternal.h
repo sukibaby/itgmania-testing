@@ -5,20 +5,17 @@
 
 struct CrashInfo
 {
-	char m_CrashReason[1024*8];
+	char m_CrashReason[8192];
 
-	const void *m_BacktracePointers[BACKTRACE_MAX_SIZE];
+	const void *m_BacktracePointers[BACKTRACE_MAX_SIZE] = {nullptr};
 
-	enum { MAX_BACKTRACE_THREADS = 32 };
-	const void *m_AlternateThreadBacktrace[MAX_BACKTRACE_THREADS][BACKTRACE_MAX_SIZE];
-	char m_AlternateThreadName[MAX_BACKTRACE_THREADS][128];
+	static constexpr int MAX_BACKTRACE_THREADS = 32;
+	const void *m_AlternateThreadBacktrace[MAX_BACKTRACE_THREADS][BACKTRACE_MAX_SIZE] = {{nullptr}};
+	char m_AlternateThreadName[MAX_BACKTRACE_THREADS][128] = {{'\0'}};
 
 	CrashInfo()
 	{
-		m_CrashReason[0] = 0;
-		memset( m_AlternateThreadBacktrace, 0, sizeof(m_AlternateThreadBacktrace) );
-		memset( m_AlternateThreadName, 0, sizeof(m_AlternateThreadName) );
-		m_BacktracePointers[0] = nullptr;
+		m_CrashReason[0] = '\0';
 	}
 };
 
