@@ -9,9 +9,9 @@ struct CrashInfo
 
 	const void *m_BacktracePointers[BACKTRACE_MAX_SIZE] = {nullptr};
 
-	static constexpr int MAX_BACKTRACE_THREADS = 32;
+	static constexpr int MAX_BACKTRACE_THREADS = 128;
 	const void *m_AlternateThreadBacktrace[MAX_BACKTRACE_THREADS][BACKTRACE_MAX_SIZE] = {{nullptr}};
-	char m_AlternateThreadName[MAX_BACKTRACE_THREADS][128] = {{'\0'}};
+	char m_AlternateThreadName[MAX_BACKTRACE_THREADS][512] = {{'\0'}};
 
 	CrashInfo()
 	{
