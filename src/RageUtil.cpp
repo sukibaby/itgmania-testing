@@ -414,7 +414,7 @@ RString vssprintf( const char *szFormat, va_list argList )
 
 /* ISO-639-1 codes: http://www.loc.gov/standards/iso639-2/php/code_list.php
  * We don't use 3-letter codes, so we don't bother supporting them. */
-static const LanguageInfo g_langs[] =
+constexpr LanguageInfo g_langs[] =
 {
 	{"aa", "Afar"},
 	{"ab", "Abkhazian"},
@@ -557,16 +557,17 @@ static const LanguageInfo g_langs[] =
 	{"zh-Hant", "Chinese (Traditional)"},
 	{"zu", "Zulu"},
 };
+constexpr size_t g_langs_length = sizeof(g_langs) / sizeof(g_langs[0]);
 
 void GetLanguageInfos( std::vector<const LanguageInfo*> &vAddTo )
 {
-	for( unsigned i=0; i<ARRAYLEN(g_langs); ++i )
+	for( size_t i=0; i<g_langs_length; ++i )
 		vAddTo.push_back( &g_langs[i] );
 }
 
 const LanguageInfo *GetLanguageInfo( const RString &sIsoCode )
 {
-	for( unsigned i=0; i<ARRAYLEN(g_langs); ++i )
+	for( size_t i=0; i<g_langs_length; ++i )
 	{
 		if( EqualsNoCase(sIsoCode, g_langs[i].szIsoCode) )
 			return &g_langs[i];
