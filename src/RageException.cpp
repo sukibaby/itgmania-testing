@@ -7,9 +7,10 @@
 #include <cstdarg>
 #include <cstdint>
 
-#if defined(_WIN32) && defined(DEBUG)
+#if defined(_WIN32)
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#include <debugapi.h>
 #elif defined(MACOSX)
 #include "archutils/Darwin/Crash.h"
 using CrashHandler::IsDebuggerPresent;
@@ -50,8 +51,11 @@ void RageException::Throw( const char *sFmt, ... )
 		fflush( stdout );
 	}
 
-#if (defined(WINDOWS) && defined(DEBUG)) || defined(_XDBG) || defined(MACOSX)
-	if( IsDebuggerPresent() )
+#if defined(_WIN32)
+	if (IsDebuggerPresent())
+		DebugBreak();
+#elif defined(MACOSX)
+	if (IsDebuggerPresent())
 		DebugBreak();
 #endif
 
