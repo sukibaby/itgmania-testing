@@ -54,7 +54,7 @@ LuaXType( DisplayBPM );
 Steps::Steps(Song *song): m_StepsType(StepsType_Invalid), m_pSong(song),
 	parent(nullptr), m_pNoteData(new NoteData), m_bNoteDataIsFilled(false),
 	m_sNoteDataCompressed(""), m_sFilename(""), m_bSavedToDisk(false),
-	m_LoadedFromProfile(ProfileSlot_Invalid), m_iHash(0),
+	m_LoadedFromProfile(ProfileSlot_Invalid), m_iHash(0U),
 	m_sDescription(""), m_sChartStyle(""),
 	m_Difficulty(Difficulty_Invalid), m_iMeter(0),
 	m_bAreCachedRadarValuesJustLoaded(false),
@@ -91,7 +91,7 @@ bool Steps::HasAttacks() const
 	return !this->m_Attacks.empty();
 }
 
-unsigned Steps::GetHash() const
+uint32_t Steps::GetHash() const
 {
 	if( parent )
 		return parent->GetHash();
@@ -100,7 +100,7 @@ unsigned Steps::GetHash() const
 	if( m_sNoteDataCompressed.empty() )
 	{
 		if( !m_bNoteDataIsFilled )
-			return 0; // No data, no hash.
+			return 0U; // No data, no hash.
 		NoteDataUtil::GetSMNoteDataString( *m_pNoteData, m_sNoteDataCompressed );
 	}
 	m_iHash = GetHashForString( m_sNoteDataCompressed );
@@ -191,7 +191,7 @@ void Steps::SetNoteData( const NoteData& noteDataNew )
 	m_bNoteDataIsFilled = true;
 
 	m_sNoteDataCompressed = RString();
-	m_iHash = 0;
+	m_iHash = 0U;
 }
 
 void Steps::GetNoteData( NoteData& noteDataOut ) const
@@ -222,7 +222,7 @@ void Steps::SetSMNoteData( const RString &notes_comp_ )
 	m_bNoteDataIsFilled = false;
 
 	m_sNoteDataCompressed = notes_comp_;
-	m_iHash = 0;
+	m_iHash = 0U;
 }
 
 /* XXX: this function should pull data from m_sFilename, like Decompress() */

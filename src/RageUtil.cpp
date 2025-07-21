@@ -1078,14 +1078,14 @@ RString GetCwd()
  *   http://www.theorem.com/java/CRC32.java,
  *   http://www.faqs.org/rfcs/rfc1952.html
  */
-void CRC32( unsigned int &iCRC, const void *pVoidBuffer, size_t iSize )
+void CRC32( uint32_t &iCRC, const void *pVoidBuffer, size_t iSize )
 {
-	static unsigned tab[256];
+	static uint32_t tab[256];
 	static bool initted = false;
 	if( !initted )
 	{
 		initted = true;
-		const unsigned POLY = 0xEDB88320;
+		const uint32_t POLY = 0xEDB88320;
 
 		for( int i = 0; i < 256; ++i )
 		{
@@ -1103,15 +1103,15 @@ void CRC32( unsigned int &iCRC, const void *pVoidBuffer, size_t iSize )
 	iCRC ^= 0xFFFFFFFF;
 
 	const char *pBuffer = (const char *) pVoidBuffer;
-	for( unsigned i = 0; i < iSize; ++i )
+	for( size_t i = 0; i < iSize; ++i )
 		iCRC = (iCRC >> 8) ^ tab[(iCRC ^ pBuffer[i]) & 0xFF];
 
 	iCRC ^= 0xFFFFFFFF;
 }
 
-unsigned int GetHashForString( const RString &s )
+uint32_t GetHashForString( const RString &s )
 {
-	unsigned crc = 0;
+	uint32_t crc = 0;
 	CRC32( crc, s.data(), s.size() );
 	return crc;
 }

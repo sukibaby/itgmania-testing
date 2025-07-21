@@ -1241,20 +1241,20 @@ bool DeleteRecursive( const RString &sDir )
 	return FILEMAN->Remove( sDir );
 }
 
-unsigned int GetHashForFile( const RString &sPath )
+uint32_t GetHashForFile( const RString &sPath )
 {
 	return FILEMAN->GetFileHash( sPath );
 }
 
-unsigned int GetHashForDirectory( const RString &sDir )
+uint32_t GetHashForDirectory( const RString &sDir )
 {
-	unsigned int hash = 0;
+	uint32_t hash = 0;
 
 	hash += GetHashForString( sDir );
 
 	std::vector<RString> arrayFiles;
 	GetDirListing( sDir+"*", arrayFiles, false );
-	for( unsigned i=0; i<arrayFiles.size(); i++ )
+	for( size_t i=0; i<arrayFiles.size(); i++ )
 	{
 		const RString sFilePath = sDir + arrayFiles[i];
 		hash += GetHashForFile( sFilePath );

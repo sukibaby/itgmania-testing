@@ -459,10 +459,10 @@ bool GetCommandlineArgument( const RString &option, RString *argument=nullptr, i
 extern int g_argc;
 extern char **g_argv;
 
-void CRC32( unsigned int &iCRC, const void *pBuffer, size_t iSize );
-unsigned int GetHashForString( const RString &s );
-unsigned int GetHashForFile( const RString &sPath );
-unsigned int GetHashForDirectory( const RString &sDir );	// a hash value that remains the same as long as nothing in the directory has changed
+void CRC32( uint32_t &iCRC, const void *pBuffer, size_t iSize );
+uint32_t GetHashForString( const RString &s );
+uint32_t GetHashForFile( const RString &sPath );
+uint32_t GetHashForDirectory( const RString &sDir );	// a hash value that remains the same as long as nothing in the directory has changed
 bool DirectoryIsEmpty( const RString &sPath );
 
 bool CompareRStringsAsc( const RString &sStr1, const RString &sStr2 );

@@ -13,6 +13,7 @@
 #include "TechCounts.h"
 #include "MeasureInfo.h"
 #include <vector>
+#include <cstdint>
 
 
 class Profile;
@@ -280,7 +281,7 @@ private:
 
 	/* These values are pulled from the autogen source first, if there is one. */
 	/** @brief The hash of the steps. This is used only for Edit Steps. */
-	mutable unsigned		m_iHash;
+	mutable uint32_t		m_iHash;
 	/** @brief The name of the edit, or some other useful description.
 	 This used to also contain the step author's name. */
 	RString				m_sDescription;
