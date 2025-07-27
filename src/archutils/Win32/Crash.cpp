@@ -424,20 +424,17 @@ void CrashHandler::do_backtrace( void **buf, size_t size, HANDLE hProcess, HANDL
 		buf[count] = nullptr;
 }
 
+#pragma warning(push)
+#pragma warning(disable : 6011) // prevent warning C6011: Dereferencing NULL pointer
 // Trigger the crash handler. This works even in the debugger.
 [[noreturn]]
 static void debug_crash()
 {
-//	__try {
-#if defined(__MSC_VER)
-		__asm xor ebx,ebx
-		__asm mov eax,dword ptr [ebx]
-//		__asm mov dword ptr [ebx],eax
-//		__asm lock add dword ptr cs:[00000000h], 12345678h
-#endif
-//	} __except( CrashHandler::ExceptionHandler((EXCEPTION_POINTERS*)_exception_info()) ) {
-//	}
+	// 64-bit: force a crash by writing to null pointer
+	volatile int *p = nullptr;
+	*p = 0;
 }
+#pragma warning(pop)
 
 /* Get a stack trace of the current thread and the specified thread.
  * If iID == GetInvalidThreadId(), then output a stack trace for every thread. */
