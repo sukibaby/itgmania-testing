@@ -7,9 +7,10 @@
 #include <cstdarg>
 #include <cstdint>
 
-#if defined(_WIN32) && defined(DEBUG)
+#if defined(_WIN32)
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#include <debugapi.h>
 #elif defined(MACOSX)
 #include "archutils/Darwin/Crash.h"
 using CrashHandler::IsDebuggerPresent;
