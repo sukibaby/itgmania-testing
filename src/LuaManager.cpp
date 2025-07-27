@@ -935,7 +935,7 @@ void LuaHelpers::ParseCommandList( Lua *L, const RString &sCommands, const RStri
 		{
 			RString sCmdName = cmd.GetName();
 			if( bLegacy )
-				MakeLower(sCmdName);
+				sCmdName.MakeLower();
 			s << "\tself:" << sCmdName << "(";
 
 			bool bFirstParamIsString = bLegacy && (
@@ -960,7 +960,7 @@ void LuaHelpers::ParseCommandList( Lua *L, const RString &sCommands, const RStri
 
 				if( i==1 && bFirstParamIsString ) // string literal, legacy only
 				{
-					Replace(sArg, "'", "\\'");	// escape quote
+					sArg.Replace( "'", "\\'" );	// escape quote
 					s << "'" << sArg << "'";
 				}
 				else if( sArg[0] == '#' )	// HTML color

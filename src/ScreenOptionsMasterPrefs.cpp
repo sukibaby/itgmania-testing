@@ -968,7 +968,7 @@ ConfOption *ConfOption::Find( RString name )
 	{
 		ConfOption *opt = &g_ConfOptions[i];
 		RString match(opt->name);
-		if( CompareNoCase(match, name) )
+		if( match.CompareNoCase(name) )
 			continue;
 		return opt;
 	}
