@@ -5,6 +5,11 @@
 
 #include <cstdint>
 #include <windows.h>
+#include <DbgHelp.h>
+#include <TlHelp32.h>
+#include <Psapi.h>
+#include <atomic>
+#include <ctime>
 
 #include "global.h"
 #include "arch/Threads/Threads_Win32.h"
