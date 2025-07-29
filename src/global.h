@@ -110,6 +110,16 @@ void ShowWarningOrTrace( const char *file, int line, const char *message, bool b
 #define SM_UNIQUE_NAME2(x,line) SM_UNIQUE_NAME3(x, line)
 #define SM_UNIQUE_NAME(x) SM_UNIQUE_NAME2(x, __LINE__)
 
+// Declare the global sample rate variable and
+// the include for atomic.
+// Many different places need access to this;
+// this allows us to avoid including RageSound.h
+// in a bunch of places where it isn't wanted.
+#include <atomic>
+
+extern std::atomic<int> g_FallbackSampleRate;
+
+
 #include "RageException.h"
 
 // Call a function every `n` frames.

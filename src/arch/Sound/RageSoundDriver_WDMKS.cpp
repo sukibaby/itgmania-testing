@@ -1314,7 +1314,7 @@ RString RageSoundDriver_WDMKS::Init()
 		PREFSMAN->m_iSoundWriteAhead,
 		DeviceSampleFormat_Int16,
 		0, // don't care
-		PREFSMAN->m_iSoundPreferredSampleRate,
+		g_FallbackSampleRate.load(),
 		sError ) )
 	{
 		return sError;

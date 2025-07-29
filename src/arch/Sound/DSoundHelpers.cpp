@@ -20,6 +20,8 @@
 #pragma comment(lib, "dsound.lib")
 #endif
 
+const uint32_t reported_sample_rate = g_FallbackSampleRate.load();
+
 BOOL CALLBACK DSound::EnumCallback( LPGUID lpGuid, LPCSTR lpcstrDescription, LPCSTR lpcstrModule, LPVOID lpContext )
 {
 	RString sLine = ssprintf( "DirectSound Driver: %s", lpcstrDescription );
@@ -58,18 +60,15 @@ void DSound::SetPrimaryBufferMode()
 		return;
 	}
 
+	uint32_t reported_sample_rate = g_FallbackSampleRate.load();
+
 	WAVEFORMATEX waveformat;
 	memset( &waveformat, 0, sizeof(waveformat) );
 	waveformat.cbSize = 0;
 	waveformat.wFormatTag = WAVE_FORMAT_PCM;
 	waveformat.wBitsPerSample = 16;
 	waveformat.nChannels = 2;
-	int preferredSampleRate = PREFSMAN->m_iSoundPreferredSampleRate;
-	if (preferredSampleRate == 0)
-	{
-		preferredSampleRate = kFallbackSampleRate;
-	}
-	waveformat.nSamplesPerSec = preferredSampleRate;
+	waveformat.nSamplesPerSec = (DWORD)reported_sample_rate;
 	waveformat.nBlockAlign = (waveformat.nChannels * waveformat.wBitsPerSample) / 8;
 	waveformat.nAvgBytesPerSec = waveformat.nSamplesPerSec * waveformat.nBlockAlign;
 
@@ -223,7 +222,7 @@ RString DSoundBuf::Init( DSound &ds, DSoundBuf::hw hardware,
 	// DYNAMIC_SAMPLERATE is usually 0 or some special value
 	if( m_iSampleRate == DYNAMIC_SAMPLERATE )
 	{
-		m_iSampleRate = kFallbackSampleRate;
+		m_iSampleRate = static_cast<int>(g_FallbackSampleRate.load());
 		bNeedCtrlFrequency = true;
 	}
 
