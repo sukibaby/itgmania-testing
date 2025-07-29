@@ -89,6 +89,11 @@ public:
 	 */
 	static int64_t GetSystemTimeInMicroseconds();
 
+	// Determine the sample rate of the default audio endpoint.
+	// This is only called before the sound driver is initialized.
+	// If this returns 0, the sound driver will use a fallback sample rate.
+	virtual uint32_t DetermineSampleRate() const { return 0; }
+
 	/*
 	 * Add file search paths, higher priority first.
 	 */
