@@ -2,6 +2,7 @@
 #define ARCH_HOOKS_MACOSX_H
 
 #include "ArchHooks.h"
+#include <cstdint>
 
 class ArchHooks_MacOSX : public ArchHooks
 {
@@ -11,6 +12,7 @@ public:
 	void DumpDebugInfo();
 	RString GetPreferredLanguage();
 	float GetDisplayAspectRatio();
+	uint32_t DetermineSampleRate() const override;
 };
 
 #ifdef ARCH_HOOKS

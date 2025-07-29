@@ -220,6 +220,69 @@ RString ArchHooks_Win32::GetClipboard()
 	return ret;
 }
 
+#include <audioclient.h>
+#include <comdef.h>
+#include <combaseapi.h>
+#include <mmdeviceapi.h>
+#pragma comment(lib, "ole32.lib")
+#pragma comment(lib, "oleaut32.lib")
+uint32_t ArchHooks_Win32::DetermineSampleRate() const
+{
+	HRESULT hr;
+	uint32_t sampleRate = 0;
+
+	// We need to initialize COM before using WASAPI methods.
+	// Neither WaveOut nor DirectSound require this, but those API's aren't
+	// capable of determining the sample rate of the default audio endpoint.
+	hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+	bool comInitialized = SUCCEEDED(hr);
+	IMMDeviceEnumerator* pEnumerator = nullptr;
+	IMMDevice* pDevice = nullptr;
+	IAudioClient* pAudioClient = nullptr;
+	WAVEFORMATEX* pwfx = nullptr;
+
+	// Here we try to get the default audio endpoint and its sample rate.
+	// The do-while loop prevents a series of ugly if statements repeatedly
+	// checking the HRESULT. Once we have the sample rate, we can break out of
+	// the loop.
+	do {
+		hr = CoCreateInstance(__uuidof(MMDeviceEnumerator), nullptr, CLSCTX_ALL,
+								__uuidof(IMMDeviceEnumerator), (void**)&pEnumerator);
+		if (FAILED(hr)) break;
+
+		hr = pEnumerator->GetDefaultAudioEndpoint(eRender, eConsole, &pDevice);
+		if (FAILED(hr)) break;
+
+		hr = pDevice->Activate(__uuidof(IAudioClient), CLSCTX_ALL, nullptr, (void**)&pAudioClient);
+		if (FAILED(hr)) break;
+
+		hr = pAudioClient->GetMixFormat(&pwfx);
+		if (FAILED(hr)) break;
+
+		sampleRate = pwfx->nSamplesPerSec;
+	} while (false);
+
+	// Clean up resources as needed.
+	if (pwfx) {
+		CoTaskMemFree(pwfx);
+	}
+	if (pAudioClient) {
+		pAudioClient->Release();
+	}
+	if (pDevice) {
+		pDevice->Release();
+	}
+	if (pEnumerator) {
+		pEnumerator->Release();
+	}
+	if (comInitialized) {
+		CoUninitialize();
+	}
+
+	return sampleRate;
+}
+
+
 /*
  * (c) 2003-2004 Glenn Maynard, Chris Danford
  * All rights reserved.

@@ -386,6 +386,47 @@ float ArchHooks_MacOSX::GetDisplayAspectRatio()
 	return screen.frame.size.width / screen.frame.size.height;
 }
 
+// UNTESTED!!!!! no access to a Mac
+#include <CoreAudio/CoreAudio.h>
+uint32_t ArchHooks_MacOSX::DetermineSampleRate() const
+{
+	// This structure holds the default output device ID.
+	// We need to store the key for the default output device,
+	// global scope (properties not specific to input or output),
+	// and not specific to a particular channel (master element).
+	AudioDeviceID deviceID = 0;
+	UInt32 size = sizeof(deviceID);
+	AudioObjectPropertyAddress addr = {
+		kAudioHardwarePropertyDefaultOutputDevice,
+		kAudioObjectPropertyScopeGlobal,
+		kAudioObjectPropertyElementMaster  
+	};
+
+	// Return early if we can't get the default output device ID,
+	// since that implies we're not talking to CoreAudio at all.
+	if (AudioObjectGetPropertyData(kAudioObjectSystemObject, &addr, 0, nullptr, &size, &deviceID) != noErr)
+	{
+		return 0;
+	}
+
+	// Similar to above, but stores the sample rate instead of the device ID
+	Float64 sampleRate = 0;
+	size = sizeof(sampleRate);
+	AudioObjectPropertyAddress rateAddr = {
+		kAudioDevicePropertyNominalSampleRate,
+		kAudioObjectPropertyScopeGlobal,
+		kAudioObjectPropertyElementMaster
+	};
+
+	// Return early if there was an error getting the sample rate.
+	if (AudioObjectGetPropertyData(deviceID, &rateAddr, 0, nullptr, &size, &sampleRate) != noErr)
+	{
+		return 0;
+	}
+
+	return static_cast<uint32_t>(sampleRate);
+}
+
 /*
  * (c) 2003-2006 Steve Checkoway
  * All rights reserved.
