@@ -141,7 +141,9 @@ RString RageSoundDriver_AU::Init()
 
 	AudioStreamBasicDescription streamFormat;
 
-	streamFormat.mSampleRate = PREFSMAN->m_iSoundPreferredSampleRate;
+	const uint32_t sample_Rate = g_FallbackSampleRate.load();
+
+	streamFormat.mSampleRate = sample_Rate;
 	streamFormat.mFormatID = kAudioFormatLinearPCM;
 	streamFormat.mFormatFlags = kFormatFlags;
 	streamFormat.mBytesPerPacket = kBytesPerPacket;
@@ -152,9 +154,9 @@ RString RageSoundDriver_AU::Init()
 
 	if( streamFormat.mSampleRate <= 0.0 )
 	{
-		streamFormat.mSampleRate = kFallbackSampleRate;
+		streamFormat.mSampleRate = sample_Rate;
 	}
-	m_iSampleRate = int( streamFormat.mSampleRate );
+	m_iSampleRate = int( sample_Rate );
 	m_TimeScale = streamFormat.mSampleRate / AudioGetHostClockFrequency();
 
 	// Try to set the hardware sample rate.
