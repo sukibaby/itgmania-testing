@@ -9,6 +9,7 @@
 
 #include <cmath>
 #include <vector>
+#include <algorithm>
 
 
 RageSoundReader_Merge::RageSoundReader_Merge()

@@ -170,10 +170,9 @@ void RageSoundReader_Chain::Finish()
 	m_iActualSampleRate = GetSampleRateInternal();
 	if( m_iActualSampleRate == -1 )
 	{
-		for (RageSoundReader *it : m_apLoadedSounds)
+		for (size_t i = 0; i < m_apLoadedSounds.size(); ++i)
 		{
-			RageSoundReader_Resample_Good *pResample = new RageSoundReader_Resample_Good( it, m_iPreferredSampleRate );
-			it = pResample;
+			m_apLoadedSounds[i] = new RageSoundReader_Resample_Good(m_apLoadedSounds[i], m_iPreferredSampleRate);
 		}
 
 		m_iActualSampleRate = m_iPreferredSampleRate;
