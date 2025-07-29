@@ -6,7 +6,6 @@
 #include "RageThreads.h"
 #include "RageTimer.h"
 #include "RageUtil_CircularBuffer.h"
-#include "RageSound.h"
 
 #include <cstdint>
 
