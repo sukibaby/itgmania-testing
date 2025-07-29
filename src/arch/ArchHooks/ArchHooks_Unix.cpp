@@ -13,6 +13,8 @@
 #include "archutils/Unix/AssertionHandler.h"
 
 #include <cstdint>
+#include <cstdio>
+#include <cstdlib>
 
 #if defined(HAVE_UNISTD_H)
 #include <unistd.h>
@@ -37,6 +39,10 @@ extern "C"
 #include "archutils/Unix/X11Helper.h"
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
+#endif
+
+#if defined(HAS_PULSE)
+#include <pulse/pulseaudio.h>
 #endif
 
 static bool IsFatalSignal( int signal )
@@ -402,6 +408,16 @@ void ArchHooks::MountUserFilesystems( const RString &sDirOfExecutable )
 	FILEMAN->Mount( "dir", sUserDataPath + "/Songs", "/Songs" );
 	FILEMAN->Mount( "dir", sUserDataPath + "/RandomMovies", "/RandomMovies" );
 	FILEMAN->Mount( "dir", sUserDataPath + "/Themes", "/Themes" );
+}
+
+uint32_t ArchHooks_Unix::DetermineSampleRate() const {
+#if defined(HAS_PULSE)
+	LOG->Warn("ITGmania was compiled with support for PulseAudio sample rate auto-detection, but it is not yet implemented.");
+#else
+	LOG->Trace("ITGmania was not compiled with support for PulseAudio sample rate auto-detection. Falling back to 48KHz for ALSA/OSS compatibility.");
+#endif
+	// 48khz is likely to prevent ALSA or OSS from having to resample on its own.
+	return 48000U;
 }
 
 /*
