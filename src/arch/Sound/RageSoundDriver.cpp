@@ -8,6 +8,8 @@
 
 #include <cstddef>
 #include <vector>
+#include <cstdint>
+#include <algorithm>
 
 namespace
 {
@@ -19,6 +21,25 @@ namespace
 		LOG->Trace("%s", trace.c_str());
 		LOG->Trace(" - Make sure the driver entry is spelled correctly, and is supported on your OS.");
 	}
+
+	uint32_t TryToGetSampleRate()
+	{
+		const uint32_t kMin = 44100;  // Minimum supported sample rate (44.1 kHz)
+		const uint32_t kMax = 192000; // Maximum supported sample rate (192 kHz)
+
+		uint32_t reported_sample_rate = HOOKS->DetermineSampleRate();
+		if (reported_sample_rate == 0) {
+			LOG->Trace("RageSoundDriver: Couldn't determine sample rate for some reason. Using fallback value.");
+		}
+
+		else if (reported_sample_rate < kMin || reported_sample_rate > kMax) {
+			LOG->Warn("RageSoundDriver: OS reported a sample rate outside of the expected range (%u)", reported_sample_rate);
+			reported_sample_rate = std::clamp(reported_sample_rate, kMin, kMax);
+		}
+
+		return reported_sample_rate;
+	}
+
 }  // namespace
 
 DriverList RageSoundDriver::m_pDriverList;
@@ -64,6 +85,13 @@ RageSoundDriver *RageSoundDriver::Create( const RString& drivers )
 			driversToTry = GetDefaultSoundDriverList();
 		}
 	}
+
+	const uint32_t validated_samplerate = TryToGetSampleRate();
+	const uint32_t old_samplerate = g_FallbackSampleRate.load();
+	if (validated_samplerate != old_samplerate) {
+		g_FallbackSampleRate.store(validated_samplerate);
+	}
+	LOG->Info("RageSoundDriver: Using sample rate %u", validated_samplerate);
 
 	for (RString const &Driver : driversToTry)
 	{
