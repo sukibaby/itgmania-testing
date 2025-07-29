@@ -3,20 +3,14 @@
 // DO NOT USE stdio.h!  printf() calls malloc()!
 //#include <stdio.h>
 
-#include <cstddef>
 #include <cstdint>
 #include <windows.h>
-#include <DbgHelp.h>
-#include <TlHelp32.h>
-#include <Psapi.h>
-#include <atomic>
-#include <ctime>
 
 #include "global.h"
 #include "arch/Threads/Threads_Win32.h"
 
 #pragma comment(lib, "dbghelp.lib")
-#include "crash.h"
+#include "Crash.h"
 #include "CrashHandlerInternal.h"
 #include "RageLog.h" // for RageLog::GetAdditionalLog and Flush
 #include "RageThreads.h" // for GetCheckpointLogs
