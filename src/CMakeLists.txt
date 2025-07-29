@@ -427,6 +427,7 @@ else() # Unix / Linux TODO: Remember to find and locate the zip archive files.
     target_compile_definitions("${SM_EXE_NAME}" PRIVATE "HAVE_OSS_VERSION=1")
   endif()
 
+  add_definitions(-DHAS_PULSE)
   if(HAS_PULSE)
     list(APPEND SMDATA_LINK_LIB ${PULSEAUDIO_LIBRARY})
   endif()
