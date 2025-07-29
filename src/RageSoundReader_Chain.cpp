@@ -1,5 +1,4 @@
 #include "global.h"
-#include "PrefsManager.h"
 #include "RageSoundReader_Chain.h"
 #include "RageSoundReader_FileReader.h"
 #include "RageSoundReader_Resample_Good.h"
@@ -7,12 +6,12 @@
 #include "RageSoundReader_Pan.h"
 #include "RageLog.h"
 #include "RageUtil.h"
-#include "RageSound.h"
 #include "RageSoundMixBuffer.h"
 #include "RageSoundUtil.h"
 
 #include <cmath>
 #include <vector>
+#include <algorithm>
 
 
 /*
