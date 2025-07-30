@@ -70,6 +70,7 @@ void DSound::SetPrimaryBufferMode()
 	{
 		preferredSampleRate = 48000; // Default to 48000 Hz if preference is 0
 	}
+	waveformat.nSamplesPerSec = (DWORD)preferredSampleRate;
 
 	waveformat.nBlockAlign = (waveformat.nChannels * waveformat.wBitsPerSample) / 8;
 	waveformat.nAvgBytesPerSec = waveformat.nSamplesPerSec * waveformat.nBlockAlign;
