@@ -141,6 +141,7 @@ bool ScreenSyncOverlay::Input( const InputEventPlus &input )
 		ChangeSongBPM,
 		ChangeGlobalOffset,
 		ChangeSongOffset,
+		ResetGlobalOffset,
 		Action_Invalid
 	};
 	Action a = Action_Invalid;
@@ -150,6 +151,14 @@ bool ScreenSyncOverlay::Input( const InputEventPlus &input )
 	{
 	case KEY_F4:
 		a = RevertSyncChanges;
+		break;
+
+	case KEY_F1:
+		if (INPUTFILTER->IsBeingPressed(DeviceInput(DEVICE_KEYBOARD, KEY_RSHIFT)) ||
+			INPUTFILTER->IsBeingPressed(DeviceInput(DEVICE_KEYBOARD, KEY_LSHIFT)))
+		{
+			a = ResetGlobalOffset;
+		}
 		break;
 
 	case KEY_F9:
@@ -164,7 +173,7 @@ bool ScreenSyncOverlay::Input( const InputEventPlus &input )
 		[[fallthrough]];
 	case KEY_F12:
 		if( INPUTFILTER->IsBeingPressed( DeviceInput(DEVICE_KEYBOARD, KEY_RSHIFT)) ||
-		    INPUTFILTER->IsBeingPressed( DeviceInput(DEVICE_KEYBOARD, KEY_LSHIFT)) )
+			INPUTFILTER->IsBeingPressed( DeviceInput(DEVICE_KEYBOARD, KEY_LSHIFT)) )
 			a = ChangeGlobalOffset;
 		else
 			a = ChangeSongOffset;
@@ -173,6 +182,9 @@ bool ScreenSyncOverlay::Input( const InputEventPlus &input )
 	default:
 		return Screen::Input(input);
 	}
+
+    if (a == Action_Invalid)
+        return Screen::Input(input);
 
 	if( GAMESTATE->IsCourseMode() && a != ChangeGlobalOffset )
 	{
@@ -292,6 +304,11 @@ bool ScreenSyncOverlay::Input( const InputEventPlus &input )
 				default: break;
 			}
 		}
+		break;
+	case ResetGlobalOffset:
+		if( input.type != IET_FIRST_PRESS )
+			return false;
+		PREFSMAN->m_fGlobalOffsetSeconds.Set(-0.008f);
 		break;
 	default:
 		FAIL_M(ssprintf("Invalid sync action choice: %i", a));
