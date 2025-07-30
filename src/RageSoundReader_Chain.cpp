@@ -1,5 +1,4 @@
 #include "global.h"
-#include "PrefsManager.h"
 #include "RageSoundReader_Chain.h"
 #include "RageSoundReader_FileReader.h"
 #include "RageSoundReader_Resample_Good.h"
@@ -7,7 +6,6 @@
 #include "RageSoundReader_Pan.h"
 #include "RageLog.h"
 #include "RageUtil.h"
-#include "RageSound.h"
 #include "RageSoundMixBuffer.h"
 #include "RageSoundUtil.h"
 
@@ -25,12 +23,7 @@
  */
 RageSoundReader_Chain::RageSoundReader_Chain()
 {
-	m_iPreferredSampleRate = PREFSMAN->m_iSoundPreferredSampleRate;
-	if (m_iPreferredSampleRate == 0)
-	{
-		m_iPreferredSampleRate = kFallbackSampleRate;
-	}
-	
+	m_iPreferredSampleRate = 48000;
 	m_iActualSampleRate = -1;
 	m_iChannels = 0;
 	m_iCurrentFrame = 0;
