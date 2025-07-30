@@ -65,6 +65,9 @@ void RageSoundReader_Merge::Finish( int iPreferredSampleRate )
 	for (RageSoundReader *it : m_aSounds)
 		m_iChannels = std::max( m_iChannels, it->GetNumChannels() );
 
+	// NOTE(sukibaby):  fixing the following block of code which resamples a group of sounds
+	// so that it did what the comment says it does was reported to be a regression in sync stability.
+	// Thus, it should be assumed to be incorrect.
 	/*
 	 * We might get different sample rates from our sources.  If they're all the same
 	 * sample rate, just leave it alone, so the whole sound can be resampled as a group.
@@ -74,9 +77,10 @@ void RageSoundReader_Merge::Finish( int iPreferredSampleRate )
 	m_iSampleRate = GetSampleRateInternal();
 	if( m_iSampleRate == -1 )
 	{
-		for (size_t i = 0; i < m_aSounds.size(); ++i)
+		for (RageSoundReader *it : m_aSounds)
 		{
-			m_aSounds[i] = new RageSoundReader_Resample_Good(m_aSounds[i], iPreferredSampleRate);
+			RageSoundReader_Resample_Good *pResample = new RageSoundReader_Resample_Good( it, iPreferredSampleRate );
+			it = pResample;
 		}
 
 		m_iSampleRate = iPreferredSampleRate;
