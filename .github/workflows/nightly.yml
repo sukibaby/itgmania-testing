@@ -1,7 +1,7 @@
 on:
   push:
     branches:
-      - beta
+      - the_q
     paths-ignore:
       - '**.md'
 
