@@ -133,7 +133,7 @@ float RageSoundManager::GetPlayLatency() const
 int RageSoundManager::GetDriverSampleRate() const
 {
 	if( m_pDriver == nullptr )
-		return kFallbackSampleRate;
+		return 48000;
 
 	// Returns the *actual* operating rate of the loaded driver
 	return m_pDriver->GetSampleRate();
