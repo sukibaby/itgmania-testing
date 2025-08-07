@@ -172,7 +172,7 @@ void RageSoundDriver_PulseAudio::m_InitStream(void)
 	* needs data */
 	pa_stream_set_write_callback(m_PulseStream, StaticStreamWriteCb, this);
 
-	/* set the state callback, it will be called the the stream state will
+	/* set the state callback, it will be called when the stream state will
 	* change */
 	pa_stream_set_state_callback(m_PulseStream, StaticStreamStateCb, this);
 
