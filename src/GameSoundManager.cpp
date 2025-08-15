@@ -17,7 +17,8 @@
 #include "SongUtil.h"
 #include "LuaManager.h"
 
-#include "arch/Sound/RageSoundDriver.h"
+#include "arch/Sound/RageSoundDriver.h" // For lua function get_sound_driver_list,
+										// which must be refactored for SoLoud
 
 #include <cmath>
 #include <cstddef>
