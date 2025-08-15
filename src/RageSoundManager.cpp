@@ -20,6 +20,8 @@
 #include "RageSoundReader_PostBuffering.h"
 
 #include "arch/Sound/RageSoundDriver.h"
+#include "soloud.h"
+#include "soloud_wav.h"
 
 #include <cstdint>
 
@@ -37,24 +39,72 @@ static Preference<RString> g_sSoundDrivers( "SoundDrivers", "" ); // "" == DEFAU
 
 RageSoundManager *SOUNDMAN = nullptr;
 
-RageSoundManager::RageSoundManager(): m_pDriver(nullptr),
-	m_fVolumeOfNonCriticalSounds(1.0f) {}
+RageSoundManager::RageSoundManager(): 
+    m_pDriver(nullptr),
+    m_fVolumeOfNonCriticalSounds(1.0f),
+    m_pSoLoud(nullptr),
+    m_bUseSoLoud(true) // Set to true to start using SoLoud
+{}
 
 static LocalizedString COULDNT_FIND_SOUND_DRIVER( "RageSoundManager", "Couldn't find a sound driver that works" );
 void RageSoundManager::Init()
 {
-	m_pDriver = RageSoundDriver::Create( g_sSoundDrivers );
-	if( m_pDriver == nullptr )
-		RageException::Throw( "%s", COULDNT_FIND_SOUND_DRIVER.GetValue().c_str() );
+    // Initialize SoLoud
+    if (m_bUseSoLoud)
+    {
+        m_pSoLoud = new SoLoud::Soloud;
+        SoLoud::result result = m_pSoLoud->init(
+            SoLoud::Soloud::CLIP_ROUNDOFF | // Use roundoff clipping
+            SoLoud::Soloud::ENABLE_VISUALIZATION | // Enable visualization for debug
+            SoLoud::Soloud::LEFT_HANDED_3D // Use left-handed coordinates
+        );
+        
+        if (result != SoLoud::SO_NO_ERROR)
+        {
+            LOG->Warn("SoLoud initialization failed: %s", m_pSoLoud->getErrorString(result));
+            delete m_pSoLoud;
+            m_pSoLoud = nullptr;
+            m_bUseSoLoud = false;
+        }
+        else
+        {
+            LOG->Info("SoLoud initialized successfully");
+            // Set initial global volume
+            m_pSoLoud->setGlobalVolume(g_fSoundVolume.Get());
+            return; // Skip RageSound driver initialization if SoLoud is working
+        }
+    }
+
+    // Fall back to RageSound driver if SoLoud fails or is disabled
+    m_pDriver = RageSoundDriver::Create(g_sSoundDrivers);
+    if (m_pDriver == nullptr)
+        RageException::Throw("%s", COULDNT_FIND_SOUND_DRIVER.GetValue().c_str());
 }
 
 RageSoundManager::~RageSoundManager()
 {
 	/* Don't lock while deleting the driver (the decoder thread might deadlock). */
 	delete m_pDriver;
+	
+	// Clean up RageSound resources
 	for (std::pair<RString const &, RageSoundReader_Preload *> s : m_mapPreloadedSounds)
 		delete s.second;
 	m_mapPreloadedSounds.clear();
+
+	// Clean up SoLoud resources
+	if (m_pSoLoud)
+	{
+		// Clean up audio sources first
+		for (auto& source : m_mapSoLoudSources)
+		{
+			delete source.second;
+		}
+		m_mapSoLoudSources.clear();
+
+		m_pSoLoud->deinit();
+		delete m_pSoLoud;
+		m_pSoLoud = nullptr;
+	}
 }
 
 /*
@@ -66,7 +116,11 @@ RageSoundManager::~RageSoundManager()
  */
 void RageSoundManager::Shutdown()
 {
-	RageUtil::SafeDelete( m_pDriver );
+	if (m_bUseSoLoud && m_pSoLoud)
+	{
+		m_pSoLoud->stopAll(); // Stop all playing sounds
+	}
+	RageUtil::SafeDelete(m_pDriver);
 }
 
 void RageSoundManager::StartMixing( RageSoundBase *pSound )
@@ -176,13 +230,31 @@ static Preference<float> g_fSoundVolume( "SoundVolume", 1.0f );
 
 void RageSoundManager::SetMixVolume()
 {
-	RageSoundReader_PostBuffering::SetMasterVolume( g_fSoundVolume.Get() );
+	float volume = g_fSoundVolume.Get();
+	
+	if (m_bUseSoLoud && m_pSoLoud)
+	{
+		m_pSoLoud->setGlobalVolume(volume);
+	}
+	else
+	{
+		RageSoundReader_PostBuffering::SetMasterVolume(volume);
+	}
 }
 
-void RageSoundManager::SetVolumeOfNonCriticalSounds( float fVolumeOfNonCriticalSounds )
+void RageSoundManager::SetVolumeOfNonCriticalSounds(float fVolumeOfNonCriticalSounds)
 {
 	g_SoundManMutex.Lock(); /* lock for access to m_fVolumeOfNonCriticalSounds */
 	m_fVolumeOfNonCriticalSounds = fVolumeOfNonCriticalSounds;
+	
+	if (m_bUseSoLoud && m_pSoLoud)
+	{
+		// In SoLoud we can set a separate bus for non-critical sounds
+		// TODO: Implement bus system for non-critical sounds
+		// For now we'll just scale the global volume
+		m_pSoLoud->setGlobalVolume(g_fSoundVolume.Get() * fVolumeOfNonCriticalSounds);
+	}
+	
 	g_SoundManMutex.Unlock(); /* finished with m_fVolumeOfNonCriticalSounds */
 }
 
