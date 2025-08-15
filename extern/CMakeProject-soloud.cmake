@@ -8,25 +8,17 @@ if(WITH_SOLOUD)
     # Define the core source files
     set(SOLOUD_SOURCES "")
     
-    # Core files
+    # Core files - only what we need for basic 2D audio
     list(APPEND SOLOUD_SOURCES 
         "${CMAKE_CURRENT_SOURCE_DIR}/soloud/src/core/soloud.cpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/soloud/src/core/soloud_audiosource.cpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/soloud/src/core/soloud_bus.cpp"
-        "${CMAKE_CURRENT_SOURCE_DIR}/soloud/src/core/soloud_core_3d.cpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/soloud/src/core/soloud_core_basicops.cpp"
-        "${CMAKE_CURRENT_SOURCE_DIR}/soloud/src/core/soloud_core_faderops.cpp"
-        "${CMAKE_CURRENT_SOURCE_DIR}/soloud/src/core/soloud_core_filterops.cpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/soloud/src/core/soloud_core_getters.cpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/soloud/src/core/soloud_core_setters.cpp"
-        "${CMAKE_CURRENT_SOURCE_DIR}/soloud/src/core/soloud_core_voicegroup.cpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/soloud/src/core/soloud_core_voiceops.cpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/soloud/src/core/soloud_fader.cpp"
-        "${CMAKE_CURRENT_SOURCE_DIR}/soloud/src/core/soloud_fft.cpp"
-        "${CMAKE_CURRENT_SOURCE_DIR}/soloud/src/core/soloud_fft_lut.cpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/soloud/src/core/soloud_file.cpp"
-        "${CMAKE_CURRENT_SOURCE_DIR}/soloud/src/core/soloud_filter.cpp"
-        "${CMAKE_CURRENT_SOURCE_DIR}/soloud/src/core/soloud_queue.cpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/soloud/src/core/soloud_thread.cpp"
     )
 
