@@ -2,7 +2,6 @@
 #include "RageSoundManager.h"
 #include "GameSoundManager.h"
 #include "RageSound.h"
-#include "RageLog.h"
 #include "RageUtil.h"
 #include "GameState.h"
 #include "TimingData.h"
@@ -64,15 +63,22 @@ struct MusicPlaying
 	/* If m_bTimingDelayed is true, this will be the timing data for the
 	 * song that's starting. We'll copy it to m_Timing once sound is heard. */
 	TimingData m_NewTiming;
-	RageSound *m_Music;
-	MusicPlaying( RageSound *Music )
+	RageSoundManager::SoundHandle m_MusicHandle;
+	RString m_sFilePath;
+	float m_fVolume;
+	bool m_bIsPlaying;
+
+	MusicPlaying()
 	{
 		m_Timing.AddSegment( BPMSegment(0,120) );
 		m_NewTiming.AddSegment( BPMSegment(0,120) );
 		m_bHasTiming = false;
 		m_bTimingDelayed = false;
 		m_bApplyMusicRate = false;
-		m_Music = Music;
+		m_MusicHandle = 0;
+		m_fVolume = 1.0f;
+		m_bIsPlaying = false;
+		m_sFilePath = "";
 	}
 
 	~MusicPlaying()
@@ -140,7 +146,7 @@ static void StartMusic( MusicToPlay &ToPlay )
 		pSound->Load( ToPlay.m_sFile, false, &params );
 		g_Mutex->Lock();
 
-		NewMusic = new MusicPlaying( pSound );
+		NewMusic = new MusicPlaying();
 	}
 
 	NewMusic->m_Timing = g_Playing->m_Timing;
@@ -227,32 +233,7 @@ static void StartMusic( MusicToPlay &ToPlay )
 	if( !ToPlay.bAlignBeat )
 		StartImmediately = true;
 
-	RageTimer when; /* zero */
-	if( !StartImmediately )
-	{
-		/* GetPlayLatency returns the minimum time until a sound starts.  That's
-		 * common when starting a precached sound, but our sound isn't, so it'll
-		 * probably take a little longer.  Nudge the latency up. */
-		const float fPresumedLatency = SOUNDMAN->GetPlayLatency() + 0.040f;
-		const float fCurSecond = GAMESTATE->m_Position.m_fMusicSeconds + fPresumedLatency;
-		const float fCurBeat = g_Playing->m_Timing.GetBeatFromElapsedTimeNoOffset( fCurSecond );
-
-		/* The beat that the new sound will start on. */
-		const float fStartBeat = NewMusic->m_NewTiming.GetBeatFromElapsedTimeNoOffset( ToPlay.fStartSecond );
-		const float fStartBeatFraction = fmodfp( fStartBeat, 1 );
-
-		float fCurBeatToStartOn = std::trunc(fCurBeat) + fStartBeatFraction;
-		if( fCurBeatToStartOn < fCurBeat )
-			fCurBeatToStartOn += 1.0f;
-
-		const float fSecondToStartOn = g_Playing->m_Timing.GetElapsedTimeFromBeatNoOffset( fCurBeatToStartOn );
-		const float fMaximumDistance = 2;
-		const float fDistance = std::min( fSecondToStartOn - GAMESTATE->m_Position.m_fMusicSeconds, fMaximumDistance );
-
-		when = GAMESTATE->m_Position.m_LastBeatUpdate + fDistance;
-	}
-
-	/* Important: don't hold the mutex while we load and seek the actual sound. */
+	/* Important: don't hold the mutex while we start playing the sound. */
 	L.Unlock();
 	{
 		NewMusic->m_bHasTiming = ToPlay.HasTiming;
@@ -260,18 +241,34 @@ static void StartMusic( MusicToPlay &ToPlay )
 			NewMusic->m_NewTiming = ToPlay.m_TimingData;
 		NewMusic->m_bTimingDelayed = true;
 		NewMusic->m_bApplyMusicRate = ToPlay.bApplyMusicRate;
-//		NewMusic->m_Music->Load( ToPlay.m_sFile, false );
+		NewMusic->m_sFilePath = ToPlay.m_sFile;
 
-		RageSoundParams p;
-		p.m_StartSecond = ToPlay.fStartSecond;
-		p.m_LengthSeconds = ToPlay.fLengthSeconds;
-		p.m_fFadeInSeconds = ToPlay.fFadeInLengthSeconds;
-		p.m_fFadeOutSeconds = ToPlay.fFadeOutLengthSeconds;
-		p.m_StartTime = when;
-		if( ToPlay.bForceLoop )
-			p.StopMode = RageSoundParams::M_LOOP;
-		NewMusic->m_Music->SetParams( p );
-		NewMusic->m_Music->StartPlaying();
+		// Start playing with SoLoud
+		NewMusic->m_MusicHandle = SOUNDMAN->PlaySound(
+			ToPlay.m_sFile,
+			ToPlay.bForceLoop,
+			1.0f  // Initial volume, will be adjusted in Update()
+		);
+		NewMusic->m_bIsPlaying = true;
+
+		if (NewMusic->m_MusicHandle != 0)
+		{
+			// Set any additional parameters
+			if (ToPlay.fStartSecond > 0)
+				SOUNDMAN->SetSoundPosition(NewMusic->m_MusicHandle, ToPlay.fStartSecond);
+			
+			if (ToPlay.fLengthSeconds > 0)
+			{
+				// TODO: Implement length limiting in SoLoud if needed
+			}
+
+			if (ToPlay.fFadeInLengthSeconds > 0)
+			{
+				// Start at 0 volume and fade in
+				SOUNDMAN->SetSoundVolume(NewMusic->m_MusicHandle, 0.0f);
+				// Volume will be ramped up in Update()
+			}
+		}
 	}
 
 	LockMut( *g_Mutex );
@@ -281,12 +278,8 @@ static void StartMusic( MusicToPlay &ToPlay )
 
 static void DoPlayOnce( RString sPath )
 {
-	/* We want this to start quickly, so don't try to prebuffer it. */
-	RageSound *pSound = new RageSound;
-	pSound->Load( sPath, false );
-
-	pSound->Play(false);
-	pSound->DeleteSelfWhenFinishedPlaying();
+	/* We want this to start quickly. SoLoud automatically manages resources. */
+	SOUNDMAN->PlayOnce(sPath);
 }
 
 static void DoPlayOnceFromDir( RString sPath )
@@ -310,7 +303,7 @@ static void DoPlayOnceFromDir( RString sPath )
 	}
 	else if (arraySoundFiles.size() == 1)
 	{
-		DoPlayOnce(  sPath + arraySoundFiles[0]  );
+		SOUNDMAN->PlayOnce(sPath + arraySoundFiles[0]);
 		return;
 	}
 
@@ -330,7 +323,7 @@ static void DoPlayOnceFromDir( RString sPath )
 	order.pop_back();
 	g_Mutex->Unlock();
 
-	DoPlayOnce(  sPath + arraySoundFiles[index]  );
+	SOUNDMAN->PlayOnce(sPath + arraySoundFiles[index]);
 }
 
 static bool SoundWaiting()
@@ -444,7 +437,7 @@ GameSoundManager::GameSoundManager()
 	ASSERT( SOUNDMAN != nullptr );
 
 	g_Mutex = new RageEvent("GameSoundManager");
-	g_Playing = new MusicPlaying( new RageSound );
+	g_Playing = new MusicPlaying();
 
 	g_UpdatingTimer = true;
 
@@ -519,23 +512,19 @@ void GameSoundManager::Update( float fDeltaTime )
 {
 	{
 		g_Mutex->Lock();
-		if( g_Playing->m_bApplyMusicRate )
+		if( g_Playing->m_bApplyMusicRate && g_Playing->m_MusicHandle != 0 )
 		{
-			RageSoundParams p = g_Playing->m_Music->GetParams();
 			float fRate = GAMESTATE->m_SongOptions.GetPreferred().m_fMusicRate;
-			if( p.m_fSpeed != fRate )
-			{
-				p.m_fSpeed = fRate;
-				g_Playing->m_Music->SetParams( p );
-			}
+			SOUNDMAN->SetSoundSpeed(g_Playing->m_MusicHandle, fRate);
 		}
 
-		bool bIsPlaying = g_Playing->m_Music->IsPlaying();
+		bool bIsPlaying = g_Playing->m_bIsPlaying && g_Playing->m_MusicHandle != 0 && 
+			SOUNDMAN->IsSoundPlaying(g_Playing->m_MusicHandle);
 		g_Mutex->Unlock();
+
 		if( !bIsPlaying && g_bWasPlayingOnLastUpdate && !g_FallbackMusicParams.sFile.empty() )
 		{
 			PlayMusic( g_FallbackMusicParams );
-
 			g_FallbackMusicParams.sFile = "";
 		}
 		g_bWasPlayingOnLastUpdate = bIsPlaying;
@@ -580,11 +569,10 @@ void GameSoundManager::Update( float fDeltaTime )
 			break;
 		}
 
-		RageSoundParams p = g_Playing->m_Music->GetParams();
-		if( p.m_Volume != fVolume )
+		if (g_Playing->m_MusicHandle != 0 && g_Playing->m_fVolume != fVolume)
 		{
-			p.m_Volume = fVolume;
-			g_Playing->m_Music->SetParams( p );
+			g_Playing->m_fVolume = fVolume;
+			SOUNDMAN->SetSoundVolume(g_Playing->m_MusicHandle, fVolume);
 		}
 	}
 
