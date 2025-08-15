@@ -1,7 +1,7 @@
 #include "global.h"
 #include "RageSoundManager.h"
 #include "GameSoundManager.h"
-#include "RageSound.h"
+#include "RageLog.h"
 #include "RageUtil.h"
 #include "GameState.h"
 #include "TimingData.h"
