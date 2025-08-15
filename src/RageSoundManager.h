@@ -1,96 +1,119 @@
-/* RageSoundManager - A global singleton to interface RageSound and RageSoundDriver. */
-
+/* RageSoundManager - Sound system interface using SoLoud backend.
+ * 
+ * This class provides a high-level interface for sound playback and management
+ * using the SoLoud audio engine. It handles sound resource management, playback
+ * control, and volume mixing.
+ */
 #ifndef RAGE_SOUND_MANAGER_H
 #define RAGE_SOUND_MANAGER_H
 
-#include "RageUtil_CircularBuffer.h"
-
-#include <cstdint>
 #include <map>
-#include <set>
+#include "global.h"
 
 namespace SoLoud {
     class Soloud;
     class AudioSource;
 }
 
-class RageSound;
-class RageSoundBase;
-class RageSoundDriver;
-struct RageSoundParams;
-class RageSoundReader;
-class RageSoundReader_Preload;
-class RageTimer;
-
 class RageSoundManager
 {
 public:
-	RageSoundManager();
-	~RageSoundManager();
+    RageSoundManager();
+    ~RageSoundManager();
 
-	/* This may be called when shutting down, in order to stop all sounds.  This
-	 * should be called before shutting down threads that may have running sounds,
-	 * in order to prevent DirectSound delays and glitches.  Further attempts to
-	 * start sounds will do nothing, and threads may be shut down. */
-	void Shutdown();
+    /** Initialize the sound system. Must be called before any other sound operations. */
+    void Init();
+    
+    /** Shutdown the sound system, stopping all sounds. */
+    void Shutdown();
+    
+    /** Update the sound system. Call regularly to clean up unused resources. */
+    void Update();
 
-	void Init();
+    /** Handle type for controlling individual sound instances */
+    using SoundHandle = intptr_t;
+    
+    /** 
+     * Play a sound once and forget about it.
+     * @param path Path to the sound file
+     * @param volume Playback volume (0.0 to 1.0)
+     */
+    void PlayOnce(const RString& path, float volume = 1.0f);
+    
+    /**
+     * Play a sound and return a handle for controlling it.
+     * @param path Path to the sound file
+     * @param loop Whether to loop the sound
+     * @param volume Initial volume (0.0 to 1.0)
+     * @return Handle to control the sound, or 0 if failed
+     */
+    SoundHandle PlaySound(const RString& path, bool loop = false, float volume = 1.0f);
+    
+    /** Stop a playing sound */
+    void StopSound(SoundHandle handle);
+    
+    /** Pause/unpause a sound */
+    void PauseSound(SoundHandle handle, bool pause);
+    
+    /** Set the volume of a specific sound */
+    void SetSoundVolume(SoundHandle handle, float volume);
+    
+    /** Set the playback speed of a sound (1.0 = normal) */
+    void SetSoundSpeed(SoundHandle handle, float speed);
+    
+    /** Check if a sound is still playing */
+    bool IsSoundPlaying(SoundHandle handle) const;
+    
+    /** Get the current playback position in seconds */
+    float GetSoundPosition(SoundHandle handle) const;
+    
+    /** Stop all currently playing sounds */
+    void StopAllSounds();
+    
+    /** Pause/unpause all sounds */
+    void PauseAllSounds(bool pause);
 
-	void SetMixVolume();
-	float GetVolumeOfNonCriticalSounds() const { return m_fVolumeOfNonCriticalSounds; }
-	void SetVolumeOfNonCriticalSounds( float fVolumeOfNonCriticalSounds );
+    // Volume management
+    /** Set the global mix volume based on preferences */
+    void SetMixVolume();
+    
+    /** Set relative volume for non-critical sounds (e.g., background music) */
+    void SetVolumeOfNonCriticalSounds(float vol);
+    
+    /** Get current volume scaling for non-critical sounds */
+    float GetVolumeOfNonCriticalSounds() const { return m_fVolumeOfNonCriticalSounds; }
 
-	void Update();
-	void StartMixing( RageSoundBase *snd );	/* used by RageSound */
-	void StopMixing( RageSoundBase *snd );	/* used by RageSound */
-	bool Pause( RageSoundBase *snd, bool bPause );	/* used by RageSound */
-	int64_t GetPosition( RageTimer *pTimer ) const;	/* used by RageSound */
-	float GetPlayLatency() const;
-	int GetDriverSampleRate() const;
+    /**
+     * Preload a sound into memory.
+     * Call this before playing to avoid loading delays.
+     * @param path Path to the sound file
+     * @return true if successfully loaded
+     */
+    bool PreloadSound(const RString& path);
 
-	RageSoundReader *GetLoadedSound( const RString &sPath );
-	void AddLoadedSound( const RString &sPath, RageSoundReader_Preload *pSound );
+    /** Get the audio system's sample rate */
+    int GetSampleRate() const;
+    
+    /** Get the audio system's play latency in seconds */
+    float GetPlayLatency() const;
+
+    /** Get direct access to SoLoud engine (use with caution) */
+    SoLoud::Soloud* GetSoLoud() const { return m_pSoLoud; }
 
 private:
-	std::map<RString, RageSoundReader_Preload *> m_mapPreloadedSounds;
-	std::map<RString, SoLoud::AudioSource*> m_mapSoLoudSources;
+    /** Get or create a SoLoud audio source for the given path */
+    SoLoud::AudioSource* GetSoLoudSource(const RString& path);
 
-	RageSoundDriver *m_pDriver;
-	SoLoud::Soloud *m_pSoLoud;
-	bool m_bUseSoLoud;
+    SoLoud::Soloud* m_pSoLoud;                                    // Main SoLoud engine instance
+    std::map<RString, SoLoud::AudioSource*> m_mapSoLoudSources;  // Cached sound sources
+    float m_fVolumeOfNonCriticalSounds;                          // Volume scaling for background sounds
 
-	/* Prefs: */
-	float m_fVolumeOfNonCriticalSounds;
-	// Swallow up warnings. If they must be used, define them.
-	RageSoundManager& operator=(const RageSoundManager& rhs);
-	RageSoundManager(const RageSoundManager& rhs);
+    // Prevent accidental copies
+    RageSoundManager(const RageSoundManager& rhs) = delete;
+    RageSoundManager& operator=(const RageSoundManager& rhs) = delete;
 };
 
-extern RageSoundManager *SOUNDMAN;
+/** Global sound manager instance */
+extern RageSoundManager* SOUNDMAN;
 
 #endif
-
-/*
- * Copyright (c) 2002-2004 Glenn Maynard
- * All rights reserved.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a
- * copy of this software and associated documentation files (the
- * "Software"), to deal in the Software without restriction, including
- * without limitation the rights to use, copy, modify, merge, publish,
- * distribute, and/or sell copies of the Software, and to permit persons to
- * whom the Software is furnished to do so, provided that the above
- * copyright notice(s) and this permission notice appear in all copies of
- * the Software and that both the above copyright notice(s) and this
- * permission notice appear in supporting documentation.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
- * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
- * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF
- * THIRD PARTY RIGHTS. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR HOLDERS
- * INCLUDED IN THIS NOTICE BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL INDIRECT
- * OR CONSEQUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
- * OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
- * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
- * PERFORMANCE OF THIS SOFTWARE.
- */

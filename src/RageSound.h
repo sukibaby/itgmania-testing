@@ -22,6 +22,13 @@ public:
 	virtual void CommitPlayingPosition( int64_t iFrameno, int64_t iPosition, int iBytesRead ) = 0;
 	virtual RageTimer GetStartTime() const { return RageZeroTimer; }
 	virtual RString GetLoadedFilePath() const = 0;
+
+	// SoLoud integration
+	virtual void* GetSoundHandle() const { return m_pSoLoudHandle; }
+	virtual void SetSoundHandle(void* handle) { m_pSoLoudHandle = handle; }
+
+protected:
+	void* m_pSoLoudHandle = nullptr; // Stores the SoLoud voice handle
 };
 
 /**
@@ -125,6 +132,9 @@ public:
 	void Play(bool is_action, const RageSoundParams *params=nullptr);
 	void PlayCopy(bool is_action, const RageSoundParams *pParams = nullptr) const;
 	void Stop();
+
+	// SoLoud specific methods
+	void UpdateSoLoudParams(const RageSoundParams* params = nullptr);
 
 	/* Cleanly pause or unpause the sound. If the sound wasn't already playing,
 	 * return true and do nothing. */

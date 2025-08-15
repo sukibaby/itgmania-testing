@@ -102,18 +102,30 @@ RageSound &RageSound::operator=( const RageSound &cpy )
 
 void RageSound::Unload()
 {
-	if( IsPlaying() )
-		StopPlaying();
+    if (IsPlaying())
+        StopPlaying();
 
-	LockMut(m_Mutex);
+    LockMut(m_Mutex);
 
-	if(m_pSource != nullptr)
-	{
-		delete m_pSource;
-	}
-	m_pSource = nullptr;
+    // Cleanup SoLoud handle if it exists
+    if (m_pSoLoudHandle && SOUNDMAN->GetSoLoud())
+    {
+        SoLoud::handle handle = reinterpret_cast<intptr_t>(m_pSoLoudHandle);
+        auto* soloud = SOUNDMAN->GetSoLoud();
+        if (soloud->isValidVoiceHandle(handle))
+        {
+            soloud->stop(handle);
+        }
+        m_pSoLoudHandle = nullptr;
+    }
 
-	m_sFilePath = "";
+    if (m_pSource != nullptr)
+    {
+        delete m_pSource;
+    }
+    m_pSource = nullptr;
+
+    m_sFilePath = "";
 }
 
 /* The sound will self-delete itself when it stops playing. If the sound is not
@@ -326,39 +338,33 @@ void RageSound::CommitPlayingPosition( int64_t iHardwareFrame, int64_t iStreamFr
 /* Start playing from the current position. */
 void RageSound::StartPlaying()
 {
-	ASSERT( !m_bPlaying );
+	ASSERT(!m_bPlaying);
 
 	// Move to the start position.
 	SetPositionFrames(static_cast<int>(m_Param.m_StartSecond * m_pSource->GetSampleRate() + 0.5));
 
 	/* If m_StartTime is in the past, then we probably set a start time but took too
 	 * long loading.  We don't want that; log it, since it can be unobvious. */
-	if( !m_Param.m_StartTime.IsZero() && m_Param.m_StartTime.Ago() > 0 )
+	if (!m_Param.m_StartTime.IsZero() && m_Param.m_StartTime.Ago() > 0)
 		LOG->Trace("Sound \"%s\" has a start time %f seconds in the past",
-			GetLoadedFilePath().c_str(), m_Param.m_StartTime.Ago() );
-
-	/* Tell the sound manager to start mixing us. */
-//	LOG->Trace("set playing true for %p (StartPlaying) (%s)", this, this->GetLoadedFilePath().c_str());
+			GetLoadedFilePath().c_str(), m_Param.m_StartTime.Ago());
 
 	m_bPlaying = true;
 
-	/* Save the attract volume, so changes don't affect previously played
-	 * sounds. */
+	/* Save the attract volume, so changes don't affect previously played sounds. */
 	m_Param.m_fAttractVolume = SOUNDMAN->GetVolumeOfNonCriticalSounds();
 	ApplyParams();
 
 	/* Don't lock while calling SOUNDMAN driver calls. */
-	ASSERT( !m_Mutex.IsLockedByThisThread() );
+	ASSERT(!m_Mutex.IsLockedByThisThread());
 
-	SOUNDMAN->StartMixing( this );
-
-//	LOG->Trace("StartPlaying %p finished (%s)", this, this->GetLoadedFilePath().c_str());
+	SOUNDMAN->StartMixing(this);
 }
 
 void RageSound::StopPlaying()
 {
 	/* Don't lock while calling SOUNDMAN driver calls. */
-	ASSERT( !m_Mutex.IsLockedByThisThread() );
+	ASSERT(!m_Mutex.IsLockedByThisThread());
 
 	/* Tell the sound driver to stop mixing this sound. */
 	SOUNDMAN->StopMixing(this);
@@ -443,34 +449,62 @@ void RageSound::Stop()
 	StopPlaying();
 }
 
-bool RageSound::Pause( bool bPause )
+bool RageSound::Pause(bool bPause)
 {
-	if( m_pSource == nullptr )
-	{
-		LOG->Warn( "RageSound::Pause: sound not loaded" );
-		return false;
-	}
+    if (m_pSource == nullptr)
+    {
+        LOG->Warn("RageSound::Pause: sound not loaded");
+        return false;
+    }
 
-	return SOUNDMAN->Pause( this, bPause );
+    // Handle pausing in SoLoud if we have a valid handle
+    if (m_pSoLoudHandle && SOUNDMAN->GetSoLoud())
+    {
+        SoLoud::handle handle = reinterpret_cast<intptr_t>(m_pSoLoudHandle);
+        auto* soloud = SOUNDMAN->GetSoLoud();
+
+        if (soloud->isValidVoiceHandle(handle))
+        {
+            if (bPause)
+                soloud->setPause(handle, true);
+            else
+                soloud->setPause(handle, false);
+            return true;
+        }
+    }
+
+    // Fallback to legacy system
+    return SOUNDMAN->Pause(this, bPause);
 }
 
 float RageSound::GetLengthSeconds()
 {
-	if( m_pSource == nullptr )
-	{
-		LOG->Warn( "RageSound::GetLengthSeconds: sound not loaded" );
-		return -1;
-	}
+    // If using SoLoud
+    if (m_pSoLoudHandle && SOUNDMAN->GetSoLoud())
+    {
+        SoLoud::handle handle = reinterpret_cast<intptr_t>(m_pSoLoudHandle);
+        auto* soloud = SOUNDMAN->GetSoLoud();
+        float length = soloud->getLength(handle);
+        if (length > 0.0f) // Valid SoLoud length
+            return length;
+    }
 
-	int iLength = m_pSource->GetLength();
+    // Fallback to legacy system
+    if (m_pSource == nullptr)
+    {
+        LOG->Warn("RageSound::GetLengthSeconds: sound not loaded");
+        return -1;
+    }
 
-	if( iLength < 0 )
-	{
-		LOG->Warn( "GetLengthSeconds failed on %s: %s", GetLoadedFilePath().c_str(), m_pSource->GetError().c_str() );
-		return -1;
-	}
+    int iLength = m_pSource->GetLength();
 
-	return iLength / 1000.f; // ms -> secs
+    if (iLength < 0)
+    {
+        LOG->Warn("GetLengthSeconds failed on %s: %s", GetLoadedFilePath().c_str(), m_pSource->GetError().c_str());
+        return -1;
+    }
+
+    return iLength / 1000.f; // ms -> secs
 }
 
 int RageSound::GetSourceFrameFromHardwareFrame( int64_t iHardwareFrame ) const
@@ -489,32 +523,50 @@ int RageSound::GetSourceFrameFromHardwareFrame( int64_t iHardwareFrame ) const
  * position.  We might take a variable amount of time before grabbing the timestamp (to
  * lock SOUNDMAN); we might lose the scheduler after grabbing it, when releasing SOUNDMAN.
  */
-float RageSound::GetPositionSeconds( RageTimer *pTimestamp ) const
+float RageSound::GetPositionSeconds(RageTimer* pTimestamp) const
 {
-	// Get our current hardware position.
-	int64_t iCurrentHardwareFrame = SOUNDMAN->GetPosition(pTimestamp);
+    // If using SoLoud and actively playing
+    if (m_pSoLoudHandle && m_bPlaying && SOUNDMAN->GetSoLoud())
+    {
+        SoLoud::handle handle = reinterpret_cast<intptr_t>(m_pSoLoudHandle);
+        auto* soloud = SOUNDMAN->GetSoLoud();
 
-	// Lock the mutex after calling SOUNDMAN->GetPosition().
-	LockMut(m_Mutex);
+        if (soloud->isValidVoiceHandle(handle))
+        {
+            if (pTimestamp)
+                *pTimestamp = RageTimer::GetTimeSinceStart();
 
-	// cast the sample rate to be used for the remainder of the function.
-	float fSampleRate = static_cast<float>(m_pSource->GetSampleRate());
+            return soloud->getStreamPosition(handle);
+        }
+    }
 
-	/* If we're not playing, just report the static position. */
-	if( !IsPlaying() )
-		return static_cast<float>(m_iStoppedSourceFrame) / fSampleRate;
+    // Legacy RageSound position tracking
+    if (!m_pSource)
+        return 0.0f;
 
-	/* If we don't yet have any position data, CommitPlayingPosition hasn't yet been called at all,
-	 * so guess what we think the real time is. */
-	if( m_HardwareToStreamMap.IsEmpty() || m_StreamToSourceMap.IsEmpty() )
-	{
-		return static_cast<float>(m_iStoppedSourceFrame) / fSampleRate;
-	}
+    // Get our current hardware position.
+    int64_t iCurrentHardwareFrame = SOUNDMAN->GetPosition(pTimestamp);
 
-	int iSourceFrame = GetSourceFrameFromHardwareFrame( iCurrentHardwareFrame );
-	return static_cast<float>(iSourceFrame) / fSampleRate;
+    // Lock the mutex after calling SOUNDMAN->GetPosition().
+    LockMut(m_Mutex);
+
+    // cast the sample rate to be used for the remainder of the function.
+    float fSampleRate = static_cast<float>(m_pSource->GetSampleRate());
+
+    /* If we're not playing, just report the static position. */
+    if (!IsPlaying())
+        return static_cast<float>(m_iStoppedSourceFrame) / fSampleRate;
+
+    /* If we don't yet have any position data, CommitPlayingPosition hasn't yet been called at all,
+     * so guess what we think the real time is. */
+    if (m_HardwareToStreamMap.IsEmpty() || m_StreamToSourceMap.IsEmpty())
+    {
+        return static_cast<float>(m_iStoppedSourceFrame) / fSampleRate;
+    }
+
+    int iSourceFrame = GetSourceFrameFromHardwareFrame(iCurrentHardwareFrame);
+    return static_cast<float>(iSourceFrame) / fSampleRate;
 }
-
 
 bool RageSound::SetPositionFrames( int iFrames )
 {
@@ -565,34 +617,61 @@ void RageSound::SetParams( const RageSoundParams &p )
 
 void RageSound::ApplyParams()
 {
-	if( m_pSource == nullptr )
-		return;
+    if (m_pSource == nullptr)
+        return;
 
-	m_pSource->SetProperty( "Pitch", m_Param.m_fPitch );
-	m_pSource->SetProperty( "Speed", m_Param.m_fSpeed );
-	m_pSource->SetProperty( "StartSecond", m_Param.m_StartSecond );
-	m_pSource->SetProperty( "LengthSeconds", m_Param.m_LengthSeconds );
-	m_pSource->SetProperty( "FadeInSeconds", m_Param.m_fFadeInSeconds );
-	m_pSource->SetProperty( "FadeSeconds", m_Param.m_fFadeOutSeconds );
+    // Legacy RageSound parameters
+    m_pSource->SetProperty("Pitch", m_Param.m_fPitch);
+    m_pSource->SetProperty("Speed", m_Param.m_fSpeed);
+    m_pSource->SetProperty("StartSecond", m_Param.m_StartSecond);
+    m_pSource->SetProperty("LengthSeconds", m_Param.m_LengthSeconds);
+    m_pSource->SetProperty("FadeInSeconds", m_Param.m_fFadeInSeconds);
+    m_pSource->SetProperty("FadeSeconds", m_Param.m_fFadeOutSeconds);
 
-	float fVolume = m_Param.m_Volume;
-	if( !m_Param.m_bIsCriticalSound )
-		fVolume *= m_Param.m_fAttractVolume;
-	m_pSource->SetProperty( "Volume", fVolume );
+    float fVolume = m_Param.m_Volume;
+    if (!m_Param.m_bIsCriticalSound)
+        fVolume *= m_Param.m_fAttractVolume;
+    m_pSource->SetProperty("Volume", fVolume);
 
-	switch( GetStopMode() )
-	{
-		case RageSoundParams::M_LOOP:
-			m_pSource->SetProperty( "Loop", 1.0f );
-			break;
-		case RageSoundParams::M_STOP:
-			m_pSource->SetProperty( "Stop", 1.0f );
-			break;
-		case RageSoundParams::M_CONTINUE:
-			m_pSource->SetProperty( "Continue", 1.0f );
-			break;
-		default: break;
-	}
+    // Also update SoLoud parameters if we're using it
+    UpdateSoLoudParams(&m_Param);
+}
+
+void RageSound::UpdateSoLoudParams(const RageSoundParams* params)
+{
+    if (!m_pSoLoudHandle)
+        return;
+
+    // Get the handle as a SoLoud handle
+    SoLoud::handle handle = reinterpret_cast<intptr_t>(m_pSoLoudHandle);
+
+    // If we have explicit parameters, use them, otherwise use current parameters
+    const RageSoundParams& p = params ? *params : m_Param;
+
+    if (auto* soloud = SOUNDMAN->GetSoLoud())
+    {
+        // Set volume (considering attract mode)
+        float vol = p.m_Volume;
+        if (!p.m_bIsCriticalSound)
+            vol *= p.m_fAttractVolume;
+        soloud->setVolume(handle, vol);
+
+        // Set playback speed/pitch
+        soloud->setRelativePlaySpeed(handle, p.m_fSpeed * p.m_fPitch);
+
+        // Handle looping based on stop mode
+        bool shouldLoop = (GetStopMode() == RageSoundParams::M_LOOP);
+        soloud->setLooping(handle, shouldLoop);
+
+        // Set pan if needed
+        // soloud->setPan(handle, 0.0f); // Center pan, adjust if needed
+
+        // Handle fading if specified
+        if (p.m_fFadeInSeconds > 0)
+            soloud->fadeVolume(handle, vol, 0.0f, p.m_fFadeInSeconds);
+        if (p.m_fFadeOutSeconds > 0)
+            soloud->scheduleFadeOut(handle, p.m_fFadeOutSeconds);
+    }
 }
 
 bool RageSound::SetProperty( const RString &sProperty, float fValue )

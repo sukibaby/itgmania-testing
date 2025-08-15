@@ -292,41 +292,7 @@ elseif(LINUX OR BSD)
     set(HAS_XINERAMA TRUE)
   endif()
 
-  set(HAS_PULSE FALSE)
-  if(WITH_PULSEAUDIO)
-    find_package(PulseAudio REQUIRED)
-    set(HAS_PULSE TRUE)
-  endif()
-
-  set(HAS_ALSA FALSE)
-  if(WITH_ALSA)
-    find_package(ALSA REQUIRED)
-    set(HAS_ALSA TRUE)
-  endif()
-
-  set(HAS_JACK FALSE)
-  if(WITH_JACK)
-    find_package(JACK REQUIRED)
-    set(HAS_JACK TRUE)
-  endif()
-
-  set(HAS_OSS FALSE)
-  if(WITH_OSS)
-    find_package(OSS)
-    set(HAS_OSS TRUE)
-  endif()
-
-  if( NOT (HAS_OSS OR HAS_JACK OR HAS_ALSA OR HAS_PULSE) )
-    message(
-      FATAL_ERROR
-        "No sound libraries found (or selected). You will require at least one."
-      )
-  else()
-    message(
-      STATUS
-        "-- At least one sound library was found. Do not worry if any were not found at this stage."
-      )
-  endif()
+  # Audio handled by SoLoud
 
   if(NOT YASM_FOUND AND NOT NASM_FOUND)
     message(FATAL_ERROR
