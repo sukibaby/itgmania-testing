@@ -54,9 +54,7 @@ void RageSoundManager::Init()
     {
         m_pSoLoud = new SoLoud::Soloud;
         SoLoud::result result = m_pSoLoud->init(
-            SoLoud::Soloud::CLIP_ROUNDOFF | // Use roundoff clipping
-            SoLoud::Soloud::ENABLE_VISUALIZATION | // Enable visualization for debug
-            SoLoud::Soloud::LEFT_HANDED_3D // Use left-handed coordinates
+            SoLoud::Soloud::CLIP_ROUNDOFF  // Use roundoff clipping for better audio quality
         );
         
         if (result != SoLoud::SO_NO_ERROR)
@@ -123,57 +121,142 @@ void RageSoundManager::Shutdown()
 	RageUtil::SafeDelete(m_pDriver);
 }
 
-void RageSoundManager::StartMixing( RageSoundBase *pSound )
+void RageSoundManager::StartMixing(RageSoundBase* pSound)
 {
-	if( m_pDriver != nullptr )
-		m_pDriver->StartMixing( pSound );
+    if (m_bUseSoLoud && m_pSoLoud)
+    {
+        // Get the associated SoLoud handle from the sound
+        SoLoud::handle handle = reinterpret_cast<intptr_t>(pSound->GetSoundHandle());
+        if (handle)
+        {
+            m_pSoLoud->setPause(handle, false);
+        }
+        else
+        {
+            // If no handle exists, this is a new sound that needs to be played
+            if (auto* source = GetSoLoudSource(pSound->GetLoadedFilePath()))
+            {
+                handle = m_pSoLoud->play(*source);
+                pSound->SetSoundHandle(reinterpret_cast<void*>(handle));
+            }
+        }
+    }
+    else if (m_pDriver != nullptr)
+    {
+        m_pDriver->StartMixing(pSound);
+    }
 }
 
-void RageSoundManager::StopMixing( RageSoundBase *pSound )
+void RageSoundManager::StopMixing(RageSoundBase* pSound)
 {
-	if( m_pDriver != nullptr )
-		m_pDriver->StopMixing( pSound );
+    if (m_bUseSoLoud && m_pSoLoud)
+    {
+        SoLoud::handle handle = reinterpret_cast<intptr_t>(pSound->GetSoundHandle());
+        if (handle)
+        {
+            m_pSoLoud->stop(handle);
+            pSound->SetSoundHandle(nullptr);
+        }
+    }
+    else if (m_pDriver != nullptr)
+    {
+        m_pDriver->StopMixing(pSound);
+    }
 }
 
-bool RageSoundManager::Pause( RageSoundBase *pSound, bool bPause )
+bool RageSoundManager::Pause(RageSoundBase* pSound, bool bPause)
 {
-	if( m_pDriver == nullptr )
-		return false;
-	else
-		return m_pDriver->PauseMixing( pSound, bPause );
+    if (m_bUseSoLoud && m_pSoLoud)
+    {
+        SoLoud::handle handle = reinterpret_cast<intptr_t>(pSound->GetSoundHandle());
+        if (handle)
+        {
+            m_pSoLoud->setPause(handle, bPause);
+            return true;
+        }
+        return false;
+    }
+    else if (m_pDriver != nullptr)
+    {
+        return m_pDriver->PauseMixing(pSound, bPause);
+    }
+    return false;
 }
 
-int64_t RageSoundManager::GetPosition( RageTimer *pTimer ) const
+int64_t RageSoundManager::GetPosition(RageTimer* pTimer) const
 {
-	if( m_pDriver == nullptr )
-		return 0;
-	return m_pDriver->GetHardwareFrame( pTimer );
+    if (m_bUseSoLoud && m_pSoLoud)
+    {
+        // Note: SoLoud uses seconds, convert to frames based on sample rate
+        double timePos = m_pSoLoud->getStreamTime(0); // Use bus 0 (master)
+        return static_cast<int64_t>(timePos * m_pSoLoud->getBackendSamplerate());
+    }
+    else if (m_pDriver != nullptr)
+    {
+        return m_pDriver->GetHardwareFrame(pTimer);
+    }
+    return 0;
 }
 
 void RageSoundManager::Update()
 {
-	/* Scan m_mapPreloadedSounds for sounds that are no longer loaded, and delete them. */
-	g_SoundManMutex.Lock(); /* lock for access to m_mapPreloadedSounds, owned_sounds */
-	{
-		for( auto it = m_mapPreloadedSounds.begin(); it != m_mapPreloadedSounds.end(); )
-		{
-			if( it->second->GetReferenceCount() == 1 )
-			{
-				LOG->Trace( "Deleted old sound \"%s\"", it->first.c_str() );
-				delete it->second;
-				it = m_mapPreloadedSounds.erase(it);
-			}
-			else
-			{
-				++it;
-			}
-		}
-	}
+    if (m_bUseSoLoud && m_pSoLoud)
+    {
+        // SoLoud handles its own updates internally
+        // But we can use this to clean up stopped sounds if needed
+        g_SoundManMutex.Lock();
+        
+        // Clean up any finished sounds
+        for (auto it = m_mapSoLoudSources.begin(); it != m_mapSoLoudSources.end();)
+        {
+            // Check if this source has any active voices
+            bool hasActiveVoices = false;
+            for (unsigned int i = 0; i < m_pSoLoud->getActiveVoiceCount(); i++)
+            {
+                if (m_pSoLoud->getAudioSource(i) == it->second)
+                {
+                    hasActiveVoices = true;
+                    break;
+                }
+            }
 
-	g_SoundManMutex.Unlock(); /* finished with m_mapPreloadedSounds */
+            if (!hasActiveVoices)
+            {
+                LOG->Trace("Cleaning up unused SoLoud source: %s", it->first.c_str());
+                delete it->second;
+                it = m_mapSoLoudSources.erase(it);
+            }
+            else
+            {
+                ++it;
+            }
+        }
+        
+        g_SoundManMutex.Unlock();
+        return;
+    }
 
-	if( m_pDriver != nullptr )
-		m_pDriver->Update();
+    /* Legacy RageSound cleanup */
+    g_SoundManMutex.Lock();
+    {
+        for (auto it = m_mapPreloadedSounds.begin(); it != m_mapPreloadedSounds.end();)
+        {
+            if (it->second->GetReferenceCount() == 1)
+            {
+                LOG->Trace("Deleted old sound \"%s\"", it->first.c_str());
+                delete it->second;
+                it = m_mapPreloadedSounds.erase(it);
+            }
+            else
+            {
+                ++it;
+            }
+        }
+    }
+    g_SoundManMutex.Unlock();
+
+    if (m_pDriver != nullptr)
+        m_pDriver->Update();
 }
 
 float RageSoundManager::GetPlayLatency() const
@@ -194,36 +277,68 @@ int RageSoundManager::GetDriverSampleRate() const
 
 /* If the given path is loaded, return a copy; otherwise return nullptr.
  * It's the caller's responsibility to delete the result. */
-RageSoundReader *RageSoundManager::GetLoadedSound( const RString &sPath_ )
+// Helper method to manage SoLoud sources
+SoLoud::AudioSource* RageSoundManager::GetSoLoudSource(const RString& sPath_)
 {
-	LockMut(g_SoundManMutex); /* lock for access to m_mapPreloadedSounds */
+    if (!m_bUseSoLoud || !m_pSoLoud)
+        return nullptr;
 
-	RString sPath(sPath_);
-	sPath.MakeLower();
-	std::map<RString, RageSoundReader_Preload*>::const_iterator it;
-	it = m_mapPreloadedSounds.find( sPath );
-	if( it == m_mapPreloadedSounds.end() )
-		return nullptr;
+    RString sPath(sPath_);
+    sPath.MakeLower();
 
-	return it->second->Copy();
+    auto it = m_mapSoLoudSources.find(sPath);
+    if (it != m_mapSoLoudSources.end())
+        return it->second;
+
+    // Create new source
+    auto* wav = new SoLoud::Wav();
+    if (wav->load(sPath.c_str()) == SoLoud::SO_NO_ERROR)
+    {
+        m_mapSoLoudSources[sPath] = wav;
+        return wav;
+    }
+
+    delete wav;
+    return nullptr;
 }
 
-/* Add the sound to the set of loaded sounds that can be copied for reuse.
- * The sound will be kept in memory as long as there are any other references
- * to it; once we hold the last one, we'll release it. */
-void RageSoundManager::AddLoadedSound( const RString &sPath_, RageSoundReader_Preload *pSound )
+RageSoundReader* RageSoundManager::GetLoadedSound(const RString& sPath_)
 {
-	LockMut(g_SoundManMutex); /* lock for access to m_mapPreloadedSounds */
+    if (m_bUseSoLoud && m_pSoLoud)
+    {
+        // For SoLoud, we don't need to return a RageSoundReader
+        // The source will be managed by GetSoLoudSource
+        return nullptr;
+    }
 
-	/* Don't AddLoadedSound a sound that's already registered.  It should have been
-	 * used in GetLoadedSound. */
-	RString sPath(sPath_);
-	sPath.MakeLower();
-	std::map<RString, RageSoundReader_Preload*>::const_iterator it;
-	it = m_mapPreloadedSounds.find( sPath );
-	ASSERT_M( it == m_mapPreloadedSounds.end(), sPath );
+    LockMut(g_SoundManMutex); /* lock for access to m_mapPreloadedSounds */
 
-	m_mapPreloadedSounds[sPath] = pSound->Copy();
+    RString sPath(sPath_);
+    sPath.MakeLower();
+    auto it = m_mapPreloadedSounds.find(sPath);
+    if (it == m_mapPreloadedSounds.end())
+        return nullptr;
+
+    return it->second->Copy();
+}
+
+void RageSoundManager::AddLoadedSound(const RString& sPath_, RageSoundReader_Preload* pSound)
+{
+    if (m_bUseSoLoud && m_pSoLoud)
+    {
+        // For SoLoud, just ensure we have the source loaded
+        GetSoLoudSource(sPath_);
+        return;
+    }
+
+    LockMut(g_SoundManMutex); /* lock for access to m_mapPreloadedSounds */
+
+    RString sPath(sPath_);
+    sPath.MakeLower();
+    auto it = m_mapPreloadedSounds.find(sPath);
+    ASSERT_M(it == m_mapPreloadedSounds.end(), sPath);
+
+    m_mapPreloadedSounds[sPath] = pSound->Copy();
 }
 
 static Preference<float> g_fSoundVolume( "SoundVolume", 1.0f );
