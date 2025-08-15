@@ -9,6 +9,11 @@
 #include <map>
 #include <set>
 
+namespace SoLoud {
+    class Soloud;
+    class AudioSource;
+}
+
 class RageSound;
 class RageSoundBase;
 class RageSoundDriver;
@@ -48,8 +53,11 @@ public:
 
 private:
 	std::map<RString, RageSoundReader_Preload *> m_mapPreloadedSounds;
+	std::map<RString, SoLoud::AudioSource*> m_mapSoLoudSources;
 
 	RageSoundDriver *m_pDriver;
+	SoLoud::Soloud *m_pSoLoud;
+	bool m_bUseSoLoud;
 
 	/* Prefs: */
 	float m_fVolumeOfNonCriticalSounds;
