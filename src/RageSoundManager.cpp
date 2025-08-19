@@ -31,7 +31,7 @@ void RageSoundManager::Init()
 {
     m_pSoLoud = new SoLoud::Soloud;
     SoLoud::result result = m_pSoLoud->init(
-        SoLoud::Soloud::CLIP_ROUNDOFF  // Use roundoff clipping for better audio quality
+        SoLoud::Soloud::CLIP_ROUNDOFF  // Request to prevent audio clipping.
     );
     
     if (result != SoLoud::SO_NO_ERROR)

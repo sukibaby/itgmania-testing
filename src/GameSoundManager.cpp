@@ -17,8 +17,8 @@
 #include "SongUtil.h"
 #include "LuaManager.h"
 
-#include "arch/Sound/RageSoundDriver.h" // For lua function get_sound_driver_list,
-										// which must be refactored for SoLoud
+// #include "arch/Sound/RageSoundDriver.h" // For lua function get_sound_driver_list,
+// 										// which must be refactored for SoLoud
 
 #include <cmath>
 #include <cstddef>
@@ -43,7 +43,6 @@ GameSoundManager *SOUND = nullptr;
 static RageEvent *g_Mutex;
 static bool g_UpdatingTimer;
 static bool g_Shutdown;
-static bool g_bFlushing = false;
 
 enum FadeState { FADE_NONE, FADE_OUT, FADE_WAIT, FADE_IN };
 static FadeState g_FadeState = FADE_NONE;
@@ -54,38 +53,37 @@ static bool g_bWasPlayingOnLastUpdate = false;
 
 struct MusicPlaying
 {
-	bool m_bTimingDelayed;
-	bool m_bHasTiming;
-	bool m_bApplyMusicRate;
-	// The timing data that we're currently using.
-	TimingData m_Timing;
-	NoteData m_Lights;
+    bool m_bTimingDelayed;
+    bool m_bHasTiming;
+    bool m_bApplyMusicRate;
+    // These timing-related members still needed for game sync
+    TimingData m_Timing;
+    TimingData m_NewTiming;
+    NoteData m_Lights;
 
-	/* If m_bTimingDelayed is true, this will be the timing data for the
-	 * song that's starting. We'll copy it to m_Timing once sound is heard. */
-	TimingData m_NewTiming;
-	RageSoundManager::SoundHandle m_MusicHandle;
-	RString m_sFilePath;
-	float m_fVolume;
-	bool m_bIsPlaying;
+    // Replace RageSound* with SoLoud handle
+    RageSoundManager::SoundHandle m_MusicHandle;  // Already changed
+    RString m_sFilePath;                         // Keep for path tracking
+    float m_fVolume;                            // Keep for volume tracking
+    bool m_bIsPlaying;                          // Keep for state tracking
 
-	MusicPlaying()
-	{
-		m_Timing.AddSegment( BPMSegment(0,120) );
-		m_NewTiming.AddSegment( BPMSegment(0,120) );
-		m_bHasTiming = false;
-		m_bTimingDelayed = false;
-		m_bApplyMusicRate = false;
-		m_MusicHandle = 0;
-		m_fVolume = 1.0f;
-		m_bIsPlaying = false;
-		m_sFilePath = "";
-	}
+    MusicPlaying()
+    {
+        m_Timing.AddSegment(BPMSegment(0,120));
+        m_NewTiming.AddSegment(BPMSegment(0,120));
+        m_bHasTiming = false;
+        m_bTimingDelayed = false;
+        m_bApplyMusicRate = false;
+        m_MusicHandle = 0;
+        m_fVolume = 1.0f;
+        m_bIsPlaying = false;
+        m_sFilePath = "";
+    }
 
-	~MusicPlaying()
-	{
-		delete m_Music;
-	}
+    ~MusicPlaying()
+    {
+        // No need to delete m_Music anymore since SoLoud handles cleanup
+    }
 };
 
 static MusicPlaying *g_Playing;
@@ -105,12 +103,9 @@ struct MusicToPlay
 	TimingData m_TimingData;
 	NoteData m_LightsData;
 	bool bForceLoop;
-	float fStartSecond, fLengthSeconds, fFadeInLengthSeconds, fFadeOutLengthSeconds;
+	float fStartSecond, fLengthSeconds;
+	float fFadeInLengthSeconds, fFadeOutLengthSeconds;
 	bool bAlignBeat, bApplyMusicRate;
-	MusicToPlay()
-	{
-		HasTiming = false;
-	}
 };
 std::vector<MusicToPlay> g_MusicsToPlay;
 static GameSoundManager::PlayMusicParams g_FallbackMusicParams;
@@ -902,13 +897,7 @@ LUA_REGISTER_CLASS(GameSoundManager);
 int LuaFunc_get_sound_driver_list(lua_State* L);
 int LuaFunc_get_sound_driver_list(lua_State* L)
 {
-	std::vector<RString> driver_names = RageSoundDriver::GetSoundDriverList();
-	lua_createtable(L, driver_names.size(), 0);
-	for(size_t n= 0; n < driver_names.size(); ++n)
-	{
-		lua_pushstring(L, driver_names[n].c_str());
-		lua_rawseti(L, -2, n+1);
-	}
+	// gonna figure this out later
 	return 1;
 }
 LUAFUNC_REGISTER_COMMON(get_sound_driver_list);
