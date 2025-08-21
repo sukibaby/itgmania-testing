@@ -543,6 +543,10 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
 
+    for (int i = 0; i < threadCount; i++) {
+        threads[i].join();
+    }
+
 	for (const auto& [sGroupDirName, arraySongDirs] : mapGroupSongDirs)	// foreach dir in /Songs/
 	{
 		Group* group = new Group(sDir, sGroupDirName);
