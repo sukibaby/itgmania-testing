@@ -40,7 +40,10 @@
 #include "SpecialFiles.h"
 #include "Group.h"
 
+#include <atomic>
 #include <cstddef>
+#include <mutex>
+#include <thread>
 #include <tuple>
 #include <vector>
 
@@ -67,6 +70,18 @@ RString COURSE_GROUP_COLOR_NAME( size_t i ) { return ssprintf( "CourseGroupColor
 RString profile_song_group_color_name(size_t i) { return ssprintf("ProfileSongGroupColor%i", (int)i+1); }
 
 static const float next_loading_window_update= 0.02f;
+
+struct SongToLoad {
+    std::string sGroupDirName;
+    RString sSongDirName;
+};
+
+struct LoadedSong {
+    std::string sGroupDirName;
+    RString sSongDirName;
+    Song* pSong;
+};
+
 
 SongManager::SongManager()
 {
@@ -405,7 +420,8 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
 		if (SanityCheckGroupDir(sDir+sGroupDirName)) {
 			// Find all Song folders in this group directory
 			std::vector<RString> arraySongDirs;
-			GetDirListing( sDir+sGroupDirName + "/*", arraySongDirs, true, true );
+            // TODO: Bring this back, but reverse the * and /
+			// GetDirListing( sDir+sGroupDirName + "*/", arraySongDirs, true, true );
 			StripCvsAndSvn( arraySongDirs );
 			StripMacResourceForks( arraySongDirs );
 			SortRStringArray( arraySongDirs );
@@ -422,26 +438,23 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
 		ld->SetTotalWork( songCount );
 	}
 
-	songIndex = 0;
+    int threadCount = std::thread::hardware_concurrency();
+    if (threadCount <= 0) {
+        threadCount = 1;
+    }
+
+    std::vector<SongToLoad> songsToLoad {};
+    std::mutex songToLoadMutex {};
+    std::atomic<int> nextSongToLoadIndex = 0;
+
+    std::vector<LoadedSong> loadedSongs {};
+    std::mutex loadedSongsMutex {};
+
+    // Build a list of songs to load.
 	for (const auto& [sGroupDirName, arraySongDirs] : mapGroupSongDirs)	// foreach dir in /Songs/
 	{
-		LOG->Trace("Attempting to load %i songs from \"%s\"", int(arraySongDirs.size()),
+		LOG->Trace("Attempting to load %d songs from \"%s\"", int(arraySongDirs.size()),
 				   (sDir+sGroupDirName).c_str() );
-		int loaded = 0;
-
-		SongPointerVector& index_entry = m_mapSongGroupIndex[sGroupDirName];
-		RString group_base_name= Basename(sGroupDirName);
-		Group* group = new Group(sDir, sGroupDirName);
-		
-		// We need to keep track of previously loaded groups so we don't delete them if we're only loading additions
-		bool groupAlreadyLoaded = false;
-		// Add the group to the group mapping
-		if (m_mapNameToGroup.find(sGroupDirName) == m_mapNameToGroup.end())
-		{
-			m_mapNameToGroup[sGroupDirName] = group;
-		} else {
-			groupAlreadyLoaded = true;
-		}
 
 		for( unsigned j=0; j< arraySongDirs.size(); ++j )	// for each song dir
 		{
@@ -456,41 +469,103 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
 					continue;
 			}
 
-			// this is a song directory. Load a new song.
-			if(ld && loading_window_last_update_time.Ago() > next_loading_window_update)
-			{
-				loading_window_last_update_time.Touch();
-				ld->SetProgress(songIndex);
-				ld->SetText( LOADING_SONGS.GetValue() +
-					ssprintf("\n%s\n%s",
-						group_base_name.c_str(),
-						Basename(sSongDirName).c_str()
-					)
-				);
-			}
+            songsToLoad.push_back(SongToLoad{sGroupDirName, sSongDirName});
+		}
+    }
 
-			Song* pNewSong = new Song;
-			if( !pNewSong->LoadFromSongDir( sSongDirName) )
-			{
-				// The song failed to load.
-				delete pNewSong;
-				continue;
-			}
+    LOG->Trace("Loading all %d songs across %d groups across %d threads",
+               (int)(songsToLoad.size()), (int)(mapGroupSongDirs.size()), threadCount);
 
-			AddSongToList(pNewSong);
+    int cachedSongsToLoad = songsToLoad.size();
 
-			index_entry.push_back( pNewSong );
-			loaded++;
-			songIndex++;
+    std::vector<std::thread> threads {};
+    for (int i = 0; i < threadCount; i++) {
+        threads.emplace_back(std::thread{[&songsToLoad,
+                                          &songToLoadMutex,
+                                          &nextSongToLoadIndex,
+                                          &loadedSongs,
+                                          &loadedSongsMutex](){
+            while(true) {
+                // Grab a song to load by grabbing the lock.
+                SongToLoad songToLoad {};
+                {
+                    std::lock_guard<std::mutex> lock(songToLoadMutex);
+                    if (nextSongToLoadIndex >= (int)(songsToLoad.size())) {
+                        // Exit when there are not more songs to load.
+                        return;
+                    }
+                    songToLoad = songsToLoad[nextSongToLoadIndex];
+                    nextSongToLoadIndex++;
+                }
+
+    			Song* pNewSong = new Song;
+    			if( !pNewSong->LoadFromSongDir( songToLoad.sSongDirName) )
+    			{
+    				// The song failed to load.
+    				delete pNewSong;
+    			} else {
+                    // Grab the lock to add to the loaded songs.
+                    std::lock_guard<std::mutex> lock(loadedSongsMutex);
+                    loadedSongs.emplace_back(LoadedSong{songToLoad.sGroupDirName, songToLoad.sSongDirName, pNewSong});
+                }
+            }
+        }});
+    }
+
+    // As song finish loading in the thread, record them and update progress.
+    size_t loadedSongsProcessed = 0;
+    std::unordered_map<std::string, int> groupLoadedSongCount;
+    while (nextSongToLoadIndex < cachedSongsToLoad) {
+        // TODO: So that we do not have to spin, we can use a condition variable.
+        std::lock_guard<std::mutex> lock(loadedSongsMutex);
+        if (!loadedSongs.empty() && loadedSongsProcessed < loadedSongs.size()) {
+            const LoadedSong& latestLoadedSong = loadedSongs[loadedSongsProcessed];
+    		SongPointerVector& index_entry = m_mapSongGroupIndex[latestLoadedSong.sGroupDirName];
+            AddSongToList(latestLoadedSong.pSong);
+            index_entry.push_back(latestLoadedSong.pSong);
+            groupLoadedSongCount[latestLoadedSong.sGroupDirName]++;
+            loadedSongsProcessed++;
+
+            if(ld && loading_window_last_update_time.Ago() > next_loading_window_update)
+            {
+                RString group_base_name = Basename(latestLoadedSong.sGroupDirName);
+                loading_window_last_update_time.Touch();
+                ld->SetProgress(nextSongToLoadIndex);
+                ld->SetText( LOADING_SONGS.GetValue() +
+                	ssprintf("\n%s\n%s",
+                		group_base_name.c_str(),
+                		Basename(latestLoadedSong.sSongDirName).c_str()
+                	)
+                );
+            }
+        }
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    }
+
+	for (const auto& [sGroupDirName, arraySongDirs] : mapGroupSongDirs)	// foreach dir in /Songs/
+	{
+		Group* group = new Group(sDir, sGroupDirName);
+
+		// We need to keep track of previously loaded groups so we don't delete them if we're only loading additions
+		bool groupAlreadyLoaded = false;
+		// Add the group to the group mapping
+		if (m_mapNameToGroup.find(sGroupDirName) == m_mapNameToGroup.end())
+		{
+			m_mapNameToGroup[sGroupDirName] = group;
+		} else {
+			groupAlreadyLoaded = true;
 		}
 
-		LOG->Trace("Loaded %i songs from \"%s\"", loaded, (sDir+sGroupDirName).c_str() );
+        int loadedSongCount = groupLoadedSongCount[sGroupDirName];
+
+		LOG->Trace("Loaded %d songs from \"%s\"", loadedSongCount, (sDir+sGroupDirName).c_str() );
 
 		// If we're only loading additions, already loaded groups should neither be added nor deleted
 		if (!(groupAlreadyLoaded && onlyAdditions)) {
 
 			// Don't add the group name if we didn't load any songs in this group.
-			if(!loaded) {
+			if(!loadedSongCount) {
 				// Remove the group from the group mapping
 				auto it = m_mapNameToGroup.find(sGroupDirName);
 				if (it != m_mapNameToGroup.end())
