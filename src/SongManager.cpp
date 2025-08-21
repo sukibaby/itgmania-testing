@@ -47,6 +47,7 @@
 #include <tuple>
 #include <vector>
 
+#define THREADED_LOADING
 
 SongManager*	SONGMAN = nullptr;	// global and accessible from anywhere in our program
 
@@ -73,12 +74,12 @@ static const float next_loading_window_update= 0.02f;
 
 struct SongToLoad {
     std::string sGroupDirName;
-    RString sSongDirName;
+    std::string sSongDirName;
 };
 
 struct LoadedSong {
     std::string sGroupDirName;
-    RString sSongDirName;
+    std::string sSongDirName;
     Song* pSong;
 };
 
@@ -420,8 +421,7 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
 		if (SanityCheckGroupDir(sDir+sGroupDirName)) {
 			// Find all Song folders in this group directory
 			std::vector<RString> arraySongDirs;
-            // TODO: Bring this back, but reverse the * and /
-			// GetDirListing( sDir+sGroupDirName + "*/", arraySongDirs, true, true );
+			GetDirListing( sDir+sGroupDirName + "/*", arraySongDirs, true, true );
 			StripCvsAndSvn( arraySongDirs );
 			StripMacResourceForks( arraySongDirs );
 			SortRStringArray( arraySongDirs );
@@ -458,7 +458,7 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
 
 		for( unsigned j=0; j< arraySongDirs.size(); ++j )	// for each song dir
 		{
-			RString sSongDirName = arraySongDirs[j];
+			std::string sSongDirName = arraySongDirs[j];
 
 			// Skip already loaded songs if onlyAdditions is set.
 			if (onlyAdditions)
@@ -479,12 +479,13 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
     int cachedSongsToLoad = songsToLoad.size();
 
     std::vector<std::thread> threads {};
+    threads.reserve(threadCount);
     for (int i = 0; i < threadCount; i++) {
-        threads.emplace_back(std::thread{[&songsToLoad,
-                                          &songToLoadMutex,
-                                          &nextSongToLoadIndex,
-                                          &loadedSongs,
-                                          &loadedSongsMutex](){
+        threads.emplace_back([&songsToLoad,
+                              &songToLoadMutex,
+                              &nextSongToLoadIndex,
+                              &loadedSongs,
+                              &loadedSongsMutex](){
             while(true) {
                 // Grab a song to load by grabbing the lock.
                 SongToLoad songToLoad {};
@@ -498,6 +499,9 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
                     nextSongToLoadIndex++;
                 }
 
+                LOG->Trace("Loading %s", songToLoad.sSongDirName.c_str());
+
+#ifdef THREADED_LOADING
     			Song* pNewSong = new Song;
     			if( !pNewSong->LoadFromSongDir( songToLoad.sSongDirName) )
     			{
@@ -506,37 +510,57 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
     			} else {
                     // Grab the lock to add to the loaded songs.
                     std::lock_guard<std::mutex> lock(loadedSongsMutex);
-                    loadedSongs.emplace_back(LoadedSong{songToLoad.sGroupDirName, songToLoad.sSongDirName, pNewSong});
+                    loadedSongs.push_back(LoadedSong{songToLoad.sGroupDirName, songToLoad.sSongDirName, pNewSong});
                 }
+#else
+                std::lock_guard<std::mutex> lock(loadedSongsMutex);
+                loadedSongs.push_back(LoadedSong{songToLoad.sGroupDirName, songToLoad.sSongDirName, nullptr});
+#endif
             }
-        }});
+        });
     }
 
     // As song finish loading in the thread, record them and update progress.
     size_t loadedSongsProcessed = 0;
     std::unordered_map<std::string, int> groupLoadedSongCount;
-    while (nextSongToLoadIndex < cachedSongsToLoad) {
+    while (loadedSongsProcessed < cachedSongsToLoad) {
         // TODO: So that we do not have to spin, we can use a condition variable.
-        std::lock_guard<std::mutex> lock(loadedSongsMutex);
-        if (!loadedSongs.empty() && loadedSongsProcessed < loadedSongs.size()) {
-            const LoadedSong& latestLoadedSong = loadedSongs[loadedSongsProcessed];
-    		SongPointerVector& index_entry = m_mapSongGroupIndex[latestLoadedSong.sGroupDirName];
-            AddSongToList(latestLoadedSong.pSong);
-            index_entry.push_back(latestLoadedSong.pSong);
-            groupLoadedSongCount[latestLoadedSong.sGroupDirName]++;
-            loadedSongsProcessed++;
+        {
+            std::lock_guard<std::mutex> lock(loadedSongsMutex);
+            if (!loadedSongs.empty() && loadedSongsProcessed < loadedSongs.size()) {
+                LoadedSong& latestLoadedSong = loadedSongs[loadedSongsProcessed];
+        		SongPointerVector& index_entry = m_mapSongGroupIndex[latestLoadedSong.sGroupDirName];
 
-            if(ld && loading_window_last_update_time.Ago() > next_loading_window_update)
-            {
-                RString group_base_name = Basename(latestLoadedSong.sGroupDirName);
-                loading_window_last_update_time.Touch();
-                ld->SetProgress(nextSongToLoadIndex);
-                ld->SetText( LOADING_SONGS.GetValue() +
-                	ssprintf("\n%s\n%s",
-                		group_base_name.c_str(),
-                		Basename(latestLoadedSong.sSongDirName).c_str()
-                	)
-                );
+#ifdef THREADED_LOADING
+                AddSongToList(latestLoadedSong.pSong);
+                index_entry.push_back(latestLoadedSong.pSong);
+                groupLoadedSongCount[latestLoadedSong.sGroupDirName]++;
+#else
+    			latestLoadedSong.pSong = new Song;
+                if( !latestLoadedSong.pSong->LoadFromSongDir( latestLoadedSong.sSongDirName) )
+    			{
+    				// The song failed to load.
+    				delete latestLoadedSong.pSong;
+    			} else {
+                    AddSongToList(latestLoadedSong.pSong);
+                    index_entry.push_back(latestLoadedSong.pSong);
+                    groupLoadedSongCount[latestLoadedSong.sGroupDirName]++;
+                }
+#endif
+                loadedSongsProcessed++;
+
+                if(ld && loading_window_last_update_time.Ago() > next_loading_window_update)
+                {
+                    RString group_base_name = Basename(latestLoadedSong.sGroupDirName);
+                    loading_window_last_update_time.Touch();
+                    ld->SetProgress(loadedSongsProcessed);
+                    ld->SetText( LOADING_SONGS.GetValue() +
+                    	ssprintf("\n%s\n%s",
+                    		group_base_name.c_str(),
+                    		Basename(latestLoadedSong.sSongDirName).c_str()
+                    	)
+                    );
+                }
             }
         }
 
