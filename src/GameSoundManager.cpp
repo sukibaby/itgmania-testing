@@ -60,31 +60,51 @@ struct MusicPlaying
     // These timing-related members still needed for game sync
     TimingData m_Timing;
     TimingData m_NewTiming;
-	RageSound* m_Music;
     NoteData m_Lights;
 
-    // Replace RageSound* with SoLoud handle
-    RageSoundManager::SoundHandle m_MusicHandle;  // Already changed
-    RString m_sFilePath;                         // Keep for path tracking
-    float m_fVolume;                            // Keep for volume tracking
-    bool m_bIsPlaying;                          // Keep for state tracking
+    // Sound parameters and state 
+    RageSoundManager::SoundHandle m_MusicHandle;
+    RString m_sFilePath;                    
+    bool m_bIsPlaying;                          
+    
+    // Sound parameters (moved from RageSound)
+    float m_fFadeInSeconds;
+    float m_fFadeOutSeconds; 
+    float m_fVolume;
+    bool m_bForceLoop;
+    float m_fSpeed;
+    float m_fPitch;
+    float m_fStartSeconds;
+    float m_fLengthSeconds;
 
     MusicPlaying()
     {
+        // Initialize timing
         m_Timing.AddSegment(BPMSegment(0,120));
         m_NewTiming.AddSegment(BPMSegment(0,120));
         m_bHasTiming = false;
         m_bTimingDelayed = false;
         m_bApplyMusicRate = false;
+        
+        // Initialize sound state
         m_MusicHandle = 0;
-        m_fVolume = 1.0f;
-        m_bIsPlaying = false;
         m_sFilePath = "";
+        m_bIsPlaying = false;
+
+        // Initialize sound parameters with defaults
+        m_fFadeInSeconds = 0.0f;
+        m_fFadeOutSeconds = 0.0f;
+        m_fVolume = 1.0f;
+        m_bForceLoop = false;
+        m_fSpeed = 1.0f;
+        m_fPitch = 1.0f;
+        m_fStartSeconds = 0.0f;
+        m_fLengthSeconds = -1.0f;  // -1 means play full length
     }
 
     ~MusicPlaying()
     {
-        // No need to delete m_Music anymore since SoLoud handles cleanup
+        // No cleanup needed - SoLoud handles resource management
     }
 };
 
@@ -115,7 +135,8 @@ static GameSoundManager::PlayMusicParams g_FallbackMusicParams;
 static void StartMusic( MusicToPlay &ToPlay )
 {
 	LockMutex L( *g_Mutex );
-	if( g_Playing->m_Music->IsPlaying() && g_Playing->m_Music->GetLoadedFilePath().EqualsNoCase(ToPlay.m_sFile) )
+	if( g_Playing->m_bIsPlaying && g_Playing->m_MusicHandle != 0 && 
+		g_Playing->m_sFilePath.EqualsNoCase(ToPlay.m_sFile) )
 		return;
 
 	/* We're changing or stopping the music.  If we were dimming, reset. */
@@ -123,13 +144,14 @@ static void StartMusic( MusicToPlay &ToPlay )
 
 	if( ToPlay.m_sFile.empty() )
 	{
-		/* StopPlaying() can take a while, so don't hold the lock while we stop the sound.
-		 * Be sure to leave the rest of g_Playing in place. */
-		RageSound *pOldSound = g_Playing->m_Music;
-		g_Playing->m_Music = new RageSound;
-		L.Unlock();
-
-		delete pOldSound;
+		/* Just stop the current sound if any */
+		if (g_Playing->m_MusicHandle != 0)
+		{
+			SOUNDMAN->StopSound(g_Playing->m_MusicHandle);
+			g_Playing->m_MusicHandle = 0;
+		}
+		g_Playing->m_bIsPlaying = false;
+		g_Playing->m_sFilePath = "";
 		return;
 	}
 
@@ -241,31 +263,26 @@ static void StartMusic( MusicToPlay &ToPlay )
 		NewMusic->m_bApplyMusicRate = ToPlay.bApplyMusicRate;
 		NewMusic->m_sFilePath = ToPlay.m_sFile;
 
+		// Store parameters in NewMusic first
+		NewMusic->m_bForceLoop = ToPlay.bForceLoop;
+		NewMusic->m_fStartSeconds = ToPlay.fStartSecond;
+		NewMusic->m_fLengthSeconds = ToPlay.fLengthSeconds;
+		NewMusic->m_fFadeInSeconds = ToPlay.fFadeInLengthSeconds;
+		NewMusic->m_fFadeOutSeconds = ToPlay.fFadeOutLengthSeconds;
+		NewMusic->m_fVolume = 1.0f;  // Start at full volume by default
+
 		// Start playing with SoLoud
 		NewMusic->m_MusicHandle = SOUNDMAN->PlaySound(
 			ToPlay.m_sFile,
-			ToPlay.bForceLoop,
-			1.0f  // Initial volume, will be adjusted in Update()
+			NewMusic->m_bForceLoop,
+			NewMusic->m_fFadeInSeconds > 0 ? 0.0f : NewMusic->m_fVolume  // Start at 0 if fading in
 		);
 		NewMusic->m_bIsPlaying = true;
 
 		if (NewMusic->m_MusicHandle != 0)
 		{
-			// Set any additional parameters
-			if (ToPlay.fStartSecond > 0)
-				SOUNDMAN->SetSoundPosition(NewMusic->m_MusicHandle, ToPlay.fStartSecond);
-			
-			if (ToPlay.fLengthSeconds > 0)
-			{
-				// TODO: Implement length limiting in SoLoud if needed
-			}
-
-			if (ToPlay.fFadeInLengthSeconds > 0)
-			{
-				// Start at 0 volume and fade in
-				SOUNDMAN->SetSoundVolume(NewMusic->m_MusicHandle, 0.0f);
-				// Volume will be ramped up in Update()
-			}
+			if (NewMusic->m_fStartSeconds > 0)
+				SOUNDMAN->SetSoundPosition(NewMusic->m_MusicHandle, NewMusic->m_fStartSeconds);
 		}
 	}
 
@@ -376,13 +393,16 @@ static void StartQueuedSounds()
 		else
 		{
 			CHECKPOINT_M( ssprintf("Removing old sound at index %d", i));
-			/* StopPlaying() can take a while, so don't hold the lock while we stop the sound. */
+			/* Stop the sound immediately if one is playing */
 			g_Mutex->Lock();
-			RageSound *pOldSound = g_Playing->m_Music;
-			g_Playing->m_Music = new RageSound;
+			if (g_Playing->m_MusicHandle != 0)
+			{
+				SOUNDMAN->StopSound(g_Playing->m_MusicHandle);
+				g_Playing->m_MusicHandle = 0;
+			}
+			g_Playing->m_bIsPlaying = false;
+			g_Playing->m_sFilePath = "";
 			g_Mutex->Unlock();
-
-			delete pOldSound;
 		}
 	}
 }
@@ -532,11 +552,9 @@ void GameSoundManager::Update( float fDeltaTime )
 
 	{
 		/* Duration of the fade-in and fade-out: */
-		//const float fFadeInSpeed = 1.5f;
-		//const float fFadeOutSpeed = 0.3f;
-		float fFadeInSpeed = g_Playing->m_Music->GetParams().m_fFadeInSeconds;
-		float fFadeOutSpeed = g_Playing->m_Music->GetParams().m_fFadeOutSeconds;
-		float fVolume = g_Playing->m_Music->GetParams().m_Volume;
+		float fFadeInSpeed = g_Playing->m_fFadeInSeconds;
+		float fFadeOutSpeed = g_Playing->m_fFadeOutSeconds;
+		float &fVolume = g_Playing->m_fVolume;  // Reference to make code cleaner
 		switch( g_FadeState )
 		{
 		case FADE_NONE: break;
@@ -578,29 +596,27 @@ void GameSoundManager::Update( float fDeltaTime )
 		return;
 
 	const float fAdjust = GetFrameTimingAdjustment( fDeltaTime );
-	if( !g_Playing->m_Music->IsPlaying() )
+	if( !g_Playing->m_bIsPlaying || g_Playing->m_MusicHandle == 0 )
 	{
 		/* There's no song playing.  Fake it. */
 		CHECKPOINT_M( ssprintf("%f, delta %f", GAMESTATE->m_Position.m_fMusicSeconds, fDeltaTime) );
-		GAMESTATE->UpdateSongPosition( GAMESTATE->m_Position.m_fMusicSeconds + fDeltaTime * g_Playing->m_Music->GetPlaybackRate() , g_Playing->m_Timing );
+		GAMESTATE->UpdateSongPosition( GAMESTATE->m_Position.m_fMusicSeconds + fDeltaTime * g_Playing->m_fSpeed , g_Playing->m_Timing );
 		return;
 	}
 
-	/* There's a delay between us calling Play() and the sound actually playing.
-	 * Keep using the previous timing data until we get a non-approximate time,
-	 * indicating that the sound has actually started playing. */
+	/* Get current playback position */
 	RageTimer tm;
-	const float fSeconds = g_Playing->m_Music->GetPositionSeconds( &tm );
+	const float fSeconds = SOUNDMAN->GetSoundPosition(g_Playing->m_MusicHandle);
 
 	// Check for song timing skips.
 	if( PREFSMAN->m_bLogSkips && !g_Playing->m_bTimingDelayed )
 	{
-		const float fExpectedTimePassed = (tm - GAMESTATE->m_Position.m_LastBeatUpdate) * g_Playing->m_Music->GetPlaybackRate();
+		const float fExpectedTimePassed = (tm - GAMESTATE->m_Position.m_LastBeatUpdate) * g_Playing->m_fSpeed;
 		const float fSoundTimePassed = fSeconds - GAMESTATE->m_Position.m_fMusicSeconds;
 		const float fDiff = fExpectedTimePassed - fSoundTimePassed;
 
 		static RString sLastFile = "";
-		const RString ThisFile = g_Playing->m_Music->GetLoadedFilePath();
+		const RString ThisFile = g_Playing->m_sFilePath;
 
 		/* If fSoundTimePassed < 0, the sound has probably looped. */
 		if( sLastFile == ThisFile && fSoundTimePassed >= 0 && std::abs(fDiff) > 0.003f )
@@ -688,7 +704,7 @@ void GameSoundManager::Update( float fDeltaTime )
 RString GameSoundManager::GetMusicPath() const
 {
 	LockMut( *g_Mutex );
-	return g_Playing->m_Music->GetLoadedFilePath();
+	return g_Playing->m_sFilePath;
 }
 
 void GameSoundManager::PlayMusic(
@@ -757,7 +773,7 @@ void GameSoundManager::DimMusic( float fVolume, float fDurationSeconds )
 	LockMut( *g_Mutex );
 
 	if( g_FadeState == FADE_NONE )
-		g_fOriginalVolume = g_Playing->m_Music->GetParams().m_Volume;
+		g_fOriginalVolume = g_Playing->m_fVolume;
 	// otherwise, g_fOriginalVolume is already set and m_Volume will be the
 	// current state, not the original state
 
