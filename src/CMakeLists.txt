@@ -324,6 +324,11 @@ set_property(TARGET "${SM_EXE_NAME}" PROPERTY FOLDER "Internal Libraries")
 
 list(APPEND SMDATA_LINK_LIB "lua-5.1" "miniz")
 
+if(NOT TARGET soloud)
+    message(FATAL_ERROR "SoLoud library target not found. Make sure CMakeProject-soloud.cmake is included and WITH_SOLOUD is ON")
+endif()
+target_link_libraries("${SM_EXE_NAME}" PRIVATE ${SOLOUD_LIBRARY})
+
 if(WITH_MINIMAID)
   include(../extern/CMakeProject-mmmagic.cmake)
 endif()
@@ -446,7 +451,7 @@ else() # Unix / Linux TODO: Remember to find and locate the zip archive files.
   list(REMOVE_DUPLICATES SMDATA_LINK_LIB)
 endif()
 
-target_link_libraries("${SM_EXE_NAME}" ${SMDATA_LINK_LIB})
+target_link_libraries("${SM_EXE_NAME}" PRIVATE ${SMDATA_LINK_LIB})
 
 list(APPEND SM_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}
             "${SM_GENERATED_SRC_DIR}")
