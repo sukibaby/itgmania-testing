@@ -12,6 +12,7 @@
 #include "RageSoundManager.h"
 #include "RageUtil.h"
 #include "RageLog.h"
+#include "RageThreads.h"
 #include "Preference.h"
 #include "soloud.h"
 #include "soloud_wav.h"
@@ -269,6 +270,13 @@ void RageSoundManager::PauseAllSounds(bool pause)
 {
     if (m_pSoLoud)
         m_pSoLoud->setPauseAll(pause);
+}
+
+int RageSoundManager::GetDriverSampleRate() const
+{
+    // if (m_pSoLoud)
+    //     return m_pSoLoud->getDriverSampleRate();
+    return 123456;
 }
 
 /*

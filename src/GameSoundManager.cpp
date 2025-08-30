@@ -43,6 +43,7 @@ GameSoundManager *SOUND = nullptr;
 static RageEvent *g_Mutex;
 static bool g_UpdatingTimer;
 static bool g_Shutdown;
+static bool g_bFlushing = false; // Aim to remove this
 
 enum FadeState { FADE_NONE, FADE_OUT, FADE_WAIT, FADE_IN };
 static FadeState g_FadeState = FADE_NONE;
@@ -59,6 +60,7 @@ struct MusicPlaying
     // These timing-related members still needed for game sync
     TimingData m_Timing;
     TimingData m_NewTiming;
+	RageSound* m_Music;
     NoteData m_Lights;
 
     // Replace RageSound* with SoLoud handle

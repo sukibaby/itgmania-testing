@@ -83,6 +83,9 @@ public:
     /** Get current volume scaling for non-critical sounds */
     float GetVolumeOfNonCriticalSounds() const { return m_fVolumeOfNonCriticalSounds; }
 
+    /** Get driver sample rate  :D */
+    int GetDriverSampleRate() const;
+
     /**
      * Preload a sound into memory.
      * Call this before playing to avoid loading delays.
@@ -96,9 +99,6 @@ public:
     
     /** Get the audio system's play latency in seconds */
     float GetPlayLatency() const;
-
-    /** Get direct access to SoLoud engine (use with caution) */
-    SoLoud::Soloud* GetSoLoud() const { return m_pSoLoud; }
 
 private:
     /** Get or create a SoLoud audio source for the given path */
