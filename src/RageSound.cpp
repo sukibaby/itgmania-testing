@@ -108,14 +108,10 @@ void RageSound::Unload()
     LockMut(m_Mutex);
 
     // Cleanup SoLoud handle if it exists
-    if (m_pSoLoudHandle && SOUNDMAN->GetSoLoud())
+    if (m_pSoLoudHandle)
     {
-        SoLoud::handle handle = reinterpret_cast<intptr_t>(m_pSoLoudHandle);
-        auto* soloud = SOUNDMAN->GetSoLoud();
-        if (soloud->isValidVoiceHandle(handle))
-        {
-            soloud->stop(handle);
-        }
+        unsigned int handle = static_cast<unsigned int>(reinterpret_cast<uintptr_t>(m_pSoLoudHandle));
+        SOUNDMAN->StopSound(handle);
         m_pSoLoudHandle = nullptr;
     }
 
@@ -460,7 +456,7 @@ bool RageSound::Pause(bool bPause)
     // Handle pausing in SoLoud if we have a valid handle
     if (m_pSoLoudHandle && SOUNDMAN->GetSoLoud())
     {
-        SoLoud::handle handle = reinterpret_cast<intptr_t>(m_pSoLoudHandle);
+        unsigned int handle = static_cast<unsigned int>(reinterpret_cast<uintptr_t>(m_pSoLoudHandle));
         auto* soloud = SOUNDMAN->GetSoLoud();
 
         if (soloud->isValidVoiceHandle(handle))
@@ -482,7 +478,7 @@ float RageSound::GetLengthSeconds()
     // If using SoLoud
     if (m_pSoLoudHandle && SOUNDMAN->GetSoLoud())
     {
-        SoLoud::handle handle = reinterpret_cast<intptr_t>(m_pSoLoudHandle);
+        unsigned int handle = static_cast<unsigned int>(reinterpret_cast<uintptr_t>(m_pSoLoudHandle));
         auto* soloud = SOUNDMAN->GetSoLoud();
         float length = soloud->getLength(handle);
         if (length > 0.0f) // Valid SoLoud length
@@ -525,47 +521,48 @@ int RageSound::GetSourceFrameFromHardwareFrame( int64_t iHardwareFrame ) const
  */
 float RageSound::GetPositionSeconds(RageTimer* pTimestamp) const
 {
-    // If using SoLoud and actively playing
-    if (m_pSoLoudHandle && m_bPlaying && SOUNDMAN->GetSoLoud())
-    {
-        SoLoud::handle handle = reinterpret_cast<intptr_t>(m_pSoLoudHandle);
-        auto* soloud = SOUNDMAN->GetSoLoud();
+	return 1.0f;
+    //// If using SoLoud and actively playing
+    //if (m_pSoLoudHandle && m_bPlaying && SOUNDMAN->GetSoLoud())
+    //{
+    //    SoLoud::handle handle = reinterpret_cast<intptr_t>(m_pSoLoudHandle);
+    //    auto* soloud = SOUNDMAN->GetSoLoud();
 
-        if (soloud->isValidVoiceHandle(handle))
-        {
-            if (pTimestamp)
-                *pTimestamp = RageTimer::GetTimeSinceStart();
+    //    if (soloud->isValidVoiceHandle(handle))
+    //    {
+    //        if (pTimestamp)
+    //            *pTimestamp = RageTimer::GetTimeSinceStart();
 
-            return soloud->getStreamPosition(handle);
-        }
-    }
+    //        return soloud->getStreamPosition(handle);
+    //    }
+    //}
 
-    // Legacy RageSound position tracking
-    if (!m_pSource)
-        return 0.0f;
+    //// Legacy RageSound position tracking
+    //if (!m_pSource)
+    //    return 0.0f;
 
-    // Get our current hardware position.
-    int64_t iCurrentHardwareFrame = SOUNDMAN->GetPosition(pTimestamp);
+    //// Get our current hardware position.
+    //int64_t iCurrentHardwareFrame = SOUNDMAN->GetPosition(pTimestamp);
 
-    // Lock the mutex after calling SOUNDMAN->GetPosition().
-    LockMut(m_Mutex);
+    //// Lock the mutex after calling SOUNDMAN->GetPosition().
+    //LockMut(m_Mutex);
 
-    // cast the sample rate to be used for the remainder of the function.
-    float fSampleRate = static_cast<float>(m_pSource->GetSampleRate());
+    //// cast the sample rate to be used for the remainder of the function.
+    //float fSampleRate = static_cast<float>(m_pSource->GetSampleRate());
 
-    /* If we're not playing, just report the static position. */
-    if (!IsPlaying())
-        return static_cast<float>(m_iStoppedSourceFrame) / fSampleRate;
+    ///* If we're not playing, just report the static position. */
+    //if (!IsPlaying())
+    //    return static_cast<float>(m_iStoppedSourceFrame) / fSampleRate;
 
-    /* If we don't yet have any position data, CommitPlayingPosition hasn't yet been called at all,
-     * so guess what we think the real time is. */
-    if (m_HardwareToStreamMap.IsEmpty() || m_StreamToSourceMap.IsEmpty())
-    {
-        return static_cast<float>(m_iStoppedSourceFrame) / fSampleRate;
-    }
+    ///* If we don't yet have any position data, CommitPlayingPosition hasn't yet been called at all,
+    // * so guess what we think the real time is. */
+    //if (m_HardwareToStreamMap.IsEmpty() || m_StreamToSourceMap.IsEmpty())
+    //{
+    //    return static_cast<float>(m_iStoppedSourceFrame) / fSampleRate;
+    //}
 
-    int iSourceFrame = GetSourceFrameFromHardwareFrame(iCurrentHardwareFrame);
-    return static_cast<float>(iSourceFrame) / fSampleRate;
+    //int iSourceFrame = GetSourceFrameFromHardwareFrame(iCurrentHardwareFrame);
+    //return static_cast<float>(iSourceFrame) / fSampleRate;
 }
 
 bool RageSound::SetPositionFrames( int iFrames )
@@ -643,7 +640,7 @@ void RageSound::UpdateSoLoudParams(const RageSoundParams* params)
         return;
 
     // Get the handle as a SoLoud handle
-    SoLoud::handle handle = reinterpret_cast<intptr_t>(m_pSoLoudHandle);
+    unsigned int handle = static_cast<unsigned int>(reinterpret_cast<uintptr_t>(m_pSoLoudHandle));
 
     // If we have explicit parameters, use them, otherwise use current parameters
     const RageSoundParams& p = params ? *params : m_Param;
