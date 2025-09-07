@@ -78,6 +78,9 @@ bool RageFile::Open( const RString& path, int mode )
 		return false;
 	}
 
+	// If we're reading the file, be sure the Enable CRC32 flag is set
+	m_File->EnableCRC32( !!(m_Mode & READ) );
+	
 	return true;
 }
 
