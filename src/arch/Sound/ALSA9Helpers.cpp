@@ -1,5 +1,4 @@
 #include "global.h"
-#include "RageSound.h"
 #include "RageLog.h"
 #include "RageUtil.h"
 #include "ALSA9Helpers.h"
@@ -231,7 +230,7 @@ RString Alsa9Buf::Init( int channels_,
 	preferred_chunksize = iChunkSize;
 	if( iSampleRate == 0 )
 	{
-		samplerate = kFallbackSampleRate;
+		samplerate = 44100;
 	}
 	else
 	{

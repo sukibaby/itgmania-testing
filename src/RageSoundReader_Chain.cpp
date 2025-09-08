@@ -25,12 +25,8 @@
  */
 RageSoundReader_Chain::RageSoundReader_Chain()
 {
-	m_iPreferredSampleRate = PREFSMAN->m_iSoundPreferredSampleRate;
-	if (m_iPreferredSampleRate == 0)
-	{
-		m_iPreferredSampleRate = kFallbackSampleRate;
-	}
-	
+	// Game audio should ideally be in the same sample rate as m_iPreferredSampleRate.
+	m_iPreferredSampleRate = 44100;
 	m_iActualSampleRate = -1;
 	m_iChannels = 0;
 	m_iCurrentFrame = 0;
