@@ -53,23 +53,16 @@ pos_map_queue::pos_map_queue( const pos_map_queue &cpy )
 
 pos_map_queue &pos_map_queue::operator=( const pos_map_queue &rhs )
 {
-	if( this == &rhs )
-		return *this;
-
-	// Lock both mutexes in address order to avoid deadlocks.
-	pos_map_queue* first  = (this < &rhs) ? this : const_cast<pos_map_queue*>(&rhs);
-	pos_map_queue* second = (this < &rhs) ? const_cast<pos_map_queue*>(&rhs) : this;
-
-	first->m_Mutex.Lock();
-	second->m_Mutex.Lock();
-
-	pos_map_impl* newImpl = new pos_map_impl(*rhs.m_pImpl);
-	std::swap(m_pImpl, newImpl);
-	delete newImpl;
-
-	second->m_Mutex.Unlock();
-	first->m_Mutex.Unlock();
-
+	if (this != &rhs)
+	{
+		std::lock(m_Mutex, rhs.m_Mutex);
+		LockMut lock1(m_Mutex, std::adopt_lock);
+		LockMut lock2(rhs.m_Mutex, std::adopt_lock);
+        
+		pos_map_impl* tempImpl = new pos_map_impl(*rhs.m_pImpl);
+		std::swap(m_pImpl, tempImpl);
+		delete tempImpl;
+	}
 	return *this;
 }
 
