@@ -196,7 +196,15 @@ int RageSoundSplitterImpl::ReadBuffer()
 	{
 		int iEraseFrames = iMinFrameRequested - m_iBufferPositionFrames;
 		iEraseFrames = std::min( iEraseFrames, (int) m_sBuffer.size() );
-		m_sBuffer.erase( m_sBuffer.begin(), m_sBuffer.begin() + static_cast<size_t>(iEraseFrames) * m_pSource->GetNumChannels() );
+
+		// Prevent buffer misalignment
+		if (iEraseFrames % m_pSource->GetNumChannels() != 0 || iEraseFrames < 0)
+		{
+			LOG->Warn("RageSoundSplitterImpl::ReadBuffer: Buffer misalignment or negative erase frames detected (iEraseFrames=%d, channels=%d)", iEraseFrames, m_pSource->GetNumChannels());
+			return -1;
+		}
+
+		m_sBuffer.erase( m_sBuffer.begin(), m_sBuffer.begin() + iEraseFrames * m_pSource->GetNumChannels() );
 		m_iBufferPositionFrames += iEraseFrames;
 	}
 
