@@ -3,12 +3,13 @@
 #include "RageLog.h"
 #include "RageUtil.h"
 #include "RageTimer.h"
+#include "RageThreads.h"
 
 #include <cinttypes>
-#include <climits>
 #include <cmath>
 #include <cstdint>
 #include <list>
+#include <mutex>
 
 // NOTE(sukibaby): The number of frames we should keep pos_map data for.
 // File bitrate, metadata, etc will factor in here. 80k is a safe value
@@ -45,6 +46,7 @@ pos_map_queue::~pos_map_queue()
 
 pos_map_queue::pos_map_queue( const pos_map_queue &cpy )
 {
+	LockMut(m_Mutex);
 	*this = cpy;
 	m_pImpl = new pos_map_impl( *cpy.m_pImpl );
 }
@@ -53,6 +55,10 @@ pos_map_queue &pos_map_queue::operator=( const pos_map_queue &rhs )
 {
 	if (this != &rhs)
 	{
+		std::lock(m_Mutex, rhs.m_Mutex);
+		LockMut lock1(m_Mutex, std::adopt_lock);
+		LockMut lock2(rhs.m_Mutex, std::adopt_lock);
+        
 		pos_map_impl* tempImpl = new pos_map_impl(*rhs.m_pImpl);
 		std::swap(m_pImpl, tempImpl);
 		delete tempImpl;
@@ -62,6 +68,8 @@ pos_map_queue &pos_map_queue::operator=( const pos_map_queue &rhs )
 
 void pos_map_queue::Insert(int64_t iSourceFrame, int64_t iFrames, int64_t iDestFrame, double fSourceToDestRatio)
 {
+	LockMut(m_Mutex);
+
 	bool merged = false;
 	if (!m_pImpl->m_Queue.empty())
 	{
@@ -111,6 +119,8 @@ void pos_map_impl::Cleanup()
 
 int64_t pos_map_queue::Search( int64_t iSourceFrame ) const
 {
+	LockMut(m_Mutex);
+
 	if( IsEmpty() )
 	{
 		return 0;
@@ -169,11 +179,13 @@ int64_t pos_map_queue::Search( int64_t iSourceFrame ) const
 
 void pos_map_queue::Clear()
 {
+	LockMut(m_Mutex);
 	m_pImpl->m_Queue.clear();
 }
 
 bool pos_map_queue::IsEmpty() const
 {
+	LockMut(m_Mutex);
 	return m_pImpl->m_Queue.empty();
 }
 

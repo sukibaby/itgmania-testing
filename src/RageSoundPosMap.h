@@ -3,11 +3,15 @@
 #ifndef RAGE_SOUND_POS_MAP_H
 #define RAGE_SOUND_POS_MAP_H
 
+#include "RageThreads.h"
 #include <cstdint>
 
 struct pos_map_impl;
 class pos_map_queue
 {
+private:
+    mutable RageMutex m_Mutex{"pos_map_queue"};
+    pos_map_impl *m_pImpl;
 public:
 	pos_map_queue();
 	~pos_map_queue();
@@ -25,9 +29,6 @@ public:
 	void Clear();
 
 	bool IsEmpty() const;
-
-private:
-	pos_map_impl *m_pImpl;
 };
 
 #endif
