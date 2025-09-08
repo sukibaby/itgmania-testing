@@ -3,26 +3,39 @@
 #include "RageUtil.h"
 
 #include <windows.h>
+#include <cstdarg>
+
+static void CleanErrorString(std::string& text)
+{
+    // Replace all CRLF, CR, LF with a single space
+    size_t pos = 0;
+    while ((pos = text.find_first_of("\r\n", pos)) != std::string::npos)
+	{
+        text.replace(pos, 1, " ");
+    }
+
+    // Optionally trim trailing spaces
+    while (!text.empty() && std::isspace(text.back()))
+	{
+        text.pop_back();
+    }
+}
 
 RString werr_ssprintf( int err, const char *fmt, ... )
 {
-	char buf[1024] = "";
-	FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-		0, err, 0, buf, sizeof(buf), nullptr);
+    char buf[1024] = "";
+    FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+        0, err, 0, buf, sizeof(buf), nullptr);
 
-	// Why is FormatMessage returning text ending with \r\n? (who? -aj)
-	// Perhaps it's because you're on Windows, where newlines are \r\n. -aj
-	RString text = buf;
-	Replace(text, "\n", "" );
-	Replace(text, "\r", " " ); // foo\r\nbar -> foo bar
-	TrimRight( text ); // "foo\r\n" -> "foo"
+    std::string text = buf;
+    CleanErrorString(text);
 
-	va_list	va;
-	va_start(va, fmt);
-	RString s = vssprintf( fmt, va );
-	va_end(va);
+    va_list va;
+    va_start(va, fmt);
+    RString s = vssprintf(fmt, va);
+    va_end(va);
 
-	return s += ssprintf( " (%s)", text.c_str() );
+    return s += ssprintf(" (%s)", text.c_str());
 }
 
 RString ConvertWstringToCodepage( std::wstring s, int iCodePage )
