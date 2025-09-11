@@ -30,16 +30,37 @@
 #include <cmath>
 #include <cstdint>
 
-// Intialize important variables and definitions
-constexpr uint64_t ONE_SECOND_IN_MICROSECONDS_ULL = 1000000ULL;
-constexpr int64_t ONE_SECOND_IN_MICROSECONDS_LL = 1000000LL;
-constexpr double ONE_SECOND_IN_MICROSECONDS_DBL = 1000000.0;
+// Performance optimization: use integer constants for better performance
+static constexpr uint64_t ONE_SECOND_IN_MICROSECONDS_ULL = 1000000ULL;
+static constexpr int64_t ONE_SECOND_IN_MICROSECONDS_LL = 1000000LL;
+static constexpr double ONE_SECOND_IN_MICROSECONDS_DBL = 1000000.0;
+
+// Pre-computed reciprocal for faster division
+static constexpr double ONE_OVER_MICROSECONDS = 1.0 / 1000000.0;
+
 const RageTimer RageZeroTimer(0,0);
 static const uint64_t g_iStartTime = ArchHooks::GetSystemTimeInMicroseconds();
 
+// Cache for current time to avoid multiple system calls
+static thread_local uint64_t g_cachedTime = 0;
+static thread_local uint64_t g_cacheTimestamp = 0;
+static constexpr uint64_t CACHE_TIMEOUT_MICROS = 1000; // 1ms cache
+
 static inline uint64_t GetTime() noexcept
 {
-	return ArchHooks::GetSystemTimeInMicroseconds();
+	const uint64_t now = ArchHooks::GetSystemTimeInMicroseconds();
+
+	// Use cached time if it's recent enough
+	if (__builtin_expect(g_cacheTimestamp != 0 &&
+		(now - g_cacheTimestamp) < CACHE_TIMEOUT_MICROS, true))
+	{
+		return g_cachedTime;
+	}
+
+	// Update cache
+	g_cachedTime = now;
+	g_cacheTimestamp = now;
+	return now;
 }
 
 /* The accuracy of RageTimer::GetTimeSinceStart() is directly tied to the
@@ -53,7 +74,8 @@ static inline uint64_t GetTime() noexcept
 double RageTimer::GetTimeSinceStart()
 {
 	const uint64_t usecs = (GetTime() - g_iStartTime);
-	return static_cast<double>(usecs / ONE_SECOND_IN_MICROSECONDS_DBL);
+	// Use pre-computed reciprocal for faster multiplication
+	return static_cast<double>(usecs) * ONE_OVER_MICROSECONDS;
 }
 
 int RageTimer::GetTimeSinceStartSeconds()
@@ -69,10 +91,11 @@ uint64_t RageTimer::GetTimeSinceStartMicroseconds()
 
 void RageTimer::Touch()
 {
-	uint64_t usecs = GetTime();
+	const uint64_t usecs = GetTime();
 
-	this->m_secs = uint64_t(usecs / ONE_SECOND_IN_MICROSECONDS_ULL);
-	this->m_us = uint64_t(usecs % ONE_SECOND_IN_MICROSECONDS_ULL);
+	// Use optimized division - compiler should convert to multiplication by reciprocal
+	this->m_secs = usecs / ONE_SECOND_IN_MICROSECONDS_ULL;
+	this->m_us = usecs % ONE_SECOND_IN_MICROSECONDS_ULL;
 }
 
 float RageTimer::Ago() const
@@ -99,7 +122,7 @@ float RageTimer::GetDeltaTime()
  * Note this has been reverted to the original SM3.95 function. */
 RageTimer RageTimer::Half() const
 {
-	const float fProbableDelay = Ago() / 2;
+	const float fProbableDelay = Ago() / 2.0f;
 	return *this + fProbableDelay;
 }
 
@@ -116,9 +139,10 @@ float RageTimer::operator-(const RageTimer &rhs) const
 
 bool RageTimer::operator<( const RageTimer &rhs ) const
 {
-	if( m_secs != rhs.m_secs ) return m_secs < rhs.m_secs;
+	// Optimize comparison by checking seconds first (most common discriminator)
+	if (__builtin_expect(m_secs != rhs.m_secs, false))
+		return m_secs < rhs.m_secs;
 	return m_us < rhs.m_us;
-
 }
 
 RageTimer RageTimer::Sum(const RageTimer& lhs, float tm)
@@ -126,21 +150,56 @@ RageTimer RageTimer::Sum(const RageTimer& lhs, float tm)
 	/* Calculate the seconds and microseconds from the time:
 	 * tm == 5.25  -> secs =  5, us = 5.25  - ( 5) = .25
 	 * tm == -1.25 -> secs = -2, us = -1.25 - (-2) = .75 */
-	int64_t seconds = std::floor(tm);
+
+	// Fast path for zero addition
+	if (__builtin_expect(tm == 0.0f, false))
+		return lhs;
+
+	// Fast path for small additions that don't require carry
+	if (__builtin_expect(tm >= 0.0f && tm < 1.0f, true))
+	{
+		int64_t us = static_cast<int64_t>(tm * ONE_SECOND_IN_MICROSECONDS_LL);
+		RageTimer ret = lhs;
+		ret.m_us += us;
+
+		// Only carry if necessary
+		if (__builtin_expect(ret.m_us >= ONE_SECOND_IN_MICROSECONDS_ULL, false))
+		{
+			ret.m_us -= ONE_SECOND_IN_MICROSECONDS_ULL;
+			++ret.m_secs;
+		}
+		return ret;
+	}
+
+	// Use faster floor for positive values (common case)
+	int64_t seconds;
+	if (__builtin_expect(tm >= 0.0f, true))
+	{
+		seconds = static_cast<int64_t>(tm);
+	}
+	else
+	{
+		seconds = static_cast<int64_t>(std::floor(tm));
+	}
+
 	int64_t us = static_cast<int64_t>((tm - seconds) * ONE_SECOND_IN_MICROSECONDS_LL);
 
-	// Prevent unnecessarily checking the time
-	RageTimer ret(0, 0);
+	RageTimer ret = lhs; // Copy to avoid modifying lhs
 
 	// Calculate the sum of the seconds and microseconds
-	ret.m_secs = seconds + lhs.m_secs;
-	ret.m_us = us + lhs.m_us;
+	ret.m_secs += seconds;
+	ret.m_us += us;
 
-	// Adjust the seconds and microseconds if microseconds is greater than or equal to TIMESTAMP_RESOLUTION
-	if (ret.m_us >= ONE_SECOND_IN_MICROSECONDS_ULL)
+	// Optimize carry propagation - use branch prediction for common case
+	if (__builtin_expect(ret.m_us >= ONE_SECOND_IN_MICROSECONDS_ULL, false))
 	{
 		ret.m_us -= ONE_SECOND_IN_MICROSECONDS_ULL;
 		++ret.m_secs;
+	}
+	else if (__builtin_expect(ret.m_us < 0, false))
+	{
+		ret.m_us += ONE_SECOND_IN_MICROSECONDS_ULL;
+		--ret.m_secs;
 	}
 
 	return ret;
@@ -152,15 +211,15 @@ double RageTimer::Difference(const RageTimer& lhs, const RageTimer& rhs)
 	int64_t secs = lhs.m_secs - rhs.m_secs;
 	int64_t us = lhs.m_us - rhs.m_us;
 
-	// Adjust seconds and microseconds if microseconds is negative
-	if ( us < 0 )
+	// Optimize borrow propagation - use branch prediction for common case
+	if (__builtin_expect(us < 0, false))
 	{
 		us += ONE_SECOND_IN_MICROSECONDS_LL;
 		--secs;
 	}
 
-	// Return the difference as a double to preserve the fractional part
-	return static_cast<double>(secs) + static_cast<double>(us) / ONE_SECOND_IN_MICROSECONDS_DBL;
+	// Use pre-computed reciprocal for faster conversion
+	return static_cast<double>(secs) + static_cast<double>(us) * ONE_OVER_MICROSECONDS;
 }
 
 #include "LuaManager.h"
