@@ -78,6 +78,8 @@ struct SongToLoad {
     std::string sSongDirName;
 };
 
+// Stores the result of loading a song, whether it succeeded or failed and the pointer to the song
+// if it did succeed.
 struct SongLoadResult {
     enum State {
         STATE_UNLOADED,
@@ -485,10 +487,12 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
     // Holds the index of the next unloaded song for a thread to claim.
     std::atomic<int> nextSongToLoadIndex = 0;
 
-    // The result of the threaded work to load a song is a pointer to an allocated song. These
-    // are initialized to NULL and the pointer is populated when the work to load the song is
-    // complete. Pre-allocate it so that threads can update the index of the song they are working
-    // on directly without any locking.
+    // Create an array for the results of the songs to load. Pre-allocating it helps us avoid
+    // needing to coordinate threads in 2 ways:
+    // - No memory re-allocations happen as songs are completed and entries are updated, which
+    //   otherwise could introduce problems with threads having stale pointers.
+    // - Threads atomically claim an index of a song to load, so when they update that entry after
+    //   loading a song, they know that no other thread will also update that entry.
     std::vector<SongLoadResult> loadedSongs {};
     loadedSongs.resize(songsToLoad.size());
 
@@ -529,6 +533,10 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
                 // We intentionally set the song pointer before updating the state so that when
                 // the main thread checks the state, the song will be populated. This may not be
                 // the case if we set the song pointer afterwards.
+                //
+                // Alternatively, if we find this has the potential to create a race condition,
+                // we could consider making this operation of setting both fields a single atomic
+                // operation.
                 loadedSongs[songToLoadIndex].pSong = pNewSong;
                 loadedSongs[songToLoadIndex].state = SongLoadResult::State::STATE_LOAD_SUCCEEDED;
             }
