@@ -449,7 +449,7 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
 // song loading. For me, when this is commented out, I'm able to load the songs and play them, but
 // its possible there is something I don't know about that is broken, so someone more knowledge-able
 // should try it out !
-#define THREADED_LOADING
+// #define THREADED_LOADING
 
 #ifdef THREADED_LOADING
     int threadCount = std::thread::hardware_concurrency();
