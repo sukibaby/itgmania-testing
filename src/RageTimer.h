@@ -15,7 +15,7 @@ public:
 	/* Time ago this RageTimer represents. */
 	float Ago() const;
 	void Touch();
-	inline bool IsZero() const { return __builtin_expect(m_secs == 0 && m_us == 0, false); }
+	inline bool IsZero() const { return m_secs == 0 && m_us == 0; }
 	inline void SetZero() { m_secs = m_us = 0; }
 
 	/* Time between last call to GetDeltaTime() (Ago() + Touch()): */
@@ -43,7 +43,7 @@ public:
 	 * microseconds values into two integers and combining them later allows for
 	 * better precision. Use caution when changing data types, since resolution
 	 * mismatch errors are easy to cause when changing things in RageTimer. */
-	alignas(64) uint64_t m_secs, m_us;
+	uint64_t m_secs, m_us;
 
 private:
 	static RageTimer Sum( const RageTimer &lhs, float tm );

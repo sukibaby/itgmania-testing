@@ -381,25 +381,26 @@ void RageSound::SoundIsFinishedPlaying()
 		// Global sound mutex
 		LockMut(m_Mutex);
         
-		// Use branch prediction hints for likely/unlikely paths
-		if( __builtin_expect(m_bDeleteWhenFinished, false) )
+		// Update the stopped source frame using the current hardware frame,
+		// but only if the hardware-to-stream and stream-to-source maps are not empty.
+		// This branch handles normal cleanup when the sound is not scheduled for deletion.
+		// If the maps are empty, we leave m_iStoppedSourceFrame untouched.
+		if( m_bDeleteWhenFinished )
 		{
 			m_bDeleteWhenFinished = false;
 			bDeleteThis = true;
 		}
 		else
 		{
-			// Fast path: check both maps emptiness with short-circuit evaluation
-			if( __builtin_expect(!m_HardwareToStreamMap.IsEmpty() && !m_StreamToSourceMap.IsEmpty(), true) )
+			if( !m_HardwareToStreamMap.IsEmpty() && !m_StreamToSourceMap.IsEmpty() )
 			{
 				// Update stopped position only if maps are available; otherwise, preserve existing value.
 				m_iStoppedSourceFrame = static_cast<int>(GetSourceFrameFromHardwareFrame(iCurrentHardwareFrame));
 			}
 
 			m_bPlaying = false;
-			// Optimize map clearing by swapping with empty maps (O(1) vs O(n))
-			pos_map_queue().swap(m_HardwareToStreamMap);
-			pos_map_queue().swap(m_StreamToSourceMap);
+			m_HardwareToStreamMap.Clear();
+			m_StreamToSourceMap.Clear();
 		}
 	}
 
@@ -486,11 +487,9 @@ float RageSound::GetLengthSeconds()
 
 int RageSound::GetSourceFrameFromHardwareFrame( int64_t iHardwareFrame ) const
 {
-	// Fast path: check emptiness first (likely branch)
-	if( __builtin_expect(m_HardwareToStreamMap.IsEmpty() || m_StreamToSourceMap.IsEmpty(), false) )
+	if( m_HardwareToStreamMap.IsEmpty() || m_StreamToSourceMap.IsEmpty() )
 		return 0;
 
-	// Perform the two-stage lookup with potential for optimization
 	int64_t iStreamFrame = m_HardwareToStreamMap.Search( iHardwareFrame );
 	return static_cast<int>(m_StreamToSourceMap.Search( iStreamFrame ));
 }

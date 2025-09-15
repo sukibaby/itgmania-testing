@@ -171,8 +171,8 @@ private:
 	 * were at when we stopped without jumping to the last position we buffered.
 	 * Keep track of the position after a seek or stop, so we can return a sane
 	 * position when stopped, and when playing but pos_map hasn't yet been filled. */
-	alignas(64) int m_iStoppedSourceFrame;
-	alignas(64) bool m_bPlaying;
+	int m_iStoppedSourceFrame;
+	bool m_bPlaying;
 	bool m_bDeleteWhenFinished;
 
 	RString m_sError;
