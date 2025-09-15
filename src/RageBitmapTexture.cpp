@@ -20,9 +20,8 @@
 // It seems like overkill to query this every time we load a texture.
 // DISPLAY->GetMaxTextureSize() will return a consistent value during
 // runtime, so we can safely cache it. It seems like some newer drivers
-// or GPU's (AMD RX 6600) may possibly return a negative or uninitialized
-// value if queried via RageDisplay_OGL.cpp.
-static int cached_max_texture_size = -1;
+// or GPU's (AMD RX 6600) may possibly cause the glGetIntegerv call in
+// RageDisplay_OGL.cpp to return a negative or uninitialized value.
 static int cached_max_hardware_texture_size = -1;
 
 static void GetResolutionFromFileName( RString sPath, int &iWidth, int &iHeight )
@@ -145,11 +144,10 @@ void RageBitmapTexture::Create()
 		actualID.iGrayscaleBits = -1;
 
 	// Be sure the hardware max texture size is cached.  -sukibaby
-	if( cached_max_texture_size == -1 )
+	if( cached_max_hardware_texture_size == -1 )
 	{
-		cached_max_texture_size = DISPLAY->GetMaxTextureSize();
-		cached_max_hardware_texture_size = cached_max_texture_size;
-		LOG->Trace("Hardware max texture size: %d", cached_max_hardware_texture_size);
+		cached_max_hardware_texture_size = DISPLAY->GetMaxTextureSize();
+		LOG->Trace("Hardware max texture size cached as %d", cached_max_hardware_texture_size);
 	}
 
 	/* Cap the max texture size to the hardware max. */
