@@ -137,8 +137,18 @@ void RageBitmapTexture::Create()
 	if( actualID.iGrayscaleBits != -1 && pImg->format->BitsPerPixel == 8 )
 		actualID.iGrayscaleBits = -1;
 
+
+		    /* Cap the max texture size to the hardware max. */
+    int hardwareMax = DISPLAY->GetMaxTextureSize();
+    LOG->Trace("Hardware max texture size: %d", hardwareMax);
+    actualID.iMaxSize = std::min( actualID.iMaxSize, hardwareMax );
+    LOG->Trace("After min(): iMaxSize = %d", actualID.iMaxSize);
+
+
 	/* Cap the max texture size to the hardware max. */
-	actualID.iMaxSize = std::min( actualID.iMaxSize, DISPLAY->GetMaxTextureSize() );
+	//actualID.iMaxSize = std::min( actualID.iMaxSize, DISPLAY->GetMaxTextureSize() );
+
+
 
 	/* Save information about the source. */
 	m_iSourceWidth = pImg->w;
