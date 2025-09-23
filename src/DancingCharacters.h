@@ -1,3 +1,21 @@
+/**
+ * @file DancingCharacters.h
+ * @brief Header file for the DancingCharacters class. Simply Love refers
+ *  to these as "Cel-shaded Models".
+ *
+ * This file defines the DancingCharacters class which manages animated
+ * character models that react to player performance with different animation
+ * states. It supports both 3D models and 2D sprite animations. The
+ * implementation is in DancingCharacters.cpp.
+ *
+ * Significant dependencies:
+ * - ActorFrame.h: Base class for UI elements and actor management.
+ * - ThemeManager.h: Theme management system for loading character assets.
+ * - RageTimer.h: Timer functionality for managing animation state transitions.
+ * - AutoActor.h: AutoActor class for automatic sprite resource management.
+ * - Model: 3D model class for rendering character models.
+ */
+
 #ifndef DancingCharacters_H
 #define DancingCharacters_H
 

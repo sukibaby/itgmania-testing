@@ -1,3 +1,18 @@
+/**
+ * @file Difficulty.h
+ * @brief Header file for difficulty enums and difficulty-related utility functions.
+ *
+ * This file defines the Difficulty enum for song and step difficulty levels,
+ * along with utility functions for difficulty conversion, localization, and
+ * custom difficulty handling. The implementation is in Difficulty.cpp.
+ *
+ * Significant dependencies:
+ * - EnumHelper.h: Provides enum helper functions and LuaDeclareType macro.
+ * - GameConstantsAndTypes.h: Provides StepsType and CourseType enums.
+ * - Steps: Steps class representing playable note sequences.
+ * - Trail: Trail class representing course trails.
+ */
+
 #ifndef DIFFICULTY_H
 #define DIFFICULTY_H
 

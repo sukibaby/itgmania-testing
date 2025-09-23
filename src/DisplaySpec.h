@@ -1,3 +1,15 @@
+/**
+ * @file DisplaySpec.h
+ * @brief Header file for DisplayMode and DisplaySpec classes, display configuration.
+ *
+ * This file defines DisplayMode struct for representing display modes and
+ * DisplaySpec class for managing display specifications with supported modes
+ * and current configuration. The implementation is in DisplaySpec.cpp.
+ *
+ * Significant dependencies:
+ * - RageTypes.h: Provides Rage types including RectI for screen bounds.
+ */
+
 #ifndef DisplaySpec_H
 #define DisplaySpec_H
 

@@ -1,3 +1,15 @@
+/**
+ * @file DisplayResolutions.h
+ * @brief Header file for DisplayResolution class and display resolution management.
+ *
+ * This file defines the DisplayResolution class for representing display
+ * dimensions and the DisplayResolutions typedef for managing collections of
+ * display resolutions. This is a header-only file with no separate implementation.
+ *
+ * Significant dependencies:
+ * - <set>: Standard library set container for storing DisplayResolution objects.
+ */
+
 #ifndef DisplayResolutions_H
 #define DisplayResolutions_H
 

@@ -1,3 +1,17 @@
+/**
+ * @file DateTime.h
+ * @brief Header file for the DateTime struct and date/time utility functions.
+ *
+ * This file defines the DateTime struct for representing dates and times with
+ * comparison operators and string conversion. It also provides utility functions
+ * for date manipulation, localization, and time calculations. The implementation
+ * is in DateTime.cpp.
+ *
+ * Significant dependencies:
+ * - EnumHelper.h: Provides enum helper functions and LuaDeclareType macro for
+ *   Lua integration.
+ */
+
 #ifndef DATE_TIME_H
 #define DATE_TIME_H
 
