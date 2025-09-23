@@ -1,3 +1,13 @@
+/**
+ * @file ActorFrame.h
+ * @brief Header file for the ActorFrame class.
+ * @details This header defines the ActorFrame class, which is a container for
+ * multiple Actor objects. It inherits from Actor and manages a collection of
+ * child actors, handling their positioning, drawing, and updates.
+ *
+ * The corresponding source file is ActorFrame.cpp, which contains the
+ * implementation of the ActorFrame class methods.
+ */
 #ifndef ACTORFRAME_H
 #define ACTORFRAME_H
 

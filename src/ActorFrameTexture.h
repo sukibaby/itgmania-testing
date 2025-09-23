@@ -1,3 +1,13 @@
+/**
+ * @file ActorFrameTexture.h
+ * @brief Header file for the ActorFrameTexture class.
+ * @details This header defines the ActorFrameTexture class, which is a specialized
+ * ActorFrame that renders its children to a texture. This allows for off-screen
+ * rendering and effects like reflections, shadows, or post-processing.
+ *
+ * The corresponding source file is ActorFrameTexture.cpp, which contains the
+ * implementation of the ActorFrameTexture class methods.
+ */
 #ifndef ACTOR_FRAME_TEXTURE_H
 #define ACTOR_FRAME_TEXTURE_H
 

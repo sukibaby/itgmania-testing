@@ -1,3 +1,21 @@
+/**
+ * @file Actor.h
+ * @brief Header file for the Actor class.
+ * @details This header defines the Actor class, which is the base class for all
+ * drawable objects in the game, such as sprites, text, buttons, and other UI
+ * elements. Actors form the foundation of the game's visual hierarchy, allowing
+ * for complex animations, effects, and interactions. Common uses include
+ * creating menu screens, displaying scores, animating gameplay elements, and
+ * building interactive interfaces. It provides functionality for positioning,
+ * scaling, rotation, effects, tweening, and rendering.
+ *
+ * (Tweening, as defined in this codebase, is the process of interpolating
+ * between two states over time.)
+ *
+ * The corresponding source file is Actor.cpp, which contains the implementation
+ * of the Actor class methods.
+ */
+
 #ifndef ACTOR_H
 #define ACTOR_H
 

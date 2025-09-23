@@ -1,3 +1,12 @@
+/**
+ * @file ActiveAttackList.h
+ * @brief Header file for the ActiveAttackList class.
+ * @details This class manages and displays active player modifiers (attacks) during gameplay.
+ * It inherits from BitmapText and is used in the game's UI to show current effects on the player.
+ *
+ * The corresponding source file is ActiveAttackList.cpp, which implements the class methods.
+ */
+
 #ifndef ACTIVE_ATTACK_LIST_H
 #define ACTIVE_ATTACK_LIST_H
 

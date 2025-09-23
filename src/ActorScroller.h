@@ -1,3 +1,13 @@
+/**
+ * @file ActorScroller.h
+ * @brief Header file for the ActorScroller class.
+ * @details This header defines the ActorScroller class, which is a scrolling
+ * container for Actor objects, allowing for scrolling through a list of
+ * children with various movement patterns.
+ *
+ * The corresponding source file is ActorScroller.cpp, which contains the
+ * implementation of the ActorScroller class methods.
+ */
 #ifndef ActorScroller_H
 #define ActorScroller_H
 

@@ -1,3 +1,13 @@
+/**
+ * @file ActorProxy.h
+ * @brief Header file for the ActorProxy class.
+ * @details This header defines the ActorProxy class, which acts as a proxy
+ * for another Actor, enabling indirect rendering or manipulation of the
+ * target actor.
+ *
+ * The corresponding source file is ActorProxy.cpp, which contains the
+ * implementation of the ActorProxy class methods.
+ */
 #ifndef ACTOR_PROXY_H
 #define ACTOR_PROXY_H
 
