@@ -1,3 +1,17 @@
+/**
+ * @file Bookkeeper.h
+ * @brief Header file for the Bookkeeper class, tracking coin insertions.
+ *
+ * This file defines the Bookkeeper class, which tracks coin insertions into
+ * the machine and provides statistical analysis by time periods (days, weeks,
+ * hours). It handles data persistence and reporting for financial tracking.
+ * The implementation is in Bookkeeper.cpp.
+ *
+ * Significant dependencies:
+ * - DateTime: Provides date and time handling for timestamping insertions.
+ * - XNode: Used for XML serialization and parsing of bookkeeping data.
+ */
+
 #ifndef Bookkeeper_H
 #define Bookkeeper_H
 

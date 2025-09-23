@@ -1,3 +1,13 @@
+/**
+ * @file ColumnCues.h
+ * @brief Header file for ColumnCue structures, indicating upcoming notes after gaps.
+ *
+ * Significant dependencies:
+ * - GameConstantsAndTypes.h: Provides game constants and type definitions.
+ * - NoteTypes.h: Defines TapNoteType enum for different note types.
+ * - NoteData.h: Provides NoteData class containing note timing and position data.
+ */
+
 #ifndef COLUMN_CUES_H
 #define COLUMN_CUES_H
 

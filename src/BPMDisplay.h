@@ -1,3 +1,23 @@
+/**
+ * @file BPMDisplay.h
+ * @brief Header file for the BPMDisplay class, displaying BPM information.
+ *
+ * This file defines the BPMDisplay class, which displays beats per minute
+ * (BPM) information for songs, steps, or courses. It supports displaying
+ * constant BPMs or cycling through BPM ranges with visual effects. The
+ * implementation is in BPMDisplay.cpp.
+ *
+ * Significant dependencies:
+ * - BitmapText: Base class providing text rendering functionality.
+ * - AutoActor: Smart pointer for managing display elements.
+ * - ThemeMetric: Handles themed configuration values.
+ * - LocalizedString: Provides localized text strings.
+ * - Song: Represents song metadata including BPM data.
+ * - Steps: Represents step data with associated BPM information.
+ * - Course: Represents course metadata including BPM ranges.
+ * - DisplayBpms: Structure for managing BPM display ranges.
+ */
+
 #ifndef BPM_DISPLAY_H
 #define BPM_DISPLAY_H
 

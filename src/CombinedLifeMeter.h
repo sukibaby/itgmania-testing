@@ -1,3 +1,18 @@
+/**
+ * @file CombinedLifeMeter.h
+ * @brief Header file for the CombinedLifeMeter class, managing shared life meters.
+ *
+ * This file defines the CombinedLifeMeter abstract base class which manages
+ * life meters shared by multiple players. It provides virtual methods for
+ * updating life based on note scores and player actions. The implementation
+ * is in CombinedLifeMeter.cpp.
+ *
+ * Significant dependencies:
+ * - PlayerNumber.h: Defines PlayerNumber enum for identifying players.
+ * - GameConstantsAndTypes.h: Provides TapNoteScore and HoldNoteScore enums.
+ * - ActorFrame.h: Base class for UI elements and actor management.
+ */
+
 #ifndef COMBINEDLIFEMETER_H
 #define COMBINEDLIFEMETER_H
 

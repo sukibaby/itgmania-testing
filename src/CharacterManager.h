@@ -1,3 +1,17 @@
+/**
+ * @file CharacterManager.h
+ * @brief Header file for the CharacterManager class, managing character loading.
+ *
+ * This file defines the CharacterManager class, which loads and manages all
+ * available characters from the Characters directory. It provides methods
+ * for accessing characters by ID, getting random or default characters, and
+ * handling graphics demands. The implementation is in CharacterManager.cpp.
+ *
+ * Significant dependencies:
+ * - Character: Represents individual characters with graphics and animations.
+ * - lua_State: Lua scripting state for integration with Lua scripts.
+ */
+
 #ifndef CHARACTER_MANAGER_H
 #define CHARACTER_MANAGER_H
 

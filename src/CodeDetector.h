@@ -1,4 +1,15 @@
-/* CodeDetector - Uses InputQueue to detect input of codes. */
+/**
+ * @file CodeDetector.h
+ * @brief Header file for the CodeDetector class, detecting input code sequences.
+ *
+ * This file defines the CodeDetector class which monitors input sequences to
+ * detect special codes entered by players. It provides static methods to check
+ * for various game modification codes like scroll speed changes, visual effects,
+ * and navigation commands. The implementation is in CodeDetector.cpp.
+ *
+ * Significant dependencies:
+ * - GameInput.h: Provides GameController enum for identifying input devices.
+ */
 
 #ifndef CODE_DETECTOR_H
 #define CODE_DETECTOR_H

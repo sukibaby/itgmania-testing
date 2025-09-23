@@ -1,3 +1,18 @@
+/**
+ * @file Character.h
+ * @brief Header file for the Character class. Similar to how old DDR had characters.
+ *
+ * This file defines the Character class. Characters have associated graphics,
+ * animations, and attributes loaded from character directories.
+ * 
+ * The implementation is in Character.cpp.
+ *
+ * Significant dependencies:
+ * - GameConstantsAndTypes: Core game constants and type definitions.
+ * - RageTexturePreloader: Handles preloading of character textures.
+ * - LuaReference: Manages Lua script references for character behavior.
+ */
+
 #ifndef Character_H
 #define Character_H
 

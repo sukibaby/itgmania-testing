@@ -1,3 +1,19 @@
+/**
+ * @file BitmapText.h
+ * @brief Header file for the BitmapText class, rendering bitmap text.
+ *
+ * This file defines the BitmapText class, an Actor that renders text using
+ * bitmap fonts. It supports tweening, stroke effects, and various text
+ * formatting options for displaying styled text on screen. The implementation
+ * is in BitmapText.cpp.
+ *
+ * Significant dependencies:
+ * - Actor: Base class providing core actor functionality.
+ * - RageTexture: Handles texture loading for font glyphs.
+ * - Font: Represents font data and glyph information.
+ * - FontPageTextures: Manages texture pages for font rendering.
+ */
+
 #ifndef BITMAP_TEXT_H
 #define BITMAP_TEXT_H
 

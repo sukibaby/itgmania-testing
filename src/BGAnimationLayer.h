@@ -1,3 +1,18 @@
+/**
+ * @file BGAnimationLayer.h
+ * @brief Header file for the BGAnimationLayer class, individual animation layers.
+ *
+ * This file defines the BGAnimationLayer class, representing individual layers
+ * within background animations. It supports various layer types including
+ * sprites, particles, and tiles, with effects like stretching, bouncing, and
+ * movement. The implementation is in BGAnimationLayer.cpp.
+ *
+ * Significant dependencies:
+ * - GameConstantsAndTypes: Core game constants and type definitions.
+ * - ActorFrame: Base class providing actor container functionality.
+ * - XNode: Used for XML parsing and loading layer data.
+ */
+
 #ifndef BGANIMATIONLAYER_H
 #define BGANIMATIONLAYER_H
 

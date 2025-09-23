@@ -1,3 +1,17 @@
+/**
+ * @file CodeSet.h
+ * @brief Header file for the InputQueueCodeSet class, managing input code collections.
+ *
+ * This file defines the InputQueueCodeSet class which loads and manages
+ * collections of input codes from configuration files. It provides methods to
+ * process input events and generate corresponding messages. The implementation
+ * is in CodeSet.cpp.
+ *
+ * Significant dependencies:
+ * - InputQueue.h: Provides InputQueueCode and InputEventPlus for input handling.
+ * - Message: Struct for inter-system communication and event signaling.
+ */
+
 #ifndef CODE_SET_H
 #define CODE_SET_H
 
