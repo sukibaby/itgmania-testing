@@ -1,3 +1,18 @@
+/**
+ * @file BackgroundUtil.h
+ * @brief Header file for background utility structures and functions.
+ *
+ * @details This file defines structures and utilities for managing background changes
+ * in songs, including BackgroundDef for background definitions and
+ * BackgroundChange for timed background transitions. It provides functions
+ * for parsing, comparing, and manipulating background data. The
+ * implementation is in BackgroundUtil.cpp.
+ *
+ * Significant dependencies:
+ * - Song: Represents song metadata and associated background assets.
+ * - XNode: Used for XML serialization and parsing of background data.
+ */
+
 #ifndef BackgroundUtil_H
 #define BackgroundUtil_H
 

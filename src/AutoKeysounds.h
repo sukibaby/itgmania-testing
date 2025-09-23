@@ -1,3 +1,20 @@
+/**
+ * @file AutoKeysounds.h
+ * @brief Header file for the AutoKeysounds class, handling auto-play keysound notes.
+ *
+ * @details This file defines the AutoKeysounds class, which manages the playback of
+ * auto-play keysound notes. It combines autoplay sounds and BGM tracks into a
+ * single sound chain for background music, and handles dynamic sound playback
+ * during gameplay. The implementation is in AutoKeysounds.cpp.
+ *
+ * Significant dependencies:
+ * - NoteData: Represents note data including keysound information.
+ * - PlayerNumber: Enumerates player identifiers for multi-player support.
+ * - RageSound: Core sound playback class for managing audio.
+ * - RageSoundReader: Base class for reading and processing audio streams.
+ * - Song: Represents song metadata and associated audio tracks.
+ */
+
 #ifndef AUTO_KEYSOUNDS_H
 #define AUTO_KEYSOUNDS_H
 

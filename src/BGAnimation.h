@@ -1,3 +1,17 @@
+/**
+ * @file BGAnimation.h
+ * @brief Header file for the BGAnimation class, managing background animations.
+ *
+ * This file defines the BGAnimation class, an ActorFrame that automatically
+ * loads and manages background animation layers from directories or XML nodes.
+ * It handles layered animations for dynamic backgrounds. The implementation
+ * is in BGAnimation.cpp.
+ *
+ * Significant dependencies:
+ * - ActorFrame: Base class providing actor container functionality.
+ * - XNode: Used for XML parsing and loading animation data.
+ */
+
 #ifndef BGANIMATION_H
 #define BGANIMATION_H
 

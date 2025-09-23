@@ -1,3 +1,13 @@
+/**
+ * @file AnnouncerManager.h
+ * @brief Header file for the AnnouncerManager class.
+ * @details This header defines the AnnouncerManager class, which manages
+ * announcers for providing audio feedback during gameplay, such as voice
+ * overs for events.
+ *
+ * The corresponding source file is AnnouncerManager.cpp, which contains the
+ * implementation of the AnnouncerManager class methods.
+ */
 #ifndef ANNOUNCER_MANAGER_H
 #define ANNOUNCER_MANAGER_H
 

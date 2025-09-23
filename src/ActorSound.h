@@ -1,3 +1,13 @@
+/**
+ * @file ActorSound.h
+ * @brief Header file for the ActorSound class.
+ * @details This header defines the ActorSound class, which provides an Actor
+ * interface for playing sounds, allowing audio to be managed as part of the
+ * actor hierarchy.
+ *
+ * The corresponding source file is ActorSound.cpp, which contains the
+ * implementation of the ActorSound class methods.
+ */
 #ifndef ACTOR_SOUND_H
 #define ACTOR_SOUND_H
 

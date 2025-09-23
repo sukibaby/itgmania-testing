@@ -1,3 +1,23 @@
+/**
+ * @file BeginnerHelper.h
+ * @brief Header file for the BeginnerHelper class, providing visual step assistance.
+ *
+ * This file defines the BeginnerHelper class, which offers visual guidance for
+ * beginner players by displaying step circles and a dancing character that
+ * follows the song's steps. It manages player note data, animations, and
+ * themed metrics for positioning. The implementation is in BeginnerHelper.cpp.
+ *
+ * Significant dependencies:
+ * - ActorFrame: Base class providing actor container functionality.
+ * - Character: Represents character data for dancing animations.
+ * - Sprite: Basic graphical sprite for rendering step circles and flashes.
+ * - AutoActor: Smart pointer for managing background and other actors.
+ * - PlayerNumber: Enumerates player identifiers for multi-player support.
+ * - NoteData: Represents note data for tracking steps and timing.
+ * - ThemeMetric: Handles themed configuration values for positioning.
+ * - Model: 3D model class for rendering dancing characters.
+ */
+
 #ifndef BEGINNER_HELPER_H
 #define BEGINNER_HELPER_H
 

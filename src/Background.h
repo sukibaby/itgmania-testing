@@ -1,3 +1,22 @@
+/**
+ * @file Background.h
+ * @brief Header file for the Background class, managing gameplay backgrounds.
+ *
+ * @details This file defines the Background class, which handles the visual background
+ * displayed behind the notes during gameplay. It loads background elements
+ * from songs, manages brightness and transitions, and supports features like
+ * dancing characters. The implementation is in Background.cpp.
+ *
+ * Significant dependencies:
+ * - ActorFrame: Base class providing actor container functionality.
+ * - Quad: Basic graphical quad for rendering backgrounds.
+ * - PlayerNumber: Enumerates player identifiers for multi-player support.
+ * - BackgroundUtil: Utilities for background change management.
+ * - DancingCharacters: Handles animated character displays in backgrounds.
+ * - Song: Represents song metadata including background assets.
+ * - BackgroundImpl: Implementation details for background management.
+ */
+
 #ifndef BACKGROUND_H
 #define BACKGROUND_H
 

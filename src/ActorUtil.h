@@ -1,3 +1,12 @@
+/**
+ * @file ActorUtil.h
+ * @brief Header file for the ActorUtil namespace.
+ * @details This header defines utility functions and macros for working with
+ * Actors, including loading, registering, and manipulating actor objects.
+ *
+ * The corresponding source file is ActorUtil.cpp, which contains the
+ * implementation of the ActorUtil functions.
+ */
 #ifndef ActorUtil_H
 #define ActorUtil_H
 

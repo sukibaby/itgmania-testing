@@ -1,3 +1,15 @@
+/**
+ * @file Attack.h
+ * @brief Header file for the Attack class.
+ * @details This header defines the Attack class, which represents modifiers
+ * or effects that can be applied to players during gameplay, such as boosts,
+ * reverses, or other transformations. It depends on GameConstantsAndTypes.h
+ * for game constants, PlayerNumber.h for player identification, and standard
+ * library vector for collections.
+ *
+ * The corresponding source file is Attack.cpp, which contains the
+ * implementation of the Attack class methods.
+ */
 #ifndef ATTACK_H
 #define ATTACK_H
 

@@ -1,3 +1,16 @@
+/**
+ * @file AdjustSync.h
+ * @brief Header for AdjustSync class in ITGMania's song synchronization system.
+ * @details Defines the AdjustSync class for autosync adjustments.
+ *  Provides offset-only and BPM/offset synchronization methods.
+ *          Part of the timing system that ensures accurate note timing.
+ *
+ *          Key component: AdjustSync class with static autosync methods.
+ *
+ *          Dependencies: TimingData (forward declared), std::vector.
+ *
+ *          Source: AdjustSync.cpp.
+ */
 #ifndef AdjustSync_H
 #define AdjustSync_H
 

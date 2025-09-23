@@ -1,4 +1,20 @@
-/** @brief Banner - The song/course's banner displayed in SelectMusic/Course. */
+/**
+ * @file Banner.h
+ * @brief Header file for the Banner class, managing song/course banner display.
+ *
+ * This file defines the Banner class, which handles loading and displaying
+ * banners for songs, courses, characters, and other game elements in selection
+ * screens. It supports various loading methods, scrolling effects, and
+ * fallback images. The implementation is in Banner.cpp.
+ *
+ * Significant dependencies:
+ * - Sprite: Base class providing graphical sprite functionality.
+ * - RageTextureID: Identifies textures for loading banner images.
+ * - Song: Represents song metadata including banner assets.
+ * - Course: Represents course metadata including banner assets.
+ * - Character: Represents character data including banner assets.
+ * - UnlockEntry: Represents unlockable content with associated banners.
+ */
 
 #ifndef BANNER_H
 #define BANNER_H

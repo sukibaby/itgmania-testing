@@ -1,3 +1,15 @@
+/**
+ * @file ArrowEffects.h
+ * @brief Header file for the ArrowEffects class.
+ * @details This header defines the ArrowEffects class, which handles visual
+ * effects for arrows in the game, such as glows, boosts, and other
+ * transformations. This class depends on RageTypes.h for basic types,
+ * PlayerNumber.h for player identification, and forward declares PlayerState
+ * and PlayerOptions for accessing player-specific data.
+ *
+ * The corresponding source file is ArrowEffects.cpp, which contains the
+ * implementation of the ArrowEffects class methods.
+ */
 #ifndef ARROWEFFECTS_H
 #define ARROWEFFECTS_H
 

@@ -1,19 +1,20 @@
+
 /**
  * @file Actor.h
- * @brief Header file for the Actor class.
- * @details This header defines the Actor class, which is the base class for all
- * drawable objects in the game, such as sprites, text, buttons, and other UI
- * elements. Actors form the foundation of the game's visual hierarchy, allowing
- * for complex animations, effects, and interactions. Common uses include
- * creating menu screens, displaying scores, animating gameplay elements, and
- * building interactive interfaces. It provides functionality for positioning,
- * scaling, rotation, effects, tweening, and rendering.
+ * @brief Header file for the Actor class, base for graphical elements.
  *
- * (Tweening, as defined in this codebase, is the process of interpolating
- * between two states over time.)
+ * This file defines the Actor class, the fundamental base class for all
+ * drawable and interactive graphical elements in the engine. It provides
+ * core functionality for positioning, tweening, effects, messaging, and
+ * Lua scripting integration. The implementation is in Actor.cpp.
  *
- * The corresponding source file is Actor.cpp, which contains the implementation
- * of the Actor class methods.
+ * Significant dependencies:
+ * - PlayerNumber: Enumerates player identifiers for multi-player support.
+ * - RageTypes: Core type definitions for graphics and math.
+ * - LuaReference: Handles Lua script references for actor commands.
+ * - XNode: Used for XML serialization and parsing of actor data.
+ * - MessageManager: Manages inter-actor communication via messages.
+ * - Tween: Provides tweening functionality for smooth animations.
  */
 
 #ifndef ACTOR_H
@@ -122,7 +123,9 @@ enum EffectAction
 LuaDeclareType( EffectAction );
 */
 
-/** @brief Base class for all objects that appear on the screen. */
+/** @brief Base class for all drawable objects in the game, providing
+ *         positioning, scaling, rotation, effects, tweening, and rendering
+ *         functionality. */
 class Actor : public MessageSubscriber
 {
 public:
@@ -218,7 +221,8 @@ public:
 	*/
 
 	/**
-	 * @brief The present state for the Tween.
+	 * @brief Represents the visual state of an Actor during tweening operations,
+	 *        including position, rotation, scale, colors, and effects.
 	 */
 	struct TweenState
 	{

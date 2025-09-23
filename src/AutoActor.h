@@ -1,3 +1,19 @@
+/**
+ * @file AutoActor.h
+ * @brief Header file for the AutoActor class, a smart pointer for Actor objects.
+ *
+ * @details This file defines the AutoActor class, which manages the automatic creation
+ * and deletion of Actor derivatives. It provides methods for loading actors
+ * from various sources and ensures proper resource management. The
+ * implementation is in AutoActor.cpp.
+ *
+ * Significant dependencies:
+ * - Actor: Base class for graphical elements in the engine.
+ * - XNode: Used for parsing XML data when loading actors from nodes.
+ * - ThemeManager: Handles loading of themed assets and metrics.
+ * - ActorUtil: Provides utility functions for actor creation and manipulation.
+ */
+
 #ifndef AutoActor_H
 #define AutoActor_H
 
