@@ -1,3 +1,20 @@
+/**
+ * @file InputQueue.h
+ * @brief Header file for InputQueue and InputQueueCode classes, handling
+ *        input history and cheat codes.
+ *
+ * This header defines InputQueue for storing recent input events per
+ * controller, and InputQueueCode for detecting button press sequences
+ * like cheat codes.
+ *
+ * The corresponding source file (InputQueue.cpp) implements input
+ * queuing, recent press checking, and code sequence matching.
+ *
+ * Significant dependencies:
+ * - GameInput.h: Provides GameInput for game-specific input mappings.
+ * - InputFilter.h: Supplies InputEventType and input event structures.
+ */
+
 #ifndef INPUT_QUEUE_H
 #define INPUT_QUEUE_H
 

@@ -1,4 +1,22 @@
-/* MenuTimer - A timer on the menu that ticks down. */
+/**
+ * @file MenuTimer.h
+ * @brief Header file for the MenuTimer class, providing a countdown timer for
+ *        menu screens with visual and audio feedback.
+ *
+ * The MenuTimer class inherits from ActorFrame and manages a countdown timer
+ * displayed on menu screens. It supports pausing, stopping, stalling, and
+ * modes for silent or stealth operation. It integrates with bitmap text for
+ * display, sound effects for beeps, and theme metrics for configuration.
+ *
+ * Dependencies:
+ * - ActorFrame.h: Base class for composite actors containing multiple child
+ *   actors.
+ * - BitmapText.h: Class for rendering text using bitmap fonts.
+ * - RageSound.h: Class for sound playback and management.
+ * - ThemeMetric.h: Classes for theme-based configuration metrics.
+ * - AutoActor.h: Classes for automatic actor loading and management.
+ * - <cstddef>: Standard library header for size_t and other utilities.
+ */
 
 #ifndef MENU_TIMER_H
 #define MENU_TIMER_H

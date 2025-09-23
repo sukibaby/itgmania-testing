@@ -1,3 +1,20 @@
+/**
+ * @file Inventory.h
+ * @brief Header file for the Inventory class, managing battle mode items.
+ *
+ * This header defines the Inventory class, which inherits from Actor and
+ * handles item acquisition, usage, and effects in battle gameplay mode.
+ *
+ * The corresponding source file (Inventory.cpp) implements item loading
+ * from themes, awarding based on combo, and applying item modifiers.
+ *
+ * Significant dependencies:
+ * - Actor.h: Provides the base Actor class for scene graph integration.
+ * - PlayerNumber.h: Defines PlayerNumber for player-specific contexts.
+ * - RageSound.h: Supplies RageSound for item-related audio feedback.
+ * - ScreenMessage.h: Offers ScreenMessage for battle damage notifications.
+ */
+
 #ifndef Inventory_H
 #define Inventory_H
 

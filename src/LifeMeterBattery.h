@@ -1,3 +1,25 @@
+/**
+ * @file LifeMeterBattery.h
+ * @brief Header file for the LifeMeterBattery class, implementing
+ *        battery-style life meters for Oni mode.
+ *
+ * This header defines the LifeMeterBattery class, which inherits from
+ * LifeMeter and manages life as discrete battery units with gain/lose
+ * mechanics.
+ *
+ * The corresponding source file (LifeMeterBattery.cpp) implements life
+ * subtraction/addition, sound effects, and battery visualization.
+ *
+ * Significant dependencies:
+ * - LifeMeter.h: Provides the base LifeMeter class interface.
+ * - Sprite.h: Supplies Sprite for graphical elements.
+ * - BitmapText.h: Offers BitmapText for text rendering.
+ * - RageSound.h: Provides RageSound for life change audio.
+ * - PercentageDisplay.h: Supplies PercentageDisplay for life display.
+ * - ThemeMetric.h: Supplies ThemeMetric for configurable values.
+ * - AutoActor.h: Offers AutoActor for automatic theme-based loading.
+ */
+
 #ifndef LIFEMETERBATTERY_H
 #define LIFEMETERBATTERY_H
 

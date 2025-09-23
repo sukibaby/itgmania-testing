@@ -1,3 +1,17 @@
+/**
+ * @file MsdFile.h
+ * @brief Header file for the MsdFile class, parsing MSD format files used for
+ *        song and step data.
+ *
+ * The MsdFile class reads and parses MSD (MSD format) files, which are used
+ * to store song metadata, step data, and other game information. It supports
+ * reading from files or strings, with options for unescaping values.
+ *
+ * Dependencies:
+ * - <vector>: Standard library container for dynamic arrays used to store
+ *   values and their parameters.
+ */
+
 #ifndef MSDFILE_H
 #define MSDFILE_H
 

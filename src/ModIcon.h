@@ -1,3 +1,24 @@
+/**
+ * @file ModIcon.h
+ * @brief Header file for the ModIcon class, displaying player and song options
+ *        as icons.
+ *
+ * The ModIcon class inherits from ActorFrame and visually represents
+ * modifiers (mods) applied to player options and song options. It uses
+ * bitmap text and auto actors to show filled and empty states, with
+ * configurable theme metrics.
+ *
+ * Dependencies:
+ * - ActorFrame.h: Base class for composite actors containing multiple child
+ *   actors.
+ * - AutoActor.h: Classes for automatic actor loading and management.
+ * - BitmapText.h: Class for rendering text using bitmap fonts.
+ * - PlayerNumber.h: Enumeration for player numbers.
+ * - ThemeMetric.h: Classes for theme-based configuration metrics.
+ * - <vector>: Standard library container for dynamic arrays used in stop
+ *   words storage.
+ */
+
 #ifndef ModIcon_H
 #define ModIcon_H
 

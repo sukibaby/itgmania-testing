@@ -1,4 +1,18 @@
-/* MeterDisplay - Display position in a song. */
+/**
+ * @file MeterDisplay.h
+ * @brief Header file for the MeterDisplay class, providing a visual meter
+ *        display with stream and tip elements.
+ *
+ * The MeterDisplay class inherits from ActorFrame and renders a progress
+ * meter using stream and tip actors. It supports setting percentage and
+ * stream width. The SongMeterDisplay subclass adds update functionality
+ * for song-related meters.
+ *
+ * Dependencies:
+ * - ActorFrame.h: Base class for composite actors containing multiple child
+ *   actors.
+ * - AutoActor.h: Classes for automatic actor loading and management.
+ */
 
 #ifndef METER_DISPLAY_H
 #define METER_DISPLAY_H

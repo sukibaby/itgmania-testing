@@ -1,3 +1,19 @@
+/**
+ * @file LuaManager.h
+ * @brief Header file for the LuaManager class, managing Lua scripting
+ *        integration.
+ *
+ * This header defines the LuaManager singleton for handling Lua states,
+ * script execution, and type registration for game scripting.
+ *
+ * The corresponding source file (LuaManager.cpp) implements Lua state
+ * pooling, script loading, error handling, and utility functions.
+ *
+ * Significant dependencies:
+ * - lua headers: Provides the Lua 5.1 library for scripting engine.
+ * - Dialog.h: Supplies Dialog for error reporting in scripts.
+ */
+
 #ifndef LUA_MANAGER_H
 #define LUA_MANAGER_H
 

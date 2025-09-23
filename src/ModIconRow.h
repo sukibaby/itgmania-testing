@@ -1,4 +1,21 @@
-/* ModIconRow - Shows a row of ModIcons. */
+/**
+ * @file ModIconRow.h
+ * @brief Header file for the ModIconRow class, managing a row of ModIcon
+ *        objects for displaying player options.
+ *
+ * The ModIconRow class inherits from ActorFrame and handles a collection
+ * of ModIcon objects arranged in a row. It loads configuration from theme
+ * metrics, updates from game state, and responds to messages for dynamic
+ * option display.
+ *
+ * Dependencies:
+ * - ActorFrame.h: Base class for composite actors containing multiple child
+ *   actors.
+ * - ModIcon.h: Class for displaying individual modifier icons.
+ * - ThemeMetric.h: Classes for theme-based configuration metrics.
+ * - <vector>: Standard library container for dynamic arrays used to store
+ *   ModIcon pointers.
+ */
 
 #ifndef ModIconRow_H
 #define ModIconRow_H

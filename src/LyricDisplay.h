@@ -1,3 +1,20 @@
+/**
+ * @file LyricDisplay.h
+ * @brief Header file for the LyricDisplay class, displaying song lyrics
+ *        during gameplay.
+ *
+ * This header defines the LyricDisplay class, which inherits from
+ * ActorFrame and shows timed lyrics synchronized with the song.
+ *
+ * The corresponding source file (LyricDisplay.cpp) implements lyric
+ * loading, timing synchronization, and text animation for display.
+ *
+ * Significant dependencies:
+ * - ActorFrame.h: Provides the base ActorFrame class for scene graph
+ *   management.
+ * - BitmapText.h: Supplies BitmapText for rendering lyric text.
+ */
+
 #ifndef LYRIC_DISPLAY_H
 #define LYRIC_DISPLAY_H
 

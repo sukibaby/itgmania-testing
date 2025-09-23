@@ -1,4 +1,22 @@
-/* Model - A 3D model. */
+/**
+ * @file Model.h
+ * @brief Header file for the Model class, providing 3D model rendering and
+ *        animation capabilities.
+ *
+ * The Model class inherits from Actor and handles loading, rendering, and
+ * animating 3D models. It supports Milkshape ASCII format, bone-based
+ * animations, materials, and cel shading. Models can play animations at
+ * specified rates and positions.
+ *
+ * Dependencies:
+ * - Actor.h: Base class for scene objects with common actor functionality.
+ * - RageTypes.h: Defines common types and structures used throughout Rage.
+ * - ModelTypes.h: Defines types specific to 3D models, including materials
+ *   and animations.
+ * - <vector>: Standard library container for dynamic arrays used in mesh
+ *   and bone storage.
+ * - <map>: Standard library associative container for animation mapping.
+ */
 
 #ifndef MODEL_H
 #define MODEL_H

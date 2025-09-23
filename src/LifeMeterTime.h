@@ -1,3 +1,25 @@
+/**
+ * @file LifeMeterTime.h
+ * @brief Header file for the LifeMeterTime class, implementing time-
+ *        based life meters for Survival mode.
+ *
+ * This header defines the LifeMeterTime class, which inherits from
+ * LifeMeter and manages life as remaining time with gain/loss mechanics.
+ *
+ * The corresponding source file (LifeMeterTime.cpp) implements time
+ * calculations, theme metrics, and life change handling for survival.
+ *
+ * Significant dependencies:
+ * - LifeMeter.h: Provides the base LifeMeter class interface.
+ * - Sprite.h: Supplies Sprite for graphical elements.
+ * - BitmapText.h: Offers BitmapText for text rendering.
+ * - RageSound.h: Provides RageSound for life change audio.
+ * - PercentageDisplay.h: Supplies PercentageDisplay for life display.
+ * - AutoActor.h: Offers AutoActor for automatic theme-based loading.
+ * - MeterDisplay.h: Provides MeterDisplay for meter visualization.
+ * - Quad.h: Supplies Quad for geometric shapes.
+ */
+
 #ifndef LifeMeterTime_H
 #define LifeMeterTime_H
 

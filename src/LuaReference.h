@@ -1,3 +1,19 @@
+/**
+ * @file LuaReference.h
+ * @brief Header file for the LuaReference class, providing safe Lua
+ *        object references.
+ *
+ * This header defines the LuaReference class for storing and managing
+ * references to Lua objects, preventing garbage collection issues.
+ *
+ * The corresponding source file (LuaReference.cpp) implements reference
+ * creation, copying, deep copying, and stack operations for Lua.
+ *
+ * Significant dependencies:
+ * - RageUtil_AutoPtr.h: Supplies AutoPtr for memory management.
+ * - LuaManager.h: Provides Lua state access for reference operations.
+ */
+
 #ifndef LUA_REFERENCE_H
 #define LUA_REFERENCE_H
 

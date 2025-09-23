@@ -1,4 +1,20 @@
-/** @brief Utilities for handling JSON data. */
+/**
+ * @file JsonUtil.h
+ * @brief Header file providing JSON utility functions and templates.
+ *
+ * This header defines the JsonUtil namespace with functions for loading
+ * JSON from strings/files, writing JSON to files, and serializing vectors
+ * of objects.
+ *
+ * The corresponding source file (JsonUtil.cpp) implements JSON parsing,
+ * error handling, and file I/O operations using the JsonCpp library.
+ *
+ * Significant dependencies:
+ * - json/json.h: Supplies the JsonCpp library for JSON value handling.
+ * - RageUtil.h: Provides utility functions and types for string
+ *   operations.
+ */
+
 #ifndef JsonUtil_H
 #define JsonUtil_H
 

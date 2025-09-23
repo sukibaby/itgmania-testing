@@ -1,3 +1,23 @@
+/**
+ * @file LifeMeterBar.h
+ * @brief Header file for the LifeMeterBar class, implementing bar-style
+ *        life meters.
+ *
+ * This header defines the LifeMeterBar class, which inherits from
+ * LifeMeter and renders player life as a visual bar with danger/hot
+ * states.
+ *
+ * The corresponding source file (LifeMeterBar.cpp) implements life
+ * percentage calculations, theme-based metrics, and bar animations.
+ *
+ * Significant dependencies:
+ * - LifeMeter.h: Provides the base LifeMeter class interface.
+ * - Sprite.h: Supplies Sprite for graphical elements.
+ * - AutoActor.h: Offers AutoActor for automatic theme-based loading.
+ * - Quad.h: Provides Quad for geometric shapes.
+ * - ThemeMetric.h: Supplies ThemeMetric for configurable values.
+ */
+
 #ifndef LIFEMETERBAR_H
 #define LIFEMETERBAR_H
 

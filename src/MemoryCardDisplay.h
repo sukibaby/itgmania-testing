@@ -1,3 +1,17 @@
+/**
+ * @file MemoryCardDisplay.h
+ * @brief Header file for the MemoryCardDisplay class, providing graphical
+ *        display of memory card states.
+ *
+ * This class manages the visualization of memory card insertion, removal,
+ * and other states for a specific player in the game interface.
+ * Dependencies:
+ * - GameConstantsAndTypes.h: Defines constants and types used throughout the game.
+ * - PlayerNumber.h: Enumeration for player numbers.
+ * - Sprite.h: Class for displaying 2D graphics.
+ * - ActorFrame.h: Base class for actor frames.
+ */
+
 #ifndef MEMORY_CARD_DISPLAY_H
 #define MEMORY_CARD_DISPLAY_H
 

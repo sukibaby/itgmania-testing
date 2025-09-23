@@ -1,3 +1,21 @@
+/**
+ * @file MessageManager.h
+ * @brief Header file for the MessageManager system, providing a publish-
+ *        subscribe messaging framework for inter-component communication.
+ *
+ * This file defines the MessageID enumeration for various game events,
+ * the Message struct for encapsulating messages with parameters, subscriber
+ * interfaces for handling messages, and the MessageManager class for
+ * broadcasting messages to registered subscribers. It also includes utility
+ * templates for automatic broadcasting when values change.
+ *
+ * Dependencies:
+ * - LuaManager.h: Provides Lua scripting integration, including Lua state
+ *   and reference management for message parameters.
+ * - <vector>: Standard library container for dynamic arrays used in
+ *   subscriber lists and parameter storage.
+ */
+
 #ifndef MessageManager_H
 #define MessageManager_H
 

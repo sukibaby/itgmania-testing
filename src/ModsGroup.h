@@ -1,3 +1,19 @@
+/**
+ * @file ModsGroup.h
+ * @brief Header file for the ModsGroup template class, managing hierarchical
+ *        levels of modifiers for player and song options.
+ *
+ * The ModsGroup class template handles different levels of modifications
+ * (preferred, stage, song, current) for PlayerOptions or SongOptions. It
+ * provides methods to assign values or call functions at specific levels,
+ * with automatic interpolation for the current level.
+ *
+ * Dependencies:
+ * - EnumHelper.h: Provides utilities for enum operations, such as enum_add.
+ * - RageTimer.h: Class for timing and calculating delta time.
+ * - <cstddef>: Standard library header for size_t and other utilities.
+ */
+
 #ifndef MODS_GROUP_H
 #define MODS_GROUP_H
 

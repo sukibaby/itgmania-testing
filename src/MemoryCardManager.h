@@ -1,3 +1,24 @@
+/**
+ * @file MemoryCardManager.h
+ * @brief Header file for the MemoryCardManager class, managing memory card
+ *        operations for players.
+ *
+ * This class handles detection, mounting, unmounting, and state monitoring of
+ * memory cards (USB storage devices) for each player. It provides methods for
+ * locking/unlocking cards, checking availability, and integrating with sound
+ * feedback for user notifications.
+ *
+ * Dependencies:
+ * - GameConstantsAndTypes.h: Defines constants and types, including
+ *   MemoryCardState.
+ * - PlayerNumber.h: Enumeration for player numbers.
+ * - RageSound.h: Class for sound playback and management.
+ * - arch/MemoryCard/MemoryCardDriver.h: Driver interface for memory card
+ *   hardware.
+ * - Preference.h: Classes for managing user preferences.
+ * - <vector>: Standard library container for dynamic arrays.
+ */
+
 #ifndef MemoryCardManager_H
 #define MemoryCardManager_H
 

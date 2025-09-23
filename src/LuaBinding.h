@@ -1,4 +1,18 @@
-/* LuaBinding - helpers to expose Lua bindings for C++ classes. */
+/**
+ * @file LuaBinding.h
+ * @brief Header file for the LuaBinding class and Luna template,
+ *        enabling Lua scripting integration.
+ *
+ * This header defines the LuaBinding base class and Luna template for
+ * binding C++ classes to Lua, allowing script access to game objects.
+ *
+ * The corresponding source file (LuaBinding.cpp) implements type
+ * registration, method binding, and inheritance handling for Lua.
+ *
+ * Significant dependencies:
+ * - LuaManager.h: Provides Lua state management and utilities for
+ *   scripting integration.
+ */
 
 #ifndef LuaBinding_H
 #define LuaBinding_H

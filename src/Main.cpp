@@ -1,3 +1,17 @@
+/**
+ * @file Main.cpp
+ * @brief Main entry point for the application, initializing and launching
+ *        the game.
+ *
+ * This source file contains the main() function, which serves as the
+ * program's entry point. It delegates to sm_main() in StepMania.h for
+ * core initialization and game loop management.
+ *
+ * Significant dependencies:
+ * - global.h: Provides global definitions, macros, and includes.
+ * - StepMania.h: Supplies the sm_main() function for game startup.
+ */
+
 #include "global.h"
 #include "StepMania.h"
 

@@ -1,3 +1,20 @@
+/**
+ * @file LocalizedString.h
+ * @brief Header file for the LocalizedString class, providing language-
+ *        specific string localization.
+ *
+ * This header defines the LocalizedString class and ILocalizedStringImpl
+ * interface for retrieving localized strings based on user language
+ * settings.
+ *
+ * The corresponding source file (LocalizedString.cpp) implements string
+ * loading, caching, and subscription management for localization.
+ *
+ * Significant dependencies: None directly in the header; the source file
+ * depends on RageUtil and SubscriptionManager for utilities and
+ * notifications.
+ */
+
 #ifndef LocalizedString_H
 #define LocalizedString_H
 

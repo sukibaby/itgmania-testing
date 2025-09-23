@@ -1,3 +1,19 @@
+/**
+ * @file ModelManager.h
+ * @brief Header file for the ModelManager class, managing loading and caching
+ *        of 3D model geometries.
+ *
+ * The ModelManager class handles the lifecycle of RageModelGeometry objects,
+ * including loading from Milkshape ASCII files, unloading, and caching.
+ * It supports preferences for delayed unloading to optimize performance.
+ *
+ * Dependencies:
+ * - RageModelGeometry.h: Defines the RageModelGeometry class for 3D model
+ *   geometry data.
+ * - <map>: Standard library associative container for mapping file paths to
+ *   geometry objects.
+ */
+
 #ifndef MODEL_MANAGER_H
 #define MODEL_MANAGER_H
 

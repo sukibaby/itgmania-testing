@@ -1,3 +1,18 @@
+/**
+ * @file LyricsLoader.h
+ * @brief Header file for the LyricsLoader class, loading lyrics from LRC
+ *        files.
+ *
+ * This header defines the LyricsLoader class for parsing and loading
+ * timed lyrics from LRC (Lyric) files into Song objects.
+ *
+ * The corresponding source file (LyricsLoader.cpp) implements LRC file
+ * parsing, timestamp extraction, and lyric segment creation.
+ *
+ * Significant dependencies: None directly in the header; the source file
+ * depends on RageFile and Song for file I/O and data structures.
+ */
+
 #ifndef LYRICS_LOADER_H
 #define LYRICS_LOADER_H
 

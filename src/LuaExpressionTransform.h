@@ -1,4 +1,18 @@
-/* LuaExpressionTransform -  */
+/**
+ * @file LuaExpressionTransform.h
+ * @brief Header file for the LuaExpressionTransform class, providing
+ *        Lua-scripted actor transformations.
+ *
+ * This header defines the LuaExpressionTransform class for applying
+ * Lua-defined transformations to actors, with caching for performance.
+ *
+ * The corresponding source file (LuaExpressionTransform.cpp) implements
+ * Lua function execution, caching logic, and actor state application.
+ *
+ * Significant dependencies:
+ * - Actor.h: Supplies the Actor class for transformation targets.
+ * - LuaReference.h: Provides LuaReference for storing Lua functions.
+ */
 
 #ifndef LuaExpressionTransform_H
 #define LuaExpressionTransform_H

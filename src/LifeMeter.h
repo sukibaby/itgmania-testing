@@ -1,3 +1,22 @@
+/**
+ * @file LifeMeter.h
+ * @brief Header file for the abstract LifeMeter class, managing player
+ *        life in gameplay.
+ *
+ * This header defines the LifeMeter base class, which inherits from
+ * ActorFrame and provides virtual methods for life changes, state
+ * queries, and factory creation of specific life meter types.
+ *
+ * The corresponding source file (LifeMeter.cpp) implements the factory
+ * method for creating life meters (bar, battery, time) and Lua bindings.
+ *
+ * Significant dependencies:
+ * - PlayerNumber.h: Defines PlayerNumber for player-specific contexts.
+ * - GameConstantsAndTypes.h: Supplies LifeType and scoring enums.
+ * - ActorFrame.h: Provides the base ActorFrame class for rendering.
+ * - PlayerOptions.h: Includes PlayerOptions for gameplay settings.
+ */
+
 #ifndef LIFE_METER_H
 #define LIFE_METER_H
 

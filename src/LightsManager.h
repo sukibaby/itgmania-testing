@@ -1,3 +1,22 @@
+/**
+ * @file LightsManager.h
+ * @brief Header file defining cabinet light enums and states for arcade
+ *        lighting control.
+ *
+ * This header specifies CabinetLight and LightsMode enums, along with
+ * LightsState struct for managing arcade cabinet lighting effects.
+ *
+ * The corresponding source file (LightsManager.cpp) implements light
+ * state updates, driver integration, and mode-based lighting logic.
+ *
+ * Significant dependencies:
+ * - PlayerNumber.h: Defines PlayerNumber for player-specific contexts.
+ * - GameInput.h: Provides GameInput for input-related lighting.
+ * - EnumHelper.h: Supplies macros for enum string conversion.
+ * - Preference.h: Offers Preference for configurable light settings.
+ * - RageTimer.h: Provides RageTimer for timing-based effects.
+ */
+
 #ifndef LightsManager_H
 #define LightsManager_H
 
