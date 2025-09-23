@@ -1,3 +1,16 @@
+/**
+ * @file CommandLineActions.h
+ * @brief Header file for the CommandLineActions namespace, handling command line args.
+ *
+ * This file defines the CommandLineActions namespace which processes command
+ * line arguments for utility functions. It provides structures for storing
+ * arguments and a queue for processing them during runtime. The implementation
+ * is in CommandLineActions.cpp.
+ *
+ * Significant dependencies:
+ * - LoadingWindow: Base class for loading window implementations.
+ */
+
 #ifndef CommandLineActions_H
 #define CommandLineActions_H
 

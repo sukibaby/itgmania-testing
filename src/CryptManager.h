@@ -1,3 +1,17 @@
+/**
+ * @file CryptManager.h
+ * @brief Header file for the CryptManager class, providing cryptographic services.
+ *
+ * This file defines the CryptManager singleton class which provides
+ * cryptographic operations including RSA key management, file signing and
+ * verification, hash functions, and random number generation. The
+ * implementation is in CryptManager.cpp.
+ *
+ * Significant dependencies:
+ * - RageFileBasic: Base class for file I/O operations used in cryptographic
+ *   functions like file signing and verification.
+ */
+
 #ifndef CryptManager_H
 #define CryptManager_H
 

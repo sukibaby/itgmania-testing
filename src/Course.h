@@ -1,3 +1,20 @@
+/**
+ * @file Course.h
+ * @brief Header file for the Course and CourseEntry classes, managing song sequences.
+ *
+ * This file defines the Course and CourseEntry classes which represent
+ * sequences of songs with specific criteria and modifiers. Courses can be
+ * fixed sequences or dynamically generated based on filters. The implementation
+ * is in Course.cpp.
+ *
+ * Significant dependencies:
+ * - Trail.h: Trail class representing playable sequences of steps.
+ * - Attack.h: Attack class for timed modifier applications.
+ * - SongUtil.h: Utility functions for song management and filtering.
+ * - StepsUtil.h: Utility functions for steps management and filtering.
+ * - RageUtil/RandomNumbers.h: Random number generation for course randomization.
+ */
+
 #ifndef COURSE_H
 #define COURSE_H
 

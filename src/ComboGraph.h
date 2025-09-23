@@ -1,4 +1,20 @@
-/* ComboGraph - A bar displaying the player's combo on Evaluation. */
+/**
+ * @file ComboGraph.h
+ * @brief Header file for the ComboGraph class, displaying combo progression graphs.
+ *
+ * This file defines the ComboGraph class which displays visual graphs showing
+ * combo progression throughout a stage. It loads theme metrics and displays
+ * combo data using stage and player statistics. The implementation is in
+ * ComboGraph.cpp.
+ *
+ * Significant dependencies:
+ * - ActorFrame.h: Base class for UI elements and actor management.
+ * - ThemeMetric.h: ThemeMetric template for loading theme configuration values.
+ * - StageStats: Class containing overall stage performance statistics.
+ * - PlayerStageStats: Class containing player-specific stage statistics.
+ * - BitmapText: Class for rendering text elements like combo numbers.
+ */
+
 #ifndef COMBO_GRAPH_H
 #define COMBO_GRAPH_H
 

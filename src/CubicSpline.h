@@ -1,3 +1,17 @@
+/**
+ * @file CubicSpline.h
+ * @brief Header file for cubic spline interpolation classes.
+ *
+ * This file defines CubicSpline and CubicSplineN classes for performing
+ * cubic spline interpolation. CubicSpline handles single-dimension splines
+ * while CubicSplineN supports multi-dimensional interpolation. The
+ * implementation is in CubicSpline.cpp.
+ *
+ * Significant dependencies:
+ * - RageTypes.h: Provides RageVector3 and other Rage data types used in
+ *   multi-dimensional spline evaluation.
+ */
+
 #ifndef CUBIC_SPLINE_H
 #define CUBIC_SPLINE_H
 

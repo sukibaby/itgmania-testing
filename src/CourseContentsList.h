@@ -1,3 +1,16 @@
+/**
+ * @file CourseContentsList.h
+ * @brief Header file for the CourseContentsList class, displaying course contents.
+ *
+ * This file defines the CourseContentsList class which displays the contents
+ * of a course in a scrollable list format. It manages individual display actors
+ * for each course entry and loads them from theme configuration. The
+ * implementation is in CourseContentsList.cpp.
+ *
+ * Significant dependencies:
+ * - ActorScroller.h: Base class providing scrollable actor list functionality.
+ */
+
 #ifndef COURSE_CONTENTS_LIST_H
 #define COURSE_CONTENTS_LIST_H
 

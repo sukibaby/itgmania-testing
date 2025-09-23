@@ -1,4 +1,18 @@
-/* ControllerStateDisplay - Show the button state of a controller. */
+/**
+ * @file ControllerStateDisplay.h
+ * @brief Header file for the ControllerStateDisplay class, showing controller input.
+ *
+ * This file defines the ControllerStateDisplay class which provides visual
+ * feedback showing the current state of controller inputs. It displays button
+ * presses and controller status for debugging and testing purposes. The
+ * implementation is in ControllerStateDisplay.cpp.
+ *
+ * Significant dependencies:
+ * - ActorFrame.h: Base class for UI elements and actor management.
+ * - AutoActor.h: AutoActor class for automatic actor resource management.
+ * - RageInput.h: RageInput for low-level device input handling.
+ * - GameInput.h: GameInput for high-level game input abstraction.
+ */
 
 #ifndef ControllerStateDisplay_H
 #define ControllerStateDisplay_H

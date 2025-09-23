@@ -1,3 +1,21 @@
+/**
+ * @file CourseUtil.h
+ * @brief Header file for course utility functions and CourseID class.
+ *
+ * This file defines utility functions for course management including sorting,
+ * validation, and generation of courses. It also contains the CourseID class
+ * for identifying courses. The implementation is in CourseUtil.cpp.
+ *
+ * Significant dependencies:
+ * - GameConstantsAndTypes.h: Provides game constants and type definitions.
+ * - Difficulty.h: Defines Difficulty enum for course difficulty levels.
+ * - Course: Main course class for course data and operations.
+ * - Profile: User profile class for player-specific course data.
+ * - XNode: XML node class for course serialization and loading.
+ * - CourseEntry: Struct representing individual course entries.
+ * - Song: Song class for song data and operations.
+ */
+
 #ifndef COURSEUTIL_H
 #define COURSEUTIL_H
 

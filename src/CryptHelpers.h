@@ -1,3 +1,16 @@
+/**
+ * @file CryptHelpers.h
+ * @brief Header file for cryptographic helper classes, wrapping LibTomCrypt.
+ *
+ * This file defines wrapper classes for cryptographic operations using
+ * LibTomCrypt. It provides simplified interfaces for PRNG and RSA key
+ * management. The implementation is in CryptHelpers.cpp.
+ *
+ * Significant dependencies:
+ * - tomcrypt.h: LibTomCrypt cryptographic library providing low-level crypto
+ *   functions for PRNG, RSA, and other cryptographic operations.
+ */
+
 #ifndef CRYPT_HELPERS_H
 #define CRYPT_HELPERS_H
 

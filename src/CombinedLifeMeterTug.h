@@ -1,3 +1,16 @@
+/**
+ * @file CombinedLifeMeterTug.h
+ * @brief Header file for the CombinedLifeMeterTug class, tug-of-war life meter.
+ *
+ * This file defines the CombinedLifeMeterTug class which implements a
+ * tug-of-war style life meter where multiple players compete for control
+ * of a central meter. The implementation is in CombinedLifeMeterTug.cpp.
+ *
+ * Significant dependencies:
+ * - CombinedLifeMeter.h: Base class providing life meter interface.
+ * - MeterDisplay.h: MeterDisplay class for visual life meter representation.
+ */
+
 #ifndef CombinedLifeMeterTug_H
 #define CombinedLifeMeterTug_H
 

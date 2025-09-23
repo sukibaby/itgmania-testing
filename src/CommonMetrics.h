@@ -1,3 +1,20 @@
+/**
+ * @file CommonMetrics.h
+ * @brief Header file for common theme metrics and configuration values.
+ *
+ * This file defines theme metrics and configuration values used throughout
+ * the application. It includes specialized ThemeMetric classes for handling
+ * lists of difficulties and steps types, plus the CommonMetrics namespace
+ * containing shared configuration values. The implementation is in
+ * CommonMetrics.cpp.
+ *
+ * Significant dependencies:
+ * - ThemeMetric.h: ThemeMetric template for loading theme configuration values.
+ * - Difficulty.h: Defines Difficulty and CourseDifficulty enums.
+ * - GameConstantsAndTypes.h: Provides StepsType enum and game constants.
+ * - LocalizedString.h: LocalizedString class for internationalization support.
+ */
+
 #ifndef COMMON_METRICS_H
 #define COMMON_METRICS_H
 
