@@ -1,4 +1,28 @@
-/* GameCommand */
+/**
+ * @file GameCommand.h
+ * @brief Header file for the GameCommand class, which encapsulates game
+ *        commands such as menu options, play modes, and game state changes.
+ *
+ * The GameCommand class represents a configurable command in the game,
+ * including attributes like play mode, difficulty, style, and associated
+ * actions. It supports loading from command strings, validation, and
+ * application to game state for one or all players.
+ *
+ * The corresponding source file (GameCommand.cpp) implements the methods
+ * for initializing, loading, validating, and applying game commands,
+ * including Lua script integration and game state modifications.
+ *
+ * Significant dependencies:
+ * - GameConstantsAndTypes.h: Provides core game enums (e.g., PlayMode,
+ *   Difficulty) and types used throughout the class.
+ * - PlayerNumber.h: Defines the PlayerNumber enum for player-specific
+ *   operations.
+ * - Difficulty.h: Defines difficulty levels for songs and courses.
+ * - LuaReference.h: Enables Lua function references for dynamic command
+ *   behavior.
+ * - Command.h: Supplies command parsing utilities for loading command
+ *   strings.
+ */
 
 #ifndef GameCommand_H
 #define GameCommand_H

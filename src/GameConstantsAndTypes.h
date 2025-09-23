@@ -1,4 +1,21 @@
-/* GameConstantsAndTypes - Things used in many places that don't change often. */
+/**
+ * @file GameConstantsAndTypes.h
+ * @brief Header file defining core game constants, enums, and types used
+ *        throughout the application.
+ *
+ * This header provides fundamental definitions including difficulty meters,
+ * radar categories, play modes, difficulties, and other game-related enums
+ * and constants. It serves as a central location for type definitions that
+ * are shared across multiple modules.
+ *
+ * The corresponding source file (GameConstantsAndTypes.cpp) implements
+ * utility functions for string conversions, Lua bindings, and initialization
+ * of constants and enums defined in this header.
+ *
+ * Significant dependencies:
+ * - EnumHelper.h: Provides macros and utilities for enum string conversion
+ *   and iteration, essential for the enum definitions here.
+ */
 
 #ifndef GAME_CONSTANTS_AND_TYPES_H
 #define GAME_CONSTANTS_AND_TYPES_H

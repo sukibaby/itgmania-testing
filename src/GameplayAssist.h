@@ -1,3 +1,23 @@
+/**
+ * @file GameplayAssist.h
+ * @brief Header file for the GameplayAssist class, providing audio
+ *        assistance during gameplay.
+ *
+ * This header defines the GameplayAssist class, which manages assist
+ * sounds such as claps for note hits and metronome ticks for beats and
+ * measures, helping players with timing and rhythm.
+ *
+ * The corresponding source file (GameplayAssist.cpp) implements the sound
+ * loading, playback timing, and synchronization with note data and song
+ * position for accurate assist cues.
+ *
+ * Significant dependencies:
+ * - RageSound.h: Provides the RageSound class for loading and playing
+ *   audio samples used for assist sounds.
+ * - PlayerState.h: Supplies PlayerState for accessing player-specific
+ *   timing and position data during playback.
+ */
+
 #ifndef GameplayAssist_H
 #define GameplayAssist_H
 

@@ -1,3 +1,21 @@
+/**
+ * @file GameLoop.h
+ * @brief Header file declaring the GameLoop namespace for main game loop
+ *        operations.
+ *
+ * This header defines the GameLoop namespace, which provides functions for
+ * running the primary game loop, updating game state, managing rendering,
+ * and handling theme and game changes.
+ *
+ * The corresponding source file (GameLoop.cpp) implements the game loop
+ * logic, including frame rate management, input handling, concurrent
+ * rendering, and integration with various managers (e.g., display, sound,
+ * input).
+ *
+ * Significant dependencies: None directly in the header; the source file
+ * depends on numerous managers and utilities for full functionality.
+ */
+
 #ifndef GAME_LOOP_H
 #define GAME_LOOP_H
 /** @brief Main rendering and update loop. */

@@ -1,4 +1,23 @@
-/** @brief GameManager - Manages Games and Styles. */
+/**
+ * @file GameManager.h
+ * @brief Header file for the GameManager class, responsible for managing
+ *        games, styles, and steps types.
+ *
+ * This header defines the GameManager singleton class, which handles
+ * retrieval and management of game definitions, play styles, steps types,
+ * and compatibility checks. It provides interfaces for querying available
+ * games and styles based on player count and steps type.
+ *
+ * The corresponding source file (GameManager.cpp) implements the core
+ * logic for game and style management, including initialization, style
+ * compatibility, and integration with theme and input systems.
+ *
+ * Significant dependencies:
+ * - GameConstantsAndTypes.h: Supplies essential enums and types (e.g.,
+ *   StepsType, StepsTypeCategory) used throughout the class.
+ * - GameInput.h: Provides game input constants and structures for style
+ *   and game interactions.
+ */
 
 #ifndef GAMEMANAGER_H
 #define GAMEMANAGER_H

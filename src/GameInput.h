@@ -1,3 +1,21 @@
+/**
+ * @file GameInput.h
+ * @brief Header file defining game input enums and structures for
+ *        controllers and buttons.
+ *
+ * This header specifies the GameController and GameButton enums, which
+ * represent input devices and button mappings used in the game. It also
+ * declares the GameInput struct for combining controller and button data.
+ *
+ * The corresponding source file (GameInput.cpp) provides implementations
+ * for string conversions, localization, and parsing of game input strings,
+ * facilitating input mapping and user interface interactions.
+ *
+ * Significant dependencies:
+ * - EnumHelper.h: Supplies macros for enum string conversion and Lua
+ *   binding, used extensively for the enums defined here.
+ */
+
 #ifndef GAME_INPUT_H
 #define GAME_INPUT_H
 

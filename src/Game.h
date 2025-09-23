@@ -1,3 +1,18 @@
+/**
+ * @file Game.h
+ * @brief Header for game definition structures.
+ *
+ * This header defines the Game struct, which encapsulates information
+ * about game styles, input schemes, and button configurations for
+ * different game modes.
+ *
+ * The corresponding implementation is in Game.cpp.
+ *
+ * Key dependencies:
+ * - InputMapper.h: Provides input mapping functionality.
+ * - GameConstantsAndTypes.h: Defines game-related constants and types.
+ */
+
 #ifndef GAMEDEF_H
 #define GAMEDEF_H
 

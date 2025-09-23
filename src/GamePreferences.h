@@ -1,3 +1,22 @@
+/**
+ * @file GamePreferences.h
+ * @brief Header file defining global game preferences using the Preference
+ *        system.
+ *
+ * This header declares extern Preference variables within the
+ * GamePreferences namespace for core game settings such as coin mode,
+ * autoplay, and axis fixes.
+ *
+ * The corresponding source file (GamePreferences.cpp) instantiates these
+ * preferences with default values and keys for configuration management.
+ *
+ * Significant dependencies:
+ * - Preference.h: Provides the Preference template class for type-safe
+ *   configuration storage and retrieval.
+ * - GameConstantsAndTypes.h: Supplies enum types (e.g., CoinMode,
+ *   PlayerController) used in the preference definitions.
+ */
+
 #ifndef GAME_PREFERENCES_H
 #define GAME_PREFERENCES_H
 

@@ -1,3 +1,17 @@
+/**
+ * @file Foreground.h
+ * @brief Header for foreground display during gameplay.
+ *
+ * This header declares the Foreground class, which manages foreground
+ * elements displayed in front of notes during song playback, loading
+ * animations from song data.
+ *
+ * The corresponding implementation is in Foreground.cpp.
+ *
+ * Key dependencies:
+ * - ActorFrame.h: Base class for actor frame management.
+ */
+
 #ifndef FOREGROUND_H
 #define FOREGROUND_H
 
@@ -7,7 +21,6 @@
 
 
 class Song;
-/** @brief Foreground in front of notes while playing. */
 class Foreground: public ActorFrame
 {
 public:
