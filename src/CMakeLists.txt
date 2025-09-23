@@ -1,13 +1,15 @@
-# [=[.rst:
-# CMakeLists.txt - ITGmania Build Configuration
-# -------------------------------------------
+##
+# @file CMakeLists.txt
+# @brief ITGmania Build Configuration
+# @details
+# Main build configuration file for ITGmania project.
 #
-# Quick Notes:
+# @section quicknotes Quick Notes
 # - This is the main build file for ITGmania
 # - Run CMake configure and build from the root directory
-# - Key options: WITH_SSE2, WITH_CRASH_HANDLER, WITH_CLUB_FANTASTIC
+# - Key options: WITH_SSE2, WITH_CRASH_MINIMAID, WITH_CLUB_FANTASTIC
 #
-# File Structure:
+# @section structure File Structure
 # 1. Component Files (CMakeData-*.cmake)
 #    - arch.cmake:     CPU architecture-specific code (x86, ARM64)
 #    - rage.cmake:     Core game engine components
@@ -19,33 +21,33 @@
 #    - globals.cmake:  Global state and configuration
 #    - singletons.cmake: Global manager classes
 #
-# 2. Platform Configuration
+# @section platform Platform Configuration
 #    - Windows: MSVC compiler settings, DLL handling
 #    - macOS: Bundle creation, frameworks
 #    - Linux: X11, audio systems (ALSA, PulseAudio)
 #
-# 3. Dependencies
+# @section deps Dependencies
 #    - FFmpeg: Video/audio decoding
 #    - Lua: Scripting engine
 #    - OpenGL/GLEW: Graphics
 #    - Other: mad, pcre, libjpeg, etc.
 #
-# 4. Build Outputs
+# @section outputs Build Outputs
 #    - Windows: Program/ITGmania.exe
 #    - macOS: ITGmania.app bundle
 #    - Linux: itgmania binary
 #
-# Common Tasks:
+# @section tasks Common Tasks
 # - Adding new source files: Add to relevant CMakeData-*.cmake
 # - New dependency: Add to SMDATA_LINK_LIB list
 # - Platform-specific code: Use WIN32/APPLE/UNIX defines
 #
-# Build Types:
+# @section buildtypes Build Types
 # - Debug: Full debug info, no optimization
 # - Release: Optimized, no debug info
 # - MinSizeRel: Size-optimized
 # - RelWithDebInfo: Optimized with debug info
-#]=]
+##
 if(MSVC)
 include(CMakeData-rage.cmake)
 include(CMakeData-os.cmake)
