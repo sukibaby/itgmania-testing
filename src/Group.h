@@ -1,3 +1,23 @@
+/**
+ * @file Group.h
+ * @brief Header file for the Group class, representing song groups or
+ *        packs.
+ *
+ * This header defines the Group class, which encapsulates metadata
+ * and properties for song collections, including display titles,
+ * paths, and pack information.
+ *
+ * The corresponding source file (Group.cpp) implements group loading
+ * from directories, parsing of pack.ini files, and metadata management.
+ *
+ * Significant dependencies:
+ * - global.h: Provides global definitions and types.
+ * - ActorFrame.h: Supplies ActorFrame for scene graph elements.
+ * - GameplayAssist.h: Includes assist-related functionality.
+ * - Player.h: Defines Player class for player contexts.
+ * - NoteData.h: Provides NoteData for note-related operations.
+ */
+
 #ifndef GROUP_H
 #define GROUP_H
 

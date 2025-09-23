@@ -1,3 +1,23 @@
+/**
+ * @file HoldJudgment.h
+ * @brief Header file for the HoldJudgment class, displaying hold note
+ *        judgments.
+ *
+ * This header defines the HoldJudgment class, which inherits from
+ * ActorFrame and shows visual feedback for hold note scores like OK
+ * or NG.
+ *
+ * The corresponding source file (HoldJudgment.cpp) implements judgment
+ * loading, animation, and theming for hold note evaluations.
+ *
+ * Significant dependencies:
+ * - ActorFrame.h: Provides the base ActorFrame class for scene graph
+ *   management.
+ * - GameConstantsAndTypes.h: Supplies HoldNoteScore enum and types.
+ * - PlayerNumber.h: Defines PlayerNumber for player contexts.
+ * - AutoActor.h: Offers AutoActor for automatic theme-based loading.
+ */
+
 #ifndef HOLD_JUDGMENT_H
 #define HOLD_JUDGMENT_H
 

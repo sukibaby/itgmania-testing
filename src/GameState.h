@@ -1,3 +1,26 @@
+/**
+ * @file GameState.h
+ * @brief Header file for the GameState class, the central manager of
+ *        non-persistent game data.
+ *
+ * This header defines the GameState singleton class, which maintains
+ * current game session state including selected songs, player options,
+ * timing data, and gameplay statistics.
+ *
+ * The corresponding source file (GameState.cpp) implements state
+ * initialization, updates, and interactions with songs, players, and
+ * game modes.
+ *
+ * Significant dependencies:
+ * - GameConstantsAndTypes.h: Provides core enums and types (e.g.,
+ *   Difficulty, Grade) used throughout the state management.
+ * - PlayerOptions.h: Supplies PlayerOptions for individual player
+ *   settings and modifiers.
+ * - SongOptions.h: Defines SongOptions for song-specific preferences.
+ * - Difficulty.h: Supplies difficulty level definitions.
+ * - Grade.h: Provides grading enums and utilities.
+ */
+
 #ifndef GAMESTATE_H
 #define GAMESTATE_H
 

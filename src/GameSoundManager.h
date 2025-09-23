@@ -1,3 +1,21 @@
+/**
+ * @file GameSoundManager.h
+ * @brief Header file for the GameSoundManager class, handling high-level
+ *        sound and music operations.
+ *
+ * This header defines the GameSoundManager class, which provides
+ * interfaces for playing music with timing data, managing sound effects,
+ * and coordinating audio playback during gameplay.
+ *
+ * The corresponding source file (GameSoundManager.cpp) implements music
+ * loading, playback synchronization with beats, fading, and integration
+ * with game state and timing systems.
+ *
+ * Significant dependencies:
+ * - PlayerNumber.h: Supplies PlayerNumber enum for player-specific audio
+ *   operations and announcements.
+ */
+
 #ifndef RAGE_SOUNDS_H
 #define RAGE_SOUNDS_H
 

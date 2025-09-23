@@ -1,3 +1,22 @@
+/**
+ * @file global.h
+ * @brief Header file providing global definitions, macros, and includes
+ *        used throughout the application.
+ *
+ * This header defines common types (e.g., RString), platform-specific
+ * fixes, branch optimizations, and global utilities like checkpoints
+ * and assertions.
+ *
+ * The corresponding source file (global.cpp) implements platform-specific
+ * crash handling and debugging functions.
+ *
+ * Significant dependencies:
+ * - config.hpp: Supplies build configuration and feature flags.
+ * - StdString.h: Provides the StdString class aliased as RString.
+ * - archutils headers: Platform-specific setup and utilities (e.g.,
+ *   Win32, Darwin, Unix).
+ */
+
 #ifndef GLOBAL_H
 #define GLOBAL_H
 

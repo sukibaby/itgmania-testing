@@ -1,3 +1,25 @@
+/**
+ * @file GhostArrowRow.h
+ * @brief Header file for the GhostArrowRow class, managing ghost arrow
+ *        display for note feedback.
+ *
+ * This header defines the GhostArrowRow class, which inherits from
+ * ActorFrame and handles the display of ghost arrows that appear when
+ * notes are hit or held, providing visual feedback.
+ *
+ * The corresponding source file (GhostArrowRow.cpp) implements loading
+ * of ghost arrow actors, updating their states based on note scores,
+ * and rendering them in sync with gameplay.
+ *
+ * Significant dependencies:
+ * - ActorFrame.h: Provides the base ActorFrame class for scene graph
+ *   management.
+ * - GameConstantsAndTypes.h: Supplies game enums and types for scoring
+ *   and gameplay elements.
+ * - NoteTypes.h: Defines note-related types and subtypes.
+ * - NoteDisplay.h: Offers note display utilities and renderers.
+ */
+
 #ifndef GHOSTARROWROW_H
 #define GHOSTARROWROW_H
 

@@ -1,3 +1,21 @@
+/**
+ * @file InputMapper.h
+ * @brief Header file defining input mapping structures and constants.
+ *
+ * This header specifies AutoMappingEntry, AutoMappings, and related
+ * structs for mapping device inputs to game inputs, including slot
+ * management and secondary controller support.
+ *
+ * The corresponding source file (InputMapper.cpp) implements input
+ * mapping logic, auto-mapping, configuration loading/saving, and
+ * device-to-game input translation.
+ *
+ * Significant dependencies:
+ * - RageInputDevice.h: Supplies DeviceInput and device-related types.
+ * - GameInput.h: Provides GameInput for game-specific input mappings.
+ * - PlayerNumber.h: Defines PlayerNumber for player-specific contexts.
+ */
+
 #ifndef INPUT_MAPPER_H
 #define INPUT_MAPPER_H
 

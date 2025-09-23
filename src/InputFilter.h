@@ -1,4 +1,18 @@
-/* InputFilter - Checks RageInput and generates a list of InputEvents, representing button presses, releases, and repeats. */
+/**
+ * @file InputFilter.h
+ * @brief Header file defining input event types and filtering structures.
+ *
+ * This header specifies InputEventType enum, InputEvent struct, and
+ * related types for processing and filtering device input events.
+ *
+ * The corresponding source file (InputFilter.cpp) implements input
+ * debouncing, repeat handling, and event generation from raw device
+ * inputs.
+ *
+ * Significant dependencies:
+ * - RageInputDevice.h: Supplies DeviceInput and device-related types
+ *   for input handling.
+ */
 
 #ifndef INPUT_FILTER_H
 #define INPUT_FILTER_H

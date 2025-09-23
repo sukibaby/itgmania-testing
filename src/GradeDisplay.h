@@ -1,3 +1,24 @@
+/**
+ * @file GradeDisplay.h
+ * @brief Header file for the GradeDisplay class, handling grade display
+ *        on evaluation screens.
+ *
+ * This header defines the GradeDisplay class, which inherits from
+ * ActorFrame and manages the visual display of performance grades
+ * using themed sprites.
+ *
+ * The corresponding source file (GradeDisplay.cpp) implements loading
+ * of grade sprites from themes, setting the current grade for display,
+ * and Lua bindings for scripting.
+ *
+ * Significant dependencies:
+ * - ActorFrame.h: Provides the base ActorFrame class for scene graph
+ *   management.
+ * - Grade.h: Supplies the Grade enum for performance tiers.
+ * - PlayerNumber.h: Defines PlayerNumber for player-specific contexts.
+ * - AutoActor.h: Offers AutoActor for automatic theme-based loading.
+ */
+
 #ifndef GRADE_DISPLAY_H
 #define GRADE_DISPLAY_H
 

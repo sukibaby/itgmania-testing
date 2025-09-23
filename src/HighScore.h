@@ -1,3 +1,23 @@
+/**
+ * @file HighScore.h
+ * @brief Header file for the HighScore struct, storing persistent score
+ *        data.
+ *
+ * This header defines the HighScore struct, which encapsulates score
+ * information including name, grade, score value, judgments, and
+ * metadata for persistence.
+ *
+ * The corresponding source file (HighScore.cpp) implements score
+ * serialization to/from XML, comparison operators, and data validation.
+ *
+ * Significant dependencies:
+ * - Grade.h: Supplies the Grade enum for performance tiers.
+ * - GameConstantsAndTypes.h: Provides enums like StageAward and
+ *   TapNoteScore.
+ * - DateTime.h: Offers DateTime for timestamping scores.
+ * - RageUtil_AutoPtr.h: Supplies AutoPtr for memory management.
+ */
+
 #ifndef HIGH_SCORE_H
 #define HIGH_SCORE_H
 

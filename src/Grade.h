@@ -1,3 +1,21 @@
+/**
+ * @file Grade.h
+ * @brief Header file defining the Grade enum and grading utilities.
+ *
+ * This header specifies the Grade enum for performance tiers (e.g.,
+ * Tier01 for AAAA, Failed for E) and provides inline functions for
+ * grade string conversion.
+ *
+ * The corresponding source file (Grade.cpp) implements localized string
+ * conversion, old grade mapping, and Lua bindings for grades.
+ *
+ * Significant dependencies:
+ * - RageUtil.h: Supplies utility functions and macros.
+ * - EnumHelper.h: Provides macros for enum string conversion and Lua
+ *   integration.
+ * - ThemeMetric.h: Offers theme-based metric access for grade tiers.
+ */
+
 #ifndef GRADE_H
 #define GRADE_H
 

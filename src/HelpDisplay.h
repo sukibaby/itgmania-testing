@@ -1,3 +1,19 @@
+/**
+ * @file HelpDisplay.h
+ * @brief Header file for the HelpDisplay class, displaying cycling help
+ *        messages.
+ *
+ * This header defines the HelpDisplay class, which inherits from
+ * BitmapText and cycles through help tips or messages at specified
+ * intervals.
+ *
+ * The corresponding source file (HelpDisplay.cpp) implements tip loading
+ * from themes, cycling logic, and text updates for user assistance.
+ *
+ * Significant dependencies:
+ * - BitmapText.h: Provides the base BitmapText class for text rendering.
+ */
+
 #ifndef HELP_DISPLAY_H
 #define HELP_DISPLAY_H
 

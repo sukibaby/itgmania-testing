@@ -1,3 +1,21 @@
+/**
+ * @file ImageCache.h
+ * @brief Header file for the ImageCache class, managing cached reduced-
+ *        quality images.
+ *
+ * This header defines the ImageCache class, which maintains a cache of
+ * downscaled images for efficient loading and display, reducing memory
+ * usage.
+ *
+ * The corresponding source file (ImageCache.cpp) implements image
+ * caching, loading from disk, palette reduction, and cache management
+ * with file hashing.
+ *
+ * Significant dependencies:
+ * - IniFile.h: Provides IniFile for storing cache metadata.
+ * - RageTexture.h: Supplies RageTexture for texture handling.
+ */
+
 #ifndef IMAGE_CACHE_H
 #define IMAGE_CACHE_H
 

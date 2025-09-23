@@ -1,3 +1,24 @@
+/**
+ * @file GrooveRadar.h
+ * @brief Header file for the GrooveRadar class, displaying radar charts
+ *        for song statistics.
+ *
+ * This header defines the GrooveRadar class, which inherits from
+ * ActorFrame and renders polygonal radar graphs showing song metrics.
+ * Traditionally, DDR would have metrics such as stream, voltage, air, etc.
+ *
+ * The corresponding source file (GrooveRadar.cpp) implements radar
+ * rendering, value mapping, and theming for player-specific displays.
+ *
+ * Significant dependencies:
+ * - ActorFrame.h: Provides the base ActorFrame class for scene graph
+ *   management.
+ * - Sprite.h: Supplies Sprite for graphical elements.
+ * - AutoActor.h: Offers AutoActor for automatic theme-based loading.
+ * - PlayerNumber.h: Defines PlayerNumber for player-specific contexts.
+ * - GameConstantsAndTypes.h: Supplies radar category enums and types.
+ */
+
 #ifndef GROOVE_RADAR_H
 #define GROOVE_RADAR_H
 

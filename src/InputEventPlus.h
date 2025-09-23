@@ -1,3 +1,22 @@
+/**
+ * @file InputEventPlus.h
+ * @brief Header file defining InputEventPlus and related structs for
+ *        input event handling.
+ *
+ * This header defines the InputEventPlus class, which combines device
+ * input with game and menu translations, and the AlternateMapping struct
+ * for input alternatives.
+ *
+ * No corresponding source file exists; this header provides struct
+ * definitions and inline functionality for input processing.
+ *
+ * Significant dependencies:
+ * - InputFilter.h: Supplies DeviceInput and related input filtering
+ *   types.
+ * - GameInput.h: Provides GameInput for game-specific input mappings.
+ * - PlayerNumber.h: Defines PlayerNumber for player-specific contexts.
+ */
+
 #ifndef INPUT_EVENT_PLUS_H
 #define INPUT_EVENT_PLUS_H
 

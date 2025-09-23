@@ -1,3 +1,23 @@
+/**
+ * @file GraphDisplay.h
+ * @brief Header file for the GraphDisplay class, rendering life graphs
+ *        on evaluation screens.
+ *
+ * This header defines the GraphDisplay class, which inherits from
+ * ActorFrame and displays graphical representations of player life
+ * over time during gameplay.
+ *
+ * The corresponding source file (GraphDisplay.cpp) implements graph
+ * rendering with lines and bodies, vertex updates, and boundary
+ * markers for songs.
+ *
+ * Significant dependencies:
+ * - ActorFrame.h: Provides the base ActorFrame class for scene graph
+ *   management.
+ * - AutoActor.h: Offers AutoActor for automatic theme-based loading
+ *   of sprites.
+ */
+
 #ifndef GRAPH_DISPLAY_H
 #define GRAPH_DISPLAY_H
 
