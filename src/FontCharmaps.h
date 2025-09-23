@@ -1,6 +1,19 @@
+/**
+ * @file FontCharmaps.h
+ * @brief Header for font character mapping support.
+ *
+ * This header declares the FontCharmaps namespace, which provides
+ * character maps for font rendering, including functions to retrieve
+ * maps by name and special skip characters.
+ *
+ * The corresponding implementation is in FontCharmaps.cpp.
+ *
+ * Key dependencies: None (header-only declarations).
+ */
+
 #ifndef FONT_CHARMAPS_H
 #define FONT_CHARMAPS_H
-/** @brief Defines common frame to character mappings for Fonts. */
+
 namespace FontCharmaps
 {
 	extern const wchar_t M_SKIP;

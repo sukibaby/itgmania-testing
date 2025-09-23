@@ -1,4 +1,21 @@
 
+/**
+ * @file EditModePlayerManager.h
+ * @brief Header for managing players during edit mode playback.
+ *
+ * This header declares the EditModePlayerManager class, which handles
+ * player state, input, and rendering during edit mode (practice mode).
+ * It manages multiple players, their note data, and gameplay interactions.
+ *
+ * The corresponding implementation is in EditModePlayerManager.cpp.
+ *
+ * Key dependencies:
+ * - ActorFrame.h: Base class for UI actor frames, used for adding players.
+ * - GameplayAssist.h: Provides assist features like ticks during playback.
+ * - Player.h: Defines the Player class for individual player management.
+ * - NoteData.h: Handles note data structures for gameplay.
+ */
+
 #include "global.h"
 
 #include "ActorFrame.h"

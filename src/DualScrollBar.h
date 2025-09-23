@@ -1,3 +1,17 @@
+/**
+ * @file DualScrollBar.h
+ * @brief Header file for the DualScrollBar class, dual-player scrollbar widget.
+ *
+ * This file defines the DualScrollBar class which provides a scrollbar widget
+ * with two independent thumbs for displaying progress of two players. The
+ * implementation is in DualScrollBar.cpp.
+ *
+ * Significant dependencies:
+ * - ActorFrame.h: Base class for UI elements and actor management.
+ * - AutoActor.h: AutoActor class for automatic sprite resource management.
+ * - PlayerNumber.h: Defines PlayerNumber enum for identifying players.
+ */
+
 #ifndef DUAL_SCROLLBAR_H
 #define DUAL_SCROLLBAR_H
 

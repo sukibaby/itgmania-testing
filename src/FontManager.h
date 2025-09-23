@@ -1,4 +1,15 @@
-/* FontManager - Interface for loading and releasing fonts. */
+/**
+ * @file FontManager.h
+ * @brief Header for font management functionality.
+ *
+ * This header declares the FontManager class, which handles loading,
+ * copying, and unloading of fonts, providing a global FONT instance
+ * for font resource management.
+ *
+ * The corresponding implementation is in FontManager.cpp.
+ *
+ * Key dependencies: None (header-only declarations).
+ */
 
 #ifndef FONTMANAGER_H
 #define FONTMANAGER_H

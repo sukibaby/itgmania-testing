@@ -1,3 +1,19 @@
+/**
+ * @file EnumHelper.h
+ * @brief Header for enum utility functions and Lua integration.
+ *
+ * This header provides macros and functions for iterating over enums,
+ * converting between enums and strings, and integrating enums with Lua.
+ * It includes templates for enum traits and Lua checking functions.
+ *
+ * The corresponding implementation is in EnumHelper.cpp.
+ *
+ * Key dependencies:
+ * - LuaReference.h: Provides Lua reference storage for enum conversions.
+ * - RageUtil.h: General utility functions used in enum operations.
+ * - lua.h: Lua C API headers for scripting integration.
+ */
+
 #ifndef ENUM_HELPER_H
 #define ENUM_HELPER_H
 

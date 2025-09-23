@@ -1,3 +1,20 @@
+/**
+ * @file DynamicActorScroller.h
+ * @brief Header for dynamic actor scrolling functionality.
+ *
+ * This header declares the DynamicActorScroller class, which extends
+ * ActorScroller to dynamically populate its child actors using Lua
+ * functions. It also declares DynamicActorScrollerAutoDeleteChildren,
+ * a subclass that automatically manages child actor deletion.
+ *
+ * The corresponding implementation is in DynamicActorScroller.cpp.
+ *
+ * Key dependencies:
+ * - ActorScroller.h: Base class providing core scrolling functionality.
+ * - LuaReference.h: Provides Lua function reference storage for dynamic
+ *   actor configuration.
+ */
+
 #ifndef ACTOR_SCROLLER_H
 #define ACTOR_SCROLLER_H
 

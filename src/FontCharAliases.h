@@ -1,3 +1,16 @@
+/**
+ * @file FontCharAliases.h
+ * @brief Header for font character alias support.
+ *
+ * This header declares the FontCharAliases namespace, which provides
+ * functions to handle nonstandard characters and markers in text,
+ * converting aliases to Unicode characters.
+ *
+ * The corresponding implementation is in FontCharAliases.cpp.
+ *
+ * Key dependencies: None (header-only declarations).
+ */
+
 #ifndef FONT_CHAR_ALIASES
 #define FONT_CHAR_ALIASES
 

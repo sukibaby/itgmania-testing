@@ -1,3 +1,24 @@
+/**
+ * @file EditMenu.h
+ * @brief Header for edit menu UI functionality.
+ *
+ * This header declares enums and the EditMenu class for managing the
+ * edit menu screen, which allows creating, deleting, or launching steps
+ * in the editor. It includes row types, actions, and UI navigation.
+ *
+ * The corresponding implementation is in EditMenu.cpp.
+ *
+ * Key dependencies:
+ * - ActorFrame.h: Base class for UI actor frames.
+ * - FadingBanner.h: Provides fading banner display functionality.
+ * - TextBanner.h: Handles text banner rendering.
+ * - GameConstantsAndTypes.h: Defines game-related constants and types.
+ * - StepsDisplay.h: Manages display of step information.
+ * - RageSound.h: Provides sound playback capabilities.
+ * - EnumHelper.h: Utilities for enum handling and conversion.
+ * - ThemeMetric.h: Access to theme-defined metrics.
+ */
+
 #ifndef EDIT_MENU_H
 #define EDIT_MENU_H
 

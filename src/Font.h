@@ -1,4 +1,18 @@
-/** @brief Font - stores a font, used by BitmapText. */
+/**
+ * @file Font.h
+ * @brief Header for font rendering and glyph management.
+ *
+ * This header defines structures and classes for handling fonts,
+ * including glyph data, font pages, and texture management for text
+ * rendering.
+ *
+ * The corresponding implementation is in Font.cpp.
+ *
+ * Key dependencies:
+ * - RageTextureID.h: Provides texture ID structures for font textures.
+ * - RageUtil.h: General utility functions used in font operations.
+ * - RageTypes.h: Defines common types used throughout the font system.
+ */
 
 #ifndef FONT_H
 #define FONT_H

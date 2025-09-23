@@ -1,4 +1,20 @@
-/* FadingBanner - Fades between two banners. */
+
+
+/**
+ * @file FadingBanner.h
+ * @brief Header for fading banner display functionality.
+ *
+ * This header declares the FadingBanner class, which manages smooth
+ * transitions between multiple banner images, supporting low-to-high
+ * resolution loading and various banner sources.
+ *
+ * The corresponding implementation is in FadingBanner.cpp.
+ *
+ * Key dependencies:
+ * - Banner.h: Base banner class for individual banner handling.
+ * - ActorFrame.h: Base class for actor frame management.
+ * - RageTimer.h: Provides timing functionality for fade effects.
+ */
 
 #ifndef FADING_BANNER_H
 #define FADING_BANNER_H
