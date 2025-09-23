@@ -1,4 +1,18 @@
-/** @brief SSCLoader - Reads a Song and its Steps from a .SSC file. */
+/**
+ * @file NotesLoaderSSC.h
+ * @brief Header file for the SSCLoader struct, handling parsing of .ssc files
+ *        for song and step data.
+ *
+ * The SSCLoader struct inherits from SMLoader and provides functionality
+ * for loading and parsing SSC simfiles. It handles song data, step data,
+ * timing segments, and version-specific features.
+ *
+ * Dependencies:
+ * - GameConstantsAndTypes.h: Defines constants and types used throughout
+ *   the game.
+ * - NotesLoaderSM.h: Defines the base SMLoader class for SM file loading.
+ */
+
 #ifndef NotesLoaderSSC_H
 #define NotesLoaderSSC_H
 

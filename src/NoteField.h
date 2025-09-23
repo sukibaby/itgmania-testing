@@ -1,3 +1,14 @@
+/**
+ * @file NoteField.h
+ * @brief Header file for the NoteField class, rendering NoteData with visual
+ *        elements like receptors, ghosts, and beat bars.
+ *
+ * The NoteField class inherits from ActorFrame and handles the display of
+ * NoteData, including note displays, receptor arrows, ghost arrows, beat
+ * bars, and various decorations. It supports multiple note skins and
+ * integrates with player state and Lua scripting.
+ */
+
 #ifndef NOTE_FIELD_H
 #define NOTE_FIELD_H
 

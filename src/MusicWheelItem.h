@@ -1,3 +1,29 @@
+/**
+ * @file MusicWheelItem.h
+ * @brief Header file for the MusicWheelItem class and related structures,
+ *        representing items in the music wheel.
+ *
+ * The MusicWheelItem class inherits from WheelItemBase and handles the
+ * display and interaction of individual items in the music wheel, such as
+ * songs, sections, courses, and special modes. It includes support for
+ * grade displays, text banners, and theme-based customization.
+ *
+ * Dependencies:
+ * - ActorFrame.h: Base class for composite actors containing multiple child
+ *   actors.
+ * - BitmapText.h: Class for rendering text using bitmap fonts.
+ * - WheelNotifyIcon.h: Class for displaying notification icons on wheel
+ *   items.
+ * - TextBanner.h: Class for displaying text banners with song information.
+ * - GameConstantsAndTypes.h: Defines constants and types used throughout
+ *   the game.
+ * - Song.h: Defines the Song class for song data.
+ * - GameCommand.h: Defines game commands for menu actions.
+ * - WheelItemBase.h: Base class for wheel item implementations.
+ * - AutoActor.h: Classes for automatic actor loading and management.
+ * - ThemeMetric.h: Classes for theme-based configuration metrics.
+ */
+
 #ifndef MUSIC_WHEEL_ITEM_H
 #define MUSIC_WHEEL_ITEM_H
 

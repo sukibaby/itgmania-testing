@@ -1,4 +1,23 @@
-/* MusicWheel - A wheel with song names used in the Select Music screen. */
+/**
+ * @file MusicWheel.h
+ * @brief Header file for the MusicWheel class, implementing the music
+ *        selection wheel for songs and courses.
+ *
+ * The MusicWheel class inherits from WheelBase and manages the selection
+ * of songs, courses, and sections in the music wheel interface. It supports
+ * various sort orders, roulette mode, random selection, and theme-based
+ * configuration.
+ *
+ * Dependencies:
+ * - RageSound.h: Class for sound playback and management.
+ * - GameConstantsAndTypes.h: Defines constants and types used throughout
+ *   the game.
+ * - MusicWheelItem.h: Defines the MusicWheelItem class for wheel items.
+ * - ThemeMetric.h: Classes for theme-based configuration metrics.
+ * - WheelBase.h: Base class for wheel implementations.
+ * - <vector>: Standard library container for dynamic arrays used in wheel
+ *   item storage.
+ */
 
 #ifndef MUSIC_WHEEL_H
 #define MUSIC_WHEEL_H

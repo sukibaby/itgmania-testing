@@ -1,3 +1,22 @@
+/**
+ * @file NoteDataUtil.h
+ * @brief Header file for the NoteDataUtil namespace, providing utility
+ *        functions for NoteData manipulation and transformation.
+ *
+ * The NoteDataUtil namespace contains functions for loading, transforming,
+ * and analyzing NoteData objects. This includes operations like mirroring,
+ * scaling, removing specific note types, applying player options, and
+ * calculating radar values.
+ *
+ * Dependencies:
+ * - GameConstantsAndTypes.h: Defines constants and types used throughout
+ *   the game.
+ * - NoteTypes.h: Defines types for notes, including TapNote and related
+ *   enums.
+ * - <vector>: Standard library container for dynamic arrays used in track
+ *   mappings and data storage.
+ */
+
 #ifndef NOTEDATAUTIL_H
 #define NOTEDATAUTIL_H
 

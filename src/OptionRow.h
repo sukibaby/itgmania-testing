@@ -1,4 +1,12 @@
-/* OptionRow - One line in ScreenOptions. */
+/**
+ * @file OptionRow.h
+ * @brief Header file for the OptionRow class, managing option rows in menus
+ *        with cursors and icons.
+ *
+ * The OptionRow class inherits from ActorFrame and handles the display and
+ * interaction of menu options, including text items, cursors, mod icons,
+ * and theme-based styling for multiple players.
+ */
 
 #ifndef OptionRow_H
 #define OptionRow_H

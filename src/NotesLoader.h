@@ -1,3 +1,17 @@
+/**
+ * @file NotesLoader.h
+ * @brief Header file for the NotesLoader namespace, providing base
+ *        functionality for loading songs from directories.
+ *
+ * The NotesLoader namespace contains utility functions for loading song
+ * data from directories, including parsing titles and handling blacklisted
+ * images. It serves as a base for specific step file loaders.
+ *
+ * Dependencies:
+ * - <set>: Standard library container for storing unique elements, used for
+ *   blacklisted images.
+ */
+
 #ifndef NOTES_LOADER_H
 #define NOTES_LOADER_H
 

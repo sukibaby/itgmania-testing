@@ -1,4 +1,19 @@
-/** @brief NoteTypes - Types for holding tap notes and scores. */
+/**
+ * @file NoteTypes.h
+ * @brief Header file defining note types, scores, and related structures for
+ *        the game.
+ *
+ * This file defines the core types and structures for notes in the game,
+ * including TapNote, HoldNote, scoring results, and conversion utilities
+ * between beats and note rows.
+ *
+ * Dependencies:
+ * - GameConstantsAndTypes.h: Defines constants and types used throughout
+ *   the game.
+ * - PlayerNumber.h: Enumeration for player numbers.
+ * - RageLog.h: Logging utilities for debugging and tracing.
+ * - <cmath>: Standard library math functions for calculations.
+ */
 
 #ifndef NOTE_TYPES_H
 #define NOTE_TYPES_H

@@ -1,3 +1,22 @@
+/**
+ * @file NotesLoaderSM.h
+ * @brief Header file for the SMLoader struct, reading and parsing .SM files
+ *        for song data.
+ *
+ * The SMLoader struct provides functionality for loading and parsing SM
+ * (StepMania) files. It handles song information, step data, timing
+ * segments, attacks, backgrounds, and other simfile elements.
+ *
+ * Dependencies:
+ * - GameConstantsAndTypes.h: Defines constants and types used throughout
+ *   the game.
+ * - BackgroundUtil.h: Utilities for background changes and effects.
+ * - Attack.h: Defines attack structures for modifiers.
+ * - MsdFile.h: Defines the MsdFile class for parsing MSD format files.
+ * - <vector>: Standard library container for dynamic arrays used in data
+ *   storage.
+ */
+
 #ifndef NotesLoaderSM_H
 #define NotesLoaderSM_H
 

@@ -1,3 +1,22 @@
+/**
+ * @file NoteSkinManager.h
+ * @brief Header file for the NoteSkinManager class, loading and managing note
+ *        skins for different games and players.
+ *
+ * The NoteSkinManager class handles the loading, validation, and management
+ * of note skins. It provides access to note skin data, metrics, and actors,
+ * supporting different games and player configurations.
+ *
+ * Dependencies:
+ * - Actor.h: Base class for scene objects with common actor functionality.
+ * - RageTypes.h: Defines common types and structures used throughout Rage.
+ * - PlayerNumber.h: Enumeration for player numbers.
+ * - GameInput.h: Defines game input types and structures.
+ * - IniFile.h: Classes for reading and writing INI configuration files.
+ * - <vector>: Standard library container for dynamic arrays used in skin
+ *   name lists.
+ */
+
 #ifndef NOTE_SKIN_MANAGER_H
 #define NOTE_SKIN_MANAGER_H
 

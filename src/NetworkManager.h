@@ -1,3 +1,22 @@
+/**
+ * @file NetworkManager.h
+ * @brief Header file for the NetworkManager class, managing HTTP requests
+ *        and WebSocket connections.
+ *
+ * The NetworkManager class handles network operations including HTTP
+ * requests with progress callbacks, WebSocket connections, and URL
+ * encoding. It integrates with preferences for host allowlists and provides
+ * Lua bindings for scripting.
+ *
+ * Dependencies:
+ * - Preference.h: Classes for managing user preferences.
+ * - StdString.h: Utilities for string handling and manipulation.
+ * - ixwebsocket/IXHttp.h, IXHttpClient.h, IXSocketTLSOptions.h, IXWebSocket.h:
+ *   IXWebSocket library for HTTP and WebSocket functionality.
+ * - EnumHelper.h: Provides utilities for enum operations.
+ * - LuaManager.h: Provides Lua scripting integration.
+ */
+
 #ifndef NETWORK_MANAGER_H
 #define NETWORK_MANAGER_H
 

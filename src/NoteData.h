@@ -1,3 +1,18 @@
+/**
+ * @file NoteData.h
+ * @brief Header file for the NoteData class, storing and manipulating note
+ *        data for songs.
+ *
+ * The NoteData class manages note information for songs, including taps,
+ * mines, lifts, and other note types across multiple tracks. It provides
+ * methods for accessing, modifying, and iterating over notes, as well as
+ * utilities for transformations and analysis.
+ *
+ * Dependencies:
+ * - NoteTypes.h: Defines types for notes, including TapNote and related
+ *   enums.
+ */
+
 #ifndef NOTE_DATA_H
 #define NOTE_DATA_H
 

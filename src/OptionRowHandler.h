@@ -1,3 +1,13 @@
+/**
+ * @file OptionRowHandler.h
+ * @brief Header file for the OptionRowHandler class and related structures,
+ *        defining option row behavior.
+ *
+ * This file defines the OptionRowHandler base class and supporting structures
+ * for managing menu option rows, including selection types, layout types,
+ * and option definitions with player-specific settings.
+ */
+
 #ifndef OptionRowHandler_H
 #define OptionRowHandler_H
 

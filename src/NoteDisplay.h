@@ -1,3 +1,25 @@
+/**
+ * @file NoteDisplay.h
+ * @brief Header file for the NoteDisplay class and related structures,
+ *        handling the rendering of notes and holds in the game.
+ *
+ * The NoteDisplay class manages the visual representation of TapNotes and
+ * HoldNotes, including different note parts, colors, and hold types. It
+ * integrates with splines for column positioning and supports various
+ * rendering modes and effects.
+ *
+ * Dependencies:
+ * - ActorFrame.h: Base class for composite actors containing multiple child
+ *   actors.
+ * - CubicSpline.h: Classes for cubic spline interpolation used in note
+ *   positioning.
+ * - NoteData.h: Defines the NoteData class for note information.
+ * - PlayerNumber.h: Enumeration for player numbers.
+ * - GameInput.h: Defines game input types and structures.
+ * - <vector>: Standard library container for dynamic arrays used in note
+ *   rendering.
+ */
+
 #ifndef NOTE_DISPLAY_H
 #define NOTE_DISPLAY_H
 

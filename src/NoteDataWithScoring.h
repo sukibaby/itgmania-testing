@@ -1,3 +1,18 @@
+/**
+ * @file NoteDataWithScoring.h
+ * @brief Header file for the NoteDataWithScoring namespace, providing scoring
+ *        utilities for NoteData.
+ *
+ * The NoteDataWithScoring namespace contains functions for analyzing NoteData
+ * in the context of player performance, including checking judgment status,
+ * retrieving scores, and calculating radar values based on stage statistics.
+ *
+ * Dependencies:
+ * - PlayerNumber.h: Enumeration for player numbers.
+ * - GameConstantsAndTypes.h: Defines constants and types used throughout
+ *   the game.
+ */
+
 #ifndef NOTE_DATA_WITH_SCORING_H
 #define NOTE_DATA_WITH_SCORING_H
 
