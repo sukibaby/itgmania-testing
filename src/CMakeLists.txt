@@ -1,17 +1,52 @@
+# [=[.rst:
+# CMakeLists.txt - ITGmania Build Configuration
+# -------------------------------------------
+#
+# Quick Notes:
+# - This is the main build file for ITGmania
+# - Run CMake configure and build from the root directory
+# - Key options: WITH_SSE2, WITH_CRASH_HANDLER, WITH_CLUB_FANTASTIC
+#
+# File Structure:
+# 1. Component Files (CMakeData-*.cmake)
+#    - arch.cmake:     CPU architecture-specific code (x86, ARM64)
+#    - rage.cmake:     Core game engine components
+#    - os.cmake:       Operating system abstractions
+#    - actor.cmake:    UI elements and visual components
+#    - screen.cmake:   Game screens and state management
+#    - data.cmake:     Core data structures
+#    - file-types.cmake: File format handlers
+#    - globals.cmake:  Global state and configuration
+#    - singletons.cmake: Global manager classes
+#
+# 2. Platform Configuration
+#    - Windows: MSVC compiler settings, DLL handling
+#    - macOS: Bundle creation, frameworks
+#    - Linux: X11, audio systems (ALSA, PulseAudio)
+#
+# 3. Dependencies
+#    - FFmpeg: Video/audio decoding
+#    - Lua: Scripting engine
+#    - OpenGL/GLEW: Graphics
+#    - Other: mad, pcre, libjpeg, etc.
+#
+# 4. Build Outputs
+#    - Windows: Program/ITGmania.exe
+#    - macOS: ITGmania.app bundle
+#    - Linux: itgmania binary
+#
+# Common Tasks:
+# - Adding new source files: Add to relevant CMakeData-*.cmake
+# - New dependency: Add to SMDATA_LINK_LIB list
+# - Platform-specific code: Use WIN32/APPLE/UNIX defines
+#
+# Build Types:
+# - Debug: Full debug info, no optimization
+# - Release: Optimized, no debug info
+# - MinSizeRel: Size-optimized
+# - RelWithDebInfo: Optimized with debug info
+#]=]
 if(MSVC)
-  # Add the mapconv program of the past to allow for debugging information.
-  include("CMakeProject-mapconv.cmake")
-  if(WITH_TEXTURE_GENERATOR OR WITH_FULL_RELEASE)
-    include("CMakeProject-texture.cmake")
-  endif()
-endif()
-
-# Keep the module path local for easier grabbing.
-set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR})
-
-# Main project is below.
-
-include(CMakeData-arch.cmake)
 include(CMakeData-rage.cmake)
 include(CMakeData-os.cmake)
 include(CMakeData-actor.cmake)
