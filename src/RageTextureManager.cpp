@@ -152,6 +152,8 @@ RageTexture* RageTextureManager::LoadTextureInternal( RageTextureID ID )
 
 	AdjustTextureID(ID);
 
+	const bool bIsMovie = (ActorUtil::GetFileType(ID.filename) == FT_Movie);
+
 	/* We could have two copies of the same bitmap if there are equivalent but
 	 * different paths, e.g. "Bitmaps\me.bmp" and "..\Rage PC Edition\Bitmaps\me.bmp". */
 	std::map<RageTextureID, RageTexture*>::iterator p = m_mapPathToTexture.find(ID);
@@ -159,6 +161,7 @@ RageTexture* RageTextureManager::LoadTextureInternal( RageTextureID ID )
 	{
 		/* Found the texture.  Just increase the refcount and return it. */
 		RageTexture* pTexture = p->second;
+		if (bIsMovie)
 		{
 			// We keep a single base copy cached in m_mapPathToTexture.
 			// CreateCopy() will return an independent instance with its own state.
@@ -177,7 +180,7 @@ RageTexture* RageTextureManager::LoadTextureInternal( RageTextureID ID )
 	{
 		pTexture = new RageTexture_Default;
 	}
-	else if(ActorUtil::GetFileType(ID.filename) == FT_Movie)
+	else if( bIsMovie )
 	{
 		pTexture = RageMovieTexture::Create( ID );
 	}
