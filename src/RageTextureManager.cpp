@@ -159,6 +159,13 @@ RageTexture* RageTextureManager::LoadTextureInternal( RageTextureID ID )
 	{
 		/* Found the texture.  Just increase the refcount and return it. */
 		RageTexture* pTexture = p->second;
+		{
+			// We keep a single base copy cached in m_mapPathToTexture.
+			// CreateCopy() will return an independent instance with its own state.
+			RageTexture* pDuplicate = pTexture->CreateCopy();
+			m_texture_ids_by_pointer[pDuplicate] = ID;
+			return pDuplicate;
+		}
 		pTexture->m_iRefCount++;
 		return pTexture;
 	}
