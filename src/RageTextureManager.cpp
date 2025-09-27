@@ -155,6 +155,24 @@ RageTexture* RageTextureManager::LoadTextureInternal( RageTextureID ID )
 
 	AdjustTextureID(ID);
 
+	// For movie textures, prevent reuse by making the ID unique per load.
+	// This is a workaround to prevent a bug where movie textures and their
+	// properties are unintentionally shared if the same texture is displayed
+	// more than once. An easy way to test if this is working is to test with
+	// a simfile that uses the same video for the background and the banner,
+	// with an an offset applied to the background, like so:
+	//
+	// #BGCHANGES:-1.500000=test.mp4=1.000000=0=0=1,
+	// 99999.000000=-nosongbg-=1.000000=0=0=0=StretchNoLoop====
+	// ;
+	//
+	const bool bIsMovie = (ActorUtil::GetFileType(ID.filename) == FT_Movie);
+	if( bIsMovie )
+	{
+		static unsigned long s_uMovieInstanceSerial = 0;
+		ID.AdditionalTextureHints += ssprintf("|inst=%lu", ++s_uMovieInstanceSerial);
+	}
+
 	/* We could have two copies of the same bitmap if there are equivalent but
 	 * different paths, e.g. "Bitmaps\me.bmp" and "..\Rage PC Edition\Bitmaps\me.bmp". */
 	std::map<RageTextureID, RageTexture*>::iterator p = m_mapPathToTexture.find(ID);
@@ -173,7 +191,7 @@ RageTexture* RageTextureManager::LoadTextureInternal( RageTextureID ID )
 	{
 		pTexture = new RageTexture_Default;
 	}
-	else if(ActorUtil::GetFileType(ID.filename) == FT_Movie)
+	else if( bIsMovie )
 	{
 		pTexture = RageMovieTexture::Create( ID );
 	}
