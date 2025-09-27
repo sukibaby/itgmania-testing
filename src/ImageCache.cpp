@@ -201,6 +201,11 @@ struct ImageTexture: public RageTexture
 		Create();
 	}
 
+	virtual RageTexture* CreateCopy() const
+	{
+		return new ImageTexture(GetID(), m_pImage, m_iWidth, m_iHeight);
+	}
+
 	~ImageTexture()
 	{
 		Destroy();

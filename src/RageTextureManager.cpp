@@ -135,6 +135,12 @@ public:
 	}
 	uintptr_t GetTexHandle() const { return m_uTexHandle; }
 
+	RageTexture* CreateCopy() const
+	{
+		// Default texture is stateless, so just create a new one
+		return new RageTexture_Default();
+	}
+
 private:
 	uintptr_t m_uTexHandle;
 };

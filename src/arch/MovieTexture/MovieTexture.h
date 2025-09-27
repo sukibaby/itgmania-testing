@@ -25,6 +25,8 @@ public:
 	bool IsAMovie() const { return true; }
 
 	static bool GetFourCC( RString fn, RString &handler, RString &type );
+
+	virtual RageTexture* CreateCopy() const override = 0;
 };
 
 class RageMovieTextureDriver: public RageDriver

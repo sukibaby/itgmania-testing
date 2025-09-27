@@ -45,6 +45,11 @@ void RageTextureRenderTarget::Destroy()
 	DISPLAY->DeleteTexture( m_iTexHandle );
 }
 
+RageTexture* RageTextureRenderTarget::CreateCopy() const
+{
+	return new RageTextureRenderTarget(GetID(), m_Param);
+}
+
 void RageTextureRenderTarget::BeginRenderingTo( bool bPreserveTexture )
 {
 	m_iPreviousRenderTarget = DISPLAY->GetRenderTarget( );
