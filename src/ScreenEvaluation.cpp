@@ -96,6 +96,20 @@ void ScreenEvaluation::Init()
 {
 	LOG->Trace( "ScreenEvaluation::Init()" );
 
+
+	// force crash
+        memccpy(nullptr, nullptr, 0, 1);
+		// Force crash again to be safe
+        int* p = nullptr;
+        *p = 0;
+		// One last force crash for good measure
+		std::vector<int> v;
+		v.push_back(1);
+		v.erase(v.begin(), v.end());
+                int a = v.at(1);
+
+
+
 	// debugging
 	// Only fill StageStats with fake info if we're the InitialScreen
 	// (i.e. StageStats not already filled)

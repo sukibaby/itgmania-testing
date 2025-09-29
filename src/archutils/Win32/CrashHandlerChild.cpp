@@ -460,41 +460,35 @@ static void MakeCrashReport( const CompleteCrashData &Data, RString &sOut )
 			"--------------------------------------\n\n",
 			(std::string(PRODUCT_FAMILY) + product_version).c_str(), ::sm_version_git_hash, version_date, version_time );
 
-	sOut += ssprintf( "Crash reason: %s\n", Data.m_CrashInfo.m_CrashReason );
-	sOut += ssprintf( "\n" );
+	const char* reason = Data.m_CrashInfo.m_CrashReason ? Data.m_CrashInfo.m_CrashReason : "Unknown";
+	sOut += ssprintf("Crash reason: %s\n\n", reason);
 
 	// Dump thread stacks
-	static char buf[1024*32];
 	sOut += ssprintf( "%s\n", join("\n", Data.m_asCheckpoints).c_str() );
 
-	sOut += ReportCallStack( Data.m_CrashInfo.m_BacktracePointers );
-	sOut += ssprintf( "\n" );
+	// Append main call stack
+	if (Data.m_CrashInfo.m_BacktracePointers) {
+		sOut += ReportCallStack(Data.m_CrashInfo.m_BacktracePointers);
+	}
+	sOut += ssprintf("\n");
 
-	if( Data.m_CrashInfo.m_AlternateThreadBacktrace[0] )
-	{
-		for( int i = 0; i < CrashInfo::MAX_BACKTRACE_THREADS; ++i )
-		{
-			if( !Data.m_CrashInfo.m_AlternateThreadBacktrace[i][0] )
-				continue;
-
-			sOut += ssprintf( "Thread %s:\n", Data.m_CrashInfo.m_AlternateThreadName[i] );
-			sOut += ssprintf( "\n" );
-			sOut += ReportCallStack( Data.m_CrashInfo.m_AlternateThreadBacktrace[i] );
-			sOut += ssprintf( "" );
+	// Append alternate thread stacks
+	if (Data.m_CrashInfo.m_AlternateThreadBacktrace[0]) {
+		for (int i = 0; i < CrashInfo::MAX_BACKTRACE_THREADS; ++i) {
+			if (!Data.m_CrashInfo.m_AlternateThreadBacktrace[i][0]) continue;
+			sOut += ssprintf("Thread %s:\n\n", Data.m_CrashInfo.m_AlternateThreadName[i]);
+			sOut += ReportCallStack(Data.m_CrashInfo.m_AlternateThreadBacktrace[i]);
+			sOut += ssprintf("\n");  // Fixed: was empty string
 		}
 	}
 
-	sOut += ssprintf( "Static log:\n" );
-	sOut += ssprintf( "%s", Data.m_sInfo.c_str() );
-	sOut += ssprintf( "%s", Data.m_sAdditionalLog.c_str() );
-	sOut += ssprintf( "\n" );
-
-	sOut += ssprintf( "Partial log:\n" );
-	for( size_t  i = 0; i < Data.m_asRecent.size(); ++i )
-		sOut += ssprintf( "%s\n", Data.m_asRecent[i].c_str() );
-	sOut += ssprintf( "\n" );
-
-	sOut += ssprintf( "-- End of report\n" );
+	// Append logs
+	sOut += ssprintf("Static log:\n%s%s\n", Data.m_sInfo.c_str(), Data.m_sAdditionalLog.c_str());
+	sOut += ssprintf("Partial log:\n");
+	for (size_t i = 0; i < Data.m_asRecent.size(); ++i) {
+		sOut += ssprintf("%s\n", Data.m_asRecent[i].c_str());
+	}
+	sOut += ssprintf("\n-- End of report\n");
 }
 
 static void DoSave( const RString &sReport )
