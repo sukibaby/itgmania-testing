@@ -114,7 +114,7 @@ typedef void (*arg_converter_t)(std::vector<RString>& args);
 
 std::map<RString, arg_converter_t> arg_converters;
 std::map<RString, size_t> tween_counters;
-std::set<RString> fields_that_are_strings;
+RStringSet fields_that_are_strings;
 std::map<RString, RString> chunks_to_replace;
 
 #define COMMON_ARG_VERIFY(count) if(!verify_arg_count(args[0], args, count)) return;
@@ -697,7 +697,7 @@ void actor_template_t::output_to_file(RageFile* file, RString const& indent)
 	for(field_cont_t::iterator field= fields.begin();
 		field != fields.end(); ++field)
 	{
-		std::set<RString>::iterator is_string= fields_that_are_strings.find(field->first);
+		RStringSet::iterator is_string= fields_that_are_strings.find(field->first);
 		if(is_string != fields_that_are_strings.end())
 		{
 			file->Write(subindent + field->first + "= \"" + field->second + "\",\n");

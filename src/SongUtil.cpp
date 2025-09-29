@@ -1101,7 +1101,7 @@ bool SongUtil::ValidateCurrentStepsMusic(const RString &answer, RString &error)
 
 void SongUtil::GetAllSongGenres( std::vector<RString> &vsOut )
 {
-	std::set<RString> genres;
+	RStringSet genres;
 	for (Song const *song : SONGMAN->GetAllSongs())
 	{
 		if( !song->m_sGenre.empty() )

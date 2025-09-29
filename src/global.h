@@ -41,6 +41,8 @@
 /** @brief Use RStrings throughout the program. */
 typedef StdString::CStdString RString;
 
+/** @brief A set of RStrings. Macro so we don't actually have to pull in std::set here. */
+#define RStringSet std::set<RString>
 
 #include "RageThreads.h"
 

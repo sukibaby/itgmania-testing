@@ -232,7 +232,7 @@ public:
 	int m_iTotalLifts;
 	/** @brief Is this a brand new profile? */
 	bool m_bNewProfile;
-	std::set<RString> m_UnlockedEntryIDs;
+	RStringSet m_UnlockedEntryIDs;
 	/**
 	 * @brief Which machine did we play on last, based on the Guid?
 	 *
@@ -308,7 +308,7 @@ public:
 	DateTime GetCourseLastPlayedDateTime( const Course* pCourse ) const;
 	void IncrementCoursePlayCount( const Course* pCourse, const Trail* pTrail );
 
-	void GetAllUsedHighScoreNames(std::set<RString>& names);
+	void GetAllUsedHighScoreNames(RStringSet& names);
 
 	void MergeScoresFromOtherProfile(Profile* other, bool skip_totals,
 		RString const& from_dir, RString const& to_dir);

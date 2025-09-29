@@ -87,7 +87,7 @@ RageSurface *RageSurfaceUtils::LoadFile( const RString &sPath, RString &error, b
 		}
 	}
 
-	std::set<RString> FileTypes;
+	RStringSet FileTypes;
 	std::vector<RString> const& exts= ActorUtil::GetTypeExtensionList(FT_Bitmap);
 	for(std::vector<RString>::const_iterator curr= exts.begin();
 			curr != exts.end(); ++curr)
@@ -109,7 +109,7 @@ RageSurface *RageSurfaceUtils::LoadFile( const RString &sPath, RString &error, b
 		FileTypes.erase( format );
 	}
 
-	for( std::set<RString>::iterator it = FileTypes.begin(); bKeepTrying && it != FileTypes.end(); ++it )
+	for( RStringSet::iterator it = FileTypes.begin(); bKeepTrying && it != FileTypes.end(); ++it )
 	{
 		RageSurface *ret = TryOpenFile( sPath, bHeaderOnly, error, *it, bKeepTrying );
 		if( ret )

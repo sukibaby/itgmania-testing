@@ -19,7 +19,7 @@ namespace
 		for (LuaBinding *binding : *m_Subscribers.m_pSubscribers)
 			mapToRegister[binding->GetClassName()] = binding;
 
-		std::set<RString> setRegisteredAlready;
+		RStringSet setRegisteredAlready;
 
 		while( !mapToRegister.empty() )
 		{

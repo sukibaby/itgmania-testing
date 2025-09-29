@@ -541,7 +541,7 @@ bool DWILoader::LoadNoteDataFromSimfile( const RString &path, Steps &out )
 	return false;
 }
 
-bool DWILoader::LoadFromDir( const RString &sPath_, Song &out, std::set<RString> &BlacklistedImages )
+bool DWILoader::LoadFromDir( const RString &sPath_, Song &out, RStringSet &BlacklistedImages )
 {
 	std::vector<RString> aFileNames;
 	GetApplicableFiles( sPath_, aFileNames );

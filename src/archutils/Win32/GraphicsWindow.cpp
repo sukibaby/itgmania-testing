@@ -73,10 +73,10 @@ static LRESULT CALLBACK GraphicsWindow_WndProc( HWND hWnd, UINT msg, WPARAM wPar
 			if( !g_bHasFocus )
 			{
 				RString sName = GetNewWindow();
-				static std::set<RString> sLostFocusTo;
+				static RStringSet sLostFocusTo;
 				sLostFocusTo.insert( sName );
 				RString sStr;
-				for( std::set<RString>::const_iterator it = sLostFocusTo.begin(); it != sLostFocusTo.end(); ++it )
+				for( RStringSet::const_iterator it = sLostFocusTo.begin(); it != sLostFocusTo.end(); ++it )
 					sStr += (sStr.size()?", ":"") + *it;
 
 				LOG->MapLog( "LOST_FOCUS", "Lost focus to: %s", sStr.c_str() );

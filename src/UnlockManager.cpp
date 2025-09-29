@@ -362,7 +362,7 @@ bool UnlockEntry::IsValid() const
 
 UnlockEntryStatus UnlockEntry::GetUnlockEntryStatus() const
 {
-	std::set<RString> &ids = PROFILEMAN->GetMachineProfile()->m_UnlockedEntryIDs;
+	RStringSet &ids = PROFILEMAN->GetMachineProfile()->m_UnlockedEntryIDs;
 	if(!m_sEntryID.empty() &&
 	   ids.find(m_sEntryID) != ids.end() )
 		return UnlockEntryStatus_Unlocked;

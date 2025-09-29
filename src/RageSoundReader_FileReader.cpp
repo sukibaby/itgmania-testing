@@ -112,7 +112,7 @@ RageSoundReader_FileReader *RageSoundReader_FileReader::OpenFile( RString filena
 			*pPrebuffer = false;
 		}
 	}
-	std::set<RString> FileTypes;
+	RStringSet FileTypes;
 	std::vector<RString> const& sound_exts= ActorUtil::GetTypeExtensionList(FT_Sound);
 	for(std::vector<RString>::const_iterator curr= sound_exts.begin();
 			curr != sound_exts.end(); ++curr)
@@ -136,7 +136,7 @@ RageSoundReader_FileReader *RageSoundReader_FileReader::OpenFile( RString filena
 		FileTypes.erase( format );
 	}
 
-	for( std::set<RString>::iterator it = FileTypes.begin(); bKeepTrying && it != FileTypes.end(); ++it )
+	for( RStringSet::iterator it = FileTypes.begin(); bKeepTrying && it != FileTypes.end(); ++it )
 	{
 		RageSoundReader_FileReader *NewSample = TryOpenFile( pFile->Copy(), error, *it, bKeepTrying );
 		if( NewSample )

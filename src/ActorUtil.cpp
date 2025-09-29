@@ -473,7 +473,7 @@ void ActorUtil::LoadAllCommands( Actor& actor, const RString &sMetricsGroup )
 
 void ActorUtil::LoadAllCommandsFromName( Actor& actor, const RString &sMetricsGroup, const RString &sName )
 {
-	std::set<RString> vsValueNames;
+	RStringSet vsValueNames;
 	THEME->GetMetricsThatBeginWith( sMetricsGroup, sName, vsValueNames );
 
 	for (RString const & sv : vsValueNames)

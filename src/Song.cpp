@@ -352,7 +352,7 @@ bool Song::LoadFromSongDir(RString sDir, bool load_autosave, ProfileSlot from_pr
 	}
 	else
 	{
-		std::set<RString> blacklistedImages;
+		RStringSet blacklistedImages;
 
 		// There was no entry in the cache for this song, or it was out of date.
 		// Let's load it from a file, then write a cache entry.
@@ -661,11 +661,11 @@ void FixupPath( RString &path, const RString &sSongPath )
 
 void Song::TidyUpData(bool from_cache, bool duringCache)
 {
-	Song::TidyUpData(from_cache, duringCache, std::set<RString>());
+	Song::TidyUpData(from_cache, duringCache, RStringSet());
 }
 
 // Songs in BlacklistImages will never be autodetected as song images.
-void Song::TidyUpData( bool from_cache, bool /* duringCache */, const std::set<RString>& blacklistedImages )
+void Song::TidyUpData( bool from_cache, bool /* duringCache */, const RStringSet& blacklistedImages )
 {
 	// We need to do this before calling any of HasMusic, HasHasCDTitle, etc.
 	ASSERT_M(Left(m_sSongDir, 3) != "../", m_sSongDir); // meaningless

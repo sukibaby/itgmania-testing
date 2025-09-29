@@ -219,7 +219,7 @@ public:
 	RadarCache_t m_RadarCache;
 
 	// Preferred styles:
-	std::set<RString> m_setStyles;
+	RStringSet m_setStyles;
 };
 
 #endif

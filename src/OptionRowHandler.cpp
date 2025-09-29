@@ -360,13 +360,13 @@ public:
 
 static void SortNoteSkins( std::vector<RString> &asSkinNames )
 {
-	std::set<RString> setSkinNames;
+	RStringSet setSkinNames;
 	setSkinNames.insert( asSkinNames.begin(), asSkinNames.end() );
 
 	std::vector<RString> asSorted;
 	split( NOTE_SKIN_SORT_ORDER, ",", asSorted );
 
-	std::set<RString> setUnusedSkinNames( setSkinNames );
+	RStringSet setUnusedSkinNames( setSkinNames );
 	asSkinNames.clear();
 
 	for (RString const &sSkin : asSorted)

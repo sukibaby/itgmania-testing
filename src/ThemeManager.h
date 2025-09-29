@@ -96,7 +96,7 @@ public:
 	void	GetString( const RString &sMetricsGroup, const RString &sValueName, RString &valueOut )		{ valueOut = GetString( sMetricsGroup, sValueName ); }
 	void FilterFileLanguages( std::vector<RString> &asElementPaths );
 
-	void GetMetricsThatBeginWith( const RString &sMetricsGroup, const RString &sValueName, std::set<RString> &vsValueNamesOut );
+	void GetMetricsThatBeginWith( const RString &sMetricsGroup, const RString &sValueName, RStringSet &vsValueNamesOut );
 
 	RString GetMetricsGroupFallback( const RString &sMetricsGroup );
 

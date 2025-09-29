@@ -225,7 +225,7 @@ protected:
 	std::vector<Song*>		m_pSongs;
 
 	std::map<RString, Song*> m_SongsByDir;
-	std::set<RString> m_GroupsToNeverCache;
+	RStringSet m_GroupsToNeverCache;
 
 
 	/** @brief Hold pointers to all the songs that have been deleted from disk but must at least be kept temporarily alive for smooth audio transitions. */

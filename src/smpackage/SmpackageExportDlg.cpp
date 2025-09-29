@@ -145,7 +145,7 @@ static bool ExportPackage( const RString &sPackageName, const RString &sSourceIn
 		IniFile ini;
 		ini.SetValue( "SMZIP", "Version", 1 );
 
-		std::set<RString> Directories;
+		RStringSet Directories;
 		for( unsigned i=0; i<asFilePaths.size(); i++ )
 		{
 			const RString name = SMPackageUtil::GetPackageDirectory( asFilePaths[i] );
@@ -153,7 +153,7 @@ static bool ExportPackage( const RString &sPackageName, const RString &sSourceIn
 				Directories.insert( name );
 		}
 
-		std::set<RString>::const_iterator it;
+		RStringSet::const_iterator it;
 		int num = 0;
 		for( it = Directories.begin(); it != Directories.end(); ++it )
 			ini.SetValue( "Packages", ssprintf("%i", num++), *it );

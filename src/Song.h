@@ -351,7 +351,7 @@ private:
 
 	std::vector<RString> GetChangesToVectorString(const std::vector<BackgroundChange> & changes) const;
 
-	void TidyUpData( bool fromCache, bool duringCache, const std::set<RString>& blacklistedImages );
+	void TidyUpData( bool fromCache, bool duringCache, const RStringSet& blacklistedImages );
 
 public:
 	const std::vector<BackgroundChange>	&GetBackgroundChanges( BackgroundLayer bl ) const;
