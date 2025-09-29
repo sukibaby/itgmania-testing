@@ -511,93 +511,60 @@ bool ReadCrashDataFromParent( int iFD, CompleteCrashData &Data )
 {
 	_setmode( _fileno(stdin), O_BINARY );
 
+	auto ReadData = [&](void *buffer, int size) -> bool {
+		return ReadFromParent(iFD, buffer, size);
+	};
+
 	// 0. Read the parent handle.
-	if( !ReadFromParent(iFD, &SymbolLookup::g_hParent, sizeof(SymbolLookup::g_hParent)) )
+	if (!ReadData(&SymbolLookup::g_hParent, sizeof(SymbolLookup::g_hParent)))
 		return false;
 
 	// 1. Read the CrashData.
-	if( !ReadFromParent(iFD, &Data.m_CrashInfo, sizeof(Data.m_CrashInfo)) )
+	if (!ReadData(&Data.m_CrashInfo, sizeof(Data.m_CrashInfo)))
 		return false;
+
+	auto ReadString = [&](RString &outString) -> bool {
+		int iSize;
+		if (!ReadData(&iSize, sizeof(iSize)))
+			return false;
+
+		std::vector<char> buffer(static_cast<size_t>(iSize) + 1, '\0');
+		if (!ReadData(buffer.data(), iSize))
+			return false;
+
+		outString = buffer.data();
+		return true;
+	};
 
 	// 2. Read info.
-	int iSize;
-	if( !ReadFromParent(iFD, &iSize, sizeof(iSize)) )
+	if (!ReadString(Data.m_sInfo))
 		return false;
-
-	char *buffer = new char[static_cast<size_t>(iSize) + 1];
-	std::fill(buffer, buffer + iSize + 1, '\0');
-	bool wasReadSuccessful = ReadFromParent(iFD, buffer, iSize);
-	RString tmp = buffer;
-	delete[] buffer;
-	if (!wasReadSuccessful)
-	{
-		return false;
-	}
-	Data.m_sInfo = tmp;
 
 	// 3. Read AdditionalLog.
-	if( !ReadFromParent(iFD, &iSize, sizeof(iSize)) )
+	if (!ReadString(Data.m_sAdditionalLog))
 		return false;
-
-	buffer = new char[iSize + 1];
-	std::fill(buffer, buffer + iSize + 1, '\0');
-	wasReadSuccessful = ReadFromParent(iFD, buffer, iSize);
-	tmp = buffer;
-	delete[] buffer;
-	if (!wasReadSuccessful)
-	{
-		return false;
-	}
-	Data.m_sAdditionalLog = tmp;
 
 	// 4. Read RecentLogs.
 	int iCnt = 0;
-	if( !ReadFromParent(iFD, &iCnt, sizeof(iCnt)) )
+	if (!ReadData(&iCnt, sizeof(iCnt)))
 		return false;
 	for( int i = 0; i < iCnt; ++i )
 	{
-		if( !ReadFromParent(iFD, &iSize, sizeof(iSize)) )
+		RString recentLog;
+		if (!ReadString(recentLog))
 			return false;
-		buffer = new char[iSize + 1];
-		std::fill(buffer, buffer + iSize + 1, '\0');
-		wasReadSuccessful = ReadFromParent(iFD, buffer, iSize);
-		tmp = buffer;
-		delete[] buffer;
-		if (!wasReadSuccessful)
-		{
-			return false;
-		}
-		Data.m_asRecent.push_back(tmp);
+		Data.m_asRecent.push_back(recentLog);
 	}
 
 	// 5. Read CHECKPOINTs.
-	if( !ReadFromParent(iFD, &iSize, sizeof(iSize)) )
+	RString checkpoints;
+	if (!ReadString(checkpoints))
 		return false;
-
-	buffer = new char[iSize + 1];
-	std::fill(buffer, buffer + iSize + 1, '\0');
-	wasReadSuccessful = ReadFromParent(iFD, buffer, iSize);
-	tmp = buffer;
-	delete[] buffer;
-	if (!wasReadSuccessful)
-	{
-		return false;
-	}
-	split(tmp, "$$", Data.m_asCheckpoints);
+	split(checkpoints, "$$", Data.m_asCheckpoints);
 
 	// 6. Read the crashed thread's name.
-	if( !ReadFromParent(iFD, &iSize, sizeof(iSize)) )
+	if (!ReadString(Data.m_sCrashedThread))
 		return false;
-	buffer = new char[iSize + 1];
-	std::fill(buffer, buffer + iSize + 1, '\0');
-	wasReadSuccessful = ReadFromParent(iFD, buffer, iSize);
-	tmp = buffer;
-	delete[] buffer;
-	if (!wasReadSuccessful)
-	{
-		return false;
-	}
-	Data.m_sCrashedThread = tmp;
 
 	return true;
 }
