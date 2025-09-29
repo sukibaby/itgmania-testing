@@ -837,16 +837,27 @@ INT_PTR CrashDialog::HandleMessage( UINT msg, WPARAM wParam, LPARAM lParam )
 	return FALSE;
 }
 
+#pragma warning(disable : 6262)
 void ChildProcess()
 {
 	// Read the crash data from the crashed parent.
 	CompleteCrashData Data;
-	ReadCrashDataFromParent( _fileno(stdin), Data );
+	if( !ReadCrashDataFromParent(_fileno(stdin), Data) )
+	{
+		// Failed to read crash data; cannot proceed safely.
+		exit(1);
+	}
 
 	RString sCrashReport;
-	VDDebugInfo::VDDebugInfoInitFromFile( &g_debugInfo );
-	MakeCrashReport( Data, sCrashReport );
-	VDDebugInfo::VDDebugInfoDeinit( &g_debugInfo );
+	if (VDDebugInfo::VDDebugInfoInitFromFile(&g_debugInfo))
+	{
+		MakeCrashReport(Data, sCrashReport);
+		VDDebugInfo::VDDebugInfoDeinit(&g_debugInfo);
+	}
+	else
+	{
+		MakeCrashReport(Data, sCrashReport); //Fallback
+	}
 
 	DoSave( sCrashReport );
 
@@ -864,6 +875,7 @@ void ChildProcess()
 	cd.Run( IDD_DISASM_CRASH );
 #endif
 }
+#pragma warning(default : 6262)  // Re-enable warning about large stack allocation.
 
 }
 
