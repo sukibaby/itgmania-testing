@@ -137,8 +137,8 @@ const char *ThreadSlot::GetFormattedCheckpoint( int lineno )
 	return m_Checkpoints[lineno].GetFormattedCheckpoint();
 }
 
-static ThreadSlot g_ThreadSlots[MAX_THREADS];
-struct ThreadSlot *g_pUnknownThreadSlot = nullptr;
+static std::array<ThreadSlot, MAX_THREADS> g_ThreadSlots;
+static ThreadSlot *g_pUnknownThreadSlot = nullptr;
 
 /* Lock this mutex before using or modifying m_pImpl.  Other values are just identifiers,
  * so possibly racing over them is harmless (simply using a stale thread ID, etc). */
