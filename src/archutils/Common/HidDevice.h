@@ -10,6 +10,8 @@ enum HidResults {
 	Success = 0,
 };
 
+#pragma warning(push)
+#pragma warning(disable: 4505) // MSVC: unreferenced local function has been removed
 static std::vector<int> make_pids(int base_pid, int size)
 {
 	std::vector<int> vec(size);
@@ -19,6 +21,7 @@ static std::vector<int> make_pids(int base_pid, int size)
 
 	return vec;
 }
+#pragma warning(pop)
 
 struct HidDeviceInfo {
 	char* path{ nullptr };

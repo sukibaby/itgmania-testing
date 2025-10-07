@@ -41,6 +41,8 @@
 
 #pragma pack(push, 1)
 
+#pragma warning(push)
+#pragma warning(disable: 4201) // nonstandard extension used : nameless struct/union
 typedef union
 {
 	struct
@@ -99,6 +101,7 @@ public:
 	virtual void Set(const LightsState *ls);
 };
 
+#pragma warning(pop)
 #endif
 
 /*
