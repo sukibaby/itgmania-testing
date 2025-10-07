@@ -256,7 +256,7 @@ void RageThread::Create( int (*fn)(void *), void *data )
 	/* Start a thread using our own startup function.  We pass the id to fill in,
 	 * to make sure it's set before the thread actually starts.  (Otherwise, early
 	 * checkpoints might not have a completely set-up thread slot.) */
-	m_pSlot->m_pImpl = MakeThread( fn, data, &m_pSlot->m_iID );
+	m_pSlot->m_pImpl.reset(MakeThread( fn, data, &m_pSlot->m_iID ));
 }
 
 RageThreadRegister::RageThreadRegister( const RString &sName )
@@ -272,7 +272,7 @@ RageThreadRegister::RageThreadRegister( const RString &sName )
 	sprintf( m_pSlot->m_szThreadFormattedOutput, "Thread: %s", sName.c_str() );
 
 	m_pSlot->m_iID = GetThisThreadId();
-	m_pSlot->m_pImpl = MakeThisThread();
+	m_pSlot->m_pImpl.reset(MakeThisThread());
 
 }
 
