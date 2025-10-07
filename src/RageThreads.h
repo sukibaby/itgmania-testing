@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <limits>
+#include <memory>
 
 struct ThreadSlot;
 class RageTimer;
@@ -106,7 +107,7 @@ public:
 	virtual ~RageMutex();
 
 protected:
-	MutexImpl *m_pMutex;
+	std::unique_ptr<MutexImpl, decltype(&RageUtil::SafeDelete<MutexImpl>)> m_pMutex;
 	RString m_sName;
 
 	int m_UniqueID;
@@ -174,7 +175,7 @@ public:
 	RageEvent(const RageEvent& rhs);
 
 private:
-	EventImpl *m_pEvent;
+	std::unique_ptr<EventImpl, decltype(&RageUtil::SafeDelete<EventImpl>)> m_pEvent;
 };
 
 class SemaImpl;
@@ -191,7 +192,7 @@ public:
 	bool TryWait();
 
 private:
-	SemaImpl *m_pSema;
+	std::unique_ptr<SemaImpl, decltype(&RageUtil::SafeDelete<SemaImpl>)> m_pSema;
 	RString m_sName;
 
 	// Swallow up warnings. If they must be used, define them.
