@@ -42,7 +42,7 @@ struct ThreadSlot
 	bool m_bUsed;
 	uint64_t m_iID;
 
-	std::unique_ptr<ThreadImpl, decltype(&RageUtil::SafeDelete<ThreadImpl>)> m_pImpl;
+	std::unique_ptr<ThreadImpl, decltype(&SafeDelete<ThreadImpl>)> m_pImpl;
 
 	#undef CHECKPOINT_COUNT
 	#define CHECKPOINT_COUNT 5
@@ -61,7 +61,7 @@ struct ThreadSlot
 	const char *GetFormattedCheckpoint( int lineno );
 
 	ThreadSlot(): m_bUsed(false), m_iID(GetInvalidThreadId()),
-		m_pImpl(nullptr, &RageUtil::SafeDelete<ThreadImpl>), m_iCurCheckpoint(0), m_iNumCheckpoints(0) {}
+		m_pImpl(nullptr, &SafeDelete<ThreadImpl>), m_iCurCheckpoint(0), m_iNumCheckpoints(0) {}
 	void Init()
 	{
 		m_iID = GetInvalidThreadId();
@@ -542,7 +542,7 @@ static std::set<int> *g_FreeMutexIDs = nullptr;
 #endif
 
 RageMutex::RageMutex( const RString &name ):
-	m_pMutex(MakeMutex(this), &RageUtil::SafeDelete<MutexImpl>), m_sName(name),
+	m_pMutex(MakeMutex(this), &SafeDelete<MutexImpl>), m_sName(name),
 	m_LockedBy(GetInvalidThreadId()), m_LockCnt(0)
 {
 
@@ -710,7 +710,7 @@ void LockMutex::Unlock()
 }
 
 RageEvent::RageEvent( RString name ):
-	RageMutex( name ), m_pEvent(MakeEvent(m_pMutex.get()), &RageUtil::SafeDelete<EventImpl>) {}
+	RageMutex( name ), m_pEvent(MakeEvent(m_pMutex.get()), &SafeDelete<EventImpl>) {}
 
 RageEvent::~RageEvent()
 {
@@ -751,7 +751,7 @@ bool RageEvent::WaitTimeoutSupported() const
 }
 
 RageSemaphore::RageSemaphore( RString sName, int iInitialValue ):
-	m_pSema(MakeSemaphore( iInitialValue ), &RageUtil::SafeDelete<SemaImpl>), m_sName(sName) {}
+	m_pSema(MakeSemaphore( iInitialValue ), &SafeDelete<SemaImpl>), m_sName(sName) {}
 
 RageSemaphore::~RageSemaphore()
 {
