@@ -16,9 +16,13 @@
 #include "RageLog.h"
 #include "RageUtil.h"
 
+#include <algorithm>
+#include <array>
+#include <atomic>
 #include <cerrno>
 #include <cinttypes>
 #include <cstdint>
+#include <memory>
 #include <set>
 
 #include "arch/Threads/Threads.h"
@@ -49,7 +53,7 @@ struct ThreadSlot
 	bool m_bUsed;
 	uint64_t m_iID;
 
-	ThreadImpl *m_pImpl;
+	std::unique_ptr<ThreadImpl, decltype(&SafeDelete<ThreadImpl>)> m_pImpl;
 
 	#undef CHECKPOINT_COUNT
 	#define CHECKPOINT_COUNT 5
@@ -68,12 +72,12 @@ struct ThreadSlot
 	const char *GetFormattedCheckpoint( int lineno );
 
 	ThreadSlot(): m_bUsed(false), m_iID(GetInvalidThreadId()),
-		m_pImpl(nullptr), m_iCurCheckpoint(0), m_iNumCheckpoints(0) {}
+		m_pImpl(nullptr, &SafeDelete<ThreadImpl>), m_iCurCheckpoint(0), m_iNumCheckpoints(0) {}
 	void Init()
 	{
 		m_iID = GetInvalidThreadId();
 		m_iCurCheckpoint = m_iNumCheckpoints = 0;
-		m_pImpl = nullptr;
+		m_pImpl.reset();
 
 		/* Reset used last; otherwise, a thread creation might pick up the slot. */
 		m_bUsed = false;
@@ -81,7 +85,7 @@ struct ThreadSlot
 
 	void Release()
 	{
-		RageUtil::SafeDelete( m_pImpl );
+		m_pImpl.reset();
 		Init();
 	}
 
@@ -374,10 +378,10 @@ uint64_t RageThread::GetInvalidThreadID()
 
 /* Normally, checkpoints are only seen in crash logs.  It's occasionally useful
  * to see them in logs, but this outputs a huge amount of text. */
-static bool g_LogCheckpoints = false;
+static std::atomic<bool> g_LogCheckpoints{false};
 void Checkpoints::LogCheckpoints( bool on )
 {
-	g_LogCheckpoints = on;
+	g_LogCheckpoints.store(on);
 }
 
 void Checkpoints::SetCheckpoint( const char *file, int line, const RString& message )
@@ -400,7 +404,7 @@ void Checkpoints::SetCheckpoint( const char *file, int line, const char *message
 		file = temp + 4;
 	slot->m_Checkpoints[slot->m_iCurCheckpoint].Set( file, line, message );
 
-	if( g_LogCheckpoints )
+	if( g_LogCheckpoints.load() )
 		LOG->Trace( "%s", slot->m_Checkpoints[slot->m_iCurCheckpoint].m_szFormattedBuf );
 
 	++slot->m_iCurCheckpoint;
@@ -532,7 +536,7 @@ static std::set<int> *g_FreeMutexIDs = nullptr;
 #endif
 
 RageMutex::RageMutex( const RString &name ):
-	m_pMutex( MakeMutex (this ) ), m_sName(name),
+	m_pMutex(MakeMutex(this), &SafeDelete<MutexImpl>), m_sName(name),
 	m_LockedBy(GetInvalidThreadId()), m_LockCnt(0)
 {
 
@@ -570,7 +574,6 @@ RageMutex::RageMutex( const RString &name ):
 
 RageMutex::~RageMutex()
 {
-	delete m_pMutex;
 /*
 	std::vector<RageMutex*>::iterator it = find( g_MutexList->begin(), g_MutexList->end(), this );
 	ASSERT( it != g_MutexList->end() );
@@ -701,11 +704,10 @@ void LockMutex::Unlock()
 }
 
 RageEvent::RageEvent( RString name ):
-	RageMutex( name ), m_pEvent(MakeEvent(m_pMutex)) {}
+	RageMutex( name ), m_pEvent(MakeEvent(m_pMutex.get()), &SafeDelete<EventImpl>) {}
 
 RageEvent::~RageEvent()
 {
-	delete m_pEvent;
 }
 
 /* For each of these calls, the mutex must be locked, and must not be locked recursively. */
@@ -743,11 +745,10 @@ bool RageEvent::WaitTimeoutSupported() const
 }
 
 RageSemaphore::RageSemaphore( RString sName, int iInitialValue ):
-	m_pSema(MakeSemaphore( iInitialValue )), m_sName(sName) {}
+	m_pSema(MakeSemaphore( iInitialValue ), &SafeDelete<SemaImpl>), m_sName(sName) {}
 
 RageSemaphore::~RageSemaphore()
 {
-	delete m_pSema;
 }
 
 int RageSemaphore::GetValue() const

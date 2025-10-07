@@ -3,6 +3,15 @@
 
 #include <cstdint>
 #include <limits>
+#include <memory>
+
+// Same as RageUtil::SafeDelete, but here to avoid including RageUtil
+template <typename T>
+inline void SafeDelete(T*& p) noexcept
+{
+	delete p;
+	p = nullptr;
+}
 
 struct ThreadSlot;
 class RageTimer;
@@ -104,7 +113,7 @@ public:
 	virtual ~RageMutex();
 
 protected:
-	MutexImpl *m_pMutex;
+	std::unique_ptr<MutexImpl, decltype(&SafeDelete<MutexImpl>)> m_pMutex;
 	RString m_sName;
 
 	int m_UniqueID;
@@ -172,7 +181,7 @@ public:
 	RageEvent(const RageEvent& rhs);
 
 private:
-	EventImpl *m_pEvent;
+	std::unique_ptr<EventImpl, decltype(&SafeDelete<EventImpl>)> m_pEvent;
 };
 
 class SemaImpl;
@@ -189,7 +198,7 @@ public:
 	bool TryWait();
 
 private:
-	SemaImpl *m_pSema;
+	std::unique_ptr<SemaImpl, decltype(&SafeDelete<SemaImpl>)> m_pSema;
 	RString m_sName;
 
 	// Swallow up warnings. If they must be used, define them.
