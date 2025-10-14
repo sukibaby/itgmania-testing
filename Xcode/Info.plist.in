@@ -27,6 +27,21 @@
         <string>Binary</string>
       </dict>
     </array>
+    <key>AudioComponents</key>
+    <array>
+        <dict>
+            <key>name</key>
+            <string>StepMania Audio Output</string>
+            <key>manufacturer</key>
+            <string>appl</string>
+            <key>type</key>
+            <string>auou</string>
+            <key>subtype</key>
+            <string>def </string>
+            <key>version</key>
+            <integer>1</integer>
+        </dict>
+    </array>
     <key>CFBundleExecutable</key>
     <string>${MACOSX_BUNDLE_EXECUTABLE_NAME}</string>
     <key>CFBundleGetInfoString</key>
@@ -38,6 +53,8 @@
     <key>CFBundleInfoDictionaryVersion</key>
     <string>6.0</string>
     <key>CFBundleName</key>
+    <string>${SM_EXE_NAME}</string>
+    <key>CFBundleDisplayName</key>
     <string>${SM_EXE_NAME}</string>
     <key>CFBundlePackageType</key>
     <string>APPL</string>

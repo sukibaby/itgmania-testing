@@ -461,6 +461,7 @@ target_compile_definitions("tomcrypt" PRIVATE LTC_TRY_URANDOM_FIRST)
 target_compile_definitions("tomcrypt" PRIVATE LTC_NO_PK)
 target_compile_definitions("tomcrypt" PRIVATE LTC_MRSA)
 target_compile_definitions("tomcrypt" PRIVATE LTC_NO_PROTOTYPES)
+target_compile_definitions("tomcrypt" PRIVATE LTC_NO_HKDF)
 
 if(WITH_PORTABLE_TOMCRYPT)
   target_compile_definitions("tomcrypt" PRIVATE LTC_NO_ASM)

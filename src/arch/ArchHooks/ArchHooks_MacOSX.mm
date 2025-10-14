@@ -5,6 +5,7 @@
 #include "archutils/Unix/CrashHandler.h"
 #include "archutils/Unix/SignalHandler.h"
 #include "ProductInfo.h"
+#include "LocalizedString.h"
 
 #include <cstddef>
 #include <cstdint>
@@ -26,6 +27,145 @@ extern "C" {
 
 #import <AppKit/NSScreen.h>
 #import <Foundation/Foundation.h>
+#import <ApplicationServices/ApplicationServices.h>
+#import <CoreFoundation/CoreFoundation.h>
+#import <Cocoa/Cocoa.h>
+#import <Security/Security.h>
+
+static NSString* const g_UFURLSecurityScopedBookmarkDataKey = @"UserSelectedResourceDirectoryBookmarkData";
+static NSURL* g_UFURLCached = nil;
+
+static bool ExecHasValidCodeSignature( void )
+{
+	OSStatus status;
+	SecCodeRef code = NULL;
+	
+	status = SecCodeCopySelf( kSecCSDefaultFlags, &code );
+	if( status != errSecSuccess )
+		return false;
+	
+	status = SecStaticCodeCheckValidityWithErrors( code, kSecCSBasicValidateOnly, NULL, NULL );
+	
+	CFRelease( code );
+	return status == errSecSuccess;
+}
+
+static NSURL* SecurityScopedUserFilesystemURL( void )
+{
+	if( !g_UFURLCached ) {
+		NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
+		NSData* bookmarkData = [defaults objectForKey:g_UFURLSecurityScopedBookmarkDataKey];
+		
+		if( bookmarkData ) {
+			NSURLBookmarkCreationOptions options = 0;
+			NSError* error = nil;
+			BOOL bookmarkDataIsStale = NO;
+			
+			if( ExecHasValidCodeSignature() )
+				options |= NSURLBookmarkResolutionWithSecurityScope;
+			
+			g_UFURLCached = [[NSURL URLByResolvingBookmarkData:bookmarkData
+													   options:options
+												 relativeToURL:nil
+										   bookmarkDataIsStale:&bookmarkDataIsStale
+														 error:&error] retain];
+			if( g_UFURLCached ) {
+				[g_UFURLCached startAccessingSecurityScopedResource];
+			} else {
+				fprintf( stderr, "Failed to load bookmark data for user filesystem: %s\n",
+						[[error localizedDescription] UTF8String] );
+			}
+		}
+	}
+	
+	return g_UFURLCached;
+}
+
+static void SaveSecurityScopedUserFilesystemURL( NSURL* url )
+{
+	NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
+	NSError* error = nil;
+	NSURLBookmarkCreationOptions options = 0;
+	
+	if( ExecHasValidCodeSignature() )
+		options |= NSURLBookmarkCreationWithSecurityScope;
+	
+	NSData* bookmarkData = [url bookmarkDataWithOptions:options
+						 includingResourceValuesForKeys:@[]
+										  relativeToURL:nil
+												  error:&error];
+	
+	if( bookmarkData ) {
+		[defaults setObject:bookmarkData forKey:g_UFURLSecurityScopedBookmarkDataKey];
+		[defaults synchronize];
+	} else {
+		fprintf( stderr, "Warning: Failed to create bookmark data for user filesystem: %s\n",
+				[[error localizedDescription] UTF8String] );
+	}
+}
+
+static LocalizedString UFURL_PROMPT_TITLE ( "StepMania", "Select Resources Folder" );
+static LocalizedString UFURL_PROMPT_BODY ( "StepMania", "Select a folder where resources such as songs, noteskins, and courses should be stored." );
+
+static NSURL* PromptForUserFilesystemURL( void )
+{
+	__block NSURL* url = nil;
+	
+	dispatch_block_t showPanelBlock = ^{
+		NSOpenPanel* openPanel = [NSOpenPanel openPanel];
+		openPanel.title = @(UFURL_PROMPT_TITLE.GetValue().c_str());
+		openPanel.message = @(UFURL_PROMPT_BODY.GetValue().c_str());
+		openPanel.canChooseFiles = NO;
+		openPanel.canChooseDirectories = YES;
+		openPanel.canCreateDirectories = YES;
+		openPanel.allowsMultipleSelection = NO;
+		openPanel.resolvesAliases = YES;
+		
+		NSModalResponse response = [openPanel runModal];
+		if( response == NSFileHandlingPanelOKButton ) {
+			url = [[openPanel URL] copy];
+		}
+	};
+	
+	if( ![NSThread isMainThread] ) {
+		dispatch_sync( dispatch_get_main_queue(), showPanelBlock );
+	} else {
+		showPanelBlock();
+	}
+	
+	return [url autorelease];
+}
+
+static void PathForFolderType( char dir[PATH_MAX], NSSearchPathDirectory folderType )
+{
+	NSFileManager* fileManager = [NSFileManager defaultManager];
+	NSArray<NSURL*>* urls = [fileManager URLsForDirectory:folderType inDomains:NSUserDomainMask];
+	NSURL* url = [urls lastObject];
+	
+	if( !url )
+		FAIL_M( ssprintf("PathForFolderType failed for folder type %lu", folderType) );
+	
+	strncpy( dir, [url fileSystemRepresentation], PATH_MAX );
+}
+
+static bool PathForUserFiles( char dir[PATH_MAX] )
+{
+	NSURL* url = SecurityScopedUserFilesystemURL();
+	
+	if( !url ) {
+		// Ask the user where to store/load user data.
+		url = PromptForUserFilesystemURL();
+		
+		if( url ) {
+			SaveSecurityScopedUserFilesystemURL( url );
+		}
+	}
+	
+	if( url )
+		strncpy( dir, [url fileSystemRepresentation], PATH_MAX );
+	
+	return ( url != nil );
+}
 
 static bool IsFatalSignal( int signal )
 {
@@ -338,36 +478,40 @@ static std::string PathForDirectory( NSSearchPathDirectory directory )
 
 void ArchHooks::MountUserFilesystems( const RString &sDirOfExecutable )
 {
-	// /Save -> ~/Library/Preferences/PRODUCT_ID
-	std::string libraryDir = PathForDirectory(NSLibraryDirectory);
-	FILEMAN->Mount( "dir", libraryDir + "/Preferences/" PRODUCT_ID, "/Save" );
+	char dir[PATH_MAX];
 
-	// Other stuff -> ~/Library/Application Support/PRODUCT_ID/*
-	std::string appSupportDir = PathForDirectory(NSApplicationSupportDirectory);
-	FILEMAN->Mount( "dir", appSupportDir + "/" PRODUCT_ID "/Announcers", "/Announcers" );
-	FILEMAN->Mount( "dir", appSupportDir + "/" PRODUCT_ID "/BGAnimations", "/BGAnimations" );
-	FILEMAN->Mount( "dir", appSupportDir + "/" PRODUCT_ID "/BackgroundEffects", "/BackgroundEffects" );
-	FILEMAN->Mount( "dir", appSupportDir + "/" PRODUCT_ID "/BackgroundTransitions", "/BackgroundTransitions" );
-	FILEMAN->Mount( "dir", appSupportDir + "/" PRODUCT_ID "/CDTitles", "/CDTitles" );
-	FILEMAN->Mount( "dir", appSupportDir + "/" PRODUCT_ID "/Characters", "/Characters" );
-	FILEMAN->Mount( "dir", appSupportDir + "/" PRODUCT_ID "/Courses", "/Courses" );
-	FILEMAN->Mount( "dir", appSupportDir + "/" PRODUCT_ID "/Downloads", "/Downloads" );
-	FILEMAN->Mount( "dir", appSupportDir + "/" PRODUCT_ID "/NoteSkins", "/NoteSkins" );
-	FILEMAN->Mount( "dir", appSupportDir + "/" PRODUCT_ID "/Packages", "/Packages" );
-	FILEMAN->Mount( "dir", appSupportDir + "/" PRODUCT_ID "/Songs", "/Songs" );
-	FILEMAN->Mount( "dir", appSupportDir + "/" PRODUCT_ID "/RandomMovies", "/RandomMovies" );
-	FILEMAN->Mount( "dir", appSupportDir + "/" PRODUCT_ID "/Themes", "/Themes" );
+	// /Save -> ~/Library/Preferences/PRODUCT_ID
+	PathForFolderType( dir, NSLibraryDirectory );
+	FILEMAN->Mount( "dir", ssprintf("%s/Preferences/" PRODUCT_ID, dir), "/Save" );
+
+	// Other stuff -> user selected
+	bool userFilesAccessible = PathForUserFiles( dir );
+	if( userFilesAccessible ) {
+		FILEMAN->Mount( "dir", ssprintf("%s/Announcers", dir), "/Announcers" );
+		FILEMAN->Mount( "dir", ssprintf("%s/BGAnimations", dir), "/BGAnimations" );
+		FILEMAN->Mount( "dir", ssprintf("%s/BackgroundEffects", dir), "/BackgroundEffects" );
+		FILEMAN->Mount( "dir", ssprintf("%s/BackgroundTransitions", dir), "/BackgroundTransitions" );
+		FILEMAN->Mount( "dir", ssprintf("%s/CDTitles", dir), "/CDTitles" );
+		FILEMAN->Mount( "dir", ssprintf("%s/Characters", dir), "/Characters" );
+		FILEMAN->Mount( "dir", ssprintf("%s/Courses", dir), "/Courses" );
+		FILEMAN->Mount( "dir", ssprintf("%s/NoteSkins", dir), "/NoteSkins" );
+		FILEMAN->Mount( "dir", ssprintf("%s/Packages", dir), "/" + SpecialFiles::PACKAGES_DIR );
+		FILEMAN->Mount( "dir", ssprintf("%s/Songs", dir), "/Songs" );
+		FILEMAN->Mount( "dir", ssprintf("%s/RandomMovies", dir), "/RandomMovies" );
+		FILEMAN->Mount( "dir", ssprintf("%s/Themes", dir), "/Themes" );
+	}
 
 	// /Screenshots -> ~/Pictures/PRODUCT_ID Screenshots
-	std::string picturesDir = PathForDirectory(NSCachesDirectory);
-	FILEMAN->Mount( "dir", picturesDir + "/" PRODUCT_ID " Screenshots", "/Screenshots" );
+	PathForFolderType( dir, NSPicturesDirectory );
+	FILEMAN->Mount( "dir", ssprintf("%s/" PRODUCT_ID " Screenshots", dir), "/Screenshots" );
 
 	// /Cache -> ~/Library/Caches/PRODUCT_ID
-	std::string cachesDir = PathForDirectory(NSCachesDirectory);
-	FILEMAN->Mount( "dir", cachesDir + "/" PRODUCT_ID, "/Cache" );
+	PathForFolderType( dir, NSCachesDirectory );
+	FILEMAN->Mount( "dir", ssprintf("%s/" PRODUCT_ID, dir), "/Cache" );
 
 	// /Logs -> ~/Library/Logs/PRODUCT_ID
-	FILEMAN->Mount( "dir", libraryDir + "/Logs/" PRODUCT_ID, "/Logs" );
+	PathForFolderType( dir, NSLibraryDirectory );
+	FILEMAN->Mount( "dir", ssprintf("%s/Logs/" PRODUCT_ID, dir), "/Logs" );
 }
 
 static inline int GetIntValue( CFTypeRef r )
