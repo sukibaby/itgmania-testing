@@ -422,6 +422,26 @@ void GraphicsWindow::CreateGraphicsWindow( const VideoModeParams &p, bool bForce
 		GetMessage( &msg, nullptr, 0, 0 );
 		DispatchMessage( &msg );
 	}
+
+	/* Check if we're running in a message window context (e.g., as a child process
+	 * or embedded in another application) where the GUI won't be visible. */
+	if( GetParent(g_hWndMain) != nullptr || !IsWindowVisible(g_hWndMain) ||
+		(GetWindowLong(g_hWndMain, GWL_STYLE) & WS_DISABLED) )
+	{
+		RString sWarning = "Warning: The game appears to be running in a message window context.\n"
+			"The graphical interface may not be visible or functional.\n"
+			"This can happen when running as a child process or in certain automated environments.\n\n"
+			"Continue anyway?";
+		
+		int iRet = MessageBox( nullptr, sWarning.c_str(), "Message Window Detection", 
+			MB_YESNO | MB_ICONWARNING | MB_SYSTEMMODAL );
+		
+		if( iRet == IDNO )
+		{
+			// User chose not to continue
+			exit(1);
+		}
+	}
 }
 
 /** @brief Shut down the window, but don't reset the video mode. */

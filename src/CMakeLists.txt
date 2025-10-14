@@ -384,6 +384,7 @@ elseif(APPLE)
               ${MAC_FRAME_COREAUDIO}
               ${MAC_FRAME_CORESERVICES}
               ${MAC_FRAME_SYSTEM}
+              ${MAC_FRAME_SECURITY}
               "${ICONV_LIBRARIES}"
               "${SM_FFMPEG_LIB}/libavformat.a"
               "${SM_FFMPEG_LIB}/libavcodec.a"
