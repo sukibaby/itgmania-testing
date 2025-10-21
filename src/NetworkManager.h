@@ -2,6 +2,7 @@
 #define NETWORK_MANAGER_H
 
 #include "Preference.h"
+#include "RageThreads.h"
 #include "StdString.h"
 
 #include <atomic>
@@ -138,6 +139,8 @@ public:
 	void PushSelf(lua_State *L);
 
 private:
+	static int NetworkThreadLoop(void* p);
+
 	std::string GetUserAgent();
 	void ClearDownloads();
 
@@ -149,6 +152,9 @@ private:
 	static Preference<RString> httpAllowHosts;
 
 	std::vector<std::shared_ptr<WebSocketHandle>> webSocketHandles;
+
+	RageThread networkThread;
+	std::atomic<bool> shutdownThread;
 };
 
 extern NetworkManager*	NETWORK;

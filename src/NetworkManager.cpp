@@ -16,10 +16,13 @@
 #include <ixwebsocket/IXWebSocket.h>
 
 #include <algorithm>
+#include <atomic>
+#include <chrono>
 #include <climits>
 #include <cstddef>
 #include <memory>
 #include <sstream>
+#include <thread>
 #include <unordered_map>
 #include <vector>
 
@@ -63,7 +66,7 @@ XToString(WebSocketMessageType);
 StringToX(WebSocketMessageType);
 LuaXType(WebSocketMessageType);
 
-NetworkManager::NetworkManager() : httpClient(true), downloadClient(true)
+NetworkManager::NetworkManager() : httpClient(true), downloadClient(true), shutdownThread(false)
 {
 	ix::initNetSystem();
 
@@ -93,10 +96,16 @@ NetworkManager::NetworkManager() : httpClient(true), downloadClient(true)
 	this->downloadClient.setTLSOptions(this->tlsOptions);
 
 	this->ClearDownloads();
+
+	this->networkThread.SetName("NetworkManager");
+	this->networkThread.Create(NetworkManager::NetworkThreadLoop, this);
 }
 
 NetworkManager::~NetworkManager()
 {
+	this->shutdownThread = true;
+	this->networkThread.Wait();
+
 	// Unregister with Lua.
 	LUA->UnsetGlobal("NETWORK");
 
@@ -311,6 +320,16 @@ void NetworkManager::ClearDownloads()
 			FILEMAN->Remove(file);
 		}
 	}
+}
+
+int NetworkManager::NetworkThreadLoop(void* p)
+{
+	NetworkManager* nm = static_cast<NetworkManager*>(p);
+	while (!nm->shutdownThread.load()) {
+		std::this_thread::sleep_for(std::chrono::milliseconds(100));
+		// The thread runs for the lifetime of the program.
+	}
+	return 0;
 }
 
 int HttpRequestFuture::Collect(lua_State *L)
