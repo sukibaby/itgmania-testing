@@ -25,13 +25,18 @@
  */
 RageSoundReader_Chain::RageSoundReader_Chain()
 {
-	m_iPreferredSampleRate = PREFSMAN->m_iSoundPreferredSampleRate;
-	if (m_iPreferredSampleRate == 0)
-	{
-		m_iPreferredSampleRate = kFallbackSampleRate;
-	}
-	
+	// The sample rate used for timing purposes,
+	// NOT related to audio playback or resampling.
+	// This value MUST be initted to 44100 because
+	// RageSound is designed around the assumption
+	// that a song library is going to be mostly, or
+	// fully, 44.1khz audio.
+	m_iPreferredSampleRate = 44100;
+
+	// This variable stores the actual sample rate
+	// of the audio, and IS used for audio resampling.
 	m_iActualSampleRate = -1;
+
 	m_iChannels = 0;
 	m_iCurrentFrame = 0;
 	m_iNextSound = 0;
