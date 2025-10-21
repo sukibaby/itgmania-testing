@@ -142,6 +142,11 @@ bool NetworkManager::IsUrlAllowed(const std::string& url)
 	std::vector<RString> allowedHosts;
 	split(allowedHostsStr, ",", allowedHosts);
 
+	for (auto& host : allowedHosts)
+	{
+		Trim(host);
+	}
+	
 	for (const auto& allowedHost : allowedHosts)
 	{
 		// subdomain wildcards; ".domain" doesn't match "*.domain", but "a.domain" does
