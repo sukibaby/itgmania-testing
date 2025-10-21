@@ -135,6 +135,12 @@ public:
 	}
 	uintptr_t GetTexHandle() const { return m_uTexHandle; }
 
+	RageTexture* CreateCopy() const
+	{
+		// Default texture is stateless, so just create a new one
+		return new RageTexture_Default();
+	}
+
 private:
 	uintptr_t m_uTexHandle;
 };
@@ -146,6 +152,8 @@ RageTexture* RageTextureManager::LoadTextureInternal( RageTextureID ID )
 
 	AdjustTextureID(ID);
 
+	const bool bIsMovie = (ActorUtil::GetFileType(ID.filename) == FT_Movie);
+
 	/* We could have two copies of the same bitmap if there are equivalent but
 	 * different paths, e.g. "Bitmaps\me.bmp" and "..\Rage PC Edition\Bitmaps\me.bmp". */
 	std::map<RageTextureID, RageTexture*>::iterator p = m_mapPathToTexture.find(ID);
@@ -153,6 +161,14 @@ RageTexture* RageTextureManager::LoadTextureInternal( RageTextureID ID )
 	{
 		/* Found the texture.  Just increase the refcount and return it. */
 		RageTexture* pTexture = p->second;
+		if (bIsMovie)
+		{
+			// We keep a single base copy cached in m_mapPathToTexture.
+			// CreateCopy() will return an independent instance with its own state.
+			RageTexture* pDuplicate = pTexture->CreateCopy();
+			m_texture_ids_by_pointer[pDuplicate] = ID;
+			return pDuplicate;
+		}
 		pTexture->m_iRefCount++;
 		return pTexture;
 	}
@@ -164,7 +180,7 @@ RageTexture* RageTextureManager::LoadTextureInternal( RageTextureID ID )
 	{
 		pTexture = new RageTexture_Default;
 	}
-	else if(ActorUtil::GetFileType(ID.filename) == FT_Movie)
+	else if( bIsMovie )
 	{
 		pTexture = RageMovieTexture::Create( ID );
 	}
@@ -233,30 +249,47 @@ void RageTextureManager::UnloadTexture( RageTexture *t )
 void RageTextureManager::DeleteTexture( RageTexture *t )
 {
 	ASSERT( t->m_iRefCount == 0 );
-	//LOG->Trace( "RageTextureManager: deleting '%s'.", t->GetID().filename.c_str() );
 
-	std::map<RageTexture*, RageTextureID>::iterator id_entry=
-		m_texture_ids_by_pointer.find(t);
-	if(id_entry != m_texture_ids_by_pointer.end())
+	auto id_entry = m_texture_ids_by_pointer.find( t );
+	if( id_entry == m_texture_ids_by_pointer.end() )
 	{
-		std::map<RageTextureID, RageTexture*>::iterator tex_entry=
-			m_mapPathToTexture.find(id_entry->second);
-		if(tex_entry != m_mapPathToTexture.end())
-		{
-			m_mapPathToTexture.erase(tex_entry);
-			RageUtil::SafeDelete(t);
-		}
-		std::map<RageTextureID, RageTexture*>::iterator tex_update_entry=
-			m_textures_to_update.find(id_entry->second);
-		if(tex_update_entry != m_textures_to_update.end())
-		{
-			m_textures_to_update.erase(tex_update_entry);
-		}
-		m_texture_ids_by_pointer.erase(id_entry);
+		FAIL_M("Tried to delete a texture that wasn't in the ids by pointer list.");
+	}
+
+	RageTextureID texID = id_entry->second;
+	auto base_it = m_mapPathToTexture.find( texID );
+
+	auto update_it = m_textures_to_update.find( texID );
+	if( update_it != m_textures_to_update.end() && update_it->second == t )
+	{
+		m_textures_to_update.erase( update_it );
+	}
+
+	bool is_copy = ( base_it != m_mapPathToTexture.end() && base_it->second != t );
+
+	if( is_copy )
+	{
+		m_texture_ids_by_pointer.erase( id_entry );
+		RageUtil::SafeDelete( t );
 		return;
 	}
 
-	FAIL_M("Tried to delete a texture that wasn't in the ids by pointer list.");
+	bool has_copies = false;
+	for( auto const &pair : m_texture_ids_by_pointer )
+	{
+		if( pair.first != t && pair.second == texID )
+		{
+			has_copies = true;
+			break;
+		}
+	}
+
+	if( !has_copies )
+	{
+		m_mapPathToTexture.erase( base_it );
+		m_texture_ids_by_pointer.erase( id_entry );
+		RageUtil::SafeDelete( t );
+	}
 }
 
 void RageTextureManager::GarbageCollect( GCType type )

@@ -17,6 +17,8 @@ public:
 	virtual void Reload();
 	virtual uintptr_t GetTexHandle() const { return m_uTexHandle; };	// accessed by RageDisplay
 
+	virtual RageTexture* CreateCopy() const;
+
 private:
 	void Create();	// called by constructor and Reload
 	void Destroy();

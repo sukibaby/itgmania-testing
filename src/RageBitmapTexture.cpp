@@ -48,6 +48,30 @@ RageBitmapTexture::RageBitmapTexture( RageTextureID name ) :
 	Create();
 }
 
+// It might look like a deep copy, but it's not. The texture handle is shared.
+RageTexture* RageBitmapTexture::CreateCopy() const
+{
+	RageBitmapTexture* copy = new RageBitmapTexture(GetID());
+	
+	// Share the OpenGL/D3D texture handle
+	copy->m_uTexHandle = m_uTexHandle;
+	
+	copy->m_iSourceWidth = m_iSourceWidth;
+	copy->m_iSourceHeight = m_iSourceHeight;
+	copy->m_iTextureWidth = m_iTextureWidth;
+	copy->m_iTextureHeight = m_iTextureHeight;
+	copy->m_iImageWidth = m_iImageWidth;
+	copy->m_iImageHeight = m_iImageHeight;
+	copy->m_iFramesWide = m_iFramesWide;
+	copy->m_iFramesHigh = m_iFramesHigh;
+	copy->m_TextureCoordRects = m_TextureCoordRects;
+	
+	copy->m_iRefCount = 1;
+	copy->m_bWasUsed = false;
+	
+	return copy;
+}
+
 RageBitmapTexture::~RageBitmapTexture()
 {
 	Destroy();

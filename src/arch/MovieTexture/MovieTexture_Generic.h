@@ -5,6 +5,7 @@
 
 #include <cstdint>
 #include <thread>
+#include <memory>
 
 class FFMpeg_Helper;
 struct RageSurface;
@@ -88,6 +89,7 @@ class MovieTexture_Generic: public RageMovieTexture
 public:
 	MovieTexture_Generic( RageTextureID ID, std::unique_ptr<MovieDecoder> pDecoder );
 	virtual ~MovieTexture_Generic();
+	virtual RageTexture* CreateCopy() const override;
 	RString Init();
 
 	/* only called by RageTextureManager::InvalidateTextures */

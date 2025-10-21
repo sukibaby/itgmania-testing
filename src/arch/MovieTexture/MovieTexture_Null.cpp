@@ -19,6 +19,7 @@ public:
 	void SetPosition(float /* seconds */) { }
 	void SetPlaybackRate(float) { }
 	void SetLooping(bool looping=true) { loop = looping; }
+	RageTexture* CreateCopy() const;
 
 private:
 	bool playing;
@@ -64,6 +65,11 @@ MovieTexture_Null::MovieTexture_Null(RageTextureID ID) : RageMovieTexture(ID)
 MovieTexture_Null::~MovieTexture_Null()
 {
 	DISPLAY->DeleteTexture( texHandle );
+}
+
+RageTexture* MovieTexture_Null::CreateCopy() const
+{
+    return new MovieTexture_Null(GetID());
 }
 
 REGISTER_MOVIE_TEXTURE_CLASS( Null );

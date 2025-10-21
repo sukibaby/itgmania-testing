@@ -28,6 +28,8 @@ public:
 	virtual bool IsAMovie() const { return false; }
 	virtual void SetLooping(bool) { }
 
+	virtual RageTexture* CreateCopy() const = 0;
+
 	int GetSourceWidth() const	{return m_iSourceWidth;}
 	int GetSourceHeight() const {return m_iSourceHeight;}
 	int GetTextureWidth() const {return m_iTextureWidth;}

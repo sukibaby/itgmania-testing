@@ -18,6 +18,8 @@ public:
 	virtual void Reload();
 	virtual uintptr_t GetTexHandle() const { return m_iTexHandle; }
 
+	virtual RageTexture* CreateCopy() const;
+
 	void BeginRenderingTo( bool bPreserveTexture = true );
 	void FinishRenderingTo();
 

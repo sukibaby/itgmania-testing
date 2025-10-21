@@ -12,6 +12,7 @@
 
 #include <cmath>
 #include <cstdint>
+#include <memory>
 
 #if defined(WIN32)
 #include "archutils/Win32/ErrorStrings.h"
@@ -20,6 +21,11 @@
 
 
 static Preference<bool> g_bMovieTextureDirectUpdates("MovieTextureDirectUpdates", true);
+
+RageTexture* MovieTexture_Generic::CreateCopy() const
+{
+	return RageMovieTexture::Create(GetID());
+}
 
 MovieTexture_Generic::MovieTexture_Generic(RageTextureID ID, std::unique_ptr<MovieDecoder> pDecoder) :
 	RageMovieTexture(ID)
@@ -127,6 +133,16 @@ public:
 
 		texture_handle_ = 0;
 		CreateTexture();
+	}
+
+	virtual RageTexture* CreateCopy() const override
+	{
+		return new RageMovieTexture_Generic_Intermediate(
+			GetID(),
+			m_iSourceWidth, m_iSourceHeight,
+			m_iImageWidth, m_iImageHeight,
+			m_iTextureWidth, m_iTextureHeight,
+			m_SurfaceFormat, m_PixFmt);
 	}
 	virtual ~RageMovieTexture_Generic_Intermediate()
 	{
