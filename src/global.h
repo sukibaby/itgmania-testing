@@ -127,6 +127,10 @@ void CallEveryNFrames(int n, Func&& f, Args&&... args) {
 
 /* Don't include our own headers here, since they tend to change often. */
 
+// Global fallback sample rate for audio.
+// This is here to avoid creating circular dependencies within RageSound.
+const int kFallbackSampleRate = 44100;
+
 #endif
 
 /**
