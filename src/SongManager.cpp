@@ -45,6 +45,17 @@
 #include <tuple>
 #include <vector>
 
+#include <unordered_map>
+
+// RString hash specialization for unordered_map
+namespace std {
+    template <>
+    struct hash<RString> {
+        size_t operator()(const RString& s) const {
+            return hash<std::string>()(std::string(s.c_str()));
+        }
+    };
+}
 
 SongManager*	SONGMAN = nullptr;	// global and accessible from anywhere in our program
 
@@ -382,7 +393,7 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
 	StripCvsAndSvn( arrayGroupDirs );
 	StripMacResourceForks( arrayGroupDirs );
 
-	std::map<RString, std::vector<RString>> mapGroupSongDirs;
+	std::unordered_map<RString, std::vector<RString>> mapGroupSongDirs;
 	int groupIndex, songCount, songIndex;
 
 	groupIndex = 0;
