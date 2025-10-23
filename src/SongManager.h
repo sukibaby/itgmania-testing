@@ -22,6 +22,7 @@ struct lua_State;
 #include <cstddef>
 #include <unordered_set>
 #include <vector>
+#include <mutex>
 
 RString SONG_GROUP_COLOR_NAME( size_t i );
 RString COURSE_GROUP_COLOR_NAME( size_t i );
@@ -277,6 +278,8 @@ protected:
 	ThemeMetric1D<RageColor>	COURSE_GROUP_COLOR;
 	ThemeMetric<int> num_profile_song_group_colors;
 	ThemeMetric1D<RageColor> profile_song_group_colors;
+private:
+	std::mutex m_LoadMutex;
 };
 
 extern SongManager*	SONGMAN;	// global and accessible from anywhere in our program
