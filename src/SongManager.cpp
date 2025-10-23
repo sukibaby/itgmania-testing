@@ -364,6 +364,7 @@ void SongManager::AddGroup( RString sDir, RString sGroupDirName, Group* group )
 static LocalizedString LOADING_SONGS ( "SongManager", "Loading songs..." );
 void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditions )
 {
+	static std::mutex songLoadMutex;
 	if( ld )
 		ld->SetText( LOADING_SONGS );
 
@@ -463,41 +464,57 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
 			dirsToLoad.push_back(sSongDirName);
 		}
 
-		std::vector<std::future<Song*>> futures;
-		for (const RString& sSongDirName : dirsToLoad)
+		// Use up to 4 threads, or more if hardware_concurrency allows.
+		size_t batch_size = 4;
+		batch_size = std::max<size_t>(batch_size, static_cast<size_t>(std::thread::hardware_concurrency()));
+		for (size_t i = 0; i < dirsToLoad.size(); i += batch_size)
 		{
-			futures.push_back(std::async(std::launch::async, [sSongDirName]() -> Song* {
-				Song* pNewSong = new Song;
-				if (pNewSong->LoadFromSongDir(sSongDirName))
-				{
-					return pNewSong;
-				}
-				else
-				{
-					delete pNewSong;
-					return nullptr;
-				}
-			}));
-		}
-
-		for (auto& f : futures)
-		{
-			if(ld && loading_window_last_update_time.Ago() > next_loading_window_update)
+			std::vector<std::future<Song*>> futures;
+			size_t end = std::min(i + batch_size, dirsToLoad.size());
+			for (size_t j = i; j < end; ++j)
 			{
-				loading_window_last_update_time.Touch();
-				ld->SetProgress(songIndex);
-				ld->SetText( LOADING_SONGS.GetValue() + "\n" + group_base_name );
+				futures.push_back(std::async(std::launch::async, [sSongDirName = dirsToLoad[j]]() -> Song* {
+					std::lock_guard<std::mutex> lock(songLoadMutex);
+					Song* pNewSong = new Song;
+					if (pNewSong->LoadFromSongDir(sSongDirName))
+					{
+						return pNewSong;
+					}
+					else
+					{
+						delete pNewSong;
+						return nullptr;
+					}
+				}));
 			}
 
-			Song* song = f.get();
-			if (song)
+			std::vector<Song*> loadedSongs;
+			for (auto& f : futures)
+			{
+				if(ld && loading_window_last_update_time.Ago() > next_loading_window_update)
+				{
+					loading_window_last_update_time.Touch();
+					ld->SetProgress(songIndex);
+					ld->SetText( LOADING_SONGS.GetValue() + "\n" + group_base_name );
+				}
+
+				Song* song = f.get();
+				if (song)
+				{
+					loadedSongs.push_back(song);
+				}
+				songIndex++;
+			}
+
 			{
 				std::lock_guard<std::mutex> lock(m_LoadMutex);
-				AddSongToList(song);
-				index_entry.push_back(song);
-				loaded++;
+				for (Song* song : loadedSongs)
+				{
+					AddSongToList(song);
+					index_entry.push_back(song);
+					loaded++;
+				}
 			}
-			songIndex++;
 		}
 
 		LOG->Trace("Loaded %i songs from \"%s\"", loaded, (sDir+sGroupDirName).c_str() );
