@@ -448,10 +448,8 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
 		}
 
 		std::vector<RString> dirsToLoad;
-		for( unsigned j=0; j< arraySongDirs.size(); ++j )	// for each song dir
+		for( RString const &sSongDirName : arraySongDirs )
 		{
-			RString sSongDirName = arraySongDirs[j];
-
 			// Skip already loaded songs if onlyAdditions is set.
 			if (onlyAdditions)
 			{
