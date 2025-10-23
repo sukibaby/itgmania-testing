@@ -428,6 +428,7 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
 			mapGroupSongDirs[sGroupDirName] = arraySongDirs;
 			songCount += arraySongDirs.size();
 		}
+		sanity_index++;
 	}
 
 	if( songCount==0 ) return;
@@ -493,12 +494,7 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
 			{
 				loading_window_last_update_time.Touch();
 				ld->SetProgress(songIndex);
-				ld->SetText( LOADING_SONGS.GetValue() +
-					ssprintf("\n%s\n%s",
-						group_base_name.c_str(),
-						Basename(sSongDirName).c_str()
-					)
-				);
+				ld->SetText( LOADING_SONGS.GetValue() + "\n" + group_base_name );
 			}
 
 			Song* song = f.get();
