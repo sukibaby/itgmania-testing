@@ -464,56 +464,50 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
 			dirsToLoad.push_back(sSongDirName);
 		}
 
-		// Use up to 4 threads, or more if hardware_concurrency allows.
-		size_t batch_size = 4;
-		batch_size = std::max<size_t>(batch_size, static_cast<size_t>(std::thread::hardware_concurrency()));
-		for (size_t i = 0; i < dirsToLoad.size(); i += batch_size)
+		// Spawn background threads for each file load
+		std::vector<std::future<Song*>> futures;
+		for (const RString& sSongDirName : dirsToLoad)
 		{
-			std::vector<std::future<Song*>> futures;
-			size_t end = std::min(i + batch_size, dirsToLoad.size());
-			for (size_t j = i; j < end; ++j)
+			futures.push_back(std::async(std::launch::async, [sSongDirName]() -> Song* {
+				std::lock_guard<std::mutex> lock(songLoadMutex);
+				Song* pNewSong = new Song;
+				if (pNewSong->LoadFromSongDir(sSongDirName))
+				{
+					return pNewSong;
+				}
+				else
+				{
+					delete pNewSong;
+					return nullptr;
+				}
+			}));
+		}
+
+		std::vector<Song*> loadedSongs;
+		for (auto& f : futures)
+		{
+			if(ld && loading_window_last_update_time.Ago() > next_loading_window_update)
 			{
-				futures.push_back(std::async(std::launch::async, [sSongDirName = dirsToLoad[j]]() -> Song* {
-					std::lock_guard<std::mutex> lock(songLoadMutex);
-					Song* pNewSong = new Song;
-					if (pNewSong->LoadFromSongDir(sSongDirName))
-					{
-						return pNewSong;
-					}
-					else
-					{
-						delete pNewSong;
-						return nullptr;
-					}
-				}));
+				loading_window_last_update_time.Touch();
+				ld->SetProgress(songIndex);
+				ld->SetText( LOADING_SONGS.GetValue() + "\n" + group_base_name );
 			}
 
-			std::vector<Song*> loadedSongs;
-			for (auto& f : futures)
+			Song* song = f.get();
+			if (song)
 			{
-				if(ld && loading_window_last_update_time.Ago() > next_loading_window_update)
-				{
-					loading_window_last_update_time.Touch();
-					ld->SetProgress(songIndex);
-					ld->SetText( LOADING_SONGS.GetValue() + "\n" + group_base_name );
-				}
-
-				Song* song = f.get();
-				if (song)
-				{
-					loadedSongs.push_back(song);
-				}
-				songIndex++;
+				loadedSongs.push_back(song);
 			}
+			songIndex++;
+		}
 
+		{
+			std::lock_guard<std::mutex> lock(m_LoadMutex);
+			for (Song* song : loadedSongs)
 			{
-				std::lock_guard<std::mutex> lock(m_LoadMutex);
-				for (Song* song : loadedSongs)
-				{
-					AddSongToList(song);
-					index_entry.push_back(song);
-					loaded++;
-				}
+				AddSongToList(song);
+				index_entry.push_back(song);
+				loaded++;
 			}
 		}
 
