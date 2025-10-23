@@ -44,6 +44,8 @@
 #include <cstddef>
 #include <tuple>
 #include <vector>
+#include <mutex>
+#include <future>
 
 
 SongManager*	SONGMAN = nullptr;	// global and accessible from anywhere in our program
@@ -444,6 +446,7 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
 			groupAlreadyLoaded = true;
 		}
 
+		std::vector<RString> dirsToLoad;
 		for( unsigned j=0; j< arraySongDirs.size(); ++j )	// for each song dir
 		{
 			RString sSongDirName = arraySongDirs[j];
@@ -457,31 +460,43 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
 					continue;
 			}
 
-			// this is a song directory. Load a new song.
+			dirsToLoad.push_back(sSongDirName);
+		}
+
+		std::vector<std::future<Song*>> futures;
+		for (const RString& sSongDirName : dirsToLoad)
+		{
+			futures.push_back(std::async(std::launch::async, [sSongDirName]() -> Song* {
+				Song* pNewSong = new Song;
+				if (pNewSong->LoadFromSongDir(sSongDirName))
+				{
+					return pNewSong;
+				}
+				else
+				{
+					delete pNewSong;
+					return nullptr;
+				}
+			}));
+		}
+
+		for (auto& f : futures)
+		{
 			if(ld && loading_window_last_update_time.Ago() > next_loading_window_update)
 			{
 				loading_window_last_update_time.Touch();
 				ld->SetProgress(songIndex);
-				ld->SetText( LOADING_SONGS.GetValue() +
-					ssprintf("\n%s\n%s",
-						group_base_name.c_str(),
-						Basename(sSongDirName).c_str()
-					)
-				);
+				ld->SetText( LOADING_SONGS.GetValue() + "\n" + group_base_name );
 			}
 
-			Song* pNewSong = new Song;
-			if( !pNewSong->LoadFromSongDir( sSongDirName) )
+			Song* song = f.get();
+			if (song)
 			{
-				// The song failed to load.
-				delete pNewSong;
-				continue;
+				std::lock_guard<std::mutex> lock(m_LoadMutex);
+				AddSongToList(song);
+				index_entry.push_back(song);
+				loaded++;
 			}
-
-			AddSongToList(pNewSong);
-
-			index_entry.push_back( pNewSong );
-			loaded++;
 			songIndex++;
 		}
 

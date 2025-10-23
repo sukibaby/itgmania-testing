@@ -22,6 +22,7 @@ struct lua_State;
 #include <cstddef>
 #include <unordered_set>
 #include <vector>
+#include <mutex>
 
 RString SONG_GROUP_COLOR_NAME( size_t i );
 RString COURSE_GROUP_COLOR_NAME( size_t i );
@@ -256,6 +257,8 @@ protected:
 	struct Comp { bool operator()(const RString& s, const RString &t) const { return CompareRStringsAsc(s,t); } };
 	typedef std::vector<Song*> SongPointerVector;
 	std::map<RString,SongPointerVector,Comp> m_mapSongGroupIndex;
+
+	std::mutex m_LoadMutex;
 
 	std::vector<Course*>		m_pCourses;
 	std::vector<Course*>		m_pPopularCourses[NUM_CourseType];
