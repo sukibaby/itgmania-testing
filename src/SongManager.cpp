@@ -44,6 +44,8 @@
 #include <cstddef>
 #include <tuple>
 #include <vector>
+#include <mutex>
+#include <future>
 
 
 SongManager*	SONGMAN = nullptr;	// global and accessible from anywhere in our program
@@ -362,6 +364,7 @@ void SongManager::AddGroup( RString sDir, RString sGroupDirName, Group* group )
 static LocalizedString LOADING_SONGS ( "SongManager", "Loading songs..." );
 void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditions )
 {
+	static std::mutex songLoadMutex;
 	if( ld )
 		ld->SetText( LOADING_SONGS );
 
@@ -444,10 +447,9 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
 			groupAlreadyLoaded = true;
 		}
 
-		for( unsigned j=0; j< arraySongDirs.size(); ++j )	// for each song dir
+		std::vector<RString> dirsToLoad;
+		for( RString const &sSongDirName : arraySongDirs )
 		{
-			RString sSongDirName = arraySongDirs[j];
-
 			// Skip already loaded songs if onlyAdditions is set.
 			if (onlyAdditions)
 			{
@@ -457,7 +459,24 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
 					continue;
 			}
 
-			// this is a song directory. Load a new song.
+			dirsToLoad.push_back(sSongDirName);
+		}
+
+		std::vector<std::pair<std::future<Song*>, RString>> futures;
+		for (const RString& songDir : dirsToLoad)
+		{
+			futures.push_back({std::async(std::launch::async, [songDir]() {
+				Song* pNewSong = new Song;
+				std::lock_guard<std::mutex> lock(songLoadMutex); // TODO remove songLoadMutex entirely
+				return pNewSong->LoadFromSongDir(songDir) ? pNewSong : (delete pNewSong, nullptr);
+			}), songDir});
+		}
+
+		std::vector<Song*> loadedSongs;
+		for (auto& futurePair : futures)
+		{
+			auto& songFuture = futurePair.first;
+			auto& sSongDirName = futurePair.second;
 			if(ld && loading_window_last_update_time.Ago() > next_loading_window_update)
 			{
 				loading_window_last_update_time.Touch();
@@ -470,19 +489,22 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
 				);
 			}
 
-			Song* pNewSong = new Song;
-			if( !pNewSong->LoadFromSongDir( sSongDirName) )
+			Song* song = songFuture.get();
+			if (song)
 			{
-				// The song failed to load.
-				delete pNewSong;
-				continue;
+				loadedSongs.push_back(song);
 			}
-
-			AddSongToList(pNewSong);
-
-			index_entry.push_back( pNewSong );
-			loaded++;
 			songIndex++;
+		}
+
+		{
+			std::lock_guard<std::mutex> lock(m_LoadMutex);
+			for (Song* song : loadedSongs)
+			{
+				AddSongToList(song);
+				index_entry.push_back(song);
+				loaded++;
+			}
 		}
 
 		LOG->Trace("Loaded %i songs from \"%s\"", loaded, (sDir+sGroupDirName).c_str() );
