@@ -513,6 +513,12 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
 			songIndex++;
 		}
 
+		// Load cached images serially after parallel song loading
+		for (Song* song : loadedSongs)
+		{
+			song->LoadCachedImages();
+		}
+
 		{
 			std::lock_guard<std::mutex> lock(m_LoadMutex);
 			for (Song* song : loadedSongs)
@@ -586,6 +592,7 @@ void SongManager::LoadGroupSymLinks(RString sDir, RString sGroupFolder)
 
 			pNewSong->m_bIsSymLink = true;	// Very important so we don't double-parse later
 			pNewSong->m_sGroupName = sGroupFolder;
+			pNewSong->LoadCachedImages();
 			AddSongToList(pNewSong);
 			index_entry.push_back( pNewSong );
 		}
