@@ -435,16 +435,18 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
 
 		SongPointerVector& index_entry = m_mapSongGroupIndex[sGroupDirName];
 		RString group_base_name= Basename(sGroupDirName);
-		Group* group = new Group(sDir, sGroupDirName);
 		
 		// We need to keep track of previously loaded groups so we don't delete them if we're only loading additions
 		bool groupAlreadyLoaded = false;
-		// Add the group to the group mapping
-		if (m_mapNameToGroup.find(sGroupDirName) == m_mapNameToGroup.end())
-		{
-			m_mapNameToGroup[sGroupDirName] = group;
-		} else {
+		Group* group;
+		// Check if group is already loaded to avoid unnecessary allocations
+		auto groupIter = m_mapNameToGroup.find(sGroupDirName);
+		if (groupIter != m_mapNameToGroup.end()) {
+			group = groupIter->second;
 			groupAlreadyLoaded = true;
+		} else {
+			group = new Group(sDir, sGroupDirName);
+			m_mapNameToGroup[sGroupDirName] = group;
 		}
 
 		std::vector<RString> dirsToLoad;
