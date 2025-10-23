@@ -445,15 +445,6 @@ bool Song::LoadFromSongDir(RString sDir, bool load_autosave, ProfileSlot from_pr
 		s->Compress();
 	}
 
-	// Load the cached Images, if it's not loaded already.
-	if( PREFSMAN->m_ImageCache == IMGCACHE_LOW_RES_PRELOAD )
-	{
-		for( RString Image : ImageDir )
-		{
-			IMAGECACHE->LoadImage( Image, GetCacheFile( Image ) );
-		}
-	}
-
 	// Add AutoGen pointers. (These aren't cached.)
 	AddAutoGenNotes();
 
@@ -641,6 +632,15 @@ bool Song::LoadAutosaveFile()
 	return false;
 }
 
+void Song::LoadCachedImages()
+{
+	if (PREFSMAN->m_ImageCache == IMGCACHE_LOW_RES_PRELOAD) {
+		for (RString Image : ImageDir) {
+			IMAGECACHE->LoadImage(Image, GetCacheFile(Image));
+		}
+	}
+}
+
 /* Fix up song paths. If there's a leading "./", be sure to keep it: it's
  * a signal that the path is from the root directory, not the song directory.
  * Other than a leading "./", song paths must never contain "." or "..". */
@@ -733,11 +733,6 @@ void Song::TidyUpData( bool from_cache, bool /* duringCache */, const std::set<R
 		m_bHasMusic = HasMusic();
 		m_bHasBanner = HasBanner();
 		m_bHasBackground = HasBackground();
-
-		for( RString Image : ImageDir )
-		{
-			IMAGECACHE->LoadImage( Image, GetCacheFile( Image ) );
-		}
 
 		// There are several things that need to find a file from the dir with a
 		// particular extension or type of extension.  So fetch a list of all

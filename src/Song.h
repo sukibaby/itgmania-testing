@@ -104,6 +104,11 @@ public:
 	bool LoadAutosaveFile();
 
 	/**
+	 * @brief Load cached images for this song.
+	 */
+	void LoadCachedImages();
+
+	/**
 	 * @brief Call this after loading a song to clean up invalid data.
 	 * @param fromCache was this data loaded from the cache file?
 	 * @param duringCache was this data loaded during the cache process? */
