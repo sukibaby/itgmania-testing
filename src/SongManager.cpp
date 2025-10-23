@@ -44,6 +44,18 @@
 #include <cstddef>
 #include <tuple>
 #include <vector>
+#include <mutex>
+#include <future>
+
+
+namespace std {
+    template <>
+    struct hash<RString> {
+        size_t operator()(const RString& s) const {
+            return hash<std::string>()(std::string(s.c_str()));
+        }
+    };
+}
 
 
 SongManager*	SONGMAN = nullptr;	// global and accessible from anywhere in our program
@@ -362,6 +374,7 @@ void SongManager::AddGroup( RString sDir, RString sGroupDirName, Group* group )
 static LocalizedString LOADING_SONGS ( "SongManager", "Loading songs..." );
 void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditions )
 {
+	static std::mutex songLoadMutex;
 	if( ld )
 		ld->SetText( LOADING_SONGS );
 
@@ -457,7 +470,21 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
 					continue;
 			}
 
-			// this is a song directory. Load a new song.
+
+		// Load songs in parallel
+		std::vector<std::future<Song*>> futures;
+		for (const RString& sSongDirName : dirsToLoad)
+		{
+			futures.push_back(std::async(std::launch::async, [sSongDirName]() {
+				auto pNewSong = new Song;
+				std::lock_guard<std::mutex> lock(songLoadMutex);
+				return pNewSong->LoadFromSongDir(sSongDirName) ? pNewSong : (delete pNewSong, nullptr);
+			}));
+		}
+
+		std::vector<Song*> loadedSongs;
+		for (auto& f : futures)
+		{
 			if(ld && loading_window_last_update_time.Ago() > next_loading_window_update)
 			{
 				loading_window_last_update_time.Touch();
@@ -470,19 +497,22 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
 				);
 			}
 
-			Song* pNewSong = new Song;
-			if( !pNewSong->LoadFromSongDir( sSongDirName) )
+			Song* song = f.get();
+			if (song)
 			{
-				// The song failed to load.
-				delete pNewSong;
-				continue;
+				loadedSongs.push_back(song);
 			}
-
-			AddSongToList(pNewSong);
-
-			index_entry.push_back( pNewSong );
-			loaded++;
 			songIndex++;
+		}
+
+		{
+			std::lock_guard<std::mutex> lock(m_LoadMutex);
+			for (Song* song : loadedSongs)
+			{
+				AddSongToList(song);
+				index_entry.push_back(song);
+				loaded++;
+			}
 		}
 
 		LOG->Trace("Loaded %i songs from \"%s\"", loaded, (sDir+sGroupDirName).c_str() );
