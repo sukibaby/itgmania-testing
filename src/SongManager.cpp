@@ -462,23 +462,14 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
 			dirsToLoad.push_back(sSongDirName);
 		}
 
-		// Spawn background threads for each file load
+		// Load songs in parallel
 		std::vector<std::future<Song*>> futures;
 		for (const RString& sSongDirName : dirsToLoad)
 		{
-			futures.push_back(std::async(std::launch::async, [sSongDirName]() -> Song* {
-				Song* pNewSong = new Song;
-				bool loadedSuccessfully = false;
-				{
-					std::lock_guard<std::mutex> lock(songLoadMutex);
-					loadedSuccessfully = pNewSong->LoadFromSongDir(sSongDirName);
-				}
-				if (loadedSuccessfully)
-				{
-					return pNewSong;
-				}
-				delete pNewSong;
-				return nullptr;
+			futures.push_back(std::async(std::launch::async, [sSongDirName]() {
+				auto pNewSong = new Song;
+				std::lock_guard<std::mutex> lock(songLoadMutex);
+				return pNewSong->LoadFromSongDir(sSongDirName) ? pNewSong : (delete pNewSong, nullptr);
 			}));
 		}
 
