@@ -46,6 +46,7 @@
 #include <vector>
 #include <mutex>
 #include <future>
+#include <unordered_map>
 
 
 namespace std {
@@ -395,7 +396,7 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
 	StripCvsAndSvn( arrayGroupDirs );
 	StripMacResourceForks( arrayGroupDirs );
 
-	std::map<RString, std::vector<RString>> mapGroupSongDirs;
+	std::unordered_map<RString, std::vector<RString>> mapGroupSongDirs;
 	int groupIndex, songCount, songIndex;
 
 	groupIndex = 0;
