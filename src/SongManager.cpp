@@ -469,17 +469,18 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
 		for (const RString& sSongDirName : dirsToLoad)
 		{
 			futures.push_back(std::async(std::launch::async, [sSongDirName]() -> Song* {
-				std::lock_guard<std::mutex> lock(songLoadMutex);
 				Song* pNewSong = new Song;
-				if (pNewSong->LoadFromSongDir(sSongDirName))
+				bool loadedSuccessfully = false;
+				{
+					std::lock_guard<std::mutex> lock(songLoadMutex);
+					loadedSuccessfully = pNewSong->LoadFromSongDir(sSongDirName);
+				}
+				if (loadedSuccessfully)
 				{
 					return pNewSong;
 				}
-				else
-				{
-					delete pNewSong;
-					return nullptr;
-				}
+				delete pNewSong;
+				return nullptr;
 			}));
 		}
 
