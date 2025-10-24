@@ -498,18 +498,11 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
 				);
 			}
 
-			Song* pNewSong = new Song;
-			if( !pNewSong->LoadFromSongDir( sSongDirName) )
+			Song* song = songFuture.get();
+			if (song)
 			{
-				// The song failed to load.
-				delete pNewSong;
-				continue;
+				loadedSongs.push_back(song);
 			}
-
-			AddSongToList(pNewSong);
-
-			index_entry.push_back( pNewSong );
-			loaded++;
 			songIndex++;
 		}
 
