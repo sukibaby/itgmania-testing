@@ -506,6 +506,16 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
 			songIndex++;
 		}
 
+		{
+			std::lock_guard<std::mutex> lock(m_LoadMutex);
+			for (Song* song : loadedSongs)
+			{
+				AddSongToList(song);
+				index_entry.push_back(song);
+				loaded++;
+			}
+		}
+
 		LOG->Trace("Loaded %i songs from \"%s\"", loaded, (sDir+sGroupDirName).c_str() );
 
 		// If we're only loading additions, already loaded groups should neither be added nor deleted
