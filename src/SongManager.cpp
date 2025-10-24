@@ -44,6 +44,7 @@
 #include <cstddef>
 #include <tuple>
 #include <vector>
+#include <mutex>
 
 
 SongManager*	SONGMAN = nullptr;	// global and accessible from anywhere in our program
@@ -362,6 +363,7 @@ void SongManager::AddGroup( RString sDir, RString sGroupDirName, Group* group )
 static LocalizedString LOADING_SONGS ( "SongManager", "Loading songs..." );
 void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditions )
 {
+	static std::mutex songLoadMutex;
 	if( ld )
 		ld->SetText( LOADING_SONGS );
 
