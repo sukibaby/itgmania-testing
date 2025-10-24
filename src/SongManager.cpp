@@ -451,10 +451,9 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
 			m_mapNameToGroup[sGroupDirName] = group;
 		}
 
-		for( unsigned j=0; j< arraySongDirs.size(); ++j )	// for each song dir
+		std::vector<RString> dirsToLoad;
+		for( RString const &sSongDirName : arraySongDirs )
 		{
-			RString sSongDirName = arraySongDirs[j];
-
 			// Skip already loaded songs if onlyAdditions is set.
 			if (onlyAdditions)
 			{
@@ -465,6 +464,8 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
 			}
 
 			// this is a song directory. Load a new song.
+			dirsToLoad.push_back(sSongDirName);
+		}
 			if(ld && loading_window_last_update_time.Ago() > next_loading_window_update)
 			{
 				loading_window_last_update_time.Touch();
