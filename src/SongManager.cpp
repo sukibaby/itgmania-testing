@@ -45,6 +45,7 @@
 #include <tuple>
 #include <vector>
 #include <mutex>
+#include <future>
 
 
 SongManager*	SONGMAN = nullptr;	// global and accessible from anywhere in our program
@@ -466,6 +467,25 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
 			// this is a song directory. Load a new song.
 			dirsToLoad.push_back(sSongDirName);
 		}
+
+		// We use a pair of future and directory name so we can display the
+		// current song being loaded in the loading window. The directory name
+		// is used to show progress with the specific song name.
+		std::vector<std::pair<std::future<Song*>, RString>> futures;
+		for (const RString& songDir : dirsToLoad)
+		{
+			futures.push_back({std::async(std::launch::async, [songDir]() {
+				Song* pNewSong = new Song;
+				std::lock_guard<std::mutex> lock(songLoadMutex); // TODO remove songLoadMutex entirely
+				return pNewSong->LoadFromSongDir(songDir) ? pNewSong : (delete pNewSong, nullptr);
+			}), songDir});
+		}
+
+		std::vector<Song*> loadedSongs;
+		for (auto& futurePair : futures)
+		{
+			auto& songFuture = futurePair.first;
+			auto& sSongDirName = futurePair.second;
 			if(ld && loading_window_last_update_time.Ago() > next_loading_window_update)
 			{
 				loading_window_last_update_time.Touch();
