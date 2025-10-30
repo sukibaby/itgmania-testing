@@ -25,13 +25,14 @@
  */
 RageSoundReader_Chain::RageSoundReader_Chain()
 {
-	m_iPreferredSampleRate = PREFSMAN->m_iSoundPreferredSampleRate;
-	if (m_iPreferredSampleRate == 0)
-	{
-		m_iPreferredSampleRate = kFallbackSampleRate;
-	}
-	
+	// The preferred sample rate for resampling when sounds have different rates.
+	// Initialized to 44100 Hz, assuming most audio libraries use CD-standard rates.
+	m_iPreferredSampleRate = 44100;
+
+	// The actual sample rate of the audio after resampling.
+	// Used for timing calculations, such as sound offsets or frame positioning.
 	m_iActualSampleRate = -1;
+
 	m_iChannels = 0;
 	m_iCurrentFrame = 0;
 	m_iNextSound = 0;
