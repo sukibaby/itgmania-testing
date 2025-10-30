@@ -132,6 +132,15 @@ int RageSoundReader_Chain::GetSampleRateInternal() const
 	return iRate;
 }
 
+int RageSoundReader_Chain::GetSampleRate() const
+{
+	if (m_iActualSampleRate == -1)
+	{
+		return m_iPreferredSampleRate;
+	}
+	return m_iActualSampleRate;
+}
+
 void RageSoundReader_Chain::Finish()
 {
 	/* Figure out how many channels we have.  All sounds must either have 1 or 2 channels,
