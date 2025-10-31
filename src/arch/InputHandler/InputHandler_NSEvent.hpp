@@ -25,7 +25,7 @@ public:
     InputHandler_NSEvent();
     ~InputHandler_NSEvent();
     
-    void GetDevicesAndDescriptions( vector<InputDeviceInfo>& vDevicesOut );
+    void GetDevicesAndDescriptions( std::vector<InputDeviceInfo>& vDevicesOut );
     
 protected:
     void HandleEvent( EVENT_TYPE e );
