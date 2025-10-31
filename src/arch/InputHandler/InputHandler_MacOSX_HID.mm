@@ -247,7 +247,7 @@ InputHandler_MacOSX_HID::InputHandler_MacOSX_HID() : m_Sem( "Input thread starte
 #if !OSX_KEYBOARD_USE_NSEVENT
 	LOG->Trace( "Finding keyboards" );
 	AddDevices( kHIDPage_GenericDesktop, kHIDUsage_GD_Keyboard, id );
-	
+
 	LOG->Trace( "Finding mice" );
 	AddDevices( kHIDPage_GenericDesktop, kHIDUsage_GD_Mouse, id );
 #endif // !OSX_KEYBOARD_USE_NSEVENT
