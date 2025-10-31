@@ -26,7 +26,7 @@ InputHandler_NSEvent::InputHandler_NSEvent()
     InitKeyCodeMap();
     
     auto &dispatcher = CocoaEventDispatcher::sharedDispatcher;
-    m_ResponderID = dispatcher.AddResponder( bind(&InputHandler_NSEvent::HandleEvent, this, placeholders::_1) );
+    m_ResponderID = dispatcher.AddResponder(std::bind(&InputHandler_NSEvent::HandleEvent, this, std::placeholders::_1));
 }
 
 InputHandler_NSEvent::~InputHandler_NSEvent()

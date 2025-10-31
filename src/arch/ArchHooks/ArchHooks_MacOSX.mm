@@ -6,6 +6,7 @@
 #include "archutils/Unix/SignalHandler.h"
 #include "ProductInfo.h"
 #include "LocalizedString.h"
+#include "SpecialFiles.h"
 
 #include <cstddef>
 #include <cstdint>
