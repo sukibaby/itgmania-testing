@@ -403,7 +403,16 @@ void GetSignalBacktraceContext( BacktraceContext *ctx, const ucontext_t *uc )
 #elif defined(CPU_AARCH64)
 void GetSignalBacktraceContext( BacktraceContext *ctx, const ucontext_t *uc )
 {
-	// NYI
+#if defined(MACOSX)
+	ctx->ip = (void *) uc->uc_mcontext->__ss.__pc;
+	ctx->bp = (void *) uc->uc_mcontext->__ss.__fp;
+	ctx->sp = (void *) uc->uc_mcontext->__ss.__sp;
+#elif defined(LINUX)
+	ctx->ip = (void *) uc->uc_mcontext.pc;
+	ctx->bp = (void *) uc->uc_mcontext.regs[29]; // x29 is frame pointer
+	ctx->sp = (void *) uc->uc_mcontext.sp;
+#endif
+	ctx->pid = GetCurrentThreadId();
 }
 
 #else
@@ -698,49 +707,39 @@ void GetBacktrace( const void **buf, size_t size, const BacktraceContext *ctx )
 	buf[i] = nullptr;
 }
 
-#elif defined(BACKTRACE_METHOD_PPC_LINUX)
-#include <asm/ptrace.h>
+#elif defined(BACKTRACE_METHOD_GENERIC_UNIX)
+#include <execinfo.h>
 
-struct Frame
+void InitializeBacktrace() 
 {
-	Frame *stackPointer;
-	void *linkReg;
-};
+	// Nothing special needed for generic backtrace
+}
 
 void GetSignalBacktraceContext( BacktraceContext *ctx, const ucontext_t *uc )
 {
-	// Wow, this is an ugly structure...
-	ctx->PC = (void *)uc->uc_mcontext.uc_regs->gregs[PT_NIP];
-	ctx->FramePtr = (const Frame *)uc->uc_mcontext.uc_regs->gregs[PT_R1];
+	// For generic unix backtrace, we don't need context from signals
+	// The backtrace() function will handle walking the stack
 }
-
-void InitializeBacktrace() { }
 
 void GetBacktrace( const void **buf, size_t size, const BacktraceContext *ctx )
 {
-	BacktraceContext CurrentCtx;
-
-	if( ctx == nullptr )
-	{
-		ctx = &CurrentCtx;
-
-		register void *r1 __asm__("1");
-		CurrentCtx.FramePtr = (const Frame *)r1;
-		CurrentCtx.PC = nullptr;
+	// Use the standard backtrace() function from execinfo.h for reliable stack unwinding.
+	// This is more portable and robust than manual frame pointer walking, especially on
+	// architectures like ARM64 where frame pointers may not always be available.
+	void *trace[size];
+	
+	// Get up to size-1 frames to leave room for null termination.
+	// backtrace() returns the number of frames captured.
+	int count = backtrace(trace, size - 1);
+	
+	// Copy the captured frame pointers to the output buffer.
+	// We need to copy because backtrace() uses a local array.
+	for (int i = 0; i < count; ++i) {
+		buf[i] = trace[i];
 	}
-
-	const Frame *frame = (const Frame *)ctx->FramePtr;
-	unsigned i = 0;
-
-	if( ctx->PC && i < size-1 )
-		buf[i++] = ctx->PC;
-
-	while( frame && i < size-1 )
-	{
-		if( frame->linkReg )
-			buf[i++] = frame->linkReg;
-	}
-	buf[i] = nullptr;
+	
+	// Null-terminate the buffer as required by the API
+	buf[count] = nullptr;
 }
 
 #else
