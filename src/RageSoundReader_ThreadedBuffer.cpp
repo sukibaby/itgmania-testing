@@ -3,8 +3,12 @@
 #include "RageUtil.h"
 #include "RageTimer.h"
 #include "RageLog.h"
+#include <atomic>
+#include <algorithm>
 
 #include <cmath>
+
+
 
 /* Implement threaded read-ahead buffering.
  *
