@@ -7,6 +7,7 @@
 #include "RageUtil_CircularBuffer.h"
 #include "RageThreads.h"
 #include <list>
+#include <atomic>
 
 class RageThread;
 class RageSoundReader_ThreadedBuffer: public RageSoundReader_Filter
@@ -58,13 +59,13 @@ private:
 	};
 	std::list<Mapping> m_StreamPosition;
 
-	bool m_bEOF;
+	std::atomic<bool> m_bEOF;
 
-	bool m_bEnabled;
+	std::atomic<bool> m_bEnabled;
 
 	/* If this is true, the buffering thread owns m_pSource, even
 	 * if m_Event is unlocked. */
-	bool m_bFilling;
+	std::atomic<bool> m_bFilling;
 
 	mutable RageEvent m_Event;
 

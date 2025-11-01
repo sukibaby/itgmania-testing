@@ -3,6 +3,7 @@
 #include "RageLog.h"
 #include "PrefsManager.h"
 #include "archutils/Darwin/DarwinThreadHelpers.h"
+#include "RageSoundConstants.h"
 
 #include <cstdint>
 
@@ -17,7 +18,7 @@ static const UInt32 kChannelsPerFrame = 2;
 static const UInt32 kBitsPerChannel = 32;
 static const UInt32 kBytesPerPacket = kChannelsPerFrame * kBitsPerChannel / 8;
 static const UInt32 kBytesPerFrame = kBytesPerPacket;
-static const UInt32 kFormatFlags = Enum::to_integral(kAudioFormatFlagsNativeEndian) | Enum::to_integral(kAudioFormatFlagIsFloat);
+static const UInt32 kFormatFlags = kAudioFormatFlagIsFloat;
 
 static const char *FormatOSError(OSStatus status)
 {
@@ -26,7 +27,7 @@ static const char *FormatOSError(OSStatus status)
 }
 
 RageSoundDriver_AU::RageSoundDriver_AU() : m_OutputUnit(nullptr), m_iSampleRate(0), m_bDone(false), m_bStarted(false),
-	m_pIOThread(nullptr), m_pNotificationThread(nullptr), m_Semaphore("Sound")
+	m_pIOThread(nullptr), m_Semaphore("Sound")
 {
 }
 
@@ -141,7 +142,15 @@ RString RageSoundDriver_AU::Init()
 
 	AudioStreamBasicDescription streamFormat;
 
-	streamFormat.mSampleRate = PREFSMAN->m_iSoundPreferredSampleRate;
+	Float64 preferredSampleRate = static_cast<Float64>(PREFSMAN->m_iSoundPreferredSampleRate);
+	if( preferredSampleRate <= 0.0 )
+	{
+		preferredSampleRate = FALLBACK_SAMPLE_RATE;
+	}
+
+	LOG->Info( "AudioUnit: Requested sample rate %.0f Hz", preferredSampleRate );
+
+	streamFormat.mSampleRate = preferredSampleRate;
 	streamFormat.mFormatID = kAudioFormatLinearPCM;
 	streamFormat.mFormatFlags = kFormatFlags;
 	streamFormat.mBytesPerPacket = kBytesPerPacket;
@@ -150,16 +159,12 @@ RString RageSoundDriver_AU::Init()
 	streamFormat.mChannelsPerFrame = kChannelsPerFrame;
 	streamFormat.mBitsPerChannel = kBitsPerChannel;
 
-	if( streamFormat.mSampleRate <= 0.0 )
-	{
-		streamFormat.mSampleRate = kFallbackSampleRate;
-	}
-	m_iSampleRate = int( streamFormat.mSampleRate );
+	m_iSampleRate = int( preferredSampleRate );
 	m_TimeScale = streamFormat.mSampleRate / AudioGetHostClockFrequency();
 
 	// Try to set the hardware sample rate.
 	SetSampleRate( m_OutputUnit, streamFormat.mSampleRate );
-
+	LOG->Info( "AudioUnit: Set sample rate %.0f Hz", streamFormat.mSampleRate );
 
 	error = AudioUnitSetProperty( m_OutputUnit,
 				      kAudioUnitProperty_StreamFormat,
@@ -204,7 +209,6 @@ RageSoundDriver_AU::~RageSoundDriver_AU()
 	AudioUnitUninitialize( m_OutputUnit );
 	AudioComponentInstanceDispose( m_OutputUnit );
 	delete m_pIOThread;
-	delete m_pNotificationThread;
 }
 
 int64_t RageSoundDriver_AU::GetPosition() const
