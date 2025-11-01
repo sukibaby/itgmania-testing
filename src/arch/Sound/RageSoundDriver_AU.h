@@ -36,6 +36,7 @@ private:
 	bool m_bDone;
 	bool m_bStarted;
 	RageThreadRegister *m_pIOThread;
+	RageThreadRegister *m_pNotificationThread;
 	RageSemaphore m_Semaphore;
 };
 

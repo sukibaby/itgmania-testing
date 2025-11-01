@@ -10,7 +10,6 @@
 #include <CoreServices/CoreServices.h>
 #include <AudioToolbox/AudioServices.h>
 #include <CoreAudio/CoreAudio.h>
-#include <mach/mach_time.h>
 
 REGISTER_SOUND_DRIVER_CLASS2( AudioUnit, AU );
 
@@ -19,7 +18,7 @@ static const UInt32 kChannelsPerFrame = 2;
 static const UInt32 kBitsPerChannel = 32;
 static const UInt32 kBytesPerPacket = kChannelsPerFrame * kBitsPerChannel / 8;
 static const UInt32 kBytesPerFrame = kBytesPerPacket;
-static const UInt32 kFormatFlags = kAudioFormatFlagIsFloat;
+static const UInt32 kFormatFlags = Enum::to_integral(kAudioFormatFlagsNativeEndian) | Enum::to_integral(kAudioFormatFlagIsFloat);
 
 static const char *FormatOSError(OSStatus status)
 {
@@ -28,7 +27,7 @@ static const char *FormatOSError(OSStatus status)
 }
 
 RageSoundDriver_AU::RageSoundDriver_AU() : m_OutputUnit(nullptr), m_iSampleRate(0), m_bDone(false), m_bStarted(false),
-	m_pIOThread(nullptr), m_Semaphore("Sound")
+	m_pIOThread(nullptr), m_pNotificationThread(nullptr), m_Semaphore("Sound")
 {
 }
 
@@ -157,9 +156,7 @@ RString RageSoundDriver_AU::Init()
 		streamFormat.mSampleRate = FALLBACK_SAMPLE_RATE;
 	}
 	m_iSampleRate = int( streamFormat.mSampleRate );
-	mach_timebase_info_data_t timebase;
-	mach_timebase_info(&timebase);
-	m_TimeScale = streamFormat.mSampleRate * timebase.numer / (timebase.denom * 1e9);
+	m_TimeScale = streamFormat.mSampleRate / AudioGetHostClockFrequency();
 
 	// Try to set the hardware sample rate.
 	SetSampleRate( m_OutputUnit, streamFormat.mSampleRate );
@@ -208,11 +205,12 @@ RageSoundDriver_AU::~RageSoundDriver_AU()
 	AudioUnitUninitialize( m_OutputUnit );
 	AudioComponentInstanceDispose( m_OutputUnit );
 	delete m_pIOThread;
+	delete m_pNotificationThread;
 }
 
 int64_t RageSoundDriver_AU::GetPosition() const
 {
-	return int64_t( m_TimeScale * mach_absolute_time() );
+	return int64_t( m_TimeScale * AudioGetCurrentHostTime() );
 }
 
 
@@ -355,7 +353,7 @@ OSStatus RageSoundDriver_AU::Render( void *inRefCon,
 		This->m_pIOThread = new RageThreadRegister( "HAL I/O thread" );
 
 	AudioBuffer &buf = ioData->mBuffers[0];
-	int64_t now = int64_t( This->m_TimeScale * mach_absolute_time() );
+	int64_t now = int64_t( This->m_TimeScale * AudioGetCurrentHostTime() );
 	int64_t next = int64_t( This->m_TimeScale * inTimeStamp->mHostTime );
 
 	This->Mix( (float *)buf.mData, inNumberFrames, next, now );
