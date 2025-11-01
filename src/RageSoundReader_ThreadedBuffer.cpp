@@ -4,11 +4,9 @@
 #include "RageTimer.h"
 #include "RageLog.h"
 
-#include <cmath>
+#include <algorithm>
 #include <thread>
 #include <chrono>
-#include <cstdlib>
-#include <memory>
 #include <atomic>
 
 /* Implement threaded read-ahead buffering.
