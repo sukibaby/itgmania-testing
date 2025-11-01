@@ -26,7 +26,7 @@ static const char *FormatOSError(OSStatus status)
 }
 
 RageSoundDriver_AU::RageSoundDriver_AU() : m_OutputUnit(nullptr), m_iSampleRate(0), m_bDone(false), m_bStarted(false),
-	m_pIOThread(nullptr), m_pNotificationThread(nullptr), m_Semaphore("Sound")
+	m_pIOThread(nullptr), m_Semaphore("Sound")
 {
 }
 
@@ -204,7 +204,6 @@ RageSoundDriver_AU::~RageSoundDriver_AU()
 	AudioUnitUninitialize( m_OutputUnit );
 	AudioComponentInstanceDispose( m_OutputUnit );
 	delete m_pIOThread;
-	delete m_pNotificationThread;
 }
 
 int64_t RageSoundDriver_AU::GetPosition() const
