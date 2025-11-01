@@ -141,7 +141,13 @@ RString RageSoundDriver_AU::Init()
 
 	AudioStreamBasicDescription streamFormat;
 
-	streamFormat.mSampleRate = PREFSMAN->m_iSoundPreferredSampleRate;
+	Float64 preferredSampleRate = static_cast<Float64>(PREFSMAN->m_iSoundPreferredSampleRate);
+	if( preferredSampleRate <= 0.0 )
+	{
+		preferredSampleRate = FALLBACK_SAMPLE_RATE;
+	}
+
+	streamFormat.mSampleRate = preferredSampleRate;
 	streamFormat.mFormatID = kAudioFormatLinearPCM;
 	streamFormat.mFormatFlags = kFormatFlags;
 	streamFormat.mBytesPerPacket = kBytesPerPacket;
@@ -150,16 +156,12 @@ RString RageSoundDriver_AU::Init()
 	streamFormat.mChannelsPerFrame = kChannelsPerFrame;
 	streamFormat.mBitsPerChannel = kBitsPerChannel;
 
-	if( streamFormat.mSampleRate <= 0.0 )
-	{
-		streamFormat.mSampleRate = kFallbackSampleRate;
-	}
-	m_iSampleRate = int( streamFormat.mSampleRate );
+	m_iSampleRate = int( preferredSampleRate );
 	m_TimeScale = streamFormat.mSampleRate / AudioGetHostClockFrequency();
 
 	// Try to set the hardware sample rate.
 	SetSampleRate( m_OutputUnit, streamFormat.mSampleRate );
-
+	LOG->Info( "AudioUnit: Set sample rate %.0f Hz", streamFormat.mSampleRate );
 
 	error = AudioUnitSetProperty( m_OutputUnit,
 				      kAudioUnitProperty_StreamFormat,
