@@ -148,7 +148,7 @@ RString RageSoundDriver_AU::Init()
 		preferredSampleRate = FALLBACK_SAMPLE_RATE;
 	}
 
-	LOG->Info( "Requesting sample rate: %.0f Hz", preferredSampleRate );
+	LOG->Info( "AudioUnit: Requested sample rate %.0f Hz", preferredSampleRate );
 
 	streamFormat.mSampleRate = preferredSampleRate;
 	streamFormat.mFormatID = kAudioFormatLinearPCM;
@@ -164,7 +164,7 @@ RString RageSoundDriver_AU::Init()
 
 	// Try to set the hardware sample rate.
 	SetSampleRate( m_OutputUnit, streamFormat.mSampleRate );
-
+	LOG->Info( "AudioUnit: Set sample rate %.0f Hz", streamFormat.mSampleRate );
 
 	error = AudioUnitSetProperty( m_OutputUnit,
 				      kAudioUnitProperty_StreamFormat,
