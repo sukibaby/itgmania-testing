@@ -111,10 +111,11 @@ void InputHandler_NSEvent::InitKeyCodeMap()
     m_NSKeyCodeMap[kVK_F10] = KEY_F10;
     m_NSKeyCodeMap[kVK_F11] = KEY_F11;
     m_NSKeyCodeMap[kVK_F12] = KEY_F12;
-    m_NSKeyCodeMap[kVK_F13] = KEY_F13;
-    m_NSKeyCodeMap[kVK_F14] = KEY_F14;
     m_NSKeyCodeMap[kVK_F15] = KEY_F15;
     m_NSKeyCodeMap[kVK_F16] = KEY_F16;
+    
+    m_NSKeyCodeMap[kVK_F13] = KEY_PRTSC;  // Print Screen
+    m_NSKeyCodeMap[kVK_F14] = KEY_SCRLLOCK;  // Scroll Lock
     
     m_NSKeyCodeMap[kVK_ANSI_Quote] = KEY_QUOTE;
     m_NSKeyCodeMap[kVK_ANSI_Backslash] = KEY_BACKSLASH;
