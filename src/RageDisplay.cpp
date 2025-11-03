@@ -35,6 +35,7 @@ static int g_iFramesRenderedSinceLastCheck,
 	   g_iVertsRenderedSinceLastCheck,
 	   g_iNumChecksSinceLastReset;
 static RageTimer g_LastFrameEndedAt( RageZeroTimer );
+static float g_fTotalTimeSinceReset = 0.0f;
 
 struct Centering
 {
@@ -139,9 +140,9 @@ void RageDisplay::ProcessStatsOnFlip()
 	{
 		float fActualTime = g_LastCheckTimer.GetDeltaTime();
 		g_iNumChecksSinceLastReset++;
+		g_fTotalTimeSinceReset += fActualTime;
 		g_iFPS = std::lrint( g_iFramesRenderedSinceLastCheck / fActualTime );
-		g_iCFPS = g_iFramesRenderedSinceLastReset / g_iNumChecksSinceLastReset;
-		g_iCFPS = std::lrint( g_iCFPS / fActualTime );
+		g_iCFPS = std::lrint( g_iFramesRenderedSinceLastReset / g_fTotalTimeSinceReset );
 		g_iVPF = g_iVertsRenderedSinceLastCheck / g_iFramesRenderedSinceLastCheck;
 		g_iFramesRenderedSinceLastCheck = g_iVertsRenderedSinceLastCheck = 0;
 		if( LOG_FPS )
@@ -158,6 +159,7 @@ void RageDisplay::ResetStats()
 	g_iFPS = g_iVPF = 0;
 	g_iFramesRenderedSinceLastCheck = g_iFramesRenderedSinceLastReset = 0;
 	g_iNumChecksSinceLastReset = 0;
+	g_fTotalTimeSinceReset = 0.0f;
 	g_iVertsRenderedSinceLastCheck = 0;
 	g_LastCheckTimer.GetDeltaTime();
 }
