@@ -30,6 +30,10 @@ using namespace RageDisplay_Legacy_Helpers;
 #include <GL/wglew.h>
 #endif
 
+#if defined(UNIX) && !defined(__APPLE__)
+#include <GL/glxew.h>
+#endif
+
 #if defined(_MSC_VER)
 #pragma comment(lib, "opengl32.lib")
 #pragma comment(lib, "glu32.lib")
@@ -787,6 +791,20 @@ RString RageDisplay_Legacy::TryVideoMode( const VideoModeParams &p, bool &bNewDe
 	if (err != "")
 		return err;	// failed to set video mode
 
+	// Set swap interval (vsync) for frame rate limiting.
+	// macOS swap interval is handled by LowLevelWindow_MacOSX.
+#if defined(WINDOWS)
+	if (wglSwapIntervalEXT != nullptr)
+		wglSwapIntervalEXT( p.vsync ? 1 : 0 );
+#elif defined(UNIX) && !defined(__APPLE__)
+	if (GLXEW_EXT_swap_control && glXSwapIntervalEXT)
+		glXSwapIntervalEXT( glXGetCurrentDisplay(), glXGetCurrentDrawable(), p.vsync ? 1 : 0 );
+	else if (GLXEW_MESA_swap_control && glXSwapIntervalMESA)
+		glXSwapIntervalMESA( p.vsync ? 1 : 0 );
+	else if (GLXEW_SGI_swap_control && glXSwapIntervalSGI)
+		glXSwapIntervalSGI( p.vsync ? 1 : 0 );
+#endif
+
 	/* Now that we've initialized, we can search for extensions.  Do this before InvalidateObjects,
 	 * since AllocateBuffers needs it. */
 	SetupExtensions();
@@ -810,16 +828,6 @@ RString RageDisplay_Legacy::TryVideoMode( const VideoModeParams &p, bool &bNewDe
 
 		InitShaders();
 	}
-
-// I'm not sure this is correct -Colby
-#if defined(WINDOWS)
-	/* Set vsync the Windows way, if we can.  (What other extensions are there
-	 * to do this, for other archs?) */
-	if( wglewIsSupported("WGL_EXT_swap_control") )
-		wglSwapIntervalEXT(p.vsync);
-	else
-		return RString("The WGL_EXT_swap_control extension is not supported on your computer.");
-#endif
 
 	ResolutionChanged();
 
