@@ -214,6 +214,12 @@ static RageSurface *RageSurface_Load_PNG( RageFile *f, const char *fn, char erro
 	png_set_interlace_handling( png );
 
 	png_read_update_info( png, info_ptr );
+	
+	// Disable sRGB profile checking to improve performance (libpng 1.6+).
+	// This skips sRGB color profile checking and conversion.
+	// Comment the following line to enable sRGB profile checking.
+	png_set_option(png, PNG_SKIP_sRGB_CHECK_PROFILE, PNG_OPTION_ON);
+
 
 	switch( type )
 	{
@@ -247,7 +253,15 @@ static RageSurface *RageSurface_Load_PNG( RageFile *f, const char *fn, char erro
 		row_pointers[y] = p + img->pitch*y;
 	}
 
-	png_read_image( png, row_pointers );
+	// Use png_read_rows for row-by-row processing. This has better cache locality
+	// on ARM64 and modern CPUs, especially for large/upscaled images.
+	// libpng 1.6+ handles interlacing transparently for us.
+	const unsigned BATCH_SIZE = 64;
+	for( unsigned y = 0; y < height; y += BATCH_SIZE )
+	{
+		unsigned rows_to_read = (y + BATCH_SIZE < height) ? BATCH_SIZE : (height - y);
+		png_read_rows( png, &row_pointers[y], nullptr, rows_to_read );
+	}
 
 	png_read_end( png, info_ptr );
 	png_destroy_read_struct( &png, &info_ptr, nullptr );
