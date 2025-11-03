@@ -436,6 +436,7 @@ void RageDisplay_GLES2::EndFrame()
 
 	// XXX: This is broken on NVidia, as their xrandr sucks.
 	// (comment may be outdated?)
+	SleepIfFocusLost();
 	g_pWind->SwapBuffers();
 
 	g_pWind->Update();

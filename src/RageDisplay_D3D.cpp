@@ -603,6 +603,7 @@ void RageDisplay_D3D::EndFrame()
 {
 	g_pd3dDevice->EndScene();
 
+	SleepIfFocusLost();
 	g_pd3dDevice->Present( 0, 0, 0, 0 );
 
 	RageDisplay::EndFrame();
