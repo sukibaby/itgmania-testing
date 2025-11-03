@@ -928,7 +928,7 @@ void RageDisplay::DrawCircle( const RageSpriteVertex &v, float radius )
 	this->DrawCircleInternal( v, radius );
 }
 
-void RageDisplay::SleepIfWaitingForVSync()
+void RageDisplay::SleepIfFocusLost()
 {
 	if( !HOOKS->AppHasFocus() )
 	{
