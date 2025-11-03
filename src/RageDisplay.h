@@ -453,6 +453,8 @@ protected:
 	const RageMatrix* GetViewTop() const;
 	const RageMatrix* GetWorldTop() const;
 	const RageMatrix* GetTextureTop() const;
+
+	void SleepIfFocusLost();
 };
 
 

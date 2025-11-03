@@ -894,6 +894,8 @@ void RageDisplay_Legacy::EndFrame()
 		CameraPopMatrix();
 	}
 
+	SleepIfFocusLost();
+
 	g_pWind->SwapBuffers();
 
 	// Some would advise against glFinish(), ever. Those people don't realize

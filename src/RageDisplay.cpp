@@ -928,6 +928,14 @@ void RageDisplay::DrawCircle( const RageSpriteVertex &v, float radius )
 	this->DrawCircleInternal( v, radius );
 }
 
+void RageDisplay::SleepIfFocusLost()
+{
+	if( !HOOKS->AppHasFocus() )
+	{
+		usleep( 20000 ); // 20ms
+	}
+}
+
 RageCompiledGeometry::~RageCompiledGeometry()
 {
 	m_bNeedsNormals = false;
