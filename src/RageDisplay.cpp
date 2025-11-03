@@ -928,40 +928,23 @@ void RageDisplay::DrawCircle( const RageSpriteVertex &v, float radius )
 	this->DrawCircleInternal( v, radius );
 }
 
-void RageDisplay::FrameLimitBeforeVsync( int iFPS )
+void RageDisplay::FrameLimitBeforeVsync( /*int iFPS*/ )
 {
-	ASSERT( iFPS != 0 );
+	//ASSERT( iFPS != 0 );
 
-	int iDelayMicroseconds = 0;
-	if( g_fFrameLimitPercent.Get() > 0.0f && !g_LastFrameEndedAt.IsZero() )
-	{
-		float fFrameTime = g_LastFrameEndedAt.GetDeltaTime();
-		float fExpectedTime = 1.0f / iFPS;
-
-		/* This is typically used to turn some of the delay that would normally
-		 * be waiting for vsync and turn it into a usleep, to make sure we give
-		 * up the CPU.  If we overshoot the sleep, then we'll miss the vsync,
-		 * so allow tweaking the amount of time we expect a frame to take.
-		 * Frame limiting is disabled by setting this to 0. */
-		fExpectedTime *= g_fFrameLimitPercent.Get();
-		float fExtraTime = fExpectedTime - fFrameTime;
-
-		iDelayMicroseconds = int(fExtraTime * 1000000);
-	}
-
+	// SwapInterval handles frame limiting when vsync is on.
+	// We just check for focus here and give the OS scheduler
+	// a chance to run other processes/threads if appropriate.
 	if( !HOOKS->AppHasFocus() )
-		iDelayMicroseconds = std::max( iDelayMicroseconds, 10000 ); // give some time to other processes and threads
-
-	if( iDelayMicroseconds > 0 )
-		usleep( iDelayMicroseconds );
+	{
+		usleep( 15000 );
+	}
 }
 
 void RageDisplay::FrameLimitAfterVsync()
 {
-	if( g_fFrameLimitPercent.Get() == 0.0f )
-		return;
-
-	g_LastFrameEndedAt.Touch();
+	// As stated above, frame timing is handled by the graphics driver's vsync.
+	// This function is kept for compatibility, but no longer needed.
 }
 
 

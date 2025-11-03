@@ -603,9 +603,9 @@ void RageDisplay_D3D::EndFrame()
 {
 	g_pd3dDevice->EndScene();
 
-	FrameLimitBeforeVsync( GetActualVideoModeParams().rate );
+	FrameLimitBeforeVsync();
 	g_pd3dDevice->Present( 0, 0, 0, 0 );
-	FrameLimitAfterVsync();
+	//FrameLimitAfterVsync(); - unused
 
 	RageDisplay::EndFrame();
 }
