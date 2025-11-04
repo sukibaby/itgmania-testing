@@ -472,7 +472,7 @@ void SMLoader::ParseBPMs( std::vector<std::pair<float, float>> &out, const RStri
 			continue;
 		}
 
-		out.push_back( std::make_pair(fBeat, fNewBPM) );
+		out.push_back( {fBeat, fNewBPM} );
 	}
 }
 
@@ -506,7 +506,7 @@ void SMLoader::ParseStops( std::vector<std::pair<float, float>> &out, const RStr
 			continue;
 		}
 
-		out.push_back( std::make_pair(fFreezeBeat, fFreezeSeconds) );
+		out.push_back( {fFreezeBeat, fFreezeSeconds} );
 	}
 }
 
