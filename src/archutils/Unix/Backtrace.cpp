@@ -403,7 +403,16 @@ void GetSignalBacktraceContext( BacktraceContext *ctx, const ucontext_t *uc )
 #elif defined(CPU_AARCH64)
 void GetSignalBacktraceContext( BacktraceContext *ctx, const ucontext_t *uc )
 {
-	// NYI
+#if defined(MACOSX)
+	ctx->ip = (void *) uc->uc_mcontext->__ss.__pc;
+	ctx->bp = (void *) uc->uc_mcontext->__ss.__fp;
+	ctx->sp = (void *) uc->uc_mcontext->__ss.__sp;
+#elif defined(LINUX)
+	ctx->ip = (void *) uc->uc_mcontext.pc;
+	ctx->bp = (void *) uc->uc_mcontext.regs[29]; // x29 is frame pointer
+	ctx->sp = (void *) uc->uc_mcontext.sp;
+#endif
+	ctx->pid = GetCurrentThreadId();
 }
 
 #else
@@ -741,6 +750,35 @@ void GetBacktrace( const void **buf, size_t size, const BacktraceContext *ctx )
 			buf[i++] = frame->linkReg;
 	}
 	buf[i] = nullptr;
+}
+
+#elif defined(BACKTRACE_METHOD_GENERIC_UNIX)
+#include <vector>
+#include <execinfo.h>
+
+void GetSignalBacktraceContext( BacktraceContext *ctx, const ucontext_t *uc ) { }
+
+void InitializeBacktrace() { }
+
+void GetBacktrace( const void **buf, size_t size, const BacktraceContext *ctx )
+{
+	if (!buf || size == 0) return;
+
+	// Ensure we can place a terminator.
+	if (size == 1) { buf[0] = nullptr; return; }
+
+	const size_t capacity = size - 1;
+	std::vector<void*> frames(capacity);
+
+	int n = backtrace(frames.data(), static_cast<int>(capacity));
+	if (n < 0) n = 0;
+
+	for (int i = 0; i < n; ++i)
+	{
+		buf[i] = frames[i];
+	}
+
+	buf[n] = nullptr;
 }
 
 #else
