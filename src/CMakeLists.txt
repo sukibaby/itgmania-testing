@@ -221,7 +221,6 @@ elseif(APPLE)
     "${SM_ROOT_DIR}/Data"
     "${SM_ROOT_DIR}/NoteSkins"
     "${SM_ROOT_DIR}/Scripts"
-    "${SM_ROOT_DIR}/Songs"
     "${SM_ROOT_DIR}/Themes"
   )
 
