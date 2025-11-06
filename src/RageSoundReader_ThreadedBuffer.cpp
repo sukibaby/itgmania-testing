@@ -7,6 +7,8 @@
 #include <algorithm>
 
 #include <cmath>
+#include <thread>
+#include <chrono>
 
 
 
@@ -226,10 +228,7 @@ void RageSoundReader_ThreadedBuffer::BufferingThread()
 
 		/* Sleep proportionately to the amount of data we buffered, so we
 		 * fill at a reasonable pace. */
-		float fTimeFilled = float(g_iReadBlockSizeFrames) / m_iSampleRate;
-		float fTimeToSleep = fTimeFilled / 2;
-		if( fTimeToSleep == 0 )
-			fTimeToSleep = float(g_iReadBlockSizeFrames) / m_iSampleRate;
+		const float fTimeToSleep = static_cast<float>(g_iReadBlockSizeFrames) / (m_iSampleRate * 2.0f);
 
 		if( m_Event.WaitTimeoutSupported() )
 		{
@@ -241,7 +240,9 @@ void RageSoundReader_ThreadedBuffer::BufferingThread()
 		else
 		{
 			m_Event.Unlock();
-			usleep( static_cast<int>((fTimeToSleep * 1000000) + 0.5) );
+			const auto sleep_duration = std::chrono::duration_cast<std::chrono::microseconds>(
+				std::chrono::duration<float>(fTimeToSleep));
+			std::this_thread::sleep_for(sleep_duration);
 			m_Event.Lock();
 		}
 	}
