@@ -92,29 +92,27 @@ static float GetNoteFieldHeight()
 	return SCREEN_HEIGHT + std::abs(curr_options->m_fPerspectiveTilt)*200;
 }
 
-float ArrowEffects::GetTime()
+uint64_t ArrowEffects::GetTime()
 {
-	double mult = 1.0 + static_cast<double>(curr_options->m_fModTimerMult);
-	double offset = static_cast<double>(curr_options->m_fModTimerOffset);
-	ModTimerType modtimer = curr_options->m_ModTimerType;
-	double returned_time = 0;
-	switch(modtimer)
-	{
-		case ModTimerType_Default:
-		case ModTimerType_Game:
-			returned_time = (RageTimer::GetTimeSinceStart() + offset) * mult;
-			break;
-		case ModTimerType_Beat:
-			returned_time = (static_cast<double>(GAMESTATE->m_Position.m_fSongBeatVisible) + offset) * mult;
-			break;
-		case ModTimerType_Song:
-			returned_time = (static_cast<double>(GAMESTATE->m_Position.m_fMusicSeconds) + offset) * mult;
-			break;
-		default:
-			returned_time = RageTimer::GetTimeSinceStart() + offset;
-			break;
+	const double mult = 1.0 + curr_options->m_fModTimerMult;
+	const double offset = curr_options->m_fModTimerOffset;
+	const ModTimerType modtimer = curr_options->m_ModTimerType;
+	
+	if (modtimer <= ModTimerType_Game || modtimer == ModTimerType_Default) {
+		const uint64_t offset_us = static_cast<uint64_t>(offset * 1000000.0);
+		const uint64_t base_time_us = RageTimer::GetTimeSinceStartMicroseconds() + offset_us;
+		return static_cast<uint64_t>(static_cast<double>(base_time_us) * mult);
 	}
-	return static_cast<float>(returned_time);
+	
+	if (modtimer == ModTimerType_Beat) {
+		return static_cast<uint64_t>((GAMESTATE->m_Position.m_fSongBeatVisible + offset) * mult * 1000000.0);
+	}
+	
+	if (modtimer == ModTimerType_Song) {
+		return static_cast<uint64_t>((GAMESTATE->m_Position.m_fMusicSeconds + offset) * mult * 1000000.0);
+	}
+	
+	return RageTimer::GetTimeSinceStartMicroseconds() + static_cast<uint64_t>(offset * 1000000.0);
 }
 
 namespace
@@ -185,7 +183,8 @@ static float CalculateTornadoOffsetFromMagnitude(int dimension, int col_id,
 static float CalculateDrunkAngle(float speed, int col, float offset,
 	float col_frequency, float y_offset, float period, float offset_frequency)
 {
-	float time = ArrowEffects::GetTime();
+	const uint64_t time_us = ArrowEffects::GetTime();
+	float time = static_cast<float>(time_us) / 1000000.0f;
 	return time * (1+speed) + col*( (offset*col_frequency) + col_frequency)
 		+ y_offset * ( (period*offset_frequency) + offset_frequency) / SCREEN_HEIGHT;
 }
@@ -235,7 +234,8 @@ static void UpdateBeat(int dimension, PerPlayerData &data, const SongPosition &p
 
 static void UpdateTipsy(float * tipsy_result, float * tipsy_offset_result, float offset, float speed, bool is_tan)
 {
-	const float time= ArrowEffects::GetTime();
+	const uint64_t time_us = ArrowEffects::GetTime();
+	float time = static_cast<float>(time_us) / 1000000.0f;
 	const float time_times_timer= time * ((speed * TIPSY_TIMER_FREQUENCY) + TIPSY_TIMER_FREQUENCY);
 	const float arrow_times_mag= ARROW_SIZE * TIPSY_ARROW_MAGNITUDE;
 	const float time_times_offset_timer= time *
@@ -1119,7 +1119,8 @@ float ArrowGetPercentVisible(float fYPosWithoutReverse, int iCol, float fYOffset
 	}
 	if( fAppearances[PlayerOptions::APPEARANCE_BLINK] != 0 )
 	{
-		float f = std::sin(ArrowEffects::GetTime()*10);
+		float time_sec = static_cast<float>(ArrowEffects::GetTime()) / 1000000.0f;
+		float f = std::sin(time_sec*10);
 		f = Quantize( f, BLINK_MOD_FREQUENCY );
 		fVisibleAdjust += SCALE( f, 0, 1, -1, 0 );
 	}
