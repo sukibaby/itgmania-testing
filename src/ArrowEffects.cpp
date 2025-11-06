@@ -17,6 +17,7 @@
 #include <cmath>
 #include <cstddef>
 #include <vector>
+#include <chrono>
 
 
 static char const dimension_names[4]= "XYZ";
@@ -52,6 +53,15 @@ static ThemeMetric<float>	TIPSY_ARROW_MAGNITUDE( "ArrowEffects", "TipsyArrowMagn
 static ThemeMetric<float>	TIPSY_OFFSET_TIMER_FREQUENCY( "ArrowEffects", "TipsyOffsetTimerFrequency" );
 static ThemeMetric<float>	TIPSY_OFFSET_COLUMN_FREQUENCY( "ArrowEffects", "TipsyOffsetColumnFrequency" );
 static ThemeMetric<float>	TIPSY_OFFSET_ARROW_MAGNITUDE( "ArrowEffects", "TipsyOffsetArrowMagnitude" );
+
+// Helper: Get elapsed time in seconds since process start using high_resolution_clock
+static double GetElapsedSeconds()
+{
+	static const auto start_time = std::chrono::high_resolution_clock::now();
+	const auto now = std::chrono::high_resolution_clock::now();
+	const auto duration = now - start_time;
+	return std::chrono::duration<double>(duration).count();
+}
 
 static RString TPSTL_NAME(size_t i) { return ssprintf("Tornado%cPositionScaleToLow", dimension_names[i]); }
 static ThemeMetric1D<float> TORNADO_POSITION_SCALE_TO_LOW("ArrowEffects", TPSTL_NAME, 3);
@@ -102,7 +112,7 @@ float ArrowEffects::GetTime()
 	{
 		case ModTimerType_Default:
 		case ModTimerType_Game:
-			returned_time = (RageTimer::GetTimeSinceStart() + offset) * mult;
+			returned_time = (GetElapsedSeconds() + offset) * mult;
 			break;
 		case ModTimerType_Beat:
 			returned_time = (static_cast<double>(GAMESTATE->m_Position.m_fSongBeatVisible) + offset) * mult;
@@ -111,7 +121,7 @@ float ArrowEffects::GetTime()
 			returned_time = (static_cast<double>(GAMESTATE->m_Position.m_fMusicSeconds) + offset) * mult;
 			break;
 		default:
-			returned_time = RageTimer::GetTimeSinceStart() + offset;
+			returned_time = GetElapsedSeconds() + offset;
 			break;
 	}
 	return static_cast<float>(returned_time);
@@ -322,7 +332,7 @@ void ArrowEffects::Init(PlayerNumber pn)
 void ArrowEffects::Update()
 {
 	static double fLastTime = 0.0;
-	double fTime = RageTimer::GetTimeSinceStart();
+	double fTime = GetElapsedSeconds();
 
 	FOREACH_EnabledPlayer( pn )
 	{

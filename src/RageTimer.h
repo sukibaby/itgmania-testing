@@ -38,6 +38,12 @@ public:
 	static double GetTimeSinceStart();	// seconds since the program was started
 	static int GetTimeSinceStartSeconds(); 	// This is used where GetTimeSinceStart would be cast to an int without rounding.
 	static uint64_t GetTimeSinceStartMicroseconds();
+	
+	// Updates the cached frame time. Call this once per frame at the start to avoid repeated system calls.
+	static void UpdateFrameTime();
+	
+	// Returns the cached frame time. Must call UpdateFrameTime() first, typically at frame start.
+	static double GetFrameTime();
 
 	/* Get a timer representing half of the time ago as this one. */
 	RageTimer Half() const;

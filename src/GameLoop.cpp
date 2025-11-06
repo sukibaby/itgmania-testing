@@ -247,6 +247,8 @@ namespace
 
 void GameLoop::UpdateAllButDraw(bool bRunningFromVBLANK)
 {
+	RageTimer::UpdateFrameTime();
+	
 	// Flag to indicate whether an update has been processed during the VBLANK period.
 	static bool m_bUpdatedDuringVBLANK = false;
 
@@ -268,7 +270,7 @@ void GameLoop::UpdateAllButDraw(bool bRunningFromVBLANK)
 	{
 		m_bUpdatedDuringVBLANK = false;
 	}
-
+	
 	// If the constant update delta is set, use that value. Otherwise, use the delta
 	// time from the gameplay timer.
 	float fDeltaTime = (g_fConstantUpdateDeltaSeconds > 0) 
