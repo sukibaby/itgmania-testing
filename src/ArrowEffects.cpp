@@ -85,7 +85,7 @@ static ThemeMetric<float>	TINY_PERCENT_GATE( "ArrowEffects", "TinyPercentGate" )
 
 static const PlayerOptions* curr_options= nullptr;
 
-float ArrowGetPercentVisible(float fYPosWithoutReverse, int iCol, float fYOffset);
+float ArrowGetPercentVisible(float fYPosWithoutReverse, int iCol, float fYOffset, float cached_time_sec);
 
 static float GetNoteFieldHeight()
 {
@@ -141,6 +141,10 @@ namespace
 		// they all call Init after changing style is non-trivial and more likely
 		// to cause bugs. -Kyz
 		Style const* m_prev_style;
+		
+		// Cached time value to avoid multiple conversions per frame
+		uint64_t m_cached_time_us;
+		float m_cached_time_sec;
 	};
 	PerPlayerData g_EffectData[NUM_PLAYERS];
 	int const dim_x= 0;
@@ -187,11 +191,9 @@ static float CalculateTornadoOffsetFromMagnitude(int dimension, int col_id,
 }
 
 static float CalculateDrunkAngle(float speed, int col, float offset,
-	float col_frequency, float y_offset, float period, float offset_frequency)
+	float col_frequency, float y_offset, float period, float offset_frequency, float time_sec)
 {
-	const uint64_t time_us = ArrowEffects::GetTime();
-	float time = static_cast<float>(time_us) / 1000000.0f;
-	return time * (1+speed) + col*( (offset*col_frequency) + col_frequency)
+	return time_sec * (1+speed) + col*( (offset*col_frequency) + col_frequency)
 		+ y_offset * ( (period*offset_frequency) + offset_frequency) / SCREEN_HEIGHT;
 }
 
@@ -238,13 +240,11 @@ static void UpdateBeat(int dimension, PerPlayerData &data, const SongPosition &p
 	data.m_fBeatFactor[dimension] *= 20.0f;
 }
 
-static void UpdateTipsy(float * tipsy_result, float * tipsy_offset_result, float offset, float speed, bool is_tan)
+static void UpdateTipsy(float * tipsy_result, float * tipsy_offset_result, float offset, float speed, bool is_tan, float time_sec)
 {
-	const uint64_t time_us = ArrowEffects::GetTime();
-	float time = static_cast<float>(time_us) / 1000000.0f;
-	const float time_times_timer= time * ((speed * TIPSY_TIMER_FREQUENCY) + TIPSY_TIMER_FREQUENCY);
+	const float time_times_timer= time_sec * ((speed * TIPSY_TIMER_FREQUENCY) + TIPSY_TIMER_FREQUENCY);
 	const float arrow_times_mag= ARROW_SIZE * TIPSY_ARROW_MAGNITUDE;
-	const float time_times_offset_timer= time *
+	const float time_times_offset_timer= time_sec *
 		TIPSY_OFFSET_TIMER_FREQUENCY;
 	const float arrow_times_offset_mag= ARROW_SIZE *
 		TIPSY_OFFSET_ARROW_MAGNITUDE;
@@ -347,6 +347,9 @@ void ArrowEffects::Update()
 			data.m_prev_style= pStyle;
 		}
 
+		data.m_cached_time_us = GetTime();
+		data.m_cached_time_sec = static_cast<float>(data.m_cached_time_us) / 1000000.0f;
+
 		if( !position.m_bFreeze || !position.m_bDelay )
 		{
 			data.m_fExpandSeconds += fTime - fLastTime;
@@ -404,7 +407,7 @@ void ArrowEffects::Update()
 		{
 			UpdateTipsy(data.m_tipsy_result, data.m_tipsy_offset_result,
 				    effects[PlayerOptions::EFFECT_TIPSY_OFFSET],
-				    effects[PlayerOptions::EFFECT_TIPSY_SPEED], false);
+				    effects[PlayerOptions::EFFECT_TIPSY_SPEED], false, data.m_cached_time_sec);
 		}
 		else
 		{
@@ -419,7 +422,7 @@ void ArrowEffects::Update()
 		{
 			UpdateTipsy(data.m_tan_tipsy_result, data.m_tan_tipsy_offset_result,
 				    effects[PlayerOptions::EFFECT_TAN_TIPSY_OFFSET],
-				    effects[PlayerOptions::EFFECT_TAN_TIPSY_SPEED], true);
+				    effects[PlayerOptions::EFFECT_TAN_TIPSY_SPEED], true, data.m_cached_time_sec);
 		}
 		else
 		{
@@ -748,19 +751,25 @@ float ArrowEffects::GetXPos( const PlayerState* pPlayerState, int iColNum, float
 			fEffects[PlayerOptions::EFFECT_TAN_BUMPY_X_PERIOD]), curr_options->m_bCosecant );
 
 	if( fEffects[PlayerOptions::EFFECT_DRUNK] != 0 )
+	{
+		PerPlayerData& data = g_EffectData[pPlayerState->m_PlayerNumber];
 		fPixelOffsetFromCenter += fEffects[PlayerOptions::EFFECT_DRUNK] *
 			( std::cos( CalculateDrunkAngle(fEffects[PlayerOptions::EFFECT_DRUNK_SPEED], iColNum,
 					fEffects[PlayerOptions::EFFECT_DRUNK_OFFSET], DRUNK_COLUMN_FREQUENCY,
 					fYOffset, fEffects[PlayerOptions::EFFECT_DRUNK_PERIOD],
-					DRUNK_OFFSET_FREQUENCY) ) * ARROW_SIZE*DRUNK_ARROW_MAGNITUDE );
+					DRUNK_OFFSET_FREQUENCY, data.m_cached_time_sec) ) * ARROW_SIZE*DRUNK_ARROW_MAGNITUDE );
+	}
 
 	if( fEffects[PlayerOptions::EFFECT_TAN_DRUNK] != 0 )
+	{
+		PerPlayerData& data = g_EffectData[pPlayerState->m_PlayerNumber];
 		fPixelOffsetFromCenter += fEffects[PlayerOptions::EFFECT_TAN_DRUNK] *
 			( SelectTanType( CalculateDrunkAngle(fEffects[PlayerOptions::EFFECT_TAN_DRUNK_SPEED],
 					iColNum, fEffects[PlayerOptions::EFFECT_TAN_DRUNK_OFFSET],
 					DRUNK_COLUMN_FREQUENCY, fYOffset,
-					fEffects[PlayerOptions::EFFECT_TAN_DRUNK_PERIOD], DRUNK_OFFSET_FREQUENCY)
+					fEffects[PlayerOptions::EFFECT_TAN_DRUNK_PERIOD], DRUNK_OFFSET_FREQUENCY, data.m_cached_time_sec)
 					, curr_options->m_bCosecant) * ARROW_SIZE*DRUNK_ARROW_MAGNITUDE );
+	}
 
 	if( fEffects[PlayerOptions::EFFECT_FLIP] != 0 )
 	{
@@ -1087,7 +1096,7 @@ static float GetSuddenStartLine()
 }
 
 // used by ArrowGetAlpha and ArrowGetGlow below
-float ArrowGetPercentVisible(float fYPosWithoutReverse, int iCol, float fYOffset)
+float ArrowGetPercentVisible(float fYPosWithoutReverse, int iCol, float fYOffset, float cached_time_sec)
 {
 	const float fDistFromCenterLine = fYPosWithoutReverse - GetCenterLine();
 
@@ -1125,8 +1134,7 @@ float ArrowGetPercentVisible(float fYPosWithoutReverse, int iCol, float fYOffset
 	}
 	if( fAppearances[PlayerOptions::APPEARANCE_BLINK] != 0 )
 	{
-		float time_sec = static_cast<float>(ArrowEffects::GetTime()) / 1000000.0f;
-		float f = std::sin(time_sec*10);
+		float f = std::sin(cached_time_sec*10);
 		f = Quantize( f, BLINK_MOD_FREQUENCY );
 		fVisibleAdjust += SCALE( f, 0, 1, -1, 0 );
 	}
@@ -1137,7 +1145,10 @@ float ArrowGetPercentVisible(float fYPosWithoutReverse, int iCol, float fYOffset
 			* fAppearances[PlayerOptions::APPEARANCE_RANDOMVANISH];
 	}
 
-	return std::clamp(1 + fVisibleAdjust, 0.0f, 1.0f);
+	float fResult = 1 + fVisibleAdjust;
+	if (fResult < 0.0f) fResult = 0.0f;
+	if (fResult > 1.0f) fResult = 1.0f;
+	return fResult;
 }
 
 float ArrowEffects::GetAlpha( const PlayerState* pPlayerState, int iCol, float fYOffset, float fPercentFadeToFail, float fYReverseOffsetPixels, float fDrawDistanceBeforeTargetsPixels, float fFadeInPercentOfDrawFar)
@@ -1145,7 +1156,8 @@ float ArrowEffects::GetAlpha( const PlayerState* pPlayerState, int iCol, float f
 	// Get the YPos without reverse (that is, factor in EFFECT_TIPSY).
 	float fYPosWithoutReverse = ArrowEffects::GetYPos(pPlayerState, iCol, fYOffset, fYReverseOffsetPixels, false );
 
-	float fPercentVisible = ArrowGetPercentVisible(fYPosWithoutReverse, iCol, fYOffset);
+	PerPlayerData& data = g_EffectData[pPlayerState->m_PlayerNumber];
+	float fPercentVisible = ArrowGetPercentVisible(fYPosWithoutReverse, iCol, fYOffset, data.m_cached_time_sec);
 
 	if( fPercentFadeToFail != -1 )
 		fPercentVisible = 1 - fPercentFadeToFail;
@@ -1165,7 +1177,8 @@ float ArrowEffects::GetGlow( const PlayerState* pPlayerState, int iCol, float fY
 	// Get the YPos without reverse (that is, factor in EFFECT_TIPSY).
 	float fYPosWithoutReverse = ArrowEffects::GetYPos(pPlayerState, iCol, fYOffset, fYReverseOffsetPixels, false );
 
-	float fPercentVisible = ArrowGetPercentVisible(fYPosWithoutReverse, iCol, fYOffset);
+	PerPlayerData& data = g_EffectData[pPlayerState->m_PlayerNumber];
+	float fPercentVisible = ArrowGetPercentVisible(fYPosWithoutReverse, iCol, fYOffset, data.m_cached_time_sec);
 
 	if( fPercentFadeToFail != -1 )
 		fPercentVisible = 1 - fPercentFadeToFail;
@@ -1257,20 +1270,26 @@ float ArrowEffects::GetZPos( const PlayerState* pPlayerState, int iCol, float fY
 	}
 
 	if( fEffects[PlayerOptions::EFFECT_DRUNK_Z] != 0 )
+	{
+		PerPlayerData& data = g_EffectData[pPlayerState->m_PlayerNumber];
 		fZPos += fEffects[PlayerOptions::EFFECT_DRUNK_Z] *
 			( std::cos( CalculateDrunkAngle(fEffects[PlayerOptions::EFFECT_DRUNK_Z_SPEED], iCol,
 					fEffects[PlayerOptions::EFFECT_DRUNK_Z_OFFSET], DRUNK_Z_COLUMN_FREQUENCY,
 					fYOffset, fEffects[PlayerOptions::EFFECT_DRUNK_Z_PERIOD],
-					DRUNK_Z_OFFSET_FREQUENCY) ) * ARROW_SIZE*DRUNK_Z_ARROW_MAGNITUDE );
+					DRUNK_Z_OFFSET_FREQUENCY, data.m_cached_time_sec) ) * ARROW_SIZE*DRUNK_Z_ARROW_MAGNITUDE );
+	}
 
 	if( fEffects[PlayerOptions::EFFECT_TAN_DRUNK_Z] != 0 )
+	{
+		PerPlayerData& data = g_EffectData[pPlayerState->m_PlayerNumber];
 		fZPos += fEffects[PlayerOptions::EFFECT_TAN_DRUNK_Z] *
 			( SelectTanType( CalculateDrunkAngle(fEffects[PlayerOptions::EFFECT_TAN_DRUNK_Z_SPEED],
 					iCol, fEffects[PlayerOptions::EFFECT_TAN_DRUNK_Z_OFFSET],
 					DRUNK_Z_COLUMN_FREQUENCY, fYOffset,
 					fEffects[PlayerOptions::EFFECT_TAN_DRUNK_Z_PERIOD],
-					DRUNK_Z_OFFSET_FREQUENCY)
+					DRUNK_Z_OFFSET_FREQUENCY, data.m_cached_time_sec)
 					, curr_options->m_bCosecant) * ARROW_SIZE*DRUNK_Z_ARROW_MAGNITUDE );
+	}
 
 	if( fEffects[PlayerOptions::EFFECT_BEAT_Z] != 0 )
 	{
