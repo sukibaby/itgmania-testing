@@ -659,14 +659,13 @@ float ArrowEffects::GetYPos( const PlayerState* pPlayerState, int iCol, float fY
 	if( fEffects[PlayerOptions::EFFECT_ATTENUATE_Y] != 0 )
 	{
 		const float fXOffset = pCols[iCol].fXOffset;
-		const float fYOffsetOverArrowSize = fYOffset/ARROW_SIZE;
-		f += fEffects[PlayerOptions::EFFECT_ATTENUATE_Y] * (fYOffsetOverArrowSize * fYOffsetOverArrowSize) * (fXOffset/ARROW_SIZE);
+		f += fEffects[PlayerOptions::EFFECT_ATTENUATE_Y] * (fYOffset/ARROW_SIZE) * (fYOffset/ARROW_SIZE) * (fXOffset/ARROW_SIZE);
 	}
 
 
 	if( fEffects[PlayerOptions::EFFECT_BEAT_Y] != 0 )
 	{
-		const float fShift = data.m_fBeatFactor[dim_y]*std::sin( fYOffset / ((fEffects[PlayerOptions::EFFECT_BEAT_Y_PERIOD] + 1) * BEAT_Y_OFFSET_HEIGHT) + PI/BEAT_Y_PI_HEIGHT );
+		const float fShift = data.m_fBeatFactor[dim_y]*std::sin( fYOffset / ((fEffects[PlayerOptions::EFFECT_BEAT_Y_PERIOD]*BEAT_Y_OFFSET_HEIGHT)+BEAT_Y_OFFSET_HEIGHT) + PI/BEAT_Y_PI_HEIGHT );
 		f += fEffects[PlayerOptions::EFFECT_BEAT_Y] * fShift;
 	}
 
