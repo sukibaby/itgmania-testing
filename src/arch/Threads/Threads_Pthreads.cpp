@@ -356,8 +356,10 @@ bool EventImpl_Pthreads::Wait( RageTimer *pTimeout )
 		/* If we support condattr_setclock, we'll set the condition to use
 		 * the same clock as RageTimer and can use it directly. If the
 		 * clock is CLOCK_REALTIME, that's the default anyway. */
-		abstime.tv_sec = pTimeout->m_secs;
-		abstime.tv_nsec = pTimeout->m_us * 1000;
+		auto duration = pTimeout->m_time_point - g_StartTime;
+		auto total_us = std::chrono::duration_cast<std::chrono::microseconds>(duration).count();
+		abstime.tv_sec = total_us / 1000000ULL;
+		abstime.tv_nsec = (total_us % 1000000ULL) * 1000;
 	}
 	else
 	{
@@ -370,8 +372,10 @@ bool EventImpl_Pthreads::Wait( RageTimer *pTimeout )
 		float fSecondsInFuture = -pTimeout->Ago();
 		timeofday += fSecondsInFuture;
 
-		abstime.tv_sec = timeofday.m_secs;
-		abstime.tv_nsec = timeofday.m_us * 1000;
+		auto duration = timeofday.m_time_point - g_StartTime;
+		auto total_us = std::chrono::duration_cast<std::chrono::microseconds>(duration).count();
+		abstime.tv_sec = total_us / 1000000ULL;
+		abstime.tv_nsec = (total_us % 1000000ULL) * 1000;
 	}
 
 	int iRet = pthread_cond_timedwait( &m_Cond, &m_pParent->mutex, &abstime );

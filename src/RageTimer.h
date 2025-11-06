@@ -3,23 +3,37 @@
 #ifndef RAGE_TIMER_H
 #define RAGE_TIMER_H
 
+#include <chrono>
 #include <cstdint>
+
+// Forward declaration - defined in RageTimer.cpp
+extern const std::chrono::steady_clock::time_point g_StartTime;
 
 class RageTimer
 {
 public:
 	/* Initialize the m_secs and m_us values to 0 and then fill them with the current time. */
-	RageTimer(): m_secs(0), m_us(0) { Touch(); }
-	RageTimer( uint64_t secs, uint64_t us ): m_secs(secs), m_us(us) { }
+    RageTimer() : m_time_point(std::chrono::steady_clock::now()) {}
+    RageTimer(uint64_t secs, uint64_t us) : m_time_point(g_StartTime + std::chrono::seconds(secs) + std::chrono::microseconds(us)) {}
 
 	/* Time ago this RageTimer represents. */
-	float Ago() const;
+	inline float Ago() const
+	{
+		const auto duration = std::chrono::steady_clock::now() - m_time_point;
+		return std::chrono::duration<float>(duration).count();
+	}
 	void Touch();
-	inline bool IsZero() const { return m_secs == 0 && m_us == 0; }
-	inline void SetZero() { m_secs = m_us = 0; }
+	inline bool IsZero() const { return m_time_point == g_StartTime; }
+	inline void SetZero() { m_time_point = g_StartTime; }
 
 	/* Time between last call to GetDeltaTime() (Ago() + Touch()): */
-	float GetDeltaTime();
+	inline float GetDeltaTime()
+	{
+		const auto now = std::chrono::steady_clock::now();
+		const auto duration = now - m_time_point;
+		m_time_point = now;
+		return std::chrono::duration<float>(duration).count();
+	}
 
 	static double GetTimeSinceStart();	// seconds since the program was started
 	static int GetTimeSinceStartSeconds(); 	// This is used where GetTimeSinceStart would be cast to an int without rounding.
@@ -37,17 +51,17 @@ public:
 	/* Find the amount of time between two timestamps.  The result is a duration. */
 	float operator-( const RageTimer &rhs ) const;
 
-	bool operator<( const RageTimer &rhs ) const;
+    bool operator<(const RageTimer &rhs) const { return m_time_point < rhs.m_time_point; }
 
 	/* The following is a "time since start" RageTimer. Splitting the seconds and
 	 * microseconds values into two integers and combining them later allows for
 	 * better precision. Use caution when changing data types, since resolution
 	 * mismatch errors are easy to cause when changing things in RageTimer. */
-	uint64_t m_secs, m_us;
+	std::chrono::steady_clock::time_point m_time_point;
 
 private:
-	static RageTimer Sum( const RageTimer &lhs, float tm );
-	static double Difference( const RageTimer &lhs, const RageTimer &rhs );
+	/* Private constructor for internal use - takes a time_point directly. */
+	explicit RageTimer(std::chrono::steady_clock::time_point tp) : m_time_point(tp) {}
 };
 
 extern const RageTimer RageZeroTimer;
