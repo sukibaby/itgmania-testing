@@ -98,10 +98,10 @@ uint64_t ArrowEffects::GetTime()
 	const double offset = curr_options->m_fModTimerOffset;
 	const ModTimerType modtimer = curr_options->m_ModTimerType;
 	
-	if (modtimer <= ModTimerType_Game) {
+	if (modtimer <= ModTimerType_Game || modtimer == ModTimerType_Default) {
 		const uint64_t offset_us = static_cast<uint64_t>(offset * 1000000.0);
-		const double time_us = static_cast<double>(RageTimer::GetTimeSinceStartMicroseconds() + offset_us);
-		return static_cast<uint64_t>(time_us * mult);
+		const uint64_t base_time_us = RageTimer::GetTimeSinceStartMicroseconds() + offset_us;
+		return static_cast<uint64_t>(static_cast<double>(base_time_us) * mult);
 	}
 	
 	if (modtimer == ModTimerType_Beat) {
@@ -183,7 +183,7 @@ static float CalculateTornadoOffsetFromMagnitude(int dimension, int col_id,
 static float CalculateDrunkAngle(float speed, int col, float offset,
 	float col_frequency, float y_offset, float period, float offset_frequency)
 {
-	uint64_t time_us = ArrowEffects::GetTime();
+	const uint64_t time_us = ArrowEffects::GetTime();
 	float time = static_cast<float>(time_us) / 1000000.0f;
 	return time * (1+speed) + col*( (offset*col_frequency) + col_frequency)
 		+ y_offset * ( (period*offset_frequency) + offset_frequency) / SCREEN_HEIGHT;
@@ -234,7 +234,7 @@ static void UpdateBeat(int dimension, PerPlayerData &data, const SongPosition &p
 
 static void UpdateTipsy(float * tipsy_result, float * tipsy_offset_result, float offset, float speed, bool is_tan)
 {
-	uint64_t time_us = ArrowEffects::GetTime();
+	const uint64_t time_us = ArrowEffects::GetTime();
 	float time = static_cast<float>(time_us) / 1000000.0f;
 	const float time_times_timer= time * ((speed * TIPSY_TIMER_FREQUENCY) + TIPSY_TIMER_FREQUENCY);
 	const float arrow_times_mag= ARROW_SIZE * TIPSY_ARROW_MAGNITUDE;
@@ -1131,10 +1131,7 @@ float ArrowGetPercentVisible(float fYPosWithoutReverse, int iCol, float fYOffset
 			* fAppearances[PlayerOptions::APPEARANCE_RANDOMVANISH];
 	}
 
-	float fResult = 1 + fVisibleAdjust;
-	if (fResult < 0.0f) fResult = 0.0f;
-	if (fResult > 1.0f) fResult = 1.0f;
-	return fResult;
+	return std::clamp(1 + fVisibleAdjust, 0.0f, 1.0f);
 }
 
 float ArrowEffects::GetAlpha( const PlayerState* pPlayerState, int iCol, float fYOffset, float fPercentFadeToFail, float fYReverseOffsetPixels, float fDrawDistanceBeforeTargetsPixels, float fFadeInPercentOfDrawFar)
