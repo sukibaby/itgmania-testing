@@ -97,28 +97,22 @@ uint64_t ArrowEffects::GetTime()
 	const double mult = 1.0 + curr_options->m_fModTimerMult;
 	const double offset = curr_options->m_fModTimerOffset;
 	const ModTimerType modtimer = curr_options->m_ModTimerType;
-	uint64_t returned_time = 0;
-	switch(modtimer)
-	{
-		case ModTimerType_Default:
-		case ModTimerType_Game:
-		{
-			const uint64_t offset_us = static_cast<uint64_t>(offset * 1000000.0);
-			const double time_us = static_cast<double>(RageTimer::GetTimeSinceStartMicroseconds() + offset_us);
-			returned_time = static_cast<uint64_t>(time_us * mult);
-			break;
-		}
-		case ModTimerType_Beat:
-			returned_time = static_cast<uint64_t>((GAMESTATE->m_Position.m_fSongBeatVisible + offset) * mult * 1000000.0);
-			break;
-		case ModTimerType_Song:
-			returned_time = static_cast<uint64_t>((GAMESTATE->m_Position.m_fMusicSeconds + offset) * mult * 1000000.0);
-			break;
-		default:
-			returned_time = RageTimer::GetTimeSinceStartMicroseconds() + static_cast<uint64_t>(offset * 1000000.0);
-			break;
+	
+	if (modtimer <= ModTimerType_Game) {
+		const uint64_t offset_us = static_cast<uint64_t>(offset * 1000000.0);
+		const double time_us = static_cast<double>(RageTimer::GetTimeSinceStartMicroseconds() + offset_us);
+		return static_cast<uint64_t>(time_us * mult);
 	}
-	return returned_time;
+	
+	if (modtimer == ModTimerType_Beat) {
+		return static_cast<uint64_t>((GAMESTATE->m_Position.m_fSongBeatVisible + offset) * mult * 1000000.0);
+	}
+	
+	if (modtimer == ModTimerType_Song) {
+		return static_cast<uint64_t>((GAMESTATE->m_Position.m_fMusicSeconds + offset) * mult * 1000000.0);
+	}
+	
+	return RageTimer::GetTimeSinceStartMicroseconds() + static_cast<uint64_t>(offset * 1000000.0);
 }
 
 namespace
