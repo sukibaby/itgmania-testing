@@ -31,37 +31,43 @@
 #include <cstdint>
 #include <chrono>
 
-// Intialize important variables and definitions
-constexpr uint64_t ONE_SECOND_IN_MICROSECONDS_ULL = 1000000ULL;
-constexpr int64_t ONE_SECOND_IN_MICROSECONDS_LL = 1000000LL;
-constexpr double ONE_SECOND_IN_MICROSECONDS_DBL = 1000000.0;
+const std::chrono::steady_clock::time_point &RageTimerStartTime()
+{
+    static const auto start = std::chrono::steady_clock::now();
+    return start;
+}
+
 const RageTimer RageZeroTimer(0,0);
-const std::chrono::steady_clock::time_point g_StartTime = std::chrono::steady_clock::now();
 
 static inline std::chrono::steady_clock::time_point GetTime() noexcept
 {
     return std::chrono::steady_clock::now();
 }
 
+// Returns the time in seconds since the program started, as a double.
+// Therefore 10000.0 would mean the program has been running for 164 minutes and 40 seconds.
 double RageTimer::GetTimeSinceStart()
 {
     const auto now = GetTime();
-    const auto duration = now - g_StartTime;
+    const auto duration = now - RageTimerStartTime();
     return std::chrono::duration<double>(duration).count();
 }
 
+// Returns the time in seconds since the program started, as an integer.
+// Therefore 10000 would mean the program has been running for 164 minutes and 40 seconds.
 int RageTimer::GetTimeSinceStartSeconds()
 {
     const auto now = GetTime();
-    const auto duration = now - g_StartTime;
+    const auto duration = now - RageTimerStartTime();
     return static_cast<int>(std::chrono::duration_cast<std::chrono::seconds>(duration).count());
 }
 
-
+// Returns the time in microseconds since the program started, as an integer.
+// Therefore 10000000 would mean the program has been running for 164 minutes and 40 seconds.
 uint64_t RageTimer::GetTimeSinceStartMicroseconds()
 {
     const auto now = GetTime();
-    const auto duration = now - g_StartTime;
+    const auto duration = now - RageTimerStartTime();
     return std::chrono::duration_cast<std::chrono::microseconds>(duration).count();
 }
 

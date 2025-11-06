@@ -6,15 +6,15 @@
 #include <chrono>
 #include <cstdint>
 
-// Forward declaration - defined in RageTimer.cpp
-extern const std::chrono::steady_clock::time_point g_StartTime;
+// Returns the process-wide steady clock start time.
+const std::chrono::steady_clock::time_point &RageTimerStartTime();
 
 class RageTimer
 {
 public:
 	/* Initialize the m_secs and m_us values to 0 and then fill them with the current time. */
-    RageTimer() : m_time_point(std::chrono::steady_clock::now()) {}
-    RageTimer(uint64_t secs, uint64_t us) : m_time_point(g_StartTime + std::chrono::seconds(secs) + std::chrono::microseconds(us)) {}
+	RageTimer() : m_time_point(std::chrono::steady_clock::now()) {}
+	RageTimer(uint64_t secs, uint64_t us) : m_time_point(RageTimerStartTime() + std::chrono::seconds(secs) + std::chrono::microseconds(us)) {}
 
 	/* Time ago this RageTimer represents. */
 	inline float Ago() const
@@ -23,8 +23,8 @@ public:
 		return std::chrono::duration<float>(duration).count();
 	}
 	void Touch();
-	inline bool IsZero() const { return m_time_point == g_StartTime; }
-	inline void SetZero() { m_time_point = g_StartTime; }
+	inline bool IsZero() const { return m_time_point == RageTimerStartTime(); }
+	inline void SetZero() { m_time_point = RageTimerStartTime(); }
 
 	/* Time between last call to GetDeltaTime() (Ago() + Touch()): */
 	inline float GetDeltaTime()
