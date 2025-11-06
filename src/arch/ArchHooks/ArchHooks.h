@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <ctime>
+#include <vector>
 
 struct lua_State;
 class ArchHooks
@@ -98,6 +99,10 @@ public:
 	 * Add file search paths for user-writable directories.
 	 */
 	static void MountUserFilesystems( const RString &sDirOfExecutable );
+
+	static void MountDirectories(const RString& baseDir);
+
+	static const std::vector<RString> g_DirectoryStructureITGM;
 
 	/*
 	 * Platform-specific code calls this to indicate focus changes.

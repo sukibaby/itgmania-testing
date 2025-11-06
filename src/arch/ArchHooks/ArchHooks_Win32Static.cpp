@@ -61,44 +61,18 @@ static RString GetMountDir( const RString &sDirOfExecutable )
 	return sDir;
 }
 
-void MountDirectories(const RString& baseDir) {
-	const std::vector<RString> winDirectoryStructureITGm = {
-		"/Announcers",
-		"/BGAnimations",
-		"/BackgroundEffects",
-		"/BackgroundTransitions",
-		"/Cache",
-		"/CDTitles",
-		"/Characters",
-		"/Courses",
-		"/Downloads",
-		"/Logs",
-		"/NoteSkins",
-		"/Packages",
-		"/Save",
-		"/Screenshots",
-		"/Songs",
-		"/RandomMovies",
-		"/Themes"
-	};
-
-	for (const RString& dir : winDirectoryStructureITGm) {
-		FILEMAN->Mount("dir", baseDir + dir, dir);
-	}
-}
-
 void ArchHooks::MountInitialFilesystems(const RString& sDirOfExecutable) {
 	RString sDir = GetMountDir(sDirOfExecutable);
 	FILEMAN->Mount("dirro", sDir, "/");
 
 	if (DoesFileExist("/Portable.ini")) {
-		MountDirectories(sDir);
+		ArchHooks::MountDirectories(sDir);
 	}
 }
 
 void ArchHooks::MountUserFilesystems(const RString& sDirOfExecutable) {
 	RString sAppDataDir = SpecialDirs::GetAppDataDir() + PRODUCT_ID;
-	MountDirectories(sAppDataDir);
+	ArchHooks::MountDirectories(sAppDataDir);
 }
 
 static RString LangIdToString( LANGID l )

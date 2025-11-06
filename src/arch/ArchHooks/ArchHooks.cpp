@@ -4,12 +4,33 @@
 #include "RageLog.h"
 #include "RageThreads.h"
 #include "arch/arch_default.h"
+#include "RageFileManager.h"
 
 bool ArchHooks::g_bQuitting = false;
 bool ArchHooks::g_bToggleWindowed = false;
 // Keep from pulling RageThreads.h into ArchHooks.h
 static RageMutex g_Mutex( "ArchHooks" );
 ArchHooks *HOOKS = nullptr; // global and accessible from anywhere in our program
+
+const std::vector<RString> ArchHooks::g_DirectoryStructureITGM = {
+	"/Announcers",
+	"/BGAnimations",
+	"/BackgroundEffects",
+	"/BackgroundTransitions",
+	"/Cache",
+	"/CDTitles",
+	"/Characters",
+	"/Courses",
+	"/Downloads",
+	"/Logs",
+	"/NoteSkins",
+	"/Packages",
+	"/Save",
+	"/Screenshots",
+	"/Songs",
+	"/RandomMovies",
+	"/Themes"
+};
 
 ArchHooks::ArchHooks(): m_bHasFocus(true), m_bFocusChanged(false)
 {
@@ -60,6 +81,12 @@ RString ArchHooks::GetClipboard()
 {
 	LOG->Warn("ArchHooks: GetClipboard() NOT IMPLEMENTED");
 	return "";
+}
+
+void ArchHooks::MountDirectories(const RString& baseDir) {
+	for (const RString& dir : g_DirectoryStructureITGM) {
+		FILEMAN->Mount("dir", baseDir + dir, dir);
+	}
 }
 
 /* XXX: Most singletons register with lua in their constructor.  ArchHooks is
