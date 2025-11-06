@@ -358,23 +358,7 @@ void ArchHooks::MountInitialFilesystems( const RString &sDirOfExecutable )
 	bool portable = DoesFileExist("/Portable.ini");
 	if (portable)
 	{
-		FILEMAN->Mount("dir", sDirOfExecutable + "/Announcers", "/Announcers");
-		FILEMAN->Mount("dir", sDirOfExecutable + "/BGAnimations", "/BGAnimations");
-		FILEMAN->Mount("dir", sDirOfExecutable + "/BackgroundEffects", "/BackgroundEffects");
-		FILEMAN->Mount("dir", sDirOfExecutable + "/BackgroundTransitions", "/BackgroundTransitions");
-		FILEMAN->Mount("dir", sDirOfExecutable + "/Cache", "/Cache");
-		FILEMAN->Mount("dir", sDirOfExecutable + "/CDTitles", "/CDTitles");
-		FILEMAN->Mount("dir", sDirOfExecutable + "/Characters", "/Characters");
-		FILEMAN->Mount("dir", sDirOfExecutable + "/Courses", "/Courses");
-		FILEMAN->Mount("dir", sDirOfExecutable + "/Downloads", "/Downloads");
-		FILEMAN->Mount("dir", sDirOfExecutable + "/Logs", "/Logs");
-		FILEMAN->Mount("dir", sDirOfExecutable + "/NoteSkins", "/NoteSkins");
-		FILEMAN->Mount("dir", sDirOfExecutable + "/Packages", "/Packages");
-		FILEMAN->Mount("dir", sDirOfExecutable + "/Save", "/Save");
-		FILEMAN->Mount("dir", sDirOfExecutable + "/Screenshots", "/Screenshots");
-		FILEMAN->Mount("dir", sDirOfExecutable + "/Songs", "/Songs");
-		FILEMAN->Mount("dir", sDirOfExecutable + "/RandomMovies", "/RandomMovies");
-		FILEMAN->Mount("dir", sDirOfExecutable + "/Themes", "/Themes");
+		ArchHooks::MountDirectories(sDirOfExecutable);
 	}
 }
 
@@ -385,23 +369,7 @@ void ArchHooks::MountUserFilesystems( const RString &sDirOfExecutable )
 	 */
 	const char *szHome = getenv( "HOME" );
 	RString sUserDataPath = ssprintf( "%s/.%s", szHome? szHome:".", "itgmania" );
-	FILEMAN->Mount( "dir", sUserDataPath + "/Announcers", "/Announcers" );
-	FILEMAN->Mount( "dir", sUserDataPath + "/BGAnimations", "/BGAnimations" );
-	FILEMAN->Mount( "dir", sUserDataPath + "/BackgroundEffects", "/BackgroundEffects" );
-	FILEMAN->Mount( "dir", sUserDataPath + "/BackgroundTransitions", "/BackgroundTransitions" );
-	FILEMAN->Mount( "dir", sUserDataPath + "/Cache", "/Cache" );
-	FILEMAN->Mount( "dir", sUserDataPath + "/CDTitles", "/CDTitles" );
-	FILEMAN->Mount( "dir", sUserDataPath + "/Characters", "/Characters" );
-	FILEMAN->Mount( "dir", sUserDataPath + "/Courses", "/Courses" );
-	FILEMAN->Mount( "dir", sUserDataPath + "/Downloads", "/Downloads" );
-	FILEMAN->Mount( "dir", sUserDataPath + "/Logs", "/Logs" );
-	FILEMAN->Mount( "dir", sUserDataPath + "/NoteSkins", "/NoteSkins" );
-	FILEMAN->Mount( "dir", sUserDataPath + "/Packages", "/Packages" );
-	FILEMAN->Mount( "dir", sUserDataPath + "/Save", "/Save" );
-	FILEMAN->Mount( "dir", sUserDataPath + "/Screenshots", "/Screenshots" );
-	FILEMAN->Mount( "dir", sUserDataPath + "/Songs", "/Songs" );
-	FILEMAN->Mount( "dir", sUserDataPath + "/RandomMovies", "/RandomMovies" );
-	FILEMAN->Mount( "dir", sUserDataPath + "/Themes", "/Themes" );
+	ArchHooks::MountDirectories(sUserDataPath);
 }
 
 /*

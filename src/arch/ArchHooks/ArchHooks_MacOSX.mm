@@ -267,32 +267,6 @@ int64_t ArchHooks::GetSystemTimeInMicroseconds()
 
 #include "RageFileManager.h"
 
-void MountDirectories(const RString& baseDir) {
-	const std::vector<RString> macDirectoryStructureITGm = {
-		"/Announcers",
-		"/BGAnimations",
-		"/BackgroundEffects",
-		"/BackgroundTransitions",
-		"/Cache",
-		"/CDTitles",
-		"/Characters",
-		"/Courses",
-		"/Downloads",
-		"/Logs",
-		"/NoteSkins",
-		"/Packages",
-		"/Save",
-		"/Screenshots",
-		"/Songs",
-		"/RandomMovies",
-		"/Themes"
-	};
-
-	for (const RString& dir : macDirectoryStructureITGm) {
-		FILEMAN->Mount("dir", baseDir + dir, dir);
-	}
-}
-
 void ArchHooks::MountInitialFilesystems( const RString &sDirOfExecutable )
 {
 	FILEMAN->Mount("dirro", sDirOfExecutable, "/");
@@ -334,7 +308,7 @@ void ArchHooks::MountInitialFilesystems( const RString &sDirOfExecutable )
 
 	if (portable)
 	{
-		MountDirectories(sDirOfExecutable);
+		ArchHooks::MountDirectories(sDirOfExecutable);
 	}
 }
 
@@ -353,7 +327,7 @@ void ArchHooks::MountUserFilesystems( const RString &sDirOfExecutable )
 	std::string appSupportDir = PathForDirectory(NSApplicationSupportDirectory);
 	RString appSupportPath = ssprintf("%s/" PRODUCT_ID, appSupportDir.c_str());
 
-	MountDirectories(appSupportPath);
+	ArchHooks::MountDirectories(appSupportPath);
 }
 
 static inline int GetIntValue( CFTypeRef r )
