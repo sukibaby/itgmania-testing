@@ -11,7 +11,7 @@ class ArrowEffects
 {
 public:
 	static void Init(PlayerNumber pn);
-	static float GetTime();
+	static uint64_t GetTime();
 	static void Update();
 	// SetCurrentOptions and the hidden static variable it set exists so that
 	// ArrowEffects doesn't have to reach through the PlayerState to check
