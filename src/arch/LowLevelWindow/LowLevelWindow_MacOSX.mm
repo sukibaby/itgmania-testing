@@ -329,6 +329,7 @@ void *LowLevelWindow_MacOSX::GetProcAddress( RString s )
 	return dlsym( glHandle, s.c_str() );
 }
 
+// https://developer.apple.com/library/archive/documentation/GraphicsImaging/Conceptual/OpenGL-MacProgGuide/opengl_contexts/opengl_contexts.html
 RString LowLevelWindow_MacOSX::TryVideoMode( const VideoModeParams& p, bool& newDeviceOut )
 {
 	// Always set these params.
