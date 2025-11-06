@@ -3,8 +3,12 @@
 #include "RageUtil.h"
 #include "RageTimer.h"
 #include "RageLog.h"
+#include <atomic>
+#include <algorithm>
 
 #include <cmath>
+
+
 
 /* Implement threaded read-ahead buffering.
  *
@@ -35,10 +39,10 @@ RageSoundReader_ThreadedBuffer::RageSoundReader_ThreadedBuffer( RageSoundReader 
 	int iFrameSize = sizeof(float) * this->GetNumChannels();
 	m_DataBuffer.reserve( g_iStreamingBufferFrames * iFrameSize, iFrameSize );
 
-	m_bEOF = false;
+	m_bEOF.store(false);
 	m_bShutdownThread = false;
-	m_bEnabled = false;
-	m_bFilling = false;
+	m_bEnabled.store(false);
+	m_bFilling.store(false);
 
 	m_StreamPosition.push_back( Mapping() );
 	m_StreamPosition.back().iPositionOfFirstFrame = pSource->GetNextSourceFrame();
@@ -58,10 +62,10 @@ RageSoundReader_ThreadedBuffer::RageSoundReader_ThreadedBuffer( const RageSoundR
 	m_iSampleRate = cpy.m_iSampleRate;
 	m_iChannels = cpy.m_iChannels;
 	m_DataBuffer = cpy.m_DataBuffer;
-	m_bEOF = cpy.m_bEOF;
+	m_bEOF.store(cpy.m_bEOF.load());
 	m_bShutdownThread = cpy.m_bShutdownThread;
-	m_bEnabled = cpy.m_bEnabled;
-	m_bFilling = cpy.m_bFilling;
+	m_bEnabled.store(cpy.m_bEnabled.load());
+	m_bFilling.store(cpy.m_bFilling.load());
 
 	m_StreamPosition = cpy.m_StreamPosition;
 
@@ -88,7 +92,7 @@ RageSoundReader_ThreadedBuffer::~RageSoundReader_ThreadedBuffer()
 void RageSoundReader_ThreadedBuffer::EnableBuffering()
 {
 	m_Event.Lock();
-	m_bEnabled = true;
+	m_bEnabled.store(true);
 	m_Event.Broadcast();
 	m_Event.Unlock();
 }
@@ -96,11 +100,11 @@ void RageSoundReader_ThreadedBuffer::EnableBuffering()
 bool RageSoundReader_ThreadedBuffer::DisableBuffering()
 {
 	m_Event.Lock();
-	bool bRet = m_bEnabled;
-	m_bEnabled = false;
+	bool bRet = m_bEnabled.load();
+	m_bEnabled.store(false);
 	m_Event.Broadcast();
 
-	while( m_bFilling )
+	while( m_bFilling.load() )
 		m_Event.Wait();
 
 	m_Event.Unlock();
@@ -111,7 +115,7 @@ bool RageSoundReader_ThreadedBuffer::DisableBuffering()
 void RageSoundReader_ThreadedBuffer::WaitUntilFrames( int iWaitUntilFrames )
 {
 	m_Event.Lock();
-	ASSERT( m_bEnabled );
+	ASSERT( m_bEnabled.load() );
 	while( GetFilledFrames() < iWaitUntilFrames )
 		m_Event.Wait();
 	m_Event.Unlock();
@@ -129,7 +133,7 @@ int RageSoundReader_ThreadedBuffer::SetPosition( int iFrame )
 	m_StreamPosition.push_back( Mapping() );
 	m_StreamPosition.back().iPositionOfFirstFrame = iFrame;
 
-	m_bEOF = iRet == 0;
+	m_bEOF.store(iRet == 0);
 
 	if( bWasEnabled )
 		EnableBuffering();
@@ -194,14 +198,14 @@ void RageSoundReader_ThreadedBuffer::BufferingThread()
 	m_Event.Lock();
 	while( !m_bShutdownThread )
 	{
-		if( !m_bEnabled )
+		if( !m_bEnabled.load() )
 		{
 			m_Event.Wait();
 			continue;
 		}
 
 		// Fill some data.
-		m_bFilling = true;
+		m_bFilling.store(true);
 
 		int iFramesToFill = g_iReadBlockSizeFrames;
 		if( GetFilledFrames() < g_iMinFillFrames )
@@ -210,13 +214,13 @@ void RageSoundReader_ThreadedBuffer::BufferingThread()
 		int iRet = FillFrames( iFramesToFill );
 
 		// Release m_bFilling, and signal the event to wake anyone waiting for it.
-		m_bFilling = false;
+		m_bFilling.store(false);
 		m_Event.Broadcast();
 
 		// On error or end of file, stop buffering the sound.
 		if( iRet < 0 )
 		{
-			m_bEnabled = false;
+			m_bEnabled.store(false);
 			continue;
 		}
 
@@ -301,14 +305,14 @@ int RageSoundReader_ThreadedBuffer::FillBlock()
 		m_StreamPosition.back().iFramesBuffered += iGotFrames;
 	}
 
-	m_bEOF = (iGotFrames == END_OF_FILE);
+	m_bEOF.store(iGotFrames == END_OF_FILE);
 
 	return iGotFrames;
 }
 
 int RageSoundReader_ThreadedBuffer::Read( float *pBuffer, int iFrames )
 {
-	if( !m_bEOF )
+	if( !m_bEOF.load() )
 		EnableBuffering();
 
 	m_Event.Lock();
@@ -339,7 +343,7 @@ int RageSoundReader_ThreadedBuffer::Read( float *pBuffer, int iFrames )
 		pos.iFramesBuffered -= iFramesToRead;
 		iRet = iFramesToRead;
 	}
-	else if( m_bEOF )
+	else if( m_bEOF.load() )
 		iRet = END_OF_FILE;
 	else
 		iRet = WOULD_BLOCK;
