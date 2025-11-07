@@ -454,10 +454,7 @@ protected:
 	const RageMatrix* GetWorldTop() const;
 	const RageMatrix* GetTextureTop() const;
 
-	// To limit the framerate, call FrameLimitBeforeVsync before waiting
-	// for vsync and FrameLimitAfterVsync after.
-	void FrameLimitBeforeVsync( int iFPS );
-	void FrameLimitAfterVsync();
+	void SleepIfFocusLost();
 };
 
 
