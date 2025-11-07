@@ -391,7 +391,7 @@ RString LowLevelWindow_MacOSX::TryVideoMode( const VideoModeParams& p, bool& new
 		if( bChangeVsync )
 		{
 			GLint swap = p.vsync ? 1 : 0;
-			[m_Context setValues:&swap forParameter:NSOpenGLCPSwapInterval];
+			CGLSetParameter([m_Context CGLContextObj], kCGLCPSwapInterval, &swap);
 			m_CurrentParams.vsync = p.vsync;
 		}
 
@@ -436,7 +436,7 @@ RString LowLevelWindow_MacOSX::TryVideoMode( const VideoModeParams& p, bool& new
 	if( bChangeVsync )
 	{
 		GLint swap = p.vsync ? 1 : 0;
-		[m_Context setValues:&swap forParameter:NSOpenGLCPSwapInterval];
+		CGLSetParameter([m_Context CGLContextObj], kCGLCPSwapInterval, &swap);
 		m_CurrentParams.vsync = p.vsync;
 	}
 
