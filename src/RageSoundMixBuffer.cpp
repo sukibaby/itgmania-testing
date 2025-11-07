@@ -61,7 +61,11 @@ void RageSoundMixBuffer::read( int16_t *pBuf )
 
 void RageSoundMixBuffer::read( float *pBuf )
 {
-	std::copy(m_pMixbuf.begin(), m_pMixbuf.end(), pBuf);
+	for (unsigned iPos = 0; iPos < m_pMixbuf.size(); ++iPos)
+	{
+		// ensure volume is within expected levels to prevent clipping
+		pBuf[iPos] = std::clamp(m_pMixbuf[iPos], -1.0f, +1.0f);
+	}
 	m_pMixbuf.clear();
 }
 

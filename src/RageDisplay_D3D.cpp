@@ -603,9 +603,8 @@ void RageDisplay_D3D::EndFrame()
 {
 	g_pd3dDevice->EndScene();
 
-	FrameLimitBeforeVsync( GetActualVideoModeParams().rate );
+	SleepIfFocusLost();
 	g_pd3dDevice->Present( 0, 0, 0, 0 );
-	FrameLimitAfterVsync();
 
 	RageDisplay::EndFrame();
 }

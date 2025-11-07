@@ -5,6 +5,8 @@
 #include "RageLog.h"
 
 #include <cmath>
+#include <thread>
+#include <chrono>
 
 /* Implement threaded read-ahead buffering.
  *
@@ -16,14 +18,14 @@
  * takes more CPU than filling 4k frames, and may cause a skip. */
 
 // The amount of data to read at once:
-static const unsigned g_iReadBlockSizeFrames = 1024;
+static const unsigned g_iReadBlockSizeFrames = 4096;   // 4K frames
 
 // The maximum number of frames to buffer:
-static const int g_iStreamingBufferFrames = 1024*32;
+static const int g_iStreamingBufferFrames = 1024*128;  // 128K frames
 
 /* When a sound has fewer than g_iMinFillFrames buffered, buffer at maximum speed.
  * Once beyond that, fill at a limited rate. */
-static const int g_iMinFillFrames = 1024*4;
+static const int g_iMinFillFrames = 1024*16; 		 // 16K frames
 
 RageSoundReader_ThreadedBuffer::RageSoundReader_ThreadedBuffer( RageSoundReader *pSource ):
 	RageSoundReader_Filter( pSource ),
@@ -44,7 +46,7 @@ RageSoundReader_ThreadedBuffer::RageSoundReader_ThreadedBuffer( RageSoundReader 
 	m_StreamPosition.back().iPositionOfFirstFrame = pSource->GetNextSourceFrame();
 	m_StreamPosition.back().fRate = pSource->GetStreamToSourceRatio();
 
-	m_Thread.SetName( "Streaming sound buffering" );
+	m_Thread.SetName( "Sound buffering" );
 	m_Thread.Create( StartBufferingThread, this );
 }
 
@@ -222,10 +224,7 @@ void RageSoundReader_ThreadedBuffer::BufferingThread()
 
 		/* Sleep proportionately to the amount of data we buffered, so we
 		 * fill at a reasonable pace. */
-		float fTimeFilled = float(g_iReadBlockSizeFrames) / m_iSampleRate;
-		float fTimeToSleep = fTimeFilled / 2;
-		if( fTimeToSleep == 0 )
-			fTimeToSleep = float(g_iReadBlockSizeFrames) / m_iSampleRate;
+		const float fTimeToSleep = static_cast<float>(g_iReadBlockSizeFrames) / (m_iSampleRate * 2.0f);
 
 		if( m_Event.WaitTimeoutSupported() )
 		{
@@ -237,7 +236,9 @@ void RageSoundReader_ThreadedBuffer::BufferingThread()
 		else
 		{
 			m_Event.Unlock();
-			usleep( static_cast<int>((fTimeToSleep * 1000000) + 0.5) );
+			const auto sleep_duration = std::chrono::duration_cast<std::chrono::microseconds>(
+				std::chrono::duration<float>(fTimeToSleep));
+			std::this_thread::sleep_for(sleep_duration);
 			m_Event.Lock();
 		}
 	}
