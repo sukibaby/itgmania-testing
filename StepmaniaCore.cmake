@@ -156,9 +156,13 @@ endif()
 # Dependencies go here.
 include(ExternalProject)
 
-find_package(nasm)
-find_package(yasm)
-find_package(Iconv)
+# Only search for nasm/yasm/iconv on non-vcpkg builds
+# On vcpkg builds, these are handled separately or not needed
+if(NOT (DEFINED CMAKE_TOOLCHAIN_FILE AND CMAKE_TOOLCHAIN_FILE MATCHES "vcpkg.cmake"))
+  find_package(nasm)
+  find_package(yasm)
+  find_package(Iconv)
+endif()
 
 find_package(Threads)
 if(${Threads_FOUND})
