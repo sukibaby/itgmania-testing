@@ -47,12 +47,12 @@ if(DEFINED CMAKE_TOOLCHAIN_FILE AND CMAKE_TOOLCHAIN_FILE MATCHES "vcpkg.cmake")
   pkg_check_modules(TOMCRYPT libtomcrypt)
   pkg_check_modules(TOMMATH libtommath)
   pkg_check_modules(LIBUSB libusb-1.0)
+  pkg_check_modules(JSONCPP jsoncpp)
   
   find_package(MbedTLS REQUIRED)
   find_package(Ogg REQUIRED)
   find_package(Vorbis REQUIRED)
   find_package(ZLIB REQUIRED)
-  find_package(jsoncpp CONFIG REQUIRED)
 endif()
 
 # The external libraries need to be included.
