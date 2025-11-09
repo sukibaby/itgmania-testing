@@ -356,14 +356,17 @@ if(DEFINED CMAKE_TOOLCHAIN_FILE AND CMAKE_TOOLCHAIN_FILE MATCHES "vcpkg.cmake")
     JPEG::JPEG
     PNG::PNG
     mad::mad
+    miniz::miniz
     ${PCRE_LIBRARIES}
     MbedTLS::mbedtls
     Ogg::ogg
     Vorbis::vorbis
     Vorbis::vorbisfile
-    ZLIB::ZLIB
-    jsoncpp_lib)
+    ZLIB::ZLIB)
   
+  if(JSONCPP_FOUND)
+    list(APPEND SMDATA_LINK_LIB ${JSONCPP_LIBRARIES})
+  endif()
   if(TOMCRYPT_FOUND)
     list(APPEND SMDATA_LINK_LIB ${TOMCRYPT_LIBRARIES})
   else()
@@ -384,6 +387,9 @@ if(DEFINED CMAKE_TOOLCHAIN_FILE AND CMAKE_TOOLCHAIN_FILE MATCHES "vcpkg.cmake")
   
   # Add pkg-config include directories
   target_include_directories("${SM_EXE_NAME}" PRIVATE ${PCRE_INCLUDE_DIRS})
+  if(JSONCPP_FOUND)
+    target_include_directories("${SM_EXE_NAME}" PRIVATE ${JSONCPP_INCLUDE_DIRS})
+  endif()
   if(TOMCRYPT_FOUND)
     target_include_directories("${SM_EXE_NAME}" PRIVATE ${TOMCRYPT_INCLUDE_DIRS})
   endif()
@@ -397,9 +403,9 @@ else()
   # Fallback to custom-built libraries
   list(APPEND SMDATA_LINK_LIB "lua-5.1" "miniz")
 
-  list(APPEND SMDATA_LINK_LIB "mad"
+  list(APPEND SMDATA_LINK_LIB "glew"
+                              "mad"
                               "pcre"
-                              "glew"
                               "tomcrypt"
                               "tommath"
                               "libjpeg-turbo"
