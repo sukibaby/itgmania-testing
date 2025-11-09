@@ -358,7 +358,7 @@ if(DEFINED CMAKE_TOOLCHAIN_FILE AND CMAKE_TOOLCHAIN_FILE MATCHES "vcpkg.cmake")
     mad::mad
     miniz::miniz
     lua-5.1
-    jsoncpp_static
+    JsonCpp::JsonCpp
     unofficial::pcre::pcre
     MbedTLS::mbedtls
     Ogg::ogg
