@@ -357,6 +357,7 @@ if(DEFINED CMAKE_TOOLCHAIN_FILE AND CMAKE_TOOLCHAIN_FILE MATCHES "vcpkg.cmake")
     PNG::PNG
     mad::mad
     miniz::miniz
+    lua-5.1
     ${PCRE_LIBRARIES}
     MbedTLS::mbedtls
     Ogg::ogg
@@ -381,6 +382,8 @@ if(DEFINED CMAKE_TOOLCHAIN_FILE AND CMAKE_TOOLCHAIN_FILE MATCHES "vcpkg.cmake")
   
   if(LIBUSB_FOUND)
     list(APPEND SMDATA_LINK_LIB ${LIBUSB_LIBRARIES})
+    target_include_directories("${SM_EXE_NAME}" PRIVATE ${LIBUSB_INCLUDE_DIRS})
+    target_link_directories("${SM_EXE_NAME}" PRIVATE ${LIBUSB_LIBRARY_DIRS})
   else()
     list(APPEND SMDATA_LINK_LIB "usb")
   endif()
@@ -395,9 +398,6 @@ if(DEFINED CMAKE_TOOLCHAIN_FILE AND CMAKE_TOOLCHAIN_FILE MATCHES "vcpkg.cmake")
   endif()
   if(TOMMATH_FOUND)
     target_include_directories("${SM_EXE_NAME}" PRIVATE ${TOMMATH_INCLUDE_DIRS})
-  endif()
-  if(LIBUSB_FOUND)
-    target_include_directories("${SM_EXE_NAME}" PRIVATE ${LIBUSB_INCLUDE_DIRS})
   endif()
 else()
   # Fallback to custom-built libraries
@@ -515,7 +515,10 @@ else() # Unix / Linux TODO: Remember to find and locate the zip archive files.
     list(APPEND SMDATA_LINK_LIB ${LIBXTST_LIBRARY})
   endif()
 
-  list(APPEND SMDATA_LINK_LIB ${LIBUSB_LIBRARY})
+  # Only add libusb if not using vcpkg (vcpkg is added above)
+  if(NOT (DEFINED CMAKE_TOOLCHAIN_FILE AND CMAKE_TOOLCHAIN_FILE MATCHES "vcpkg.cmake"))
+    list(APPEND SMDATA_LINK_LIB ${LIBUSB_LIBRARY})
+  endif()
 
   list(APPEND SMDATA_LINK_LIB ${XRANDR_LIBRARIES} ${XINERAMA_LIBRARIES})
 
