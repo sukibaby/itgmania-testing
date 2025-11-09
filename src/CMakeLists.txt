@@ -343,22 +343,74 @@ endif()
 
 set_property(TARGET "${SM_EXE_NAME}" PROPERTY FOLDER "Internal Libraries")
 
-list(APPEND SMDATA_LINK_LIB "lua-5.1" "miniz")
+if(DEFINED CMAKE_TOOLCHAIN_FILE AND CMAKE_TOOLCHAIN_FILE MATCHES "vcpkg.cmake")
+  if(APPLE)
+    list(APPEND SMDATA_LINK_LIB hidapi::darwin)
+  else()
+    list(APPEND SMDATA_LINK_LIB hidapi::hidapi)
+  endif()
+  
+  list(APPEND SMDATA_LINK_LIB 
+    GLEW::GLEW
+    ixwebsocket::ixwebsocket
+    JPEG::JPEG
+    PNG::PNG
+    mad::mad
+    miniz::miniz
+    lua-5.1
+    jsoncpp_static
+    ${PCRE_LIBRARIES}
+    MbedTLS::mbedtls
+    Ogg::ogg
+    Vorbis::vorbis
+    Vorbis::vorbisfile
+    ZLIB::ZLIB)
+  
+  if(TOMCRYPT_FOUND)
+    list(APPEND SMDATA_LINK_LIB ${TOMCRYPT_LIBRARIES})
+  else()
+    list(APPEND SMDATA_LINK_LIB "tomcrypt")
+  endif()
+  
+  if(TOMMATH_FOUND)
+    list(APPEND SMDATA_LINK_LIB ${TOMMATH_LIBRARIES})
+  else()
+    list(APPEND SMDATA_LINK_LIB "tommath")
+  endif()
+  
+  if(LIBUSB_FOUND)
+    list(APPEND SMDATA_LINK_LIB ${LIBUSB_LIBRARIES})
+    target_include_directories("${SM_EXE_NAME}" PRIVATE ${LIBUSB_INCLUDE_DIRS})
+    target_link_directories("${SM_EXE_NAME}" PRIVATE ${LIBUSB_LIBRARY_DIRS})
+  else()
+    list(APPEND SMDATA_LINK_LIB "usb")
+  endif()
+  
+  target_include_directories("${SM_EXE_NAME}" PRIVATE ${PCRE_INCLUDE_DIRS})
+  if(TOMCRYPT_FOUND)
+    target_include_directories("${SM_EXE_NAME}" PRIVATE ${TOMCRYPT_INCLUDE_DIRS})
+  endif()
+  if(TOMMATH_FOUND)
+    target_include_directories("${SM_EXE_NAME}" PRIVATE ${TOMMATH_INCLUDE_DIRS})
+  endif()
+else()
+  list(APPEND SMDATA_LINK_LIB "lua-5.1" "miniz")
 
-list(APPEND SMDATA_LINK_LIB "mad"
-                            "pcre"
-                            "glew"
-                            "tomcrypt"
-                            "tommath"
-                            "libjpeg-turbo"
-                            "zlib"
-                            "png"
-                            "jsoncpp"
-                            "vorbisfile"
-                            "vorbis"
-                            "ogg"
-                            "ixwebsocket"
-							"hidapi")
+  list(APPEND SMDATA_LINK_LIB "glew"
+                              "mad"
+                              "pcre"
+                              "tomcrypt"
+                              "tommath"
+                              "libjpeg-turbo"
+                              "zlib"
+                              "png"
+                              "jsoncpp"
+                              "vorbisfile"
+                              "vorbis"
+                              "ogg"
+                              "ixwebsocket"
+                              "hidapi")
+endif()
 
 if(WIN32)
   list(APPEND SMDATA_LINK_LIB
@@ -456,7 +508,9 @@ else() # Unix / Linux TODO: Remember to find and locate the zip archive files.
     list(APPEND SMDATA_LINK_LIB ${LIBXTST_LIBRARY})
   endif()
 
-  list(APPEND SMDATA_LINK_LIB ${LIBUSB_LIBRARY})
+  if(NOT (DEFINED CMAKE_TOOLCHAIN_FILE AND CMAKE_TOOLCHAIN_FILE MATCHES "vcpkg.cmake"))
+    list(APPEND SMDATA_LINK_LIB ${LIBUSB_LIBRARY})
+  endif()
 
   list(APPEND SMDATA_LINK_LIB ${XRANDR_LIBRARIES} ${XINERAMA_LIBRARIES})
 
@@ -484,7 +538,9 @@ else()
       list(APPEND SM_INCLUDE_DIRS "${X11_INCLUDE_DIR}")
     endif()
 
-    list(APPEND SM_INCLUDE_DIRS "${LIBUSB_INCLUDE_DIR}")
+    if(NOT (DEFINED CMAKE_TOOLCHAIN_FILE AND CMAKE_TOOLCHAIN_FILE MATCHES "vcpkg.cmake"))
+      list(APPEND SM_INCLUDE_DIRS "${LIBUSB_INCLUDE_DIR}")
+    endif()
   endif()
 endif()
 
