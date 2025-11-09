@@ -358,6 +358,7 @@ if(DEFINED CMAKE_TOOLCHAIN_FILE AND CMAKE_TOOLCHAIN_FILE MATCHES "vcpkg.cmake")
     mad::mad
     miniz::miniz
     lua-5.1
+    jsoncpp_static
     ${PCRE_LIBRARIES}
     MbedTLS::mbedtls
     Ogg::ogg
@@ -365,9 +366,6 @@ if(DEFINED CMAKE_TOOLCHAIN_FILE AND CMAKE_TOOLCHAIN_FILE MATCHES "vcpkg.cmake")
     Vorbis::vorbisfile
     ZLIB::ZLIB)
   
-  if(JSONCPP_FOUND)
-    list(APPEND SMDATA_LINK_LIB ${JSONCPP_LIBRARIES})
-  endif()
   if(TOMCRYPT_FOUND)
     list(APPEND SMDATA_LINK_LIB ${TOMCRYPT_LIBRARIES})
   else()
@@ -390,9 +388,6 @@ if(DEFINED CMAKE_TOOLCHAIN_FILE AND CMAKE_TOOLCHAIN_FILE MATCHES "vcpkg.cmake")
   
   # Add pkg-config include directories
   target_include_directories("${SM_EXE_NAME}" PRIVATE ${PCRE_INCLUDE_DIRS})
-  if(JSONCPP_FOUND)
-    target_include_directories("${SM_EXE_NAME}" PRIVATE ${JSONCPP_INCLUDE_DIRS})
-  endif()
   if(TOMCRYPT_FOUND)
     target_include_directories("${SM_EXE_NAME}" PRIVATE ${TOMCRYPT_INCLUDE_DIRS})
   endif()
