@@ -18,6 +18,14 @@ if(APPLE)
   endif()
 endif()
 
+if(NOT DEFINED CMAKE_TOOLCHAIN_FILE)
+  if(DEFINED ENV{VCPKG_ROOT})
+    set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake" CACHE STRING "Vcpkg toolchain file")
+  else()
+    message(WARNING "VCPKG_ROOT environment variable not set. Set it or pass -DCMAKE_TOOLCHAIN_FILE=<vcpkg-root>/scripts/buildsystems/vcpkg.cmake")
+  endif()
+endif()
+
 project(StepMania)
 
 include(StepmaniaCore.cmake)
