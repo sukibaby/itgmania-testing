@@ -33,6 +33,12 @@ include(StepmaniaCore.cmake)
 if(DEFINED CMAKE_TOOLCHAIN_FILE AND CMAKE_TOOLCHAIN_FILE MATCHES "vcpkg.cmake")
   message(STATUS "Using vcpkg for package management (FFmpeg uses custom build)")
   
+  # On Windows, vcpkg triplet must be x64-windows-static
+  if(WIN32 AND NOT VCPKG_TARGET_TRIPLET STREQUAL "x64-windows-static")
+    message(FATAL_ERROR "On Windows, you must use vcpkg with -DVCPKG_TARGET_TRIPLET=x64-windows-static. "
+                        "Current triplet: ${VCPKG_TARGET_TRIPLET}")
+  endif()
+  
   find_package(GLEW CONFIG REQUIRED)
   find_package(hidapi CONFIG REQUIRED)
   find_package(ixwebsocket CONFIG REQUIRED)
