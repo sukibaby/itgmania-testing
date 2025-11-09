@@ -107,3 +107,4 @@ BuildLog.htm
 *.d
 *.lastcodeanalysissucceeded
 new-builder.sh
+/vcpkg_installed
