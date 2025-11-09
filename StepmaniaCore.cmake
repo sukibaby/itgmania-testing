@@ -249,10 +249,14 @@ elseif(MACOSX)
   find_library(MAC_FRAME_COREVIDEO CoreVideo ${CMAKE_SYSTEM_FRAMEWORK_PATH} REQUIRED)
   find_library(MAC_FRAME_VIDEOTOOLBOX VideoToolbox ${CMAKE_SYSTEM_FRAMEWORK_PATH} REQUIRED)
 
-  if(NOT YASM_FOUND AND NOT NASM_FOUND)
-    message(FATAL_ERROR
-      "Neither NASM nor YASM were found. Please install at least one of them."
-    )
+  # NASM/YASM only needed for custom FFmpeg builds with SIMD
+  # When using vcpkg, FFmpeg is pre-built, so these are not required
+  if(NOT (DEFINED CMAKE_TOOLCHAIN_FILE AND CMAKE_TOOLCHAIN_FILE MATCHES "vcpkg.cmake"))
+    if(NOT YASM_FOUND AND NOT NASM_FOUND)
+      message(FATAL_ERROR
+        "Neither NASM nor YASM were found. Please install at least one of them."
+      )
+    endif()
   endif()
 elseif(LINUX OR BSD)
   if(WITH_GTK3)
@@ -328,10 +332,14 @@ elseif(LINUX OR BSD)
       )
   endif()
 
-  if(NOT YASM_FOUND AND NOT NASM_FOUND)
-    message(FATAL_ERROR
-      "Neither NASM nor YASM were found. Please install at least one of them."
-    )
+  # NASM/YASM only needed for custom FFmpeg builds with SIMD
+  # When using vcpkg, FFmpeg is pre-built, so these are not required
+  if(NOT (DEFINED CMAKE_TOOLCHAIN_FILE AND CMAKE_TOOLCHAIN_FILE MATCHES "vcpkg.cmake"))
+    if(NOT YASM_FOUND AND NOT NASM_FOUND)
+      message(FATAL_ERROR
+        "Neither NASM nor YASM were found. Please install at least one of them."
+      )
+    endif()
   endif()
 
   include("${SM_CMAKE_DIR}/SetupFfmpeg.cmake")
