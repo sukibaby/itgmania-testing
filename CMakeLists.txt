@@ -39,6 +39,7 @@ if(DEFINED CMAKE_TOOLCHAIN_FILE AND CMAKE_TOOLCHAIN_FILE MATCHES "vcpkg.cmake")
   find_package(JPEG REQUIRED)
   find_package(PNG REQUIRED)
   find_package(mad CONFIG REQUIRED)
+  find_package(miniz CONFIG REQUIRED)
   find_package(PkgConfig REQUIRED)
   pkg_check_modules(PCRE REQUIRED libpcre)
   
