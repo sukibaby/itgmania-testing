@@ -33,25 +33,22 @@ include(StepmaniaCore.cmake)
 if(DEFINED CMAKE_TOOLCHAIN_FILE AND CMAKE_TOOLCHAIN_FILE MATCHES "vcpkg.cmake")
   message(STATUS "Using vcpkg for package management (FFmpeg uses custom build)")
   
-  find_package(GLEW REQUIRED)
+  find_package(GLEW CONFIG REQUIRED)
   find_package(hidapi CONFIG REQUIRED)
-  find_package(ixwebsocket REQUIRED)
+  find_package(ixwebsocket CONFIG REQUIRED)
   find_package(JPEG REQUIRED)
   find_package(PNG REQUIRED)
   find_package(mad CONFIG REQUIRED)
   find_package(miniz CONFIG REQUIRED)
   find_package(jsoncpp CONFIG REQUIRED)
-  find_package(PkgConfig REQUIRED)
-  pkg_check_modules(PCRE REQUIRED libpcre)
+  find_package(unofficial-pcre CONFIG REQUIRED)
   
-  # Libraries that may not have CMake config files, try pkg-config first
-  pkg_check_modules(TOMCRYPT libtomcrypt)
-  pkg_check_modules(TOMMATH libtommath)
-  pkg_check_modules(LIBUSB libusb-1.0)
+  # Libraries that may not have CMake config files
+  # Note: TOMCRYPT, TOMMATH, LIBUSB are optional and handled separately if needed
   
   find_package(MbedTLS REQUIRED)
-  find_package(Ogg REQUIRED)
-  find_package(Vorbis REQUIRED)
+  find_package(Ogg CONFIG REQUIRED)
+  find_package(Vorbis CONFIG REQUIRED)
   find_package(ZLIB REQUIRED)
 endif()
 
