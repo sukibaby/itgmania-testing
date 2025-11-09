@@ -30,6 +30,31 @@ project(StepMania)
 
 include(StepmaniaCore.cmake)
 
+if(DEFINED CMAKE_TOOLCHAIN_FILE AND CMAKE_TOOLCHAIN_FILE MATCHES "vcpkg.cmake")
+  message(STATUS "Using vcpkg for package management (FFmpeg uses custom build)")
+  
+  # On Windows, vcpkg triplet must be x64-windows-static
+  if(WIN32 AND NOT VCPKG_TARGET_TRIPLET STREQUAL "x64-windows-static")
+    message(FATAL_ERROR "On Windows, you must use vcpkg with -DVCPKG_TARGET_TRIPLET=x64-windows-static. "
+                        "Current triplet: ${VCPKG_TARGET_TRIPLET}")
+  endif()
+  
+  find_package(GLEW CONFIG REQUIRED)
+  find_package(hidapi CONFIG REQUIRED)
+  find_package(ixwebsocket CONFIG REQUIRED)
+  find_package(JPEG REQUIRED)
+  find_package(PNG REQUIRED)
+  find_package(mad CONFIG REQUIRED)
+  find_package(miniz CONFIG REQUIRED)
+  find_package(jsoncpp CONFIG REQUIRED)
+  find_package(unofficial-pcre CONFIG REQUIRED)
+
+  find_package(MbedTLS REQUIRED)
+  find_package(Ogg CONFIG REQUIRED)
+  find_package(Vorbis CONFIG REQUIRED)
+  find_package(ZLIB REQUIRED)
+endif()
+
 # The external libraries need to be included.
 add_subdirectory(extern)
 
