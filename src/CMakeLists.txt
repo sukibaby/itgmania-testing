@@ -359,7 +359,7 @@ if(DEFINED CMAKE_TOOLCHAIN_FILE AND CMAKE_TOOLCHAIN_FILE MATCHES "vcpkg.cmake")
     miniz::miniz
     lua-5.1
     jsoncpp_static
-    ${PCRE_LIBRARIES}
+    unofficial::pcre::pcre
     MbedTLS::mbedtls
     Ogg::ogg
     Vorbis::vorbis
@@ -383,10 +383,11 @@ if(DEFINED CMAKE_TOOLCHAIN_FILE AND CMAKE_TOOLCHAIN_FILE MATCHES "vcpkg.cmake")
     target_include_directories("${SM_EXE_NAME}" PRIVATE ${LIBUSB_INCLUDE_DIRS})
     target_link_directories("${SM_EXE_NAME}" PRIVATE ${LIBUSB_LIBRARY_DIRS})
   else()
-    list(APPEND SMDATA_LINK_LIB "usb")
+    # libusb is always custom-built (ExternalProject)
+    list(APPEND SMDATA_LINK_LIB ${LIBUSB_LIBRARY})
+    target_include_directories("${SM_EXE_NAME}" PRIVATE ${LIBUSB_INCLUDE_DIR})
   endif()
   
-  target_include_directories("${SM_EXE_NAME}" PRIVATE ${PCRE_INCLUDE_DIRS})
   if(TOMCRYPT_FOUND)
     target_include_directories("${SM_EXE_NAME}" PRIVATE ${TOMCRYPT_INCLUDE_DIRS})
   endif()
