@@ -330,7 +330,7 @@ void RageSound::StartPlaying()
 	ASSERT( !m_bPlaying );
 
 	// Move to the start position.
-	SetPositionFrames(static_cast<int>(m_Param.m_StartSecond * m_pSource->GetSampleRate() + 0.5));
+	SetPositionFrames(static_cast<int>(m_Param.m_StartSecond * static_cast<double>(m_pSource->GetSampleRate()) + 0.5));
 
 	/* If m_StartTime is in the past, then we probably set a start time but took too
 	 * long loading.  We don't want that; log it, since it can be unobvious. */
@@ -507,22 +507,22 @@ float RageSound::GetPositionSeconds( RageTimer *pTimestamp ) const
 	int64_t iCurrentHardwareFrame = SOUNDMAN->GetPosition(pTimestamp);
 
 	// cast the sample rate to be used for the remainder of the function.
-	float fSampleRate = static_cast<float>(m_pSource->GetSampleRate());
+	double fSampleRate = static_cast<double>(m_pSource->GetSampleRate());
 
 	// Quick check without lock
 	if( !IsPlaying() )
-		return static_cast<float>(m_iStoppedSourceFrame) / fSampleRate;
+		return static_cast<float>(static_cast<double>(m_iStoppedSourceFrame) / fSampleRate);
 
 	// If we don't have position information, CommitPlayingPosition hasn't been called yet
 	LockMut(m_Mutex);
     
 	if( m_HardwareToStreamMap.IsEmpty() || m_StreamToSourceMap.IsEmpty() )
 	{
-		return static_cast<float>(m_iStoppedSourceFrame) / fSampleRate;
+		return static_cast<float>(static_cast<double>(m_iStoppedSourceFrame) / fSampleRate);
 	}
 
 	int iSourceFrame = GetSourceFrameFromHardwareFrame( iCurrentHardwareFrame );
-	return static_cast<float>(iSourceFrame) / fSampleRate;
+	return static_cast<float>(static_cast<double>(iSourceFrame) / fSampleRate);
 }
 
 

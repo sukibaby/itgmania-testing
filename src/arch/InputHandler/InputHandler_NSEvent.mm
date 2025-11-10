@@ -182,10 +182,10 @@ void InputHandler_NSEvent::HandleEvent( NSEvent *e )
     {
     case NSEventTypeKeyUp:
     case NSEventTypeKeyDown: {
-        // Check if this keyCode exists in our map
-        auto it = m_NSKeyCodeMap.find(keyCode);
-        if (it != m_NSKeyCodeMap.end()) {
-            ButtonPressed( DeviceInput( DEVICE_KEYBOARD, it->second, zval, now ) );
+        // Access the keyCode directly from the array
+        DeviceButton button = m_NSKeyCodeMap[keyCode];
+        if (button != 0) {  // 0 is typically an unmapped key
+            ButtonPressed( DeviceInput( DEVICE_KEYBOARD, button, zval, now ) );
         }
         break;
     }
