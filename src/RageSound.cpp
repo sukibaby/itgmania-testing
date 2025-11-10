@@ -507,22 +507,22 @@ float RageSound::GetPositionSeconds( RageTimer *pTimestamp ) const
 	int64_t iCurrentHardwareFrame = SOUNDMAN->GetPosition(pTimestamp);
 
 	// cast the sample rate to be used for the remainder of the function.
-	double fSampleRate = static_cast<double>(m_pSource->GetSampleRate());
+	double fSampleRate = m_pSource->GetSampleRate();
 
 	// Quick check without lock
 	if( !IsPlaying() )
-		return static_cast<float>(static_cast<double>(m_iStoppedSourceFrame) / fSampleRate);
+		return static_cast<float>(m_iStoppedSourceFrame / fSampleRate);
 
 	// If we don't have position information, CommitPlayingPosition hasn't been called yet
 	LockMut(m_Mutex);
     
 	if( m_HardwareToStreamMap.IsEmpty() || m_StreamToSourceMap.IsEmpty() )
 	{
-		return static_cast<float>(static_cast<double>(m_iStoppedSourceFrame) / fSampleRate);
+		return static_cast<float>(m_iStoppedSourceFrame / fSampleRate);
 	}
 
 	int iSourceFrame = GetSourceFrameFromHardwareFrame( iCurrentHardwareFrame );
-	return static_cast<float>(static_cast<double>(iSourceFrame) / fSampleRate);
+	return static_cast<float>(iSourceFrame / fSampleRate);
 }
 
 
