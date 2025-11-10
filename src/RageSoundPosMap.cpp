@@ -10,12 +10,21 @@
 #include <cstdint>
 #include <deque>
 
-// NOTE(sukibaby): The number of frames we should keep pos_map data for.
-// File bitrate, metadata, etc will factor in here. 80k is a safe value
-// to provide a good balance of stability and low latency. It is stable
-// up to 200k, but increased latency is the main reason not to increase
-// this to a very large number. 
-static int pos_map_backlog_frames = 80000;
+namespace
+{
+	// NOTE(sukibaby): The number of frames we should keep pos_map data for.
+	// File bitrate, metadata, etc will factor in here. 80k is a safe value
+	// to provide a good balance of stability and low latency. It is stable
+	// up to 200k, but increased latency is the main reason not to increase
+	// this to a very large number. 
+	const int pos_map_backlog_frames = 80000;
+
+	// Using round-half-away-from-zero rounding for all position mapping calculations.
+	inline int64_t RoundFrameRatio( double dValue ) noexcept
+	{
+		return static_cast<int64_t>(dValue + 0.5);
+	}
+}  // namespace
 
 struct pos_map_t
 {
@@ -71,7 +80,7 @@ void pos_map_queue::Insert(int64_t iSourceFrame, int64_t iFrames, int64_t iDestF
 			last.m_fSourceToDestRatio == fSourceToDestRatio &&
 
 			// llabs() is used instead of abs() because abs() would be susceptible to an integer overflow.
-			llabs(last.m_iDestFrame + static_cast<int64_t>((last.m_iFrames * last.m_fSourceToDestRatio) + 0.5) - iDestFrame) <= 1)
+			llabs(last.m_iDestFrame + RoundFrameRatio(last.m_iFrames * last.m_fSourceToDestRatio) - iDestFrame) <= 1)
 
 		{
 			// Merge the frames and set the merged flag to true.
@@ -126,7 +135,7 @@ int64_t pos_map_queue::Search( int64_t iSourceFrame ) const
 		{
 			// If we are in the correct block, calculate its current position
 			int64_t iDiff = static_cast<int64_t>(iSourceFrame - pm.m_iSourceFrame);
-			iDiff = static_cast<int64_t>(( iDiff * pm.m_fSourceToDestRatio) + 0.5 ); 
+			iDiff = RoundFrameRatio(iDiff * pm.m_fSourceToDestRatio);
 			return pm.m_iDestFrame + iDiff;
 		}
 
@@ -143,7 +152,7 @@ int64_t pos_map_queue::Search( int64_t iSourceFrame ) const
 		if( dist < iClosestPositionDist )
 		{
 			iClosestPositionDist = dist;
-			iClosestPosition = pm.m_iDestFrame + static_cast<int64_t>((pm.m_iFrames * pm.m_fSourceToDestRatio) + 0.5 );
+			iClosestPosition = pm.m_iDestFrame + RoundFrameRatio(pm.m_iFrames * pm.m_fSourceToDestRatio);
 		}
 	}
 
