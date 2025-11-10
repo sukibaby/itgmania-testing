@@ -26,12 +26,13 @@ static const char *FormatOSError(OSStatus status)
 	return [error.localizedDescription UTF8String];
 }
 
-RageSoundDriver_AU::RageSoundDriver_AU() : m_OutputUnit(nullptr), m_iSampleRate(0), m_bDone(false), m_bStarted(false),
-	m_pIOThread(nullptr), m_pNotificationThread(nullptr), m_Semaphore("Sound")
+RageSoundDriver_AU::RageSoundDriver_AU() : m_OutputUnit(nullptr), m_iSampleRate(0), m_iPreviousSampleRate(0),
+	m_bDone(false), m_bStarted(false), m_pIOThread(nullptr), m_pNotificationThread(nullptr), m_Semaphore("Sound"),
+	m_OutputDevice(kAudioObjectUnknown)
 {
 }
 
-static void SetSampleRate( AudioUnit au, Float64 desiredRate )
+static AudioDeviceID SetSampleRate( AudioUnit au, Float64 desiredRate )
 {
 	AudioDeviceID OutputDevice;
 	OSStatus error;
@@ -41,7 +42,7 @@ static void SetSampleRate( AudioUnit au, Float64 desiredRate )
 					  kAudioUnitScope_Global, 0, &OutputDevice, &size)) )
 	{
 		LOG->Warn("No output device: %s", FormatOSError(error));
-		return;
+		return kAudioObjectUnknown;
 	}
 
 	AudioObjectPropertyAddress RateAddr = {
@@ -55,10 +56,10 @@ static void SetSampleRate( AudioUnit au, Float64 desiredRate )
 	if( (error = AudioObjectGetPropertyData(OutputDevice, &RateAddr, 0, NULL, &size, &rate)) )
 	{
 		LOG->Warn("Couldn't get the device's sample rate: %s", FormatOSError(error));
-		return;
+		return OutputDevice;
 	}
 	if( rate == desiredRate )
-		return;
+		return OutputDevice;
 
 	AudioObjectPropertyAddress AvailableRatesAddr = {
 		kAudioDevicePropertyAvailableNominalSampleRates,
@@ -69,7 +70,7 @@ static void SetSampleRate( AudioUnit au, Float64 desiredRate )
 	if( (error = AudioObjectGetPropertyDataSize(OutputDevice, &AvailableRatesAddr, 0, nullptr, &size)) )
 	{
 		LOG->Warn("Couldn't get available nominal sample rates info: %s", FormatOSError(error));
-		return;
+		return OutputDevice;
 	}
 
 	const int num = size/sizeof(AudioValueRange);
@@ -79,7 +80,7 @@ static void SetSampleRate( AudioUnit au, Float64 desiredRate )
 	{
 		LOG->Warn("Couldn't get available nominal sample rates: %s", FormatOSError(error));
 		delete[] ranges;
-		return;
+		return OutputDevice;
 	}
 
 	Float64 bestRate = 0.0;
@@ -97,12 +98,13 @@ static void SetSampleRate( AudioUnit au, Float64 desiredRate )
 	}
 	delete[] ranges;
 	if( bestRate == 0.0 )
-		return;
+		return OutputDevice;
 
 	if( (error = AudioObjectSetPropertyData(OutputDevice, &RateAddr, 0, nullptr, sizeof(Float64), &bestRate)) )
 	{
 		LOG->Warn("Couldn't set the device's sample rate: %s", FormatOSError(error));
 	}
+	return OutputDevice;
 }
 
 RString RageSoundDriver_AU::Init()
@@ -156,10 +158,26 @@ RString RageSoundDriver_AU::Init()
 		streamFormat.mSampleRate = FALLBACK_SAMPLE_RATE;
 	}
 	m_iSampleRate = int( streamFormat.mSampleRate );
+	m_iPreviousSampleRate = m_iSampleRate;
 	m_TimeScale = streamFormat.mSampleRate / AudioGetHostClockFrequency();
 
-	// Try to set the hardware sample rate.
-	SetSampleRate( m_OutputUnit, streamFormat.mSampleRate );
+	// Try to set the hardware sample rate and cache the device ID for change detection.
+	m_OutputDevice = SetSampleRate( m_OutputUnit, streamFormat.mSampleRate );
+	
+	// Register a property listener to detect device sample rate changes
+	if( m_OutputDevice != kAudioObjectUnknown )
+	{
+		AudioObjectPropertyAddress RateAddr = {
+			kAudioDevicePropertyNominalSampleRate,
+			kAudioDevicePropertyScopeOutput,
+			kAudioObjectPropertyElementWildcard
+		};
+		OSStatus err = AudioObjectAddPropertyListener( m_OutputDevice, &RateAddr, SampleRatePropertyListener, this );
+		if( err != noErr )
+		{
+			LOG->Warn("Failed to register sample rate change listener: %s", FormatOSError(err));
+		}
+	}
 
 
 	error = AudioUnitSetProperty( m_OutputUnit,
@@ -197,6 +215,17 @@ RageSoundDriver_AU::~RageSoundDriver_AU()
 {
 	if( !m_OutputUnit )
 		return;
+	
+	if( m_OutputDevice != kAudioObjectUnknown )
+	{
+		AudioObjectPropertyAddress RateAddr = {
+			kAudioDevicePropertyNominalSampleRate,
+			kAudioDevicePropertyScopeOutput,
+			kAudioObjectPropertyElementWildcard
+		};
+		AudioObjectRemovePropertyListener( m_OutputDevice, &RateAddr, SampleRatePropertyListener, this );
+	}
+	
 	if( m_bStarted )
 	{
 		m_bDone = true;
@@ -363,6 +392,53 @@ OSStatus RageSoundDriver_AU::Render( void *inRefCon,
 		This->m_Semaphore.Post();
 	}
 	return noErr;
+}
+
+OSStatus RageSoundDriver_AU::SampleRatePropertyListener( AudioObjectID inObjectID,
+													UInt32 inNumberAddresses,
+													const AudioObjectPropertyAddress inAddresses[],
+													void *inClientData )
+{
+	RageSoundDriver_AU *This = static_cast<RageSoundDriver_AU *>(inClientData);
+	if( This != nullptr )
+	{
+		This->CheckAndHandleSampleRateChange();
+	}
+	return noErr;
+}
+
+void RageSoundDriver_AU::CheckAndHandleSampleRateChange()
+{
+	if( m_OutputDevice == kAudioObjectUnknown )
+		return;
+
+	AudioObjectPropertyAddress RateAddr = {
+		kAudioDevicePropertyNominalSampleRate,
+		kAudioDevicePropertyScopeOutput,
+		kAudioObjectPropertyElementWildcard
+	};
+
+	Float64 newRate = 0.0;
+	UInt32 size = sizeof( Float64 );
+	OSStatus error = AudioObjectGetPropertyData( m_OutputDevice, &RateAddr, 0, NULL, &size, &newRate );
+	
+	if( error != noErr )
+	{
+		LOG->Warn("Couldn't read device sample rate during change detection: %s", FormatOSError(error));
+		return;
+	}
+
+	int newSampleRate = int( newRate );
+	
+	if( newSampleRate != m_iPreviousSampleRate )
+	{
+		LOG->Trace("Device sample rate changed from %d Hz to %d Hz", m_iPreviousSampleRate, newSampleRate);
+		
+		m_TimeScale = newRate / AudioGetHostClockFrequency();
+		
+		m_iSampleRate = newSampleRate;
+		m_iPreviousSampleRate = newSampleRate;
+	}
 }
 
 /*

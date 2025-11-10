@@ -7,6 +7,7 @@
 #include <cstdint>
 
 #include <AudioUnit/AudioUnit.h>
+#include <CoreAudio/CoreAudio.h>
 
 class RageSoundDriver_AU: public RageSoundDriver
 {
@@ -29,15 +30,23 @@ private:
 				UInt32 inNumberFrames,
 				AudioBufferList *ioData );
 	static void NameHALThread( CFRunLoopObserverRef, CFRunLoopActivity activity, void *inRefCon );
+	
+	void CheckAndHandleSampleRateChange();
+	static OSStatus SampleRatePropertyListener( AudioObjectID inObjectID,
+										UInt32 inNumberAddresses,
+										const AudioObjectPropertyAddress inAddresses[],
+										void *inClientData );
 
 	double m_TimeScale;
 	AudioUnit m_OutputUnit;
 	int m_iSampleRate;
+	int m_iPreviousSampleRate;
 	bool m_bDone;
 	bool m_bStarted;
 	RageThreadRegister *m_pIOThread;
 	RageThreadRegister *m_pNotificationThread;
 	RageSemaphore m_Semaphore;
+	AudioDeviceID m_OutputDevice;
 };
 
 #endif
