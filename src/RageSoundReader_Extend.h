@@ -16,8 +16,6 @@ public:
 
 	RageSoundReader_Extend *Copy() const { return new RageSoundReader_Extend(*this); }
 	~RageSoundReader_Extend() { }
-	
-	int GetAndCacheSampleRate() const;
 
 private:
 	int GetEndFrame() const;
@@ -32,8 +30,6 @@ private:
 	int m_iFadeInFrames;
 	int m_iFadeOutFrames;
 	bool m_bIgnoreFadeInFrames;
-	
-	mutable int m_iCachedSampleRate;
 };
 
 #endif
