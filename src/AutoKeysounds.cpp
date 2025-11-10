@@ -250,7 +250,7 @@ void AutoKeysounds::FinishLoading()
 		pChain->SetPreferredSampleRate( SOUNDMAN->GetDriverSampleRate() );
 		LoadAutoplaySoundsInto( pChain );
 
-		if( pChain->GetNumSounds() > 0 || !m_pSharedSound )
+		if( pChain->GetNumSounds() > 0 )
 		{
 			if( m_pSharedSound )
 			{
