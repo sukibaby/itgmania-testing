@@ -26,6 +26,17 @@ RageSoundReader_Extend::RageSoundReader_Extend( RageSoundReader *pSource ):
 	m_iFadeOutFrames = 0;
 	m_iFadeInFrames = 0;
 	m_bIgnoreFadeInFrames = false;
+	m_iCachedSampleRate = pSource->GetSampleRate();
+}
+
+int RageSoundReader_Extend::GetAndCacheSampleRate() const
+{
+	int iSourceRate = this->GetSampleRate();
+	if( m_iCachedSampleRate != iSourceRate )
+	{
+		m_iCachedSampleRate = iSourceRate;
+	}
+	return m_iCachedSampleRate;
 }
 
 int RageSoundReader_Extend::SetPosition( int iFrame )
@@ -155,7 +166,7 @@ bool RageSoundReader_Extend::SetProperty( const RString &sProperty, float fValue
 {
 	if( sProperty == "StartSecond" )
 	{
-		m_iStartFrames = static_cast<int>((fValue * static_cast<double>(this->GetSampleRate())) + 0.5);
+		m_iStartFrames = static_cast<int>((fValue * static_cast<double>(GetAndCacheSampleRate())) + 0.5);
 		return true;
 	}
 
@@ -164,7 +175,7 @@ bool RageSoundReader_Extend::SetProperty( const RString &sProperty, float fValue
 		if( fValue == -1 )
 			m_iLengthFrames = -1;
 		else
-			m_iLengthFrames = static_cast<int>((fValue * static_cast<double>(this->GetSampleRate())) + 0.5);
+			m_iLengthFrames = static_cast<int>((fValue * static_cast<double>(GetAndCacheSampleRate())) + 0.5);
 		return true;
 	}
 
@@ -188,13 +199,13 @@ bool RageSoundReader_Extend::SetProperty( const RString &sProperty, float fValue
 
 	if( sProperty == "FadeInSeconds" )
 	{
-		m_iFadeInFrames = static_cast<int>((fValue * static_cast<double>(this->GetSampleRate())) + 0.5);
+		m_iFadeInFrames = static_cast<int>((fValue * static_cast<double>(GetAndCacheSampleRate())) + 0.5);
 		return true;
 	}
 
 	if( sProperty == "FadeSeconds" || sProperty == "FadeOutSeconds" )
 	{
-		m_iFadeOutFrames = static_cast<int>((fValue * static_cast<double>(this->GetSampleRate())) + 0.5);
+		m_iFadeOutFrames = static_cast<int>((fValue * static_cast<double>(GetAndCacheSampleRate())) + 0.5);
 		return true;
 	}
 

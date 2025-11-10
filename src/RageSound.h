@@ -151,6 +151,10 @@ private:
 
 	RageSoundReader *m_pSource;
 
+	// Cache the source sample rate to prevent mid-calculation changes
+	// that could cause timing drift or crashes from inconsistent data.
+	mutable int m_iCachedSampleRate;
+
 	// We keep track of sound blocks we've sent out recently through GetDataToPlay.
 	pos_map_queue m_HardwareToStreamMap;
 	pos_map_queue m_StreamToSourceMap;
@@ -177,6 +181,9 @@ private:
 	RString m_sError;
 
 	int GetSourceFrameFromHardwareFrame( int64_t iHardwareFrame ) const;
+
+	// Get cached sample rate to ensure consistent calculations throughout an operation
+	int GetCachedSampleRate() const;
 
 	bool SetPositionFrames( int frames = -1 );
 	RageSoundParams::StopMode_t GetStopMode() const; // resolves M_AUTO

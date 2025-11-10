@@ -50,6 +50,7 @@ RageSoundLoadParams::RageSoundLoadParams():
 
 RageSound::RageSound():
 	m_Mutex( "RageSound" ), m_pSource(nullptr),
+	m_iCachedSampleRate(FALLBACK_SAMPLE_RATE),
 	m_sFilePath(""), m_Param(), m_iStreamFrame(0),
 	m_iStoppedSourceFrame(0), m_bPlaying(false),
 	m_bDeleteWhenFinished(false), m_sError("")
@@ -85,6 +86,7 @@ RageSound &RageSound::operator=( const RageSound &cpy )
 	m_iStoppedSourceFrame = cpy.m_iStoppedSourceFrame;
 	m_bPlaying = false;
 	m_bDeleteWhenFinished = false;
+	m_iCachedSampleRate = cpy.m_iCachedSampleRate;
 
 	if(m_pSource != nullptr)
 	{
@@ -252,6 +254,20 @@ void RageSound::LoadSoundReader( RageSoundReader *pSound )
 	m_pSource = pSound;
 }
 
+int RageSound::GetCachedSampleRate() const
+{
+	if( m_pSource == nullptr )
+		return FALLBACK_SAMPLE_RATE;
+
+	int iSourceRate = m_pSource->GetSampleRate();
+	if( m_iCachedSampleRate == 0 || m_iCachedSampleRate != iSourceRate )
+	{
+		m_iCachedSampleRate = iSourceRate;
+	}
+
+	return m_iCachedSampleRate;
+}
+
 /*
  * Retrieve audio data, for mixing.  At the time of this call, the frameno at which the
  * sound will be played doesn't have to be known.  Once committed, and the frameno
@@ -329,8 +345,8 @@ void RageSound::StartPlaying()
 {
 	ASSERT( !m_bPlaying );
 
-	// Move to the start position.
-	SetPositionFrames(static_cast<int>(m_Param.m_StartSecond * static_cast<double>(m_pSource->GetSampleRate()) + 0.5));
+	// Move to the start position using cached sample rate to ensure consistent calculations.
+	SetPositionFrames(static_cast<int>(m_Param.m_StartSecond * static_cast<double>(GetCachedSampleRate()) + 0.5));
 
 	/* If m_StartTime is in the past, then we probably set a start time but took too
 	 * long loading.  We don't want that; log it, since it can be unobvious. */
@@ -507,7 +523,7 @@ float RageSound::GetPositionSeconds( RageTimer *pTimestamp ) const
 	int64_t iCurrentHardwareFrame = SOUNDMAN->GetPosition(pTimestamp);
 
 	// cast the sample rate to be used for the remainder of the function.
-	double fSampleRate = m_pSource->GetSampleRate();
+	double fSampleRate = static_cast<double>(GetCachedSampleRate());
 
 	// Quick check without lock
 	if( !IsPlaying() )
