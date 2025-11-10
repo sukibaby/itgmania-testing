@@ -34,6 +34,7 @@ protected:
 private:
     DeviceButton m_NSKeyCodeMap[0x100];
     unsigned     m_ResponderID;
+    bool         m_bFnKeyPressed = false;
 };
 
 #endif /* InputHandler_NSEvent_hpp */

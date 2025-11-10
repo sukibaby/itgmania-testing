@@ -154,6 +154,16 @@ void InputHandler_NSEvent::InitKeyCodeMap()
 
 void InputHandler_NSEvent::HandleEvent( NSEvent *e )
 {
+    // macOS keyboard event handler with proper fn key support.
+    // 
+    // Expected behavior:
+    // - F-keys (F1-F16) should always be recognized as F-keys, regardless of fn state
+    // - Command (⌘) and Control (⌃) modifiers are properly tracked
+    // - fn key presses are detected and reported
+    // - On Apple keyboards, F6 without fn held = volume down hardware event
+    //   (This is intercepted at the macOS level and won't reach this handler,
+    //    but F-keys with fn held should still be properly detected)
+    
     NSEventType type = [e type];
     if ( type != NSEventTypeKeyDown && type != NSEventTypeKeyUp && type != NSEventTypeFlagsChanged ) {
         return;
@@ -166,16 +176,21 @@ void InputHandler_NSEvent::HandleEvent( NSEvent *e )
     RageTimer now;
     unsigned short keyCode = [e keyCode];
     float zval = ( type == NSEventTypeKeyDown ? 1.0 : 0.0 );
+    NSEventModifierFlags flags = [e modifierFlags];
     
     switch(type)
     {
     case NSEventTypeKeyUp:
-    case NSEventTypeKeyDown:
-        ButtonPressed( DeviceInput( DEVICE_KEYBOARD, m_NSKeyCodeMap[keyCode], zval, now ) );
+    case NSEventTypeKeyDown: {
+        // Check if this keyCode exists in our map
+        auto it = m_NSKeyCodeMap.find(keyCode);
+        if (it != m_NSKeyCodeMap.end()) {
+            ButtonPressed( DeviceInput( DEVICE_KEYBOARD, it->second, zval, now ) );
+        }
         break;
+    }
         
     case NSEventTypeFlagsChanged: {
-        NSEventModifierFlags flags = [e modifierFlags];
         switch(keyCode)
         {
         case kVK_CapsLock:
@@ -197,9 +212,15 @@ void InputHandler_NSEvent::HandleEvent( NSEvent *e )
         case kVK_RightCommand:
             ButtonPressed( DeviceInput( DEVICE_KEYBOARD, m_NSKeyCodeMap[keyCode], DownOrUp( flags & NSEventModifierFlagCommand ), now ) );
             break;
-        case kVK_Function:
-            ButtonPressed( DeviceInput( DEVICE_KEYBOARD, m_NSKeyCodeMap[keyCode], DownOrUp( flags & NSEventModifierFlagFunction ), now ) );
+        case kVK_Function: {
+            bool fnPressed = (flags & NSEventModifierFlagFunction) != 0;
+            // Track fn key state changes
+            if (fnPressed != m_bFnKeyPressed) {
+                m_bFnKeyPressed = fnPressed;
+                ButtonPressed( DeviceInput( DEVICE_KEYBOARD, m_NSKeyCodeMap[keyCode], DownOrUp(fnPressed), now ) );
+            }
             break;
+        }
         }} break;
     
     default:
