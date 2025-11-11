@@ -44,6 +44,8 @@ For the source code location (_"Browse Source..."_), choose the `itgmania` direc
 
 For the binary location (_"Browse Build..."_), choose the `Build` directory. This is inside the `itgmania` folder you selected in the previous step.
 
+<img width="575" height="387" alt="image" src="https://github.com/user-attachments/assets/2d242582-852a-4630-8d2a-daa37bb8b568" />
+
 Upon setting the source and build directories, you should `Configure` the build.
 If no errors show up, you can hit `Generate` until the "Open Project" button is available. Once it is done generating the project files, click "Open Project" to open Visual Studio.
 
