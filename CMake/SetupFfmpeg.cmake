@@ -37,6 +37,13 @@ if(MACOSX)
   list(APPEND FFMPEG_CONFIGURE "--enable-cross-compile")
   list(APPEND FFMPEG_CONFIGURE "--enable-videotoolbox")
   list(APPEND FFMPEG_CONFIGURE "--extra-cflags=-mmacosx-version-min=11")
+  
+  if(NOT CMAKE_OSX_ARCHITECTURES)
+    message(FATAL_ERROR
+      "CMAKE_OSX_ARCHITECTURES must be set on macOS. Set it to either 'arm64' or 'x86_64'"
+    )
+  endif()
+  
   if(CMAKE_OSX_ARCHITECTURES STREQUAL "arm64")
     list(APPEND FFMPEG_CONFIGURE "--arch=arm64" "--extra-cflags=-arch arm64" "--extra-ldflags=-arch arm64")
   elseif(CMAKE_OSX_ARCHITECTURES STREQUAL "x86_64")
