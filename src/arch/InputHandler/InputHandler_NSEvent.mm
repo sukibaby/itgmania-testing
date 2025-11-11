@@ -21,6 +21,8 @@ static float DownOrUp( bool down )
     return down ? 1 : 0;
 }
 
+static NSEventModifierFlags g_PreviousModifierFlags = 0;
+
 InputHandler_NSEvent::InputHandler_NSEvent()
 {
     InitKeyCodeMap();
@@ -176,31 +178,64 @@ void InputHandler_NSEvent::HandleEvent( NSEvent *e )
         
     case NSEventTypeFlagsChanged: {
         NSEventModifierFlags flags = [e modifierFlags];
-        switch(keyCode)
-        {
-        case kVK_CapsLock:
-            ButtonPressed( DeviceInput( DEVICE_KEYBOARD, m_NSKeyCodeMap[keyCode], DownOrUp( flags & NSEventModifierFlagCapsLock ), now ) );
-            break;
-        case kVK_Shift:
-        case kVK_RightShift:
-            ButtonPressed( DeviceInput( DEVICE_KEYBOARD, m_NSKeyCodeMap[keyCode], DownOrUp( flags & NSEventModifierFlagShift ), now ) );
-            break;
-        case kVK_Control:
-        case kVK_RightControl:
-            ButtonPressed( DeviceInput( DEVICE_KEYBOARD, m_NSKeyCodeMap[keyCode], DownOrUp( flags & NSEventModifierFlagControl ), now ) );
-            break;
-        case kVK_Option:
-        case kVK_RightOption:
-            ButtonPressed( DeviceInput( DEVICE_KEYBOARD, m_NSKeyCodeMap[keyCode], DownOrUp( flags & NSEventModifierFlagOption ), now ) );
-            break;
-        case kVK_Command:
-        case kVK_RightCommand:
-            ButtonPressed( DeviceInput( DEVICE_KEYBOARD, m_NSKeyCodeMap[keyCode], DownOrUp( flags & NSEventModifierFlagCommand ), now ) );
-            break;
-        case kVK_Function:
-            ButtonPressed( DeviceInput( DEVICE_KEYBOARD, m_NSKeyCodeMap[keyCode], DownOrUp( flags & NSEventModifierFlagFunction ), now ) );
-            break;
-        }} break;
+        NSEventModifierFlags changedFlags = flags ^ g_PreviousModifierFlags;
+        
+        if (changedFlags & NSEventModifierFlagShift) {
+            bool isPressed = (flags & NSEventModifierFlagShift) != 0;
+            if (keyCode == kVK_Shift) {
+                ButtonPressed( DeviceInput( DEVICE_KEYBOARD, m_NSKeyCodeMap[kVK_Shift], DownOrUp(isPressed), now ) );
+            } else if (keyCode == kVK_RightShift) {
+                ButtonPressed( DeviceInput( DEVICE_KEYBOARD, m_NSKeyCodeMap[kVK_RightShift], DownOrUp(isPressed), now ) );
+            } else {
+                ButtonPressed( DeviceInput( DEVICE_KEYBOARD, m_NSKeyCodeMap[kVK_Shift], DownOrUp(isPressed), now ) );
+            }
+        }
+        
+        if (changedFlags & NSEventModifierFlagControl) {
+            bool isPressed = (flags & NSEventModifierFlagControl) != 0;
+            if (keyCode == kVK_Control) {
+                ButtonPressed( DeviceInput( DEVICE_KEYBOARD, m_NSKeyCodeMap[kVK_Control], DownOrUp(isPressed), now ) );
+            } else if (keyCode == kVK_RightControl) {
+                ButtonPressed( DeviceInput( DEVICE_KEYBOARD, m_NSKeyCodeMap[kVK_RightControl], DownOrUp(isPressed), now ) );
+            } else {
+                ButtonPressed( DeviceInput( DEVICE_KEYBOARD, m_NSKeyCodeMap[kVK_Control], DownOrUp(isPressed), now ) );
+            }
+        }
+        
+        if (changedFlags & NSEventModifierFlagOption) {
+            bool isPressed = (flags & NSEventModifierFlagOption) != 0;
+            if (keyCode == kVK_Option) {
+                ButtonPressed( DeviceInput( DEVICE_KEYBOARD, m_NSKeyCodeMap[kVK_Option], DownOrUp(isPressed), now ) );
+            } else if (keyCode == kVK_RightOption) {
+                ButtonPressed( DeviceInput( DEVICE_KEYBOARD, m_NSKeyCodeMap[kVK_RightOption], DownOrUp(isPressed), now ) );
+            } else {
+                ButtonPressed( DeviceInput( DEVICE_KEYBOARD, m_NSKeyCodeMap[kVK_Option], DownOrUp(isPressed), now ) );
+            }
+        }
+        
+        if (changedFlags & NSEventModifierFlagCommand) {
+            bool isPressed = (flags & NSEventModifierFlagCommand) != 0;
+            if (keyCode == kVK_Command) {
+                ButtonPressed( DeviceInput( DEVICE_KEYBOARD, m_NSKeyCodeMap[kVK_Command], DownOrUp(isPressed), now ) );
+            } else if (keyCode == kVK_RightCommand) {
+                ButtonPressed( DeviceInput( DEVICE_KEYBOARD, m_NSKeyCodeMap[kVK_RightCommand], DownOrUp(isPressed), now ) );
+            } else {
+                ButtonPressed( DeviceInput( DEVICE_KEYBOARD, m_NSKeyCodeMap[kVK_Command], DownOrUp(isPressed), now ) );
+            }
+        }
+        
+        if (changedFlags & NSEventModifierFlagCapsLock) {
+            bool isPressed = (flags & NSEventModifierFlagCapsLock) != 0;
+            ButtonPressed( DeviceInput( DEVICE_KEYBOARD, m_NSKeyCodeMap[kVK_CapsLock], DownOrUp(isPressed), now ) );
+        }
+        
+        if (changedFlags & NSEventModifierFlagFunction) {
+            bool isPressed = (flags & NSEventModifierFlagFunction) != 0;
+            ButtonPressed( DeviceInput( DEVICE_KEYBOARD, m_NSKeyCodeMap[kVK_Function], DownOrUp(isPressed), now ) );
+        }
+        
+        g_PreviousModifierFlags = flags;
+    } break;
     
     default:
         break;
