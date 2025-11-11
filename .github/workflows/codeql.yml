@@ -35,6 +35,10 @@ jobs:
 
     - name: Install dependencies
       run: sudo apt-get update && sudo apt-get install -y
+        autoconf
+        autoconf-archive
+        automake
+        libtool
         libasound2-dev
         libgl-dev
         libglu1-mesa-dev
@@ -49,8 +53,19 @@ jobs:
         libxtst-dev
         nasm
 
+    - name: Setup vcpkg
+      run: |
+        if [ ! -d "$HOME/vcpkg" ]; then
+          git clone https://github.com/microsoft/vcpkg.git $HOME/vcpkg
+          cd $HOME/vcpkg
+          ./bootstrap-vcpkg.sh
+        fi
+        echo "VCPKG_ROOT=$HOME/vcpkg" >> $GITHUB_ENV
+
     - name: Configure
-      run: cmake -B build -DWITH_FFMPEG_JOBS="$(nproc)"
+      run: cmake -B build
+        -DCMAKE_TOOLCHAIN_FILE=$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake
+        -DWITH_FFMPEG_JOBS="$(nproc)"
     
     - name: Build
       run: cmake --build build --parallel "$(nproc)"
