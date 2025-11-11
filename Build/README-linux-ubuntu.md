@@ -1,3 +1,5 @@
+_These instructions assume you are using a Debian-based distribution (such as Debian, Ubuntu, Mint, etc). You can use other Linux distributions as well as long as you be sure to install the needed prerequisites._
+
 ## Install CMake and Git
 
 The common way of installing CMake and Git is to install it via your distribution's package manager.
