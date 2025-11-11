@@ -21,6 +21,8 @@ static float DownOrUp( bool down )
     return down ? 1 : 0;
 }
 
+static NSEventModifierFlags g_PreviousModifierFlags = 0;
+
 InputHandler_NSEvent::InputHandler_NSEvent()
 {
     InitKeyCodeMap();
@@ -154,16 +156,6 @@ void InputHandler_NSEvent::InitKeyCodeMap()
 
 void InputHandler_NSEvent::HandleEvent( NSEvent *e )
 {
-    // macOS keyboard event handler with proper fn key support.
-    // 
-    // Expected behavior:
-    // - F-keys (F1-F16) should always be recognized as F-keys, regardless of fn state
-    // - Command (⌘) and Control (⌃) modifiers are properly tracked
-    // - fn key presses are detected and reported
-    // - On Apple keyboards, F6 without fn held = volume down hardware event
-    //   (This is intercepted at the macOS level and won't reach this handler,
-    //    but F-keys with fn held should still be properly detected)
-    
     NSEventType type = [e type];
     if ( type != NSEventTypeKeyDown && type != NSEventTypeKeyUp && type != NSEventTypeFlagsChanged ) {
         return;
@@ -176,52 +168,74 @@ void InputHandler_NSEvent::HandleEvent( NSEvent *e )
     RageTimer now;
     unsigned short keyCode = [e keyCode];
     float zval = ( type == NSEventTypeKeyDown ? 1.0 : 0.0 );
-    NSEventModifierFlags flags = [e modifierFlags];
     
     switch(type)
     {
     case NSEventTypeKeyUp:
-    case NSEventTypeKeyDown: {
-        // Access the keyCode directly from the array
-        DeviceButton button = m_NSKeyCodeMap[keyCode];
-        if (button != 0) {  // 0 is typically an unmapped key
-            ButtonPressed( DeviceInput( DEVICE_KEYBOARD, button, zval, now ) );
-        }
+    case NSEventTypeKeyDown:
+        ButtonPressed( DeviceInput( DEVICE_KEYBOARD, m_NSKeyCodeMap[keyCode], zval, now ) );
         break;
-    }
         
     case NSEventTypeFlagsChanged: {
-        switch(keyCode)
-        {
-        case kVK_CapsLock:
-            ButtonPressed( DeviceInput( DEVICE_KEYBOARD, m_NSKeyCodeMap[keyCode], DownOrUp( flags & NSEventModifierFlagCapsLock ), now ) );
-            break;
-        case kVK_Shift:
-        case kVK_RightShift:
-            ButtonPressed( DeviceInput( DEVICE_KEYBOARD, m_NSKeyCodeMap[keyCode], DownOrUp( flags & NSEventModifierFlagShift ), now ) );
-            break;
-        case kVK_Control:
-        case kVK_RightControl:
-            ButtonPressed( DeviceInput( DEVICE_KEYBOARD, m_NSKeyCodeMap[keyCode], DownOrUp( flags & NSEventModifierFlagControl ), now ) );
-            break;
-        case kVK_Option:
-        case kVK_RightOption:
-            ButtonPressed( DeviceInput( DEVICE_KEYBOARD, m_NSKeyCodeMap[keyCode], DownOrUp( flags & NSEventModifierFlagOption ), now ) );
-            break;
-        case kVK_Command:
-        case kVK_RightCommand:
-            ButtonPressed( DeviceInput( DEVICE_KEYBOARD, m_NSKeyCodeMap[keyCode], DownOrUp( flags & NSEventModifierFlagCommand ), now ) );
-            break;
-        case kVK_Function: {
-            bool fnPressed = (flags & NSEventModifierFlagFunction) != 0;
-            // Track fn key state changes
-            if (fnPressed != m_bFnKeyPressed) {
-                m_bFnKeyPressed = fnPressed;
-                ButtonPressed( DeviceInput( DEVICE_KEYBOARD, m_NSKeyCodeMap[keyCode], DownOrUp(fnPressed), now ) );
+        NSEventModifierFlags flags = [e modifierFlags];
+        NSEventModifierFlags changedFlags = flags ^ g_PreviousModifierFlags;
+        
+        if (changedFlags & NSEventModifierFlagShift) {
+            bool isPressed = (flags & NSEventModifierFlagShift) != 0;
+            if (keyCode == kVK_Shift) {
+                ButtonPressed( DeviceInput( DEVICE_KEYBOARD, m_NSKeyCodeMap[kVK_Shift], DownOrUp(isPressed), now ) );
+            } else if (keyCode == kVK_RightShift) {
+                ButtonPressed( DeviceInput( DEVICE_KEYBOARD, m_NSKeyCodeMap[kVK_RightShift], DownOrUp(isPressed), now ) );
+            } else {
+                ButtonPressed( DeviceInput( DEVICE_KEYBOARD, m_NSKeyCodeMap[kVK_Shift], DownOrUp(isPressed), now ) );
             }
-            break;
         }
-        }} break;
+        
+        if (changedFlags & NSEventModifierFlagControl) {
+            bool isPressed = (flags & NSEventModifierFlagControl) != 0;
+            if (keyCode == kVK_Control) {
+                ButtonPressed( DeviceInput( DEVICE_KEYBOARD, m_NSKeyCodeMap[kVK_Control], DownOrUp(isPressed), now ) );
+            } else if (keyCode == kVK_RightControl) {
+                ButtonPressed( DeviceInput( DEVICE_KEYBOARD, m_NSKeyCodeMap[kVK_RightControl], DownOrUp(isPressed), now ) );
+            } else {
+                ButtonPressed( DeviceInput( DEVICE_KEYBOARD, m_NSKeyCodeMap[kVK_Control], DownOrUp(isPressed), now ) );
+            }
+        }
+        
+        if (changedFlags & NSEventModifierFlagOption) {
+            bool isPressed = (flags & NSEventModifierFlagOption) != 0;
+            if (keyCode == kVK_Option) {
+                ButtonPressed( DeviceInput( DEVICE_KEYBOARD, m_NSKeyCodeMap[kVK_Option], DownOrUp(isPressed), now ) );
+            } else if (keyCode == kVK_RightOption) {
+                ButtonPressed( DeviceInput( DEVICE_KEYBOARD, m_NSKeyCodeMap[kVK_RightOption], DownOrUp(isPressed), now ) );
+            } else {
+                ButtonPressed( DeviceInput( DEVICE_KEYBOARD, m_NSKeyCodeMap[kVK_Option], DownOrUp(isPressed), now ) );
+            }
+        }
+        
+        if (changedFlags & NSEventModifierFlagCommand) {
+            bool isPressed = (flags & NSEventModifierFlagCommand) != 0;
+            if (keyCode == kVK_Command) {
+                ButtonPressed( DeviceInput( DEVICE_KEYBOARD, m_NSKeyCodeMap[kVK_Command], DownOrUp(isPressed), now ) );
+            } else if (keyCode == kVK_RightCommand) {
+                ButtonPressed( DeviceInput( DEVICE_KEYBOARD, m_NSKeyCodeMap[kVK_RightCommand], DownOrUp(isPressed), now ) );
+            } else {
+                ButtonPressed( DeviceInput( DEVICE_KEYBOARD, m_NSKeyCodeMap[kVK_Command], DownOrUp(isPressed), now ) );
+            }
+        }
+        
+        if (changedFlags & NSEventModifierFlagCapsLock) {
+            bool isPressed = (flags & NSEventModifierFlagCapsLock) != 0;
+            ButtonPressed( DeviceInput( DEVICE_KEYBOARD, m_NSKeyCodeMap[kVK_CapsLock], DownOrUp(isPressed), now ) );
+        }
+        
+        if (changedFlags & NSEventModifierFlagFunction) {
+            bool isPressed = (flags & NSEventModifierFlagFunction) != 0;
+            ButtonPressed( DeviceInput( DEVICE_KEYBOARD, m_NSKeyCodeMap[kVK_Function], DownOrUp(isPressed), now ) );
+        }
+        
+        g_PreviousModifierFlags = flags;
+    } break;
     
     default:
         break;
