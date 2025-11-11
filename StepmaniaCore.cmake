@@ -156,9 +156,13 @@ endif()
 # Dependencies go here.
 include(ExternalProject)
 
-find_package(nasm)
-find_package(yasm)
-find_package(Iconv)
+# Only search for nasm/yasm/iconv on non-vcpkg builds
+# On vcpkg builds, these are handled separately or not needed
+if(NOT (DEFINED CMAKE_TOOLCHAIN_FILE AND CMAKE_TOOLCHAIN_FILE MATCHES "vcpkg.cmake"))
+  find_package(nasm)
+  find_package(yasm)
+  find_package(Iconv)
+endif()
 
 find_package(Threads)
 if(${Threads_FOUND})
@@ -249,10 +253,12 @@ elseif(MACOSX)
   find_library(MAC_FRAME_COREVIDEO CoreVideo ${CMAKE_SYSTEM_FRAMEWORK_PATH} REQUIRED)
   find_library(MAC_FRAME_VIDEOTOOLBOX VideoToolbox ${CMAKE_SYSTEM_FRAMEWORK_PATH} REQUIRED)
 
-  if(NOT YASM_FOUND AND NOT NASM_FOUND)
-    message(FATAL_ERROR
-      "Neither NASM nor YASM were found. Please install at least one of them."
-    )
+  if(NOT (DEFINED CMAKE_TOOLCHAIN_FILE AND CMAKE_TOOLCHAIN_FILE MATCHES "vcpkg.cmake"))
+    if(NOT YASM_FOUND AND NOT NASM_FOUND)
+      message(FATAL_ERROR
+        "Neither NASM nor YASM were found. Please install at least one of them."
+      )
+    endif()
   endif()
 elseif(LINUX OR BSD)
   if(WITH_GTK3)
@@ -328,10 +334,12 @@ elseif(LINUX OR BSD)
       )
   endif()
 
-  if(NOT YASM_FOUND AND NOT NASM_FOUND)
-    message(FATAL_ERROR
-      "Neither NASM nor YASM were found. Please install at least one of them."
-    )
+  if(NOT (DEFINED CMAKE_TOOLCHAIN_FILE AND CMAKE_TOOLCHAIN_FILE MATCHES "vcpkg.cmake"))
+    if(NOT YASM_FOUND AND NOT NASM_FOUND)
+      message(FATAL_ERROR
+        "Neither NASM nor YASM were found. Please install at least one of them."
+      )
+    endif()
   endif()
 
   include("${SM_CMAKE_DIR}/SetupFfmpeg.cmake")
