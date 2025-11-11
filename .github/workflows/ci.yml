@@ -44,7 +44,7 @@ jobs:
           if [ ! -d "$HOME/vcpkg" ]; then
             git clone https://github.com/microsoft/vcpkg.git $HOME/vcpkg
             cd $HOME/vcpkg
-            ./bootstrap-vcpkg.sh
+            ./bootstrap-vcpkg.sh -disableMetrics
           fi
           echo "VCPKG_ROOT=$HOME/vcpkg" >> $GITHUB_ENV
 
