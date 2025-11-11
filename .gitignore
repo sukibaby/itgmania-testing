@@ -15,7 +15,7 @@ ITGmania.project
 ITGmania.workspace
 Build/
 !Build/INSTALL.md
-!Build/README.md
+!Build/README*
 verdata.*
 
 # Text Editor Based Items
