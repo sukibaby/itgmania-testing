@@ -16,54 +16,64 @@ jobs:
         include:
           - os: ubuntu-24.04
             name: Ubuntu (x86_64)
-            install: sudo apt-get update && sudo apt-get install -y libasound2-dev libgl-dev libglu1-mesa-dev libgtk-3-dev libjack-dev libmad0-dev libpulse-dev libudev-dev libxinerama-dev libx11-dev libxrandr-dev libxtst-dev nasm
-            configure: cmake -B build -DWITH_FFMPEG_JOBS="$(nproc)"
-            build: cmake --build build --parallel "$(nproc)"
+            system-deps: sudo apt-get update && sudo apt-get install -y libasound2-dev libglu1-mesa-dev libgtk-3-dev libjack-dev libpulse-dev libudev-dev libxinerama-dev libx11-dev libxrandr-dev libxtst-dev nasm autoconf autoconf-archive automake libtool pkg-config
           - os: ubuntu-24.04-arm
             name: Ubuntu (ARM)
-            install: sudo apt-get update && sudo apt-get install -y libasound2-dev libgl-dev libglu1-mesa-dev libgtk-3-dev libjack-dev libmad0-dev libpulse-dev libudev-dev libxinerama-dev libx11-dev libxrandr-dev libxtst-dev nasm
-            configure: cmake -B build -DWITH_FFMPEG_JOBS="$(nproc)"
-            build: cmake --build build --parallel "$(nproc)"
+            system-deps: sudo apt-get update && sudo apt-get install -y libasound2-dev libglu1-mesa-dev libgtk-3-dev libjack-dev libpulse-dev libudev-dev libxinerama-dev libx11-dev libxrandr-dev libxtst-dev nasm autoconf autoconf-archive automake libtool pkg-config
           - os: macos-15
             name: macOS (M1)
-            install: brew install nasm
-            configure: cmake -B build -DCMAKE_OSX_ARCHITECTURES=arm64 -DWITH_FFMPEG_JOBS="$(sysctl -n hw.logicalcpu)"
-            build: cmake --build build --parallel "$(sysctl -n hw.logicalcpu)"
+            system-deps: brew install nasm autoconf autoconf-archive automake libtool pkg-config
           - os: macos-15-intel
             name: macOS (Intel)
-            install: brew install nasm
-            configure: cmake -B build -DCMAKE_OSX_ARCHITECTURES=x86_64 -DWITH_FFMPEG_JOBS="$(sysctl -n hw.logicalcpu)"
-            build: cmake --build build --parallel "$(sysctl -n hw.logicalcpu)"
+            system-deps: brew install nasm autoconf autoconf-archive automake libtool pkg-config
           - os: windows-2022
             name: Windows
-            configure: cmake -B build -DWITH_FFMPEG_JOBS="$env:NUMBER_OF_PROCESSORS"
-            build: cmake --build build --parallel "$env:NUMBER_OF_PROCESSORS"
     name: ${{ matrix.name }}
     steps:
       - uses: actions/checkout@v6
         with:
           submodules: recursive
-     ### TEMPORARY FIX:  Disable cmake cache until it expires so that windows builds work for the time being
-     # - name: Cache CMake build directory
-     #   uses: actions/cache@v4
-     #   with:
-     #     path: |
-     #       build
-     #     key: ${{ runner.os }}-${{ runner.arch }}-cmake-build-ci-${{ hashFiles('**/CMakeLists.txt', '**/*.cmake') }}
-     #     restore-keys: |
-     #       ${{ runner.os }}-${{ runner.arch }}-cmake-build-ci-
-      - name: Install dependencies
+
+      - name: Install system dependencies
         if: matrix.os != 'windows-2022'
-        run: ${{ matrix.install }}
+        run: ${{ matrix.system-deps }}
+
+      - name: Setup vcpkg
+        shell: bash
+        run: |
+          if [ ! -d "$HOME/vcpkg" ]; then
+            git clone https://github.com/microsoft/vcpkg.git $HOME/vcpkg
+            cd $HOME/vcpkg
+            ./bootstrap-vcpkg.sh
+          fi
+          echo "VCPKG_ROOT=$HOME/vcpkg" >> $GITHUB_ENV
+
       - name: Add msbuild to PATH
         if: matrix.os == 'windows-2022'
         uses: microsoft/setup-msbuild@v2
         with:
           msbuild-architecture: x64
+
       - name: Configure
-        run: ${{ matrix.configure }}
+        shell: bash
+        run: |
+          JOBS=$([ "$(uname)" == "Darwin" ] && sysctl -n hw.logicalcpu || nproc)
+          if [ "$RUNNER_OS" == "Windows" ]; then
+            cmake -B build \
+              -DCMAKE_TOOLCHAIN_FILE=$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake \
+              -DVCPKG_TARGET_TRIPLET=x64-windows-static \
+              -DWITH_FFMPEG_JOBS="%NUMBER_OF_PROCESSORS%"
+          else
+            cmake -B build \
+              -DCMAKE_TOOLCHAIN_FILE=$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake \
+              -DWITH_FFMPEG_JOBS=$JOBS
+          fi
+
       - name: Build
-        run: ${{ matrix.build }}
+        shell: bash
+        run: |
+          JOBS=$([ "$(uname)" == "Darwin" ] && sysctl -n hw.logicalcpu || nproc || echo 1)
+          cmake --build build --parallel $JOBS
 
   validate-xml-docs:
     name: Validate Lua.xml, LuaDocumentation.xml
