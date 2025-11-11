@@ -1,0 +1,74 @@
+{
+  "name": "itgmania",
+  "description": "ITGmania",
+  "builtin-baseline": "4c4abc2e8727221ede31021349386dac674309b0",
+  "overrides": [
+    {
+      "name": "glew",
+      "version": "2.2.0#6"
+    },
+    {
+      "name": "hidapi",
+      "version": "0.15.0#1"
+    },
+    {
+      "name": "ixwebsocket",
+      "version": "11.4.6"
+    },
+    {
+      "name": "libjpeg-turbo",
+      "version": "3.1.0#2"
+    },
+    {
+      "name": "libmad",
+      "version": "0.16.4#4"
+    },
+    {
+      "name": "libogg",
+      "version": "1.3.5#2"
+    },
+    {
+      "name": "libpng",
+      "version": "1.6.48#0"
+    },
+    {
+      "name": "libvorbis",
+      "version": "1.3.7#4"
+    },
+    {
+      "name": "jsoncpp",
+      "version": "1.9.6"
+    },
+    {
+      "name": "mbedtls",
+      "version": "3.6.4"
+    },
+    {
+      "name": "miniz",
+      "version": "2.2.0#1"
+    },
+    {
+      "name": "pcre",
+      "version": "8.45#7"
+    },
+    {
+      "name": "zlib",
+      "version": "1.3.1"
+    }
+  ],
+  "dependencies": [
+    "glew",
+    "hidapi",
+    "ixwebsocket",
+    "libjpeg-turbo",
+    "libmad",
+    "libogg",
+    "libpng",
+    "libvorbis",
+    "jsoncpp",
+    "mbedtls",
+    "miniz",
+    "pcre",
+    "zlib"
+  ]
+}

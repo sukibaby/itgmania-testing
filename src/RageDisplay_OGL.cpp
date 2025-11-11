@@ -692,8 +692,9 @@ void SetupExtensions()
 	const float fGLVersion = StringToFloat( (const char *) glGetString(GL_VERSION) );
 	g_glVersion = std::lrint( fGLVersion * 10 );
 
-	const float fGLUVersion = StringToFloat( (const char *) gluGetString(GLU_VERSION) );
-	g_gluVersion = std::lrint( fGLUVersion * 10 );
+	// gluGetString(GLU_VERSION) is not available in modern GLEW.
+	// Assume GLU >= 1.3 (released in 1998) for all modern systems.
+	g_gluVersion = 13;
 
 #ifndef HAVE_X11 // LLW_X11 needs to init GLEW early for GLX exts
 	glewInit();

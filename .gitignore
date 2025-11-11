@@ -16,6 +16,9 @@ ITGmania.workspace
 Build/
 !Build/INSTALL.md
 !Build/README.md
+!Build/README-windows.md
+!Build/README-macOS.md
+!Build/README-linux-ubuntu.md
 verdata.*
 
 # Text Editor Based Items
@@ -106,3 +109,4 @@ BuildLog.htm
 *.pc
 *.d
 *.lastcodeanalysissucceeded
+/vcpkg_installed
