@@ -2271,8 +2271,8 @@ uintptr_t RageDisplay_Legacy::CreateTexture(
 
 	glPixelStorei( GL_UNPACK_ROW_LENGTH, pImg->pitch / pImg->format->BytesPerPixel );
 
-	int texWidth = power_of_two(pImg->w);
-	int texHeight = power_of_two(pImg->h);
+	const int texWidth = power_of_two(pImg->w);
+	const int texHeight = power_of_two(pImg->h);
 
 	// Allocate storage for the texture.
 	glTexImage2D(
