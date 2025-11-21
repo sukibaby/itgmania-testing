@@ -2252,7 +2252,7 @@ uintptr_t RageDisplay_Legacy::CreateTexture(
 	glGenTextures( 1, reinterpret_cast<GLuint*>(&iTexHandle) );
 	ASSERT( iTexHandle != 0 );
 
-	GLuint glTexID = static_cast<GLuint>(iTexHandle);
+	const GLuint glTexID = static_cast<GLuint>(iTexHandle);
 	glBindTexture( GL_TEXTURE_2D, glTexID );
 
 	// Set the parameters before uploading.
