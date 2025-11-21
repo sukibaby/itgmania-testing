@@ -110,3 +110,4 @@ BuildLog.htm
 *.d
 *.lastcodeanalysissucceeded
 /vcpkg_installed
+/Themes
