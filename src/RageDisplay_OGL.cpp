@@ -2231,83 +2231,12 @@ uintptr_t RageDisplay_Legacy::CreateTexture(
 
 	/* Find the pixel format of the surface we've been given. */
 	bool bFreeImg;
-	RagePixelFormat SurfacePixFmt = GetImgPixelFormat( pImg, bFreeImg, pImg->w, pImg->h, pixfmt == RagePixelFormat_PAL );
+	RagePixelFormat SurfacePixFmt = GetImgPixelFormat( pImg, bFreeImg, pImg->w, pImg->h, false );
 	ASSERT( SurfacePixFmt != RagePixelFormat_Invalid );
 
 	GLenum glTexFormat = g_GLPixFmtInfo[pixfmt].internalfmt;
 	GLenum glImageFormat = g_GLPixFmtInfo[SurfacePixFmt].format;
 	GLenum glImageType = g_GLPixFmtInfo[SurfacePixFmt].type;
-
-	/* If the image is paletted, but we're not sending it to a paletted image,
-	 * set up glPixelMap. */
-	SetPixelMapForSurface( glImageFormat, glTexFormat, pImg->format->palette.get() );
-
-	// HACK:  OpenGL 1.2 types aren't available in GLU 1.3.  Don't call GLU for mip
-	// mapping if we're using an OGL 1.2 type and don't have >= GLU 1.3.
-	// http://pyopengl.sourceforge.net/documentation/manual/gluBuild2DMipmaps.3G.html
-	if (bGenerateMipMaps && g_gluVersion < 13)
-	{
-		switch( pixfmt )
-		{
-		// OpenGL 1.1 types
-		case RagePixelFormat_RGBA8:
-		case RagePixelFormat_RGB8:
-		case RagePixelFormat_PAL:
-		case RagePixelFormat_BGR8:
-			break;
-		// OpenGL 1.2 types
-		default:
-			LOG->Trace( "Can't generate mipmaps for type %s because GLU version %.1f is too old.", GLToString(glImageType).c_str(), g_gluVersion/10.f );
-			bGenerateMipMaps = false;
-			break;
-		}
-	}
-
-	SetTextureUnit( TextureUnit_1 );
-
-	// allocate OpenGL texture resource
-	uintptr_t iTexHandle;
-	glGenTextures( 1, reinterpret_cast<GLuint*>(&iTexHandle) );
-	ASSERT( iTexHandle != 0 );
-
-	glBindTexture( GL_TEXTURE_2D, static_cast<GLuint>(iTexHandle) );
-
-	if (g_pWind->GetActualVideoModeParams().bAnisotropicFiltering &&
-		GLEW_EXT_texture_filter_anisotropic )
-	{
-		GLfloat fLargestSupportedAnisotropy;
-		glGetFloatv( GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &fLargestSupportedAnisotropy );
-		glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, fLargestSupportedAnisotropy );
-	}
-
-	SetTextureFiltering( TextureUnit_1, true );
-	SetTextureWrapping( TextureUnit_1, false );
-
-	glPixelStorei( GL_UNPACK_ROW_LENGTH, pImg->pitch / pImg->format->BytesPerPixel );
-
-
-	if (pixfmt == RagePixelFormat_PAL)
-	{
-		/* The texture is paletted; set the texture palette. */
-		GLubyte palette[256*4];
-		memset( palette, 0, sizeof(palette) );
-		int p = 0;
-		/* Copy the palette to the format OpenGL expects. */
-		for( int i = 0; i < pImg->format->palette->ncolors; ++i )
-		{
-			palette[p++] = pImg->format->palette->colors[i].r;
-			palette[p++] = pImg->format->palette->colors[i].g;
-			palette[p++] = pImg->format->palette->colors[i].b;
-			palette[p++] = pImg->format->palette->colors[i].a;
-		}
-
-		/* Set the palette. */
-		glColorTableEXT( GL_TEXTURE_2D, GL_RGBA8, 256, GL_RGBA, GL_UNSIGNED_BYTE, palette );
-
-		GLint iRealFormat = 0;
-		glGetColorTableParameterivEXT( GL_TEXTURE_2D, GL_COLOR_TABLE_FORMAT, &iRealFormat );
-		ASSERT( iRealFormat == GL_RGBA8 );
-	}
 
 	LOG->Trace("%s (format %s, %ix%i, format %s, type %s, pixfmt %i, imgpixfmt %i)",
 		"glTexImage2D",
@@ -2318,36 +2247,60 @@ uintptr_t RageDisplay_Legacy::CreateTexture(
 
 	DebugFlushGLErrors();
 
+	// allocate OpenGL texture resource
+	uintptr_t iTexHandle;
+	glGenTextures( 1, reinterpret_cast<GLuint*>(&iTexHandle) );
+	ASSERT( iTexHandle != 0 );
+
+	GLuint glTexID = static_cast<GLuint>(iTexHandle);
+	glBindTexture( GL_TEXTURE_2D, glTexID );
+
+	// Set the parameters before uploading.
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, bGenerateMipMaps ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR );
+
+	if (g_pWind->GetActualVideoModeParams().bAnisotropicFiltering &&
+		GLEW_EXT_texture_filter_anisotropic )
+	{
+		GLfloat fLargestSupportedAnisotropy;
+		glGetFloatv( GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &fLargestSupportedAnisotropy );
+		glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, fLargestSupportedAnisotropy );
+	}
+
+	glPixelStorei( GL_UNPACK_ROW_LENGTH, pImg->pitch / pImg->format->BytesPerPixel );
+
+	int texWidth = power_of_two(pImg->w);
+	int texHeight = power_of_two(pImg->h);
+
+	// Allocate storage for the texture.
 	glTexImage2D(
 		GL_TEXTURE_2D, 0, glTexFormat,
-		power_of_two(pImg->w), power_of_two(pImg->h), 0,
+		texWidth, texHeight, 0,
 		glImageFormat, glImageType, nullptr );
+
+	// Upload pixel data if available.
 	if (pImg->pixels)
+	{
 		glTexSubImage2D( GL_TEXTURE_2D, 0,
 			0, 0,
 			pImg->w, pImg->h,
 			glImageFormat, glImageType, pImg->pixels );
+	}
 
-	if (bGenerateMipMaps) {
+	if (bGenerateMipMaps)
+	{
 		glGenerateMipmap(GL_TEXTURE_2D);
 	}
 
-	DebugAssertNoGLError();
-
-	/* Sanity check: */
-	if (pixfmt == RagePixelFormat_PAL)
-	{
-		GLint iSize = 0;
-		glGetTexLevelParameteriv( GL_TEXTURE_2D, 0, GLenum(GL_TEXTURE_INDEX_SIZE_EXT), &iSize );
-		if (iSize != 8)
-			RageException::Throw( "Thought paletted textures worked, but they don't." );
-	}
-
 	glPixelStorei( GL_UNPACK_ROW_LENGTH, 0 );
-	glFlush();
+
+	DebugAssertNoGLError();
 
 	if (bFreeImg)
 		delete pImg;
+
 	return iTexHandle;
 }
 

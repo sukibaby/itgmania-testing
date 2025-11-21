@@ -30,11 +30,9 @@ local t = Def.ActorFrame {
 	a2 .. { OnCommand=cmd(x,scale(3,0,4,SCREEN_LEFT,SCREEN_RIGHT);y,scale(1,0,4,SCREEN_TOP,SCREEN_BOTTOM)); };
 	a2 .. { OnCommand=function(self)
 						self:x(scale(1,0,4,SCREEN_LEFT,SCREEN_RIGHT)):y(scale(3,0,4,SCREEN_TOP,SCREEN_BOTTOM))
-						if self.SetDecodeMovie then self:SetDecodeMovie(false) end
 				end };
 	a1 .. { OnCommand=function(self)
 						self:x(scale(3,0,4,SCREEN_LEFT,SCREEN_RIGHT)):y(scale(3,0,4,SCREEN_TOP,SCREEN_BOTTOM))
-						if self.SetDecodeMovie then self:SetDecodeMovie(false) end
 				end };
 };
 
