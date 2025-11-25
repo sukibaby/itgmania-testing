@@ -795,6 +795,12 @@ void BackgroundImpl::Layer::UpdateCurBGChange( const Song *pSong, float fLastMus
 			}
 		}
 
+		float fSafeUpdateRate = change.m_fRate;
+		if( fSafeUpdateRate < 0.01f )
+			fSafeUpdateRate = 0.01f;  // Minimum safe rate to prevent division issues
+		if( fSafeUpdateRate > 10.0f )
+			fSafeUpdateRate = 10.0f;  // Maximum reasonable rate
+
 		m_pCurrentBGA->SetUpdateRate( change.m_fRate );
 
 		m_pCurrentBGA->InitState();
@@ -815,7 +821,7 @@ void BackgroundImpl::Layer::UpdateCurBGChange( const Song *pSong, float fLastMus
 	}
 
 	/* This is unaffected by the music rate. */
-	float fDeltaTimeNoMusicRate = std::max( fDeltaTime / fRate, 0.0f );
+	float fDeltaTimeNoMusicRate = std::max( fDeltaTime / std::max(fRate, 0.01f), 0.0f );
 
 	if( m_pCurrentBGA )
 		m_pCurrentBGA->Update( fDeltaTimeNoMusicRate );
