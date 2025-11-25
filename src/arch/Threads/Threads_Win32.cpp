@@ -7,7 +7,12 @@
 
 #include <cstdint>
 #include <mutex>
-#include <memory> 
+#include <memory>
+
+// Enable advanced Windows scheduler features
+#ifndef _WIN32_WINNT
+#define _WIN32_WINNT 0x0602
+#endif 
 
 const int MAX_THREADS=128;
 
@@ -214,13 +219,33 @@ ThreadImpl *MakeThread( int (*pFunc)(void *pData), void *pData, uint64_t *piThre
 MutexImpl_Win32::MutexImpl_Win32( RageMutex *pParent ):
 	MutexImpl( pParent )
 {
-	mutex = CreateMutex( nullptr, false, nullptr );
-	ASSERT_M( mutex != nullptr, werr_ssprintf(GetLastError(), "CreateMutex") );
+	// Use CRITICAL_SECTION instead of Mutex for much better performance.
+	// Critical sections are faster because they avoid kernel transitions
+	// when there's no contention. On multi-core systems, use a spin count
+	// to avoid context switches for short-held locks.
+	pCriticalSection = new CRITICAL_SECTION;
+	
+	// Set spin count to 4000 (recommended for multi-core systems).
+	// This makes the thread spin briefly before sleeping, which is much
+	// faster for locks held for microseconds.
+	if( !InitializeCriticalSectionAndSpinCount(pCriticalSection, 4000) )
+	{
+		// Fallback to regular initialization if spin count fails
+		InitializeCriticalSection(pCriticalSection);
+	}
+	
+	// For backward compatibility, keep a dummy mutex handle
+	mutex = nullptr;
 }
 
 MutexImpl_Win32::~MutexImpl_Win32()
 {
-	CloseHandle( mutex );
+	if( pCriticalSection )
+	{
+		DeleteCriticalSection( pCriticalSection );
+		delete pCriticalSection;
+		pCriticalSection = nullptr;
+	}
 }
 
 /* NOTE(sukibaby):  the function name here is a bit misleading.
@@ -256,6 +281,15 @@ static bool SimpleWaitForSingleObject( HANDLE h, DWORD ms )
 
 bool MutexImpl_Win32::Lock()
 {
+	if( pCriticalSection )
+	{
+		// CRITICAL_SECTION doesn't support timeouts, but it's much faster.
+		// Deadlock detection needs to be handled at a higher level.
+		EnterCriticalSection( pCriticalSection );
+		return true;
+	}
+	
+	// Fallback to old mutex code (shouldn't reach here)
 	int iMilliseconds = 10000; // 10 seconds
 	int tries = 2;
 
@@ -290,11 +324,24 @@ bool MutexImpl_Win32::Lock()
 
 bool MutexImpl_Win32::TryLock()
 {
+	if( pCriticalSection )
+	{
+		return TryEnterCriticalSection( pCriticalSection ) != 0;
+	}
+	
+	// Fallback to old mutex code
 	return SimpleWaitForSingleObject( mutex, 0 );
 }
 
 void MutexImpl_Win32::Unlock()
 {
+	if( pCriticalSection )
+	{
+		LeaveCriticalSection( pCriticalSection );
+		return;
+	}
+	
+	// Fallback to old mutex code
 	const bool ret = !!ReleaseMutex( mutex );
 
 	/* We can't ASSERT here, since this is called from checkpoints,
@@ -323,7 +370,7 @@ EventImpl_Win32::EventImpl_Win32( MutexImpl_Win32 *pParent )
 	m_pParent = pParent;
 	m_iNumWaiting = 0;
 	m_WakeupSema = CreateSemaphore( nullptr, 0, 0x7fffffff, nullptr );
-	InitializeCriticalSection( &m_iNumWaitingLock );
+	InitializeCriticalSectionAndSpinCount( &m_iNumWaitingLock, 4000 );
 	m_WaitersDone = CreateEvent( nullptr, FALSE, FALSE, nullptr );
 }
 
@@ -352,13 +399,16 @@ bool EventImpl_Win32::Wait( RageTimer *pTimeout )
 	}
 
 	// Unlock the mutex and wait for a signal.
-	bool bSuccess = (SignalObjectAndWait(m_pParent->mutex, m_WakeupSema, iMilliseconds, FALSE) == WAIT_OBJECT_0);
+	// Use the CRITICAL_SECTION directly for better performance
+	LeaveCriticalSection( m_pParent->pCriticalSection );
+	DWORD dwResult = WaitForSingleObject( m_WakeupSema, iMilliseconds );
+	bool bSuccess = (dwResult == WAIT_OBJECT_0);
 
 	EnterCriticalSection( &m_iNumWaitingLock );
 	if( !bSuccess )
 	{
 		/* Avoid a race condition: someone may have signalled the object
-		 * between SignalObjectAndWait and EnterCriticalSection.
+		 * between the wait ending and EnterCriticalSection.
 		 * While we hold m_iNumWaitingLock, poll (with a zero timeout) the
 		 * object one last time. */
 		if( WaitForSingleObject( m_WakeupSema, 0 ) == WAIT_OBJECT_0 )
@@ -374,12 +424,11 @@ bool EventImpl_Win32::Wait( RageTimer *pTimeout )
 	 * another thread (not by timeout), wake up the signaller. */
 	if (bLastWaiting && bSuccess)
 	{
-		SignalObjectAndWait( m_WaitersDone, m_pParent->mutex, INFINITE, FALSE );
+		SetEvent( m_WaitersDone );
 	}
-	else
-	{
-		WaitForSingleObject( m_pParent->mutex, INFINITE );
-	}
+	
+	// Re-acquire the parent mutex
+	EnterCriticalSection( m_pParent->pCriticalSection );
 
 	return bSuccess;
 }

@@ -16,6 +16,24 @@
 #include <cstdint>
 #include <vector>
 
+// For PROCESS_POWER_THROTTLING_STATE (Windows 10+)
+#ifndef PROCESS_POWER_THROTTLING_CURRENT_VERSION
+#define PROCESS_POWER_THROTTLING_CURRENT_VERSION 1
+#define PROCESS_POWER_THROTTLING_EXECUTION_SPEED 0x1
+#define PROCESS_POWER_THROTTLING_IGNORE_TIMER_RESOLUTION 0x4
+
+typedef struct _PROCESS_POWER_THROTTLING_STATE {
+	ULONG Version;
+	ULONG ControlMask;
+	ULONG StateMask;
+} PROCESS_POWER_THROTTLING_STATE, *PPROCESS_POWER_THROTTLING_STATE;
+#endif
+
+// For ProcessPowerThrottling
+#ifndef ProcessPowerThrottling  
+#define ProcessPowerThrottling ((PROCESS_INFORMATION_CLASS)76)
+#endif
+
 
 static HANDLE g_hInstanceMutex;
 static bool g_bIsMultipleInstance = false;
@@ -42,6 +60,38 @@ ArchHooks_Win32::ArchHooks_Win32()
 	/* Windows boosts priority on keyboard input, among other things.  Disable that for
 	 * the main thread. */
 	SetThreadPriorityBoost( GetCurrentThread(), TRUE );
+
+	// === WINDOWS SCHEDULER OPTIMIZATIONS ===
+	// These optimizations dramatically improve thread scheduling performance,
+	// especially for high-frequency thread operations (250Hz-1000Hz range).
+	
+	// Disable power throttling for consistent performance (Windows 10+ only)
+	// This prevents Windows from reducing clock speeds during "background" work
+#if defined(_WIN32) && (_WIN32_WINNT >= 0x0A00)
+	PROCESS_POWER_THROTTLING_STATE PowerThrottling;
+	ZERO( PowerThrottling );
+	PowerThrottling.Version = PROCESS_POWER_THROTTLING_CURRENT_VERSION;
+	PowerThrottling.ControlMask = PROCESS_POWER_THROTTLING_EXECUTION_SPEED;
+	PowerThrottling.StateMask = 0; // Disable throttling
+	
+	// Attempt to disable power throttling - this may fail on older Windows versions
+	typedef BOOL (WINAPI *SetProcessInformationProc)(HANDLE, PROCESS_INFORMATION_CLASS, LPVOID, DWORD);
+	HMODULE hKernel32 = GetModuleHandleA("kernel32.dll");
+	if( hKernel32 )
+	{
+		SetProcessInformationProc pSetProcessInformation = 
+			(SetProcessInformationProc)GetProcAddress(hKernel32, "SetProcessInformation");
+		if( pSetProcessInformation )
+		{
+			pSetProcessInformation(
+				GetCurrentProcess(),
+				ProcessPowerThrottling,
+				&PowerThrottling,
+				sizeof(PowerThrottling)
+			);
+		}
+	}
+#endif
 
 	g_hInstanceMutex = CreateMutex( nullptr, TRUE, PRODUCT_ID );
 

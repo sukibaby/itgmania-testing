@@ -42,7 +42,8 @@ public:
 	bool TryLock();
 	void Unlock();
 
-	HANDLE mutex;
+	HANDLE mutex; // Kept for backward compatibility with EventImpl_Win32
+	CRITICAL_SECTION *pCriticalSection; // Actual synchronization primitive (much faster)
 };
 
 class EventImpl_Win32: public EventImpl
