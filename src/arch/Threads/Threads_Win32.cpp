@@ -243,23 +243,37 @@ static bool SimpleWaitForSingleObject( HANDLE h, DWORD ms )
 }
 
 bool MutexImpl_Win32::Lock()
+{
+	int iMilliseconds = 10000; // 10 seconds
+	int tries = 2;
+
+	while( tries-- )
 	{
-		DWORD dwWaitResult = WaitForSingleObject(mutex, INFINITE);
+		/* Wait for ten seconds. If it takes longer than that, we're
+		 * probably deadlocked. */
+		DWORD dwWaitResult = WaitForSingleObject(mutex, iMilliseconds);
 		switch (dwWaitResult)
 		{
 		case WAIT_OBJECT_0:
 			return true;
 	
 		case WAIT_TIMEOUT:
-			return false;
+			/* Timed out. Probably deadlocked. Try again one more time,
+			 * with a smaller timeout, just in case we're debugging and
+			 * happened to stop while waiting on the mutex. */
+			iMilliseconds = 1000; // 1 second
+			break;
 
 		case WAIT_ABANDONED:
-			return false;
+			FAIL_M( ssprintf("%s", werr_ssprintf(GetLastError(), "Mutex was abandoned").c_str()) );
 
 		default:
-			FAIL_M( "WaitForSingleObject failed in a way that shouldn't have been possible" );
+			FAIL_M( ssprintf("%s", werr_ssprintf(GetLastError(), "WaitForSingleObject").c_str()) );
 		}
 	}
+
+	return false;
+}
 
 bool MutexImpl_Win32::TryLock()
 {
