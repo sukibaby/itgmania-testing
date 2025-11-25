@@ -375,8 +375,24 @@ int MovieDecoder_FFMpeg::DecodePacketToFrame() {
 		 * to give it a buffer to read from since it tries to read anyway. */
 		packet->packet->data = packet->packet->size ? packet->packet->data : nullptr;
 		int len = packet->packet->size;
-		avcodec::avcodec_send_packet(av_stream_codec_, packet->packet);
+		
+		int send_ret = avcodec::avcodec_send_packet(av_stream_codec_, packet->packet);
 		int avcodec_return = avcodec::avcodec_receive_frame(av_stream_codec_, frame_buffer_[frame_buffer_position_]->frame);
+		
+		// Handle EAGAIN - decoder needs more input before producing output
+		if (avcodec_return == AVERROR(EAGAIN)) {
+			// If send was successful, we've buffered the packet
+			if (send_ret == 0) {
+				// Mark as processed and continue to next packet
+				packet_offset += len;
+				if (packet_offset > packet->packet->size) {
+					// Packet fully consumed, decoder needs more packets
+					return 0;
+				}
+				continue;
+			}
+		}
+		
 		frame->displayed = false;
 		frame->packet_num = packet_buffer_position_;
 
@@ -388,7 +404,7 @@ int MovieDecoder_FFMpeg::DecodePacketToFrame() {
 
 		packet_offset += len;
 
-		if (avcodec_return != 0)
+		if (avcodec_return != 0 && avcodec_return != AVERROR(EAGAIN))
 		{
 			LOG->Trace(
 				"Frame %i saw nonzero avcodec_receive_frame status: %i, this is likely not fatal.",
@@ -606,7 +622,10 @@ RString MovieDecoder_FFMpeg::OpenCodec()
 
 	ASSERT(av_stream_ != nullptr);
 	if (av_stream_codec_->codec)
+	{
+		avcodec::avcodec_flush_buffers(av_stream_codec_);
 		avcodec::avcodec_close(av_stream_codec_);
+	}
 
 	const avcodec::AVCodec* pCodec = avcodec::avcodec_find_decoder(av_stream_codec_->codec_id);
 	if (pCodec == nullptr)
