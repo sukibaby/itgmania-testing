@@ -69,15 +69,48 @@ uint64_t ThreadImpl_Win32::GetThreadId() const
 
 int ThreadImpl_Win32::Wait()
 {
-	WaitForSingleObject( ThreadHandle, INFINITE );
+	int len = 10000; // 10 seconds
+	int tries = 2;
 
-	DWORD ret;
-	GetExitCodeThread( ThreadHandle, &ret );
+	while( tries-- )
+	{
+		/* Wait for ten seconds. If it takes longer than that, the thread
+		 * is probably deadlocked or hung. */
+		DWORD dwWaitResult = WaitForSingleObject( ThreadHandle, len );
+		
+		switch( dwWaitResult )
+		{
+		case WAIT_OBJECT_0:
+			// Thread has terminated successfully
+			{
+				DWORD ret;
+				GetExitCodeThread( ThreadHandle, &ret );
 
-	CloseHandle( ThreadHandle );
-	ThreadHandle = nullptr;
+				CloseHandle( ThreadHandle );
+				ThreadHandle = nullptr;
 
-	return ret;
+				return ret;
+			}
+
+		case WAIT_TIMEOUT:
+			/* Timed out. Probably deadlocked/hung. Try again one more time,
+			 * with a smaller timeout, just in case we're debugging and
+			 * happened to stop while the thread was running. */
+			len = 1000; // 1 second
+			break;
+
+		case WAIT_FAILED:
+			FAIL_M( ssprintf("%s", werr_ssprintf(GetLastError(), "WaitForSingleObject").c_str()) );
+			break;
+
+		default:
+			FAIL_M( "unknown wait result" );
+		}
+	}
+
+	// Timed out after all retries
+	FAIL_M( "ThreadImpl_Win32::Wait: thread failed to terminate (possible deadlock)" );
+	return 0; // unreachable, but keeps compiler happy
 }
 
 // SetThreadName magic comes from VirtualDub.
