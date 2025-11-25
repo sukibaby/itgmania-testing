@@ -119,6 +119,12 @@ static DWORD WINAPI StartThread( LPVOID pData )
 {
 	ThreadImpl_Win32 *pThis = static_cast<ThreadImpl_Win32 *>(pData);
 
+	pThis->ThreadId = GetCurrentThreadId();
+	*pThis->m_piThreadID = static_cast<uint64_t>(pThis->ThreadId);
+
+	// Tell MakeThread that we've set m_piThreadID, so it's safe to return.
+	pThis->m_StartFinishedSem->Post();
+
 	SetThreadName( GetCurrentThreadId(), RageThread::GetCurrentThreadName() );
 
 	DWORD ret = static_cast<DWORD>(pThis->m_pFunc(pThis->m_pData));
@@ -184,9 +190,11 @@ ThreadImpl *MakeThread( int (*pFunc)(void *pData), void *pData, uint64_t *piThre
 	std::unique_ptr<ThreadImpl_Win32> thread = std::make_unique<ThreadImpl_Win32>();
 	thread->m_pFunc = pFunc;
 	thread->m_pData = pData;
+	thread->m_piThreadID = piThreadID;
+
+	thread->m_StartFinishedSem = MakeSemaphore( 0 );
 
 	thread->ThreadHandle = CreateThread(nullptr, 0, &StartThread, thread.get(), CREATE_SUSPENDED, &thread->ThreadId);
-	*piThreadID = static_cast<uint64_t>(thread->ThreadId);
 	ASSERT_M(thread->ThreadHandle != nullptr, ssprintf("%s", werr_ssprintf(GetLastError(), "CreateThread").c_str()));
 
 	int slot = GetOpenSlot( thread->ThreadId );
@@ -194,6 +202,10 @@ ThreadImpl *MakeThread( int (*pFunc)(void *pData), void *pData, uint64_t *piThre
 
 	int iRet = ResumeThread( thread->ThreadHandle );
 	ASSERT_M( iRet == 1, ssprintf("%s", werr_ssprintf(GetLastError(), "ResumeThread").c_str() ) );
+
+	// Don't return until StartThread sets m_piThreadID.
+	thread->m_StartFinishedSem->Wait();
+	delete thread->m_StartFinishedSem;
 
 	return thread.release();
 }
@@ -266,6 +278,7 @@ bool MutexImpl_Win32::Lock()
 
 		case WAIT_ABANDONED:
 			FAIL_M( ssprintf("%s", werr_ssprintf(GetLastError(), "Mutex was abandoned").c_str()) );
+			break;
 
 		default:
 			FAIL_M( ssprintf("%s", werr_ssprintf(GetLastError(), "WaitForSingleObject").c_str()) );
@@ -417,51 +430,87 @@ EventImpl *MakeEvent( MutexImpl *pMutex )
 
 SemaImpl_Win32::SemaImpl_Win32( int iInitialValue )
 {
-	sem = CreateSemaphore( nullptr, iInitialValue, 999999999, nullptr );
+	m_Mutex = CreateMutex( nullptr, false, nullptr );
+	ASSERT_M( m_Mutex != nullptr, werr_ssprintf(GetLastError(), "CreateMutex") );
+	
+	m_Cond = CreateSemaphore( nullptr, 0, 0x7fffffff, nullptr );
+	ASSERT_M( m_Cond != nullptr, werr_ssprintf(GetLastError(), "CreateSemaphore") );
+	
 	m_iCounter = iInitialValue;
 }
 
 SemaImpl_Win32::~SemaImpl_Win32()
 {
-	CloseHandle( sem );
+	CloseHandle( m_Cond );
+	CloseHandle( m_Mutex );
 }
 
 void SemaImpl_Win32::Post()
 {
+	WaitForSingleObject( m_Mutex, INFINITE );
 	++m_iCounter;
-	ReleaseSemaphore( sem, 1, nullptr );
+	if( m_iCounter == 1 )
+		ReleaseSemaphore( m_Cond, 1, nullptr );
+	ReleaseMutex( m_Mutex );
 }
 
 bool SemaImpl_Win32::Wait()
 {
-	int len = 15000;
-	int tries = 5;
+	int len = 10000; // 10 seconds
+	int tries = 2;
 
-	while( tries-- )
+	WaitForSingleObject( m_Mutex, INFINITE );
+
+	while( !m_iCounter && tries )
 	{
-		/* Wait for 15 seconds. If it takes longer than that, we're
-		 * probably deadlocked. */
-		if( SimpleWaitForSingleObject( sem, len ) )
-		{
-			--m_iCounter;
-			return true;
-		}
+		/* Release mutex and wait for signal. */
+		DWORD ret = SignalObjectAndWait( m_Mutex, m_Cond, len, FALSE );
 
-		/* Timed out; probably deadlocked. Try again a few more times,
-		 * with a smaller timeout, just in case we're debugging and
-		 * happened to stop while waiting on the mutex. */
-		len = 1000;
+		/* Re-acquire the mutex. */
+		WaitForSingleObject( m_Mutex, INFINITE );
+
+		switch( ret )
+		{
+		case WAIT_OBJECT_0:
+			break;
+
+		case WAIT_TIMEOUT:
+			/* Timed out. Probably deadlocked. Try again one more time,
+			 * with a smaller timeout, just in case we're debugging and
+			 * happened to stop while waiting on the mutex. */
+			len = 1000; // 1 second
+			tries--;
+			break;
+
+		default:
+			ReleaseMutex( m_Mutex );
+			return false;
+		}
 	}
 
-	return false;
+	if( !m_iCounter )
+	{
+		/* Timed out. */
+		ReleaseMutex( m_Mutex );
+		return false;
+	}
+
+	--m_iCounter;
+	ReleaseMutex( m_Mutex );
+	return true;
 }
 
 bool SemaImpl_Win32::TryWait()
 {
-	if( !SimpleWaitForSingleObject( sem, 0 ) )
+	WaitForSingleObject( m_Mutex, INFINITE );
+	if( !m_iCounter )
+	{
+		ReleaseMutex( m_Mutex );
 		return false;
+	}
 
 	--m_iCounter;
+	ReleaseMutex( m_Mutex );
 	return true;
 }
 

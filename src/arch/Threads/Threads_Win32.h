@@ -16,8 +16,11 @@ public:
 	HANDLE ThreadHandle;
 	DWORD ThreadId;
 
+	// These are only used during initialization.
 	int (*m_pFunc)( void *pData );
 	void *m_pData;
+	uint64_t *m_piThreadID;
+	SemaImpl *m_StartFinishedSem;
 
 	void Halt( bool Kill );
 	void Resume();
@@ -30,6 +33,7 @@ HANDLE Win32ThreadIdToHandle( uint64_t iID );
 class MutexImpl_Win32: public MutexImpl
 {
 	friend class EventImpl_Win32;
+
 public:
 	MutexImpl_Win32( RageMutex *parent );
 	~MutexImpl_Win32();
@@ -38,7 +42,6 @@ public:
 	bool TryLock();
 	void Unlock();
 
-private:
 	HANDLE mutex;
 };
 
@@ -55,10 +58,9 @@ public:
 
 private:
 	MutexImpl_Win32 *m_pParent;
-
 	int m_iNumWaiting;
-	CRITICAL_SECTION m_iNumWaitingLock;
 	HANDLE m_WakeupSema;
+	CRITICAL_SECTION m_iNumWaitingLock;
 	HANDLE m_WaitersDone;
 };
 
@@ -73,10 +75,9 @@ public:
 	bool TryWait();
 
 private:
-	HANDLE sem;
-
-	// We have to track the count ourself, since Windows gives no way to query it.
-	int m_iCounter;
+	HANDLE m_Mutex;
+	HANDLE m_Cond;
+	unsigned m_iCounter;
 };
 
 #endif
