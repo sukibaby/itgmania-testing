@@ -25,6 +25,17 @@ include(CMakeData-file-types.cmake)
 include(CMakeData-globals.cmake)
 include(CMakeData-singletons.cmake)
 
+if(WITH_CLUB_FANTASTIC)
+  include(FetchContent)
+  FetchContent_Declare(
+    ClubFantastic
+    URL https://download.clubfantastic.dance/club_fantastic_season2_songs_9ms.zip
+    URL_HASH SHA256=845b62da6bb2994fc2ba7871b35da02f6eb36ea1ae78c2b9a59a6ec046946787
+  )
+  FetchContent_MakeAvailable(ClubFantastic)
+  FetchContent_GetProperties(ClubFantastic SOURCE_DIR CLUB_FANTASTIC_DIR)
+endif()
+
 list(APPEND SMDATA_ALL_FILES_SRC
             ${SMDATA_GLOBAL_FILES_SRC}
             ${SMDATA_GLOBAL_SINGLETON_SRC}
@@ -241,8 +252,19 @@ elseif(APPLE)
     "${SM_ROOT_DIR}/Themes"
   )
 
-  target_sources("${SM_EXE_NAME}" PUBLIC ${APPLE_BUNDLE_RESOURCES})
   set_source_files_properties(${APPLE_BUNDLE_RESOURCES} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
+
+  if(WITH_CLUB_FANTASTIC)
+    set(CLUB_FANTASTIC_BUNDLE_RESOURCES
+      "${CLUB_FANTASTIC_DIR}/Club Fantastic Season 1"
+      "${CLUB_FANTASTIC_DIR}/Club Fantastic Season 2"
+    )
+    list(APPEND APPLE_BUNDLE_RESOURCES ${CLUB_FANTASTIC_BUNDLE_RESOURCES})
+    set_source_files_properties(${CLUB_FANTASTIC_BUNDLE_RESOURCES}
+                                PROPERTIES MACOSX_PACKAGE_LOCATION "Resources/Songs")
+  endif()
+
+  target_sources("${SM_EXE_NAME}" PUBLIC ${APPLE_BUNDLE_RESOURCES})
 
   target_compile_definitions("${SM_EXE_NAME}" PRIVATE _XOPEN_SOURCE)
 
@@ -553,16 +575,6 @@ install(FILES "${SM_ROOT_DIR}/Songs/instructions.txt"
         DESTINATION "${SM_INSTALL_DESTINATION}/Songs")
 
 if(WITH_CLUB_FANTASTIC)
-  # Fetch ClubFantastic packs
-  include(FetchContent)
-  FetchContent_Declare(
-    ClubFantastic
-    URL https://download.clubfantastic.dance/club_fantastic_season2_songs_9ms.zip
-    URL_HASH SHA256=845b62da6bb2994fc2ba7871b35da02f6eb36ea1ae78c2b9a59a6ec046946787
-  )
-  FetchContent_MakeAvailable(ClubFantastic)
-  FetchContent_GetProperties(ClubFantastic SOURCE_DIR CLUB_FANTASTIC_DIR)
-
   install(DIRECTORY "${CLUB_FANTASTIC_DIR}/Club Fantastic Season 1"
           DESTINATION "${SM_INSTALL_DESTINATION}/Songs")
   install(DIRECTORY "${CLUB_FANTASTIC_DIR}/Club Fantastic Season 2"
