@@ -571,12 +571,17 @@ install(DIRECTORY "${SM_ROOT_DIR}/Docs"
         DESTINATION "${SM_INSTALL_DESTINATION}")
 install(DIRECTORY "${SM_ROOT_DIR}/NoteSkins"
         DESTINATION "${SM_INSTALL_DESTINATION}")
-install(FILES "${SM_ROOT_DIR}/Songs/instructions.txt"
-        DESTINATION "${SM_INSTALL_DESTINATION}/Songs")
-
-if(WITH_CLUB_FANTASTIC)
-  install(DIRECTORY "${CLUB_FANTASTIC_DIR}/Club Fantastic Season 1"
-          DESTINATION "${SM_INSTALL_DESTINATION}/Songs")
-  install(DIRECTORY "${CLUB_FANTASTIC_DIR}/Club Fantastic Season 2"
-          DESTINATION "${SM_INSTALL_DESTINATION}/Songs")
+# For macOS builds we keep Club Fantastic songs only inside the .app bundle
+# (added earlier via APPLE_BUNDLE_RESOURCES) and we do not create an external
+# Songs directory at install time. This prevents macOS builds from ending up
+# with two copies of the Club Fantastic songs in different places.
+if(NOT APPLE)
+  install(FILES "${SM_ROOT_DIR}/Songs/instructions.txt"
+    DESTINATION "${SM_INSTALL_DESTINATION}/Songs")
+  if(WITH_CLUB_FANTASTIC)
+    install(DIRECTORY "${CLUB_FANTASTIC_DIR}/Club Fantastic Season 1"
+      DESTINATION "${SM_INSTALL_DESTINATION}/Songs")
+    install(DIRECTORY "${CLUB_FANTASTIC_DIR}/Club Fantastic Season 2"
+      DESTINATION "${SM_INSTALL_DESTINATION}/Songs")
+  endif()
 endif()
