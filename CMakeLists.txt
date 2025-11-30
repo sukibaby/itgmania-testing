@@ -1,3 +1,19 @@
+# Build commands:
+
+# With vcpkg:
+
+# cmake -S . -B Build \
+#   -DSM_USE_VCPKG=ON \
+#   -DCMAKE_TOOLCHAIN_FILE="$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake"
+
+# Without vcpkg:
+
+# cmake -S . -B Build \
+#   -DSM_USE_VCPKG=OFF \
+#   -DCMAKE_TOOLCHAIN_FILE:PATH=
+
+# Then run  cmake --build build as usual.
+
 cmake_minimum_required(VERSION 3.20)
 
 if(APPLE)
