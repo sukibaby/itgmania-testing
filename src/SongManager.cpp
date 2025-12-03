@@ -485,6 +485,8 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
 
 			AddSongToList(pNewSong);
 
+			pNewSong->LoadCachedImages();
+
 			index_entry.push_back( pNewSong );
 			loaded++;
 			songIndex++;
@@ -553,6 +555,7 @@ void SongManager::LoadGroupSymLinks(RString sDir, RString sGroupFolder)
 
 			pNewSong->m_bIsSymLink = true;	// Very important so we don't double-parse later
 			pNewSong->m_sGroupName = sGroupFolder;
+			pNewSong->LoadCachedImages();
 			AddSongToList(pNewSong);
 			index_entry.push_back( pNewSong );
 		}

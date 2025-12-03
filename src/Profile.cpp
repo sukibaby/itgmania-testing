@@ -1227,6 +1227,7 @@ void Profile::LoadSongsFromDir(RString const& dir, ProfileSlot prof_slot, bool i
 			else
 			{
 				new_song->SetEnabled(true);
+				new_song->LoadCachedImages();
 				m_songs.push_back(new_song);
 			}
 			if(song_load_start_time.Ago() > PREFSMAN->m_custom_songs_load_timeout)
