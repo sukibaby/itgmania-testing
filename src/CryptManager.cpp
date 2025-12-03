@@ -1,9 +1,10 @@
 #include "global.h"
 
-// Enable libtommath descriptor support in tomcrypt
-// We could optionally do this depending on whether vcpkg is used or not,
-// but there's probably no harm in always enabling it?
+// Enable libtommath descriptor support in tomcrypt unless provided by the
+// build system (avoids macro redefinition error).
+#ifndef LTM_DESC
 #define LTM_DESC
+#endif
 
 // tomcrypt_cfg.h redefines malloc, realloc, calloc
 #pragma warning(push)
