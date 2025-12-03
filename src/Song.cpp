@@ -634,10 +634,11 @@ bool Song::LoadAutosaveFile()
 
 void Song::LoadCachedImages()
 {
-	if (PREFSMAN->m_ImageCache == IMGCACHE_LOW_RES_PRELOAD) {
-		for (RString Image : ImageDir) {
-			IMAGECACHE->LoadImage(Image, GetCacheFile(Image));
-		}
+	// Preferenece is not expected to change during runtime, so cache it.
+	static const bool bPreloadImages = PREFSMAN->m_ImageCache == IMGCACHE_LOW_RES_PRELOAD;
+	if (!bPreloadImages) return;
+	for (RString Image : ImageDir) {
+		IMAGECACHE->LoadImage(Image, GetCacheFile(Image));
 	}
 }
 
