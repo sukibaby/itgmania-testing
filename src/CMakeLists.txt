@@ -228,19 +228,6 @@ elseif(APPLE)
       MACOSX_BUNDLE_INFO_PLIST
       "${SM_XCODE_DIR}/Info.plist.in")
 
-  set(APPLE_BUNDLE_RESOURCES
-    "${SM_ROOT_DIR}/Announcers"
-    "${SM_ROOT_DIR}/BackgroundEffects"
-    "${SM_ROOT_DIR}/BackgroundTransitions"
-    "${SM_ROOT_DIR}/BGAnimations"
-    "${SM_ROOT_DIR}/Characters"
-    "${SM_ROOT_DIR}/Courses"
-    "${SM_ROOT_DIR}/Data"
-    "${SM_ROOT_DIR}/NoteSkins"
-    "${SM_ROOT_DIR}/Scripts"
-    "${SM_ROOT_DIR}/Themes"
-  )
-
   target_sources("${SM_EXE_NAME}" PUBLIC ${APPLE_BUNDLE_RESOURCES})
   set_source_files_properties(${APPLE_BUNDLE_RESOURCES} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
 
