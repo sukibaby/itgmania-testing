@@ -54,28 +54,39 @@ jobs:
         with:
           msbuild-architecture: x64
 
+      - name: Determine job count
+        shell: bash
+        run: |
+          if [ "$RUNNER_OS" = "macOS" ]; then
+            JOBS=$(sysctl -n hw.logicalcpu)
+          elif command -v nproc >/dev/null 2>&1; then
+            JOBS=$(nproc)
+          elif [ -n "$NUMBER_OF_PROCESSORS" ]; then
+            JOBS=$NUMBER_OF_PROCESSORS
+          else
+            JOBS=1
+          fi
+          echo "JOBS=$JOBS" >> $GITHUB_ENV
+
       - name: Configure
         shell: bash
         run: |
-          JOBS=$([ "$(uname)" == "Darwin" ] && sysctl -n hw.logicalcpu || nproc)
           if [ "$RUNNER_OS" == "Windows" ]; then
             cmake -B build \
               -DSM_USE_VCPKG=ON \
               -DCMAKE_TOOLCHAIN_FILE=$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake \
               -DVCPKG_TARGET_TRIPLET=x64-windows-static \
-              -DWITH_FFMPEG_JOBS="%NUMBER_OF_PROCESSORS%"
+              -DWITH_FFMPEG_JOBS=${{ env.JOBS }}
           else
             cmake -B build \
               -DSM_USE_VCPKG=ON \
               -DCMAKE_TOOLCHAIN_FILE=$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake \
-              -DWITH_FFMPEG_JOBS=$JOBS
+              -DWITH_FFMPEG_JOBS=${{ env.JOBS }}
           fi
 
       - name: Build
         shell: bash
-        run: |
-          JOBS=$([ "$(uname)" == "Darwin" ] && sysctl -n hw.logicalcpu || nproc || echo 1)
-          cmake --build build --parallel $JOBS
+        run: cmake --build build --parallel ${{ env.JOBS }}
 
   validate-xml-docs:
     name: Validate Lua.xml, LuaDocumentation.xml
