@@ -16,7 +16,6 @@ foreach(project ${SM_EXTERN_PROJECTS_ALWAYS})
 endforeach()
 
 if(NOT SM_USING_VCPKG)
-  # Additional third-parties only needed for the traditional custom build.
   set(SM_EXTERN_PROJECTS_CUSTOM
     CMakeProject-hidapi.cmake
     CMakeProject-glew.cmake
