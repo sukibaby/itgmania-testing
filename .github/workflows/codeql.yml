@@ -64,6 +64,7 @@ jobs:
 
     - name: Configure
       run: cmake -B build
+        -DSM_USE_VCPKG=ON 
         -DCMAKE_TOOLCHAIN_FILE=$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake
         -DWITH_FFMPEG_JOBS="$(nproc)"
     
