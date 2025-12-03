@@ -22,10 +22,10 @@ jobs:
             system-deps: sudo apt-get update && sudo apt-get install -y libasound2-dev libglu1-mesa-dev libgtk-3-dev libjack-dev libpulse-dev libudev-dev libxinerama-dev libx11-dev libxrandr-dev libxtst-dev nasm autoconf autoconf-archive automake libtool pkg-config
           - os: macos-15
             name: macOS (M1)
-            system-deps: brew install nasm autoconf autoconf-archive automake libtool pkg-config
+            system-deps: brew install nasm autoconf autoconf-archive automake libtool
           - os: macos-15-intel
             name: macOS (Intel)
-            system-deps: brew install nasm autoconf autoconf-archive automake libtool pkg-config
+            system-deps: brew install nasm autoconf autoconf-archive automake libtool
           - os: windows-2022
             name: Windows
     name: ${{ matrix.name }}
