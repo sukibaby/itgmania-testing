@@ -60,11 +60,13 @@ jobs:
           JOBS=$([ "$(uname)" == "Darwin" ] && sysctl -n hw.logicalcpu || nproc)
           if [ "$RUNNER_OS" == "Windows" ]; then
             cmake -B build \
+              -DSM_USE_VCPKG=ON \
               -DCMAKE_TOOLCHAIN_FILE=$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake \
               -DVCPKG_TARGET_TRIPLET=x64-windows-static \
               -DWITH_FFMPEG_JOBS="%NUMBER_OF_PROCESSORS%"
           else
             cmake -B build \
+              -DSM_USE_VCPKG=ON \
               -DCMAKE_TOOLCHAIN_FILE=$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake \
               -DWITH_FFMPEG_JOBS=$JOBS
           fi
