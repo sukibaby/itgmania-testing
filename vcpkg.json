@@ -1,7 +1,7 @@
 {
   "name": "itgmania",
   "description": "ITGmania",
-  "builtin-baseline": "c4e4a719ed05ca08331ceb315a6cff1ad1bea3fc",
+  "builtin-baseline": "4c4abc2e8727221ede31021349386dac674309b0",
   "overrides": [
     {
       "name": "glew",
