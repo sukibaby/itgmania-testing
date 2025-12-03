@@ -468,6 +468,9 @@ else() # Unix / Linux TODO: Remember to find and locate the zip archive files.
   if(NOT (DEFINED CMAKE_TOOLCHAIN_FILE AND CMAKE_TOOLCHAIN_FILE MATCHES "vcpkg.cmake"))
     list(REMOVE_ITEM SMDATA_LINK_LIB "zlib")
     list(APPEND SMDATA_LINK_LIB "zlib")
+  else()
+    list(REMOVE_ITEM SMDATA_LINK_LIB ZLIB::ZLIB)
+    list(APPEND SMDATA_LINK_LIB ZLIB::ZLIB)
   endif()
   
   list(APPEND SMDATA_LINK_LIB ${CMAKE_DL_LIBS}
