@@ -239,6 +239,11 @@ elseif(APPLE)
       MACOSX_BUNDLE_INFO_PLIST
       "${SM_XCODE_DIR}/Info.plist.in")
 
+# macOS NOTE: All content in any of the following directories will be copied into
+# the macOS .app bundle at build time. This behavior is exclusive to macOS.
+# This way you can bundle anything you want inside the .app bundle. If you do not
+# want any custom content to be included with the .app bundle, you can comment
+# or delete the following code block:
   set(APPLE_BUNDLE_RESOURCES
     "${SM_ROOT_DIR}/Announcers"
     "${SM_ROOT_DIR}/BackgroundEffects"
