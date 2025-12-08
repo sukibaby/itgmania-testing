@@ -22,7 +22,7 @@ namespace avcodec
 	}
 };
 
-constexpr size_t kFFMpegBufferSize = 4096;
+constexpr size_t kFFMpegBufferSize = 32768;
 constexpr int kSwsFlags = SWS_BICUBIC; // XXX: Reasonable default?
 
 struct FrameHolder {
