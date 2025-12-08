@@ -719,7 +719,7 @@ size_t MovieDecoder_FFMpeg::CalculateFrameBufferSize(int width, int height)
 	return std::max(optimal_slots, kFrameBufferMinSlots);
 }
 
-size_t MovieDecoder_FFMpeg::GetFrameBufferIndex(std::size_t logical_frame_num) const
+size_t MovieDecoder_FFMpeg::GetFrameBufferIndex(size_t logical_frame_num) const
 {
 	// Apply the offset (used for looping) and wrap around the buffer size
 	ASSERT(frame_buffer_.size() > 0);
