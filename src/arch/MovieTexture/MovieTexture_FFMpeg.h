@@ -153,6 +153,9 @@ private:
 	avcodec::SwsContext* av_sws_context_;
 	avcodec::AVCodecContext* av_stream_codec_;
 	avcodec::AVFormatContext* av_format_context_;
+	avcodec::AVFrame* rgb_frame_ = nullptr; // Reused destination frame for RGB blits.
+	int sws_width_ = 0;
+	int sws_height_ = 0;
 	std::size_t total_frames_; // Total number of frames in the movie.
 
 	unsigned char* av_buffer_;

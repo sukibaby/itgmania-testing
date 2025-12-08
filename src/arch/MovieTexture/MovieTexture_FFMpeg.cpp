@@ -118,6 +118,7 @@ MovieDecoder_FFMpeg::MovieDecoder_FFMpeg()
 
 	av_format_context_ = nullptr;
 	av_stream_ = nullptr;
+	av_pixel_format_ = avcodec::AV_PIX_FMT_BGRA; // Default RGB target; may be overwritten by surface setup.
 	total_frames_ = 0;
 	end_of_file_ = 0;
 	// Hardcoded frame buffer size of 50. Roughly translates to 100mb of ram.
@@ -132,6 +133,9 @@ MovieDecoder_FFMpeg::~MovieDecoder_FFMpeg()
 	{
 		avcodec::sws_freeContext(av_sws_context_);
 		av_sws_context_ = nullptr;
+	}
+	if (rgb_frame_ != nullptr) {
+		avcodec::av_frame_free(&rgb_frame_);
 	}
 	if (av_io_context_ != nullptr)
 	{
@@ -156,7 +160,17 @@ void MovieDecoder_FFMpeg::Init()
 {
 	end_of_file_ = 0;
 	display_frame_num_ = 0;
+	if (av_sws_context_ != nullptr)
+	{
+		avcodec::sws_freeContext(av_sws_context_);
+	}
 	av_sws_context_ = nullptr;
+	if (rgb_frame_ != nullptr) {
+		avcodec::av_frame_free(&rgb_frame_);
+	}
+	rgb_frame_ = nullptr;
+	sws_width_ = 0;
+	sws_height_ = 0;
 	av_io_context_ = nullptr;
 	av_buffer_ = nullptr;
 }
@@ -440,13 +454,16 @@ bool MovieDecoder_FFMpeg::EnsureSwsContext()
 		return true;
 	}
 
+	sws_width_ = sws_width_ == 0 ? GetWidth() : sws_width_;
+	sws_height_ = sws_height_ == 0 ? GetHeight() : sws_height_;
+
 	av_sws_context_ = avcodec::sws_getCachedContext(av_sws_context_,
-		GetWidth(), GetHeight(), av_stream_codec_->pix_fmt,
-		GetWidth(), GetHeight(), av_pixel_format_,
+		sws_width_, sws_height_, av_stream_codec_->pix_fmt,
+		sws_width_, sws_height_, av_pixel_format_,
 		kSwsFlags, nullptr, nullptr, nullptr);
 	if (av_sws_context_ == nullptr)
 	{
-		LOG->Warn("Cannot initialize sws conversion context for (%d,%d) %d->%d", GetWidth(), GetHeight(), av_stream_codec_->pix_fmt, av_pixel_format_);
+		LOG->Warn("Cannot initialize sws conversion context for (%d,%d) %d->%d", sws_width_, sws_height_, av_stream_codec_->pix_fmt, av_pixel_format_);
 		return false;
 	}
 
@@ -455,9 +472,12 @@ bool MovieDecoder_FFMpeg::EnsureSwsContext()
 
 int MovieDecoder_FFMpeg::BlitFrameToSurface(FrameHolder* frame, RageSurface* surface_out)
 {
-	avcodec::AVFrame pict;
-	pict.data[0] = (unsigned char*)surface_out->pixels;
-	pict.linesize[0] = surface_out->pitch;
+	if (rgb_frame_ == nullptr) {
+		rgb_frame_ = avcodec::av_frame_alloc();
+	}
+
+	rgb_frame_->data[0] = (unsigned char*)surface_out->pixels;
+	rgb_frame_->linesize[0] = surface_out->pitch;
 
 	if (!EnsureSwsContext()) {
 		return -1;
@@ -465,8 +485,8 @@ int MovieDecoder_FFMpeg::BlitFrameToSurface(FrameHolder* frame, RageSurface* sur
 
 	if (frame->packet_num == display_frame_num_) {
 		return avcodec::sws_scale(av_sws_context_,
-			frame->frame->data, frame->frame->linesize, 0, GetHeight(),
-			pict.data, pict.linesize);
+			frame->frame->data, frame->frame->linesize, 0, sws_height_,
+			rgb_frame_->data, rgb_frame_->linesize);
 	}
 
 	LOG->Warn("Unexpected frame trying to display! display_frame_num_ = %zu, packet_num = %zu", display_frame_num_, frame->packet_num);
