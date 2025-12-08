@@ -13,6 +13,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <thread>
+#include <algorithm>
 
 static void FixLilEndian()
 {
@@ -121,8 +122,9 @@ MovieDecoder_FFMpeg::MovieDecoder_FFMpeg()
 	av_pixel_format_ = avcodec::AV_PIX_FMT_BGRA; // Default RGB target; may be overwritten by surface setup.
 	total_frames_ = 0;
 	end_of_file_ = 0;
-	// Hardcoded frame buffer size of 50. Roughly translates to 100mb of ram.
-	for (int i = 0; i < 50; i++) {
+	// Frame buffer size will be calculated dynamically when the video is opened.
+	// For now, initialize with minimum slots to avoid null dereferences.
+	for (size_t i = 0; i < kFrameBufferMinSlots; i++) {
 		frame_buffer_.emplace_back(std::make_unique<FrameHolder>());
 	}
 }
@@ -205,7 +207,7 @@ bool MovieDecoder_FFMpeg::IsCurrentFrameReady() {
 		return false;
 	}
 
-	FrameHolder* frame = frame_buffer_[(display_frame_num_ + offset_) % frame_buffer_.size()].get();
+	FrameHolder* frame = frame_buffer_[GetFrameBufferIndex(display_frame_num_)].get();
 	// To make sure the frame doesn't change from under us.
 	std::lock_guard<std::mutex> lock(frame->lock);
 
@@ -495,7 +497,7 @@ int MovieDecoder_FFMpeg::BlitFrameToSurface(FrameHolder* frame, RageSurface* sur
 
 int MovieDecoder_FFMpeg::GetFrame(RageSurface* surface_out)
 {
-	const std::size_t display_frame_in_buffer = (display_frame_num_ + offset_) % frame_buffer_.size();
+	const std::size_t display_frame_in_buffer = GetFrameBufferIndex(display_frame_num_);
 	std::lock_guard<std::mutex> lock(frame_buffer_[display_frame_in_buffer]->lock);
 
 	int scale_status = BlitFrameToSurface(frame_buffer_[display_frame_in_buffer].get(), surface_out);
@@ -618,10 +620,29 @@ RString MovieDecoder_FFMpeg::Open(RString file)
 		total_frames_ = 2000;
 	}
 
+	// Resize frame buffer based on video resolution and target memory budget.
+	size_t optimal_buffer_size = CalculateFrameBufferSize(av_stream_codec_->width, av_stream_codec_->height);
+	if (optimal_buffer_size < frame_buffer_.size()) {
+		LOG->Trace("Shrinking frame buffer from %zu to %zu slots (video shorter or resolution allows).",
+			frame_buffer_.size(), optimal_buffer_size);
+		frame_buffer_.resize(optimal_buffer_size);
+	} else if (optimal_buffer_size > frame_buffer_.size()) {
+		LOG->Trace("Expanding frame buffer from %zu to %zu slots for resolution %dx%d.",
+			frame_buffer_.size(), optimal_buffer_size, av_stream_codec_->width, av_stream_codec_->height);
+		while (frame_buffer_.size() < optimal_buffer_size) {
+			frame_buffer_.emplace_back(std::make_unique<FrameHolder>());
+		}
+	}
+	// Additional safeguard: if video is shorter than buffer, shrink to match.
 	if (total_frames_ < frame_buffer_.size()) {
-		LOG->Trace("Video shorter than frame buffer, shrinking the buffer.");
+		LOG->Trace("Video shorter than frame buffer (%zu frames vs %zu slots), shrinking the buffer.",
+			total_frames_, frame_buffer_.size());
 		frame_buffer_.resize(total_frames_);
 	}
+	LOG->Trace("Frame buffer finalized: %zu slots for %dx%d video at %.1f MB per frame, ~%.1f MB total.",
+		frame_buffer_.size(), av_stream_codec_->width, av_stream_codec_->height,
+		(av_stream_codec_->width * av_stream_codec_->height * kBytesPerPixelBGRA) / (1024.0 * 1024.0),
+		(frame_buffer_.size() * av_stream_codec_->width * av_stream_codec_->height * kBytesPerPixelBGRA) / (1024.0 * 1024.0));
 	LOG->Trace("Number of frames detected: %zu", total_frames_);
 
 	return RString();
@@ -679,6 +700,30 @@ void MovieDecoder_FFMpeg::Rollover()
 	display_frame_num_ = 0;
 	offset_ = next_offset_;
 	next_offset_ = 0;
+}
+
+size_t MovieDecoder_FFMpeg::CalculateFrameBufferSize(int width, int height)
+{
+	// Avoid division by zero
+	if (width <= 0 || height <= 0) {
+		return kFrameBufferMinSlots;
+	}
+
+	// Calculate the size of a single frame in bytes
+	size_t frame_size_bytes = static_cast<size_t>(width) * static_cast<size_t>(height) * kBytesPerPixelBGRA;
+
+	// Calculate how many frames fit in our target memory budget
+	size_t optimal_slots = kFrameBufferTargetMemory / frame_size_bytes;
+
+	// Enforce minimum and return
+	return std::max(optimal_slots, kFrameBufferMinSlots);
+}
+
+size_t MovieDecoder_FFMpeg::GetFrameBufferIndex(std::size_t logical_frame_num) const
+{
+	// Apply the offset (used for looping) and wrap around the buffer size
+	ASSERT(frame_buffer_.size() > 0);
+	return (logical_frame_num + offset_) % frame_buffer_.size();
 }
 
 RageSurface* MovieDecoder_FFMpeg::CreateCompatibleSurface(int iTextureWidth, int iTextureHeight, bool bPreferHighColor, MovieDecoderPixelFormatYCbCr& fmtout)

@@ -24,6 +24,13 @@ namespace avcodec
 
 constexpr size_t kFFMpegBufferSize = 32768;
 constexpr int kSwsFlags = SWS_BICUBIC; // XXX: Reasonable default?
+// Target memory budget for frame buffer in bytes (100 MB). Actual buffer size is calculated
+// dynamically based on video resolution to stay within this budget.
+constexpr size_t kFrameBufferTargetMemory = 100 * 1024 * 1024; // 100 MB
+// Minimum frame buffer slots to maintain (for safety and smooth playback)
+constexpr size_t kFrameBufferMinSlots = 3;
+// Bytes per pixel for BGRA format (default)
+constexpr size_t kBytesPerPixelBGRA = 4;
 
 struct FrameHolder {
 	avcodec::AVFrame* frame = avcodec::av_frame_alloc();
@@ -132,6 +139,14 @@ public:
 private:
 	void Init();
 	RString OpenCodec();
+
+	// Helper: Calculate the optimal frame buffer size based on video resolution and target memory.
+	// Returns the number of frame slots to allocate. Respects minimum slot requirement.
+	size_t CalculateFrameBufferSize(int width, int height);
+
+	// Helper: Compute the frame buffer index for a logical frame number.
+	// This encapsulates the sliding window logic: (display_frame_num + offset) % frame_buffer.size()
+	size_t GetFrameBufferIndex(std::size_t logical_frame_num) const;
 
 	// Read a packet and send it to our frame data buffer.
 	// Returns -2 on cancel, -1 on error, 0 on EOF, 1 on OK.
