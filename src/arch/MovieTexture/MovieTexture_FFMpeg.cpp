@@ -363,7 +363,7 @@ bool MovieDecoder_FFMpeg::PrepareFrameSlot(FrameHolder* frame) {
 void MovieDecoder_FFMpeg::UpdateFrameTiming(PacketHolder* packet, FrameHolder* frame) {
 	if (frame->frame->pkt_dts != AV_NOPTS_VALUE)
 	{
-		packet->frame_timestamp = (float)(frame->frame->pkt_dts * av_q2d(av_stream_->time_base));
+		packet->frame_timestamp = static_cast<float>(frame->frame->pkt_dts * av_q2d(av_stream_->time_base));
 	}
 	else
 	{
@@ -379,7 +379,7 @@ void MovieDecoder_FFMpeg::UpdateFrameTiming(PacketHolder* packet, FrameHolder* f
 		timestamp_offset_ = packet->frame_timestamp;
 	}
 
-	packet->frame_delay = (float)av_q2d(av_stream_->time_base);
+	packet->frame_delay = static_cast<float>(av_q2d(av_stream_->time_base));
 	packet->frame_delay += frame->frame->repeat_pict * (packet->frame_delay * 0.5f);
 }
 
@@ -478,7 +478,7 @@ int MovieDecoder_FFMpeg::BlitFrameToSurface(FrameHolder* frame, RageSurface* sur
 		rgb_frame_ = avcodec::av_frame_alloc();
 	}
 
-	rgb_frame_->data[0] = (unsigned char*)surface_out->pixels;
+	rgb_frame_->data[0] = static_cast<unsigned char*>(surface_out->pixels);
 	rgb_frame_->linesize[0] = surface_out->pitch;
 
 	if (!EnsureSwsContext()) {
@@ -497,7 +497,7 @@ int MovieDecoder_FFMpeg::BlitFrameToSurface(FrameHolder* frame, RageSurface* sur
 
 int MovieDecoder_FFMpeg::GetFrame(RageSurface* surface_out)
 {
-	const std::size_t display_frame_in_buffer = GetFrameBufferIndex(display_frame_num_);
+	const size_t display_frame_in_buffer = GetFrameBufferIndex(display_frame_num_);
 	std::lock_guard<std::mutex> lock(frame_buffer_[display_frame_in_buffer]->lock);
 
 	int scale_status = BlitFrameToSurface(frame_buffer_[display_frame_in_buffer].get(), surface_out);
