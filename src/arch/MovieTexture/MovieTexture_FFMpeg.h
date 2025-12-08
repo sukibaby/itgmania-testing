@@ -141,6 +141,11 @@ private:
 	// at the next open position.
 	// Returns -2 on cancel, -1 on error, 0 if the packet is finished.
 	int DecodePacketToFrame();
+	bool PrepareFrameSlot(FrameHolder* frame);
+	int DecodePacketIntoFrame(PacketHolder* packet, FrameHolder* frame);
+	void UpdateFrameTiming(PacketHolder* packet, FrameHolder* frame);
+	bool EnsureSwsContext();
+	int BlitFrameToSurface(FrameHolder* frame, RageSurface* surface_out);
 	void HandleReset();
 
 	avcodec::AVStream* av_stream_;
