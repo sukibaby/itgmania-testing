@@ -1,3 +1,19 @@
+NOTE(sukibaby):
+
+Certain Windows FFmpeg build flags differ from the Linux/macOS builds (see CMake/SetupFfmpeg.cmake)
+
+Of course, for some of these, it can't be helped:
+- Windows uses --enable-shared,     Linux/macOS uses --enable-static
+- Windows uses --enable-w32threads, Linux/macOS uses --enable-pthreads
+- Windows enables --enable-bzlib,   Linux/macOS disables it
+- Windows enables D3D11VA/DXVA2,    macOS uses videotoolbox
+
+To improve consistency between the Windows and macOS/Linux ports, consider adding --disable-debug
+and --extra-cflags=-w to the Windows build. If updating these build flags, it will be important to
+ensure that the resulting DLLs remain compatible with the Windows linker flags in src/CMakeLists.txt.
+
+===================
+
 The binaries in this folder where built on arch linux with mingw.
 
 # pacman -S mingw-w64-{binutils,crt,gcc,headers,winpthreads}
