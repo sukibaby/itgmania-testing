@@ -661,6 +661,26 @@ void MovieDecoder_FFMpeg::Rollover()
 	next_offset_ = 0;
 }
 
+size_t MovieDecoder_FFMpeg::CalculateFrameBufferSize(int width, int height)
+{
+	if (width <= 0 || height <= 0) {
+		return kFrameBufferMinSlots;
+	}
+
+	size_t frame_size_bytes = static_cast<size_t>(width) * static_cast<size_t>(height) * kBytesPerPixelBGRA;
+
+	size_t optimal_slots = kFrameBufferTargetMemory / frame_size_bytes;
+
+	return std::max(optimal_slots, kFrameBufferMinSlots);
+}
+
+size_t MovieDecoder_FFMpeg::GetFrameBufferIndex(size_t logical_frame_num) const
+{
+	// Apply the offset (used for looping) and wrap around the buffer size
+	ASSERT(frame_buffer_.size() > 0);
+	return (logical_frame_num + offset_) % frame_buffer_.size();
+}
+
 RageSurface* MovieDecoder_FFMpeg::CreateCompatibleSurface(int iTextureWidth, int iTextureHeight, bool bPreferHighColor, MovieDecoderPixelFormatYCbCr& fmtout)
 {
 	return RageMovieTextureDriver_FFMpeg::AVCodecCreateCompatibleSurface(iTextureWidth, iTextureHeight, bPreferHighColor, *ConvertValue<int>(&av_pixel_format_), fmtout);
