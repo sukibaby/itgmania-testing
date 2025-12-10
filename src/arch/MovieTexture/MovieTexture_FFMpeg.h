@@ -144,7 +144,7 @@ private:
 	size_t CalculateFrameBufferSize(int width, int height);
 
 	// This encapsulates the sliding window logic: (display_frame_num + offset) % frame_buffer.size()
-	size_t GetFrameBufferIndex(std::size_t logical_frame_num) const;
+	size_t GetFrameBufferIndex(size_t logical_frame_num) const;
 
 	// Read a packet and send it to our frame data buffer.
 	// Returns -2 on cancel, -1 on error, 0 on EOF, 1 on OK.
