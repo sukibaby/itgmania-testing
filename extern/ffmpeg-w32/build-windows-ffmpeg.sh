@@ -1,14 +1,13 @@
 #!/bin/sh
-# Build FFmpeg for Windows using MinGW cross-compilation on Arch Linux
+# Build FFmpeg for Windows using Arch Linux with MinGW
 
 set -e
-
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 FFMPEG_SRC="${SCRIPT_DIR}/../ffmpeg"
 BUILD_DIR="${SCRIPT_DIR}/build"
 
 echo " - Installing MinGW dependencies..."
-sudo pacman -S --needed mingw-w64-binutils mingw-w64-crt mingw-w64-gcc mingw-w64-headers mingw-w64-winpthreads mingw-w64-bzip2 mingw-w64-zlib mingw-w64-pkg-config
+sudo pacman -S --needed --noconfirm mingw-w64-binutils mingw-w64-crt mingw-w64-gcc mingw-w64-headers mingw-w64-winpthreads mingw-w64-bzip2 mingw-w64-zlib mingw-w64-pkg-config
 
 if [ ! -d "$FFMPEG_SRC" ]; then
     echo "Error: FFmpeg source not found at $FFMPEG_SRC !!"
@@ -103,3 +102,9 @@ echo "x86_64 DLLs: ${SCRIPT_DIR}/x64/"
 echo "x86 DLLs:    ${SCRIPT_DIR}/x86/"
 echo ""
 echo " - Build artifacts are in: ${BUILD_DIR}"
+
+echo " - Creating tar.bz2 archive of ${SCRIPT_DIR}..."
+tar -cjf "${SCRIPT_DIR}/ffmpeg-w32.tar.bz2" -C "${SCRIPT_DIR}/.." "$(basename "${SCRIPT_DIR}")"
+echo " - Archive created at: ${SCRIPT_DIR}/ffmpeg-w32.tar.bz2"
+echo " - SHA256 sum for archive:"
+sha256sum "${SCRIPT_DIR}/ffmpeg-w32.tar.bz2"
