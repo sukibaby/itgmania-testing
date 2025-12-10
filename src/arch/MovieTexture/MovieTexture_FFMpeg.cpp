@@ -361,7 +361,7 @@ bool MovieDecoder_FFMpeg::PrepareFrameSlot(FrameHolder* frame) {
 void MovieDecoder_FFMpeg::UpdateFrameTiming(PacketHolder* packet, FrameHolder* frame) {
 	if (frame->frame->pkt_dts != AV_NOPTS_VALUE)
 	{
-		packet->frame_timestamp = (float)(frame->frame->pkt_dts * av_q2d(av_stream_->time_base));
+		packet->frame_timestamp = static_cast<float>(frame->frame->pkt_dts * av_q2d(av_stream_->time_base));
 	}
 	else
 	{
@@ -377,7 +377,7 @@ void MovieDecoder_FFMpeg::UpdateFrameTiming(PacketHolder* packet, FrameHolder* f
 		timestamp_offset_ = packet->frame_timestamp;
 	}
 
-	packet->frame_delay = (float)av_q2d(av_stream_->time_base);
+	packet->frame_delay = static_cast<float>(av_q2d(av_stream_->time_base));
 	packet->frame_delay += frame->frame->repeat_pict * (packet->frame_delay * 0.5f);
 }
 
