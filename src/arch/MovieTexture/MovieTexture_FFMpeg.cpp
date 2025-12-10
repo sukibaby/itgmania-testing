@@ -205,7 +205,7 @@ bool MovieDecoder_FFMpeg::IsCurrentFrameReady() {
 		return false;
 	}
 
-	FrameHolder* frame = frame_buffer_[(display_frame_num_ + offset_) % frame_buffer_.size()].get();
+	FrameHolder* frame = frame_buffer_[GetFrameBufferIndex(display_frame_num_)].get();
 	// To make sure the frame doesn't change from under us.
 	std::lock_guard<std::mutex> lock(frame->lock);
 
@@ -495,7 +495,7 @@ int MovieDecoder_FFMpeg::BlitFrameToSurface(FrameHolder* frame, RageSurface* sur
 
 int MovieDecoder_FFMpeg::GetFrame(RageSurface* surface_out)
 {
-	const std::size_t display_frame_in_buffer = (display_frame_num_ + offset_) % frame_buffer_.size();
+	const size_t display_frame_in_buffer = GetFrameBufferIndex(display_frame_num_);
 	std::lock_guard<std::mutex> lock(frame_buffer_[display_frame_in_buffer]->lock);
 
 	int scale_status = BlitFrameToSurface(frame_buffer_[display_frame_in_buffer].get(), surface_out);
