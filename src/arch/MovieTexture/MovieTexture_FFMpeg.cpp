@@ -156,7 +156,13 @@ void MovieDecoder_FFMpeg::Init()
 {
 	end_of_file_ = 0;
 	display_frame_num_ = 0;
+	if (av_sws_context_ != nullptr)
+	{
+		avcodec::sws_freeContext(av_sws_context_);
+	}
 	av_sws_context_ = nullptr;
+	sws_width_ = 0;
+	sws_height_ = 0;
 	av_io_context_ = nullptr;
 	av_buffer_ = nullptr;
 }
@@ -440,13 +446,16 @@ bool MovieDecoder_FFMpeg::EnsureSwsContext()
 		return true;
 	}
 
+	sws_width_ = sws_width_ == 0 ? GetWidth() : sws_width_;
+	sws_height_ = sws_height_ == 0 ? GetHeight() : sws_height_;
+
 	av_sws_context_ = avcodec::sws_getCachedContext(av_sws_context_,
-		GetWidth(), GetHeight(), av_stream_codec_->pix_fmt,
-		GetWidth(), GetHeight(), av_pixel_format_,
+		sws_width_, sws_height_, av_stream_codec_->pix_fmt,
+		sws_width_, sws_height_, av_pixel_format_,
 		kSwsFlags, nullptr, nullptr, nullptr);
 	if (av_sws_context_ == nullptr)
 	{
-		LOG->Warn("Cannot initialize sws conversion context for (%d,%d) %d->%d", GetWidth(), GetHeight(), av_stream_codec_->pix_fmt, av_pixel_format_);
+		LOG->Warn("Cannot initialize sws conversion context for (%d,%d) %d->%d", sws_width_, sws_height_, av_stream_codec_->pix_fmt, av_pixel_format_);
 		return false;
 	}
 
@@ -465,8 +474,8 @@ int MovieDecoder_FFMpeg::BlitFrameToSurface(FrameHolder* frame, RageSurface* sur
 
 	if (frame->packet_num == display_frame_num_) {
 		return avcodec::sws_scale(av_sws_context_,
-			frame->frame->data, frame->frame->linesize, 0, GetHeight(),
-			pict.data, pict.linesize);
+			frame->frame->data, frame->frame->linesize, 0, sws_height_,
+			rgb_frame_->data, rgb_frame_->linesize);
 	}
 
 	LOG->Warn("Unexpected frame trying to display! display_frame_num_ = %zu, packet_num = %zu", display_frame_num_, frame->packet_num);
