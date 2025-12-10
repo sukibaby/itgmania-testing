@@ -118,6 +118,7 @@ MovieDecoder_FFMpeg::MovieDecoder_FFMpeg()
 
 	av_format_context_ = nullptr;
 	av_stream_ = nullptr;
+	av_pixel_format_ = avcodec::AV_PIX_FMT_BGRA; // Default RGB target; may be overwritten by surface setup.
 	total_frames_ = 0;
 	end_of_file_ = 0;
 	// Hardcoded frame buffer size of 50. Roughly translates to 100mb of ram.
@@ -132,6 +133,9 @@ MovieDecoder_FFMpeg::~MovieDecoder_FFMpeg()
 	{
 		avcodec::sws_freeContext(av_sws_context_);
 		av_sws_context_ = nullptr;
+	}
+	if (rgb_frame_ != nullptr) {
+		avcodec::av_frame_free(&rgb_frame_);
 	}
 	if (av_io_context_ != nullptr)
 	{
@@ -161,6 +165,10 @@ void MovieDecoder_FFMpeg::Init()
 		avcodec::sws_freeContext(av_sws_context_);
 	}
 	av_sws_context_ = nullptr;
+	if (rgb_frame_ != nullptr) {
+		avcodec::av_frame_free(&rgb_frame_);
+	}
+	rgb_frame_ = nullptr;
 	sws_width_ = 0;
 	sws_height_ = 0;
 	av_io_context_ = nullptr;
@@ -464,9 +472,12 @@ bool MovieDecoder_FFMpeg::EnsureSwsContext()
 
 int MovieDecoder_FFMpeg::BlitFrameToSurface(FrameHolder* frame, RageSurface* surface_out)
 {
-	avcodec::AVFrame pict;
-	pict.data[0] = (unsigned char*)surface_out->pixels;
-	pict.linesize[0] = surface_out->pitch;
+	if (rgb_frame_ == nullptr) {
+		rgb_frame_ = avcodec::av_frame_alloc();
+	}
+
+	rgb_frame_->data[0] = static_cast<unsigned char*>(surface_out->pixels);
+	rgb_frame_->linesize[0] = surface_out->pitch;
 
 	if (!EnsureSwsContext()) {
 		return -1;
