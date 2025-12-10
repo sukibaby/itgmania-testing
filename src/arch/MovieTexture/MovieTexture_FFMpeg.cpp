@@ -121,8 +121,9 @@ MovieDecoder_FFMpeg::MovieDecoder_FFMpeg()
 	av_pixel_format_ = avcodec::AV_PIX_FMT_BGRA; // Default RGB target; may be overwritten by surface setup.
 	total_frames_ = 0;
 	end_of_file_ = 0;
-	// Hardcoded frame buffer size of 50. Roughly translates to 100mb of ram.
-	for (int i = 0; i < 50; i++) {
+	// Frame buffer size will be calculated dynamically when the video is opened.
+	// For now, initialize with minimum slots to avoid null dereferences.
+	for (size_t i = 0; i < kFrameBufferMinSlots; i++) {
 		frame_buffer_.emplace_back(std::make_unique<FrameHolder>());
 	}
 }
