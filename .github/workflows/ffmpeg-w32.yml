@@ -34,8 +34,40 @@ jobs:
           nasm \
           pkg-config \
           make \
-          libbz2-dev \
-          zlib1g-dev
+          wget \
+          tar
+
+    - name: Build and install zlib for MinGW x86_64
+      run: |
+        wget https://zlib.net/zlib-1.3.1.tar.gz
+        tar -xzf zlib-1.3.1.tar.gz
+        cd zlib-1.3.1
+        make -f win32/Makefile.gcc PREFIX=x86_64-w64-mingw32- SHARED_MODE=1
+        sudo make -f win32/Makefile.gcc install DESTDIR=/usr/x86_64-w64-mingw32/ INCLUDE_PATH=/include LIBRARY_PATH=/lib BINARY_PATH=/bin SHARED_MODE=1
+
+    - name: Build and install zlib for MinGW i686
+      run: |
+        cd zlib-1.3.1
+        make -f win32/Makefile.gcc clean
+        make -f win32/Makefile.gcc PREFIX=i686-w64-mingw32- SHARED_MODE=1
+        sudo make -f win32/Makefile.gcc install DESTDIR=/usr/i686-w64-mingw32/ INCLUDE_PATH=/include LIBRARY_PATH=/lib BINARY_PATH=/bin SHARED_MODE=1
+
+    - name: Build and install bzip2 for MinGW x86_64
+      run: |
+        wget https://sourceware.org/pub/bzip2/bzip2-1.0.8.tar.gz
+        tar -xzf bzip2-1.0.8.tar.gz
+        cd bzip2-1.0.8
+        make CC=x86_64-w64-mingw32-gcc AR=x86_64-w64-mingw32-ar RANLIB=x86_64-w64-mingw32-ranlib libbz2.a
+        sudo cp libbz2.a /usr/x86_64-w64-mingw32/lib/
+        sudo cp bzlib.h /usr/x86_64-w64-mingw32/include/
+
+    - name: Build and install bzip2 for MinGW i686
+      run: |
+        cd bzip2-1.0.8
+        make clean
+        make CC=i686-w64-mingw32-gcc AR=i686-w64-mingw32-ar RANLIB=i686-w64-mingw32-ranlib libbz2.a
+        sudo cp libbz2.a /usr/i686-w64-mingw32/lib/
+        sudo cp bzlib.h /usr/i686-w64-mingw32/include/
 
     - name: Build FFmpeg x86_64 (64-bit)
       run: |
