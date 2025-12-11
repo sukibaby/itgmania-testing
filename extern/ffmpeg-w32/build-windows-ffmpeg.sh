@@ -55,8 +55,11 @@ make -j$(nproc)
 echo "X64 Build completed."
 echo " - Copying x86_64 binaries..."
 mkdir -p "${SCRIPT_DIR}/x64"
+
 cp -v libavcodec/*.dll libavformat/*.dll libavutil/*.dll libswscale/*.dll "${SCRIPT_DIR}/x64/" || true
 cp -v libavcodec/*.def libavformat/*.def libavutil/*.def libswscale/*.def "${SCRIPT_DIR}/x64/" || true
+cp -v libavcodec/*.lib libavformat/*.lib libavutil/*.lib libswscale/*.lib "${SCRIPT_DIR}/x64/" || true
+
 echo "Done with x86_64."
 
 # X86 Build (... do we use these?)
@@ -96,10 +99,14 @@ make -j$(nproc)
 
 echo " - Copying x86 binaries..."
 mkdir -p "${SCRIPT_DIR}/x86"
+
 cp -v libavcodec/*.dll libavformat/*.dll libavutil/*.dll libswscale/*.dll "${SCRIPT_DIR}/x86/" || true
 cp -v libavcodec/*.def libavformat/*.def libavutil/*.def libswscale/*.def "${SCRIPT_DIR}/x86/" || true
+cp -v libavcodec/*.lib libavformat/*.lib libavutil/*.lib libswscale/*.lib "${SCRIPT_DIR}/x86/" || true
+
 echo "Done with x86."
 
+# build success!
 echo "FFmpeg-w32 build completed successfully."
 echo "x86_64 DLLs: ${SCRIPT_DIR}/x64/"
 echo "x86 DLLs:    ${SCRIPT_DIR}/x86/"
