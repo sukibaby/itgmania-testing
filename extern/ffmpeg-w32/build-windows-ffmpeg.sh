@@ -56,6 +56,14 @@ echo "X64 Build completed."
 echo " - Copying x86_64 binaries..."
 mkdir -p "${SCRIPT_DIR}/x64"
 
+# FFmpeg builds two sets of identical DLL's for whatever reason.
+# One set has version numbers in the filename, the other doesn't.
+# We only use the version tagged DLL's, so we should remove these.
+rm avcodec.dll
+rm avformat.dll
+rm avutil.dll
+rm swscale.dll
+
 cp -v libavcodec/*.dll libavformat/*.dll libavutil/*.dll libswscale/*.dll "${SCRIPT_DIR}/x64/" || true
 cp -v libavcodec/*.def libavformat/*.def libavutil/*.def libswscale/*.def "${SCRIPT_DIR}/x64/" || true
 cp -v libavcodec/*.lib libavformat/*.lib libavutil/*.lib libswscale/*.lib "${SCRIPT_DIR}/x64/" || true
@@ -99,6 +107,12 @@ make -j$(nproc)
 
 echo " - Copying x86 binaries..."
 mkdir -p "${SCRIPT_DIR}/x86"
+
+# Remove the duplicate DLL's again.
+rm avcodec.dll
+rm avformat.dll
+rm avutil.dll
+rm swscale.dll
 
 cp -v libavcodec/*.dll libavformat/*.dll libavutil/*.dll libswscale/*.dll "${SCRIPT_DIR}/x86/" || true
 cp -v libavcodec/*.def libavformat/*.def libavutil/*.def libswscale/*.def "${SCRIPT_DIR}/x86/" || true
