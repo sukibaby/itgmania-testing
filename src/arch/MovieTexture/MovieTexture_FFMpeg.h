@@ -22,7 +22,7 @@ namespace avcodec
 	}
 };
 
-constexpr size_t kFFMpegBufferSize = 4096;
+constexpr size_t kFFMpegBufferSize = 32768; // 32kb
 constexpr int kSwsFlags = SWS_BICUBIC; // XXX: Reasonable default?
 // Target memory budget for frame buffer in bytes (100 MB). Actual buffer size is calculated
 // dynamically based on video resolution to stay within this budget.
