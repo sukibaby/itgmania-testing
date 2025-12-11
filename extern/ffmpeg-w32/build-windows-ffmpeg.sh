@@ -14,7 +14,7 @@ if [ ! -d "$FFMPEG_SRC" ]; then
 fi
 
 echo " - Installing MinGW dependencies..."
-sudo pacman -S --needed --noconfirm mingw-w64-binutils mingw-w64-crt mingw-w64-gcc mingw-w64-headers mingw-w64-winpthreads
+sudo pacman -S --needed --noconfirm mingw-w64-binutils mingw-w64-crt mingw-w64-gcc mingw-w64-headers mingw-w64-winpthreads nasm
 yay -S --needed --noconfirm mingw-w64-zlib mingw-w64-bzip2 mingw-w64-pkg-config
 
 # X86_64 Build
