@@ -49,11 +49,12 @@ jobs:
         make CC=i686-w64-mingw32-gcc AR=i686-w64-mingw32-ar RANLIB=i686-w64-mingw32-ranlib libbz2.a
         sudo cp libbz2.a /usr/i686-w64-mingw32/lib/
         sudo cp bzlib.h /usr/i686-w64-mingw32/include/
-
+        
         # Download & extract FFmpeg 5.1.8 snapshot
-        wget https://github.com/FFmpeg/FFmpeg/archive/refs/tags/n5.1.8.tar.gz
+        wget -O ffmpeg-n5.1.8.tar.gz \
+          https://github.com/FFmpeg/FFmpeg/archive/refs/tags/n5.1.8.tar.gz
         mkdir -p ffmpeg-src
-        tar -xzf n5.1.8.tar.gz --strip-components=1 -C ffmpeg-src
+        tar -xzf ffmpeg-n5.1.8.tar.gz --strip-components=1 -C ffmpeg-src
 
     - name: Build FFmpeg for Windows using MinGW-w64
       run: |
