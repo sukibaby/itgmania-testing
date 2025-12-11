@@ -8,7 +8,8 @@ on:
   pull_request:
     branches: [ main, master ]
   schedule:
-    - cron: '0 0 10 * *'
+    # First Sunday of every month at midnight
+    - cron: '0 0 1-7 * 0'
   workflow_dispatch:
 
 jobs:
@@ -21,223 +22,93 @@ jobs:
       with:
         submodules: recursive
 
-    - name: Install MinGW-w64 and dependencies
+    - name: Setup build environment and dependencies
       run: |
+        # Install MinGW and build tools
         sudo apt-get update
-        sudo apt-get install -y \
-          mingw-w64 \
-          mingw-w64-tools \
-          gcc-mingw-w64-x86-64 \
-          gcc-mingw-w64-i686 \
-          g++-mingw-w64-x86-64 \
-          g++-mingw-w64-i686 \
-          nasm \
-          pkg-config \
-          make \
-          wget \
-          tar
-
-    - name: Build and install zlib for MinGW x86_64
-      run: |
+        sudo apt-get install -y mingw-w64 mingw-w64-tools gcc-mingw-w64-x86-64 gcc-mingw-w64-i686 \
+          g++-mingw-w64-x86-64 g++-mingw-w64-i686 nasm pkg-config make wget tar
+        
+        # Build zlib
         wget https://zlib.net/zlib-1.3.1.tar.gz
         tar -xzf zlib-1.3.1.tar.gz
         cd zlib-1.3.1
         make -f win32/Makefile.gcc PREFIX=x86_64-w64-mingw32- SHARED_MODE=1
         sudo make -f win32/Makefile.gcc install DESTDIR=/usr/x86_64-w64-mingw32/ INCLUDE_PATH=/include LIBRARY_PATH=/lib BINARY_PATH=/bin SHARED_MODE=1
-
-    - name: Build and install zlib for MinGW i686
-      run: |
-        cd zlib-1.3.1
         make -f win32/Makefile.gcc clean
         make -f win32/Makefile.gcc PREFIX=i686-w64-mingw32- SHARED_MODE=1
         sudo make -f win32/Makefile.gcc install DESTDIR=/usr/i686-w64-mingw32/ INCLUDE_PATH=/include LIBRARY_PATH=/lib BINARY_PATH=/bin SHARED_MODE=1
-
-    - name: Build and install bzip2 for MinGW x86_64
-      run: |
+        cd ..
+        
+        # Build bzip2
         wget https://sourceware.org/pub/bzip2/bzip2-1.0.8.tar.gz
         tar -xzf bzip2-1.0.8.tar.gz
         cd bzip2-1.0.8
         make CC=x86_64-w64-mingw32-gcc AR=x86_64-w64-mingw32-ar RANLIB=x86_64-w64-mingw32-ranlib libbz2.a
         sudo cp libbz2.a /usr/x86_64-w64-mingw32/lib/
         sudo cp bzlib.h /usr/x86_64-w64-mingw32/include/
-
-    - name: Build and install bzip2 for MinGW i686
-      run: |
-        cd bzip2-1.0.8
         make clean
         make CC=i686-w64-mingw32-gcc AR=i686-w64-mingw32-ar RANLIB=i686-w64-mingw32-ranlib libbz2.a
         sudo cp libbz2.a /usr/i686-w64-mingw32/lib/
         sudo cp bzlib.h /usr/i686-w64-mingw32/include/
 
-    - name: Build FFmpeg x86_64 (64-bit)
+    - name: Build FFmpeg (x64)
       run: |
+        # Make a local copy.
         cp -r extern/ffmpeg ffmpeg-src
+        
+        COMMON_FLAGS_FFMPEG="--target-os=mingw32 --disable-autodetect --disable-avdevice --disable-avfilter \
+          --disable-debug --disable-devices --disable-doc --disable-filters --disable-lzma \
+          --disable-network --disable-postproc --disable-programs --disable-static --disable-swresample \
+          --enable-bzlib --enable-d3d11va --enable-dxva2 --enable-gpl --enable-shared \
+          --enable-w32threads --enable-zlib --extra-cflags=-w --extra-ldflags=-static --prefix=/"
+        
+        # x64 build
         mkdir -p build/x64
         cd build/x64
-        
-        ../../ffmpeg-src/configure \
-          --arch=x86_64 \
-          --target-os=mingw32 \
-          --cross-prefix=x86_64-w64-mingw32- \
-          --disable-autodetect \
-          --disable-avdevice \
-          --disable-avfilter \
-          --disable-debug \
-          --disable-devices \
-          --disable-doc \
-          --disable-filters \
-          --disable-lzma \
-          --disable-network \
-          --disable-postproc \
-          --disable-programs \
-          --disable-static \
-          --disable-swresample \
-          --enable-bzlib \
-          --enable-d3d11va \
-          --enable-dxva2 \
-          --enable-gpl \
-          --enable-shared \
-          --enable-w32threads \
-          --enable-zlib \
-          --extra-cflags=-w \
-          --extra-ldflags=-static \
-          --prefix=/
-        
+        ../../ffmpeg-src/configure --arch=x86_64 --cross-prefix=x86_64-w64-mingw32- $COMMON_FLAGS_FFMPEG
         make -j$(nproc)
-
-    - name: Package x86_64 binaries
-      run: |
-        mkdir -p package/x64
-        cd build/x64
+        cd ../..
         
-        # Remove duplicate DLLs (FFmpeg builds two sets)
-        rm -f libavcodec/avcodec.dll libavformat/avformat.dll libavutil/avutil.dll libswscale/swscale.dll
-        
-        # Copy versioned DLLs, DEFs, and LIBs
-        cp -v libavcodec/*.dll libavformat/*.dll libavutil/*.dll libswscale/*.dll ../../package/x64/ || true
-        cp -v libavcodec/*.def libavformat/*.def libavutil/*.def libswscale/*.def ../../package/x64/ || true
-        cp -v libavcodec/*.lib libavformat/*.lib libavutil/*.lib libswscale/*.lib ../../package/x64/ || true
-
-    - name: Build FFmpeg x86 (32-bit)
-      run: |
+        # x86 build.... is this needed still though?
         mkdir -p build/x86
         cd build/x86
-        
-        ../../ffmpeg-src/configure \
-          --arch=x86 \
-          --target-os=mingw32 \
-          --cross-prefix=i686-w64-mingw32- \
-          --disable-autodetect \
-          --disable-avdevice \
-          --disable-avfilter \
-          --disable-debug \
-          --disable-devices \
-          --disable-doc \
-          --disable-filters \
-          --disable-lzma \
-          --disable-network \
-          --disable-postproc \
-          --disable-programs \
-          --disable-static \
-          --disable-swresample \
-          --enable-bzlib \
-          --enable-d3d11va \
-          --enable-dxva2 \
-          --enable-gpl \
-          --enable-shared \
-          --enable-w32threads \
-          --enable-zlib \
-          --extra-cflags=-w \
-          --extra-ldflags=-static \
-          --prefix=/
-        
+        ../../ffmpeg-src/configure --arch=x86 --cross-prefix=i686-w64-mingw32- $COMMON_FLAGS_FFMPEG
         make -j$(nproc)
+        cd ../..
 
-    - name: Package x86 binaries
+    - name: Copy headers and create package
       run: |
-        mkdir -p package/x86
-        cd build/x86
+        mkdir -p package/{x64,x86}
         
-        # Remove duplicate DLLs
-        rm -f libavcodec/avcodec.dll libavformat/avformat.dll libavutil/avutil.dll libswscale/swscale.dll
-        
-        # Copy versioned DLLs, DEFs, and LIBs
-        cp -v libavcodec/*.dll libavformat/*.dll libavutil/*.dll libswscale/*.dll ../../package/x86/ || true
-        cp -v libavcodec/*.def libavformat/*.def libavutil/*.def libswscale/*.def ../../package/x86/ || true
-        cp -v libavcodec/*.lib libavformat/*.lib libavutil/*.lib libswscale/*.lib ../../package/x86/ || true
-
-    - name: Copy header files
-      run: |
-        mkdir -p package/include/libavcodec
-        mkdir -p package/include/libavformat
-        mkdir -p package/include/libavutil
-        mkdir -p package/include/libswscale
-        
-        # Copy libavcodec headers
         cd build/x64
-        for header in \
-          ac3_parser.h adts_parser.h avcodec.h avdct.h avfft.h bsf.h \
-          codec_desc.h codec.h codec_id.h codec_par.h d3d11va.h defs.h \
-          dirac.h dv_profile.h dxva2.h jni.h mediacodec.h packet.h \
-          qsv.h vdpau.h version.h version_major.h videotoolbox.h vorbis_parser.h xvmc.h; do
-          if [ -f "libavcodec/$header" ]; then
-            cp -v "libavcodec/$header" ../../package/include/libavcodec/
-          fi
-        done
+        rm -f libavcodec/avcodec.dll libavformat/avformat.dll libavutil/avutil.dll libswscale/swscale.dll
+        cp libavcodec/*.{dll,def,lib} libavformat/*.{dll,def,lib} libavutil/*.{dll,def,lib} libswscale/*.{dll,def,lib} ../../package/x64/ 2>/dev/null || true
+        cd ../..
         
-        # Copy libavformat headers
-        for header in avformat.h avio.h version.h version_major.h; do
-          if [ -f "libavformat/$header" ]; then
-            cp -v "libavformat/$header" ../../package/include/libavformat/
-          fi
-        done
-        
-        # Copy libavutil headers
-        for header in \
-          adler32.h aes_ctr.h aes.h attributes.h audio_fifo.h avassert.h \
-          avconfig.h avstring.h avutil.h base64.h blowfish.h bprint.h \
-          bswap.h buffer.h camellia.h cast5.h channel_layout.h common.h \
-          cpu.h crc.h des.h detection_bbox.h dict.h display.h dovi_meta.h \
-          downmix_info.h encryption_info.h error.h eval.h ffversion.h \
-          fifo.h file.h film_grain_params.h frame.h hash.h hdr_dynamic_metadata.h \
-          hmac.h hwcontext_cuda.h hwcontext_d3d11va.h hwcontext_drm.h \
-          hwcontext_dxva2.h hwcontext.h hwcontext_mediacodec.h hwcontext_opencl.h \
-          hwcontext_qsv.h hwcontext_vaapi.h hwcontext_vdpau.h hwcontext_videotoolbox.h \
-          hwcontext_vulkan.h imgutils.h intfloat.h intreadwrite.h lfg.h \
-          log.h lzo.h macros.h mastering_display_metadata.h mathematics.h \
-          md5.h mem.h motion_vector.h murmur3.h opt.h parseutils.h \
-          pixdesc.h pixelutils.h pixfmt.h random_seed.h rational.h \
-          rc4.h replaygain.h ripemd.h samplefmt.h sha.h sha512.h \
-          spherical.h stereo3d.h tea.h threadmessage.h time.h timecode.h \
-          timestamp.h tree.h twofish.h tx.h version.h version_major.h \
-          video_enc_params.h xtea.h; do
-          if [ -f "libavutil/$header" ]; then
-            cp -v "libavutil/$header" ../../package/include/libavutil/
-          fi
-        done
-        
-        # Copy libswscale headers
-        for header in swscale.h version.h version_major.h; do
-          if [ -f "libswscale/$header" ]; then
-            cp -v "libswscale/$header" ../../package/include/libswscale/
-          fi
-        done
+        cd build/x86
+        rm -f libavcodec/avcodec.dll libavformat/avformat.dll libavutil/avutil.dll libswscale/swscale.dll
+        cp libavcodec/*.{dll,def,lib} libavformat/*.{dll,def,lib} libavutil/*.{dll,def,lib} libswscale/*.{dll,def,lib} ../../package/x86/ 2>/dev/null || true
+        cd ../..
 
-    - name: Create zip archive
+        mkdir -p package/include/{libavcodec,libavformat,libavutil,libswscale}
+        
+        cp ffmpeg-src/libavcodec/{ac3_parser,adts_parser,avcodec,avdct,avfft,bsf,codec_desc,codec,codec_id,codec_par,d3d11va,defs,dirac,dv_profile,dxva2,jni,mediacodec,packet,qsv,vdpau,version,version_major,videotoolbox,vorbis_parser,xvmc}.h package/include/libavcodec/ 2>/dev/null || true
+        cp ffmpeg-src/libavformat/{avformat,avio,version,version_major}.h package/include/libavformat/ 2>/dev/null || true
+        cp ffmpeg-src/libavutil/{adler32,aes_ctr,aes,attributes,audio_fifo,avassert,avconfig,avstring,avutil,base64,blowfish,bprint,bswap,buffer,camellia,cast5,channel_layout,common,cpu,crc,des,detection_bbox,dict,display,dovi_meta,downmix_info,encryption_info,error,eval,ffversion,fifo,file,film_grain_params,frame,hash,hdr_dynamic_metadata,hmac,hwcontext_cuda,hwcontext_d3d11va,hwcontext_drm,hwcontext_dxva2,hwcontext,hwcontext_mediacodec,hwcontext_opencl,hwcontext_qsv,hwcontext_vaapi,hwcontext_vdpau,hwcontext_videotoolbox,hwcontext_vulkan,imgutils,intfloat,intreadwrite,lfg,log,lzo,macros,mastering_display_metadata,mathematics,md5,mem,motion_vector,murmur3,opt,parseutils,pixdesc,pixelutils,pixfmt,random_seed,rational,rc4,replaygain,ripemd,samplefmt,sha,sha512,spherical,stereo3d,tea,threadmessage,time,timecode,timestamp,tree,twofish,tx,version,version_major,video_enc_params,xtea}.h package/include/libavutil/ 2>/dev/null || true
+        cp ffmpeg-src/libswscale/{swscale,version,version_major}.h package/include/libswscale/ 2>/dev/null || true
+        
+    - name: Create zip package and calculate hash
       run: |
         cd package
-        zip -r ../ffmpeg-w32-libraries.zip include/ x64/ x86/
+        zip -r ../ffmpeg-w32.zip include/ x64/ x86/
         cd ..
-        ls -lh ffmpeg-w32-libraries.zip
+        echo "Package size: $(ls -lh ffmpeg-w32.zip | awk '{print $5}')"
+        echo "SHA256: $(sha256sum ffmpeg-w32.zip | awk '{print $1}')"
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
-        name: ffmpeg-w32-libraries
-        path: ffmpeg-w32-libraries.zip
+        name: ffmpeg-w32
+        path: ffmpeg-w32.zip
         retention-days: 30
-
-    - name: Calculate SHA256 hash
-      run: |
-        echo "SHA256 hash of ffmpeg-w32-libraries.zip:"
-        sha256sum ffmpeg-w32-libraries.zip
