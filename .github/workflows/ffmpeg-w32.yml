@@ -204,4 +204,3 @@ jobs:
       run: |
         echo "SHA256 hash of ffmpeg-w32-libraries.zip:"
         sha256sum ffmpeg-w32-libraries.zip
-v
