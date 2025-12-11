@@ -1,27 +1,20 @@
-name: Build FFmpeg for Windows
+# .github/workflows/ffmpeg-w32.yml
+#
+# These libraries can't be built with MSVC, so we use mingw-w64 to cross-compile for Windows.
+# This runs once a month, using whatever version of ffmpeg the submodule in extern is pointing to.
+# so be sure to run it manually if an update is needed sooner.
+
+name: Build ffmpeg-w32 libraries
 
 on:
-  push:
-    branches: [ main, master ]
-    paths:
-      - '.github/workflows/build-ffmpeg-windows.yml'
-  pull_request:
-    branches: [ main, master ]
   schedule:
-    # First Sunday of every month at midnight
-    - cron: '0 0 1-7 * 0'
-  workflow_dispatch:
+    - cron: '0 0 1 * *'  # First day of every month
 
 jobs:
   build-ffmpeg:
     runs-on: ubuntu-24.04
     
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-      with:
-        submodules: recursive
-
     - name: Setup build environment and dependencies
       run: |
         sudo apt-get update
@@ -52,11 +45,18 @@ jobs:
         sudo cp libbz2.a /usr/i686-w64-mingw32/lib/
         sudo cp bzlib.h /usr/i686-w64-mingw32/include/
 
-    - name: Build FFmpeg (x64)
+    - name: Build FFmpeg for Windows using MinGW-w64
       run: |
-        cp -r extern/ffmpeg ffmpeg-src
+        # Clone FFmpeg desired version to avoid cloning lots of submodules we don't need
+        # That does mean we need to update this script when we want a new version, though
+        git clone --depth 1 --single-branch --branch n5.1.8 https://github.com/FFmpeg/FFmpeg.git ffmpeg-src
         
-        COMMON_FLAGS_FFMPEG="--target-os=mingw32 --disable-autodetect --disable-avdevice --disable-avfilter \
+        # Ensure generic x86_64 builds are made. Otherwise the GitHub runner will try to produce
+        # code with instruction sets that won't be compatible with all target systems.
+        COMMON_FLAGS_FFMPEG="--target-os=mingw32           --disable-runtime-cpudetect \
+          --disable-avx --disable-avx2 --disable-avx512 --disable-avx512icl --disable-xop \
+          --disable-fma3 --disable-fma4 --disable-aesni --disable-3dnow --disable-3dnowext \
+          --disable-autodetect --disable-avdevice --disable-avfilter \
           --disable-debug --disable-devices --disable-doc --disable-filters --disable-lzma \
           --disable-network --disable-postproc --disable-programs --disable-static --disable-swresample \
           --enable-bzlib --enable-d3d11va --enable-dxva2 --enable-gpl --enable-shared \
@@ -76,35 +76,33 @@ jobs:
         make -j$(nproc)
         cd ../..
 
-    - name: Copy headers and create package
+    - name: Prepare artifact for upload
       run: |
         mkdir -p package/{x64,x86}
         
+        echo " - Copying x64 binaries..."
         cd build/x64
         rm -f libavcodec/avcodec.dll libavformat/avformat.dll libavutil/avutil.dll libswscale/swscale.dll
         cp libavcodec/*.{dll,def,lib} libavformat/*.{dll,def,lib} libavutil/*.{dll,def,lib} libswscale/*.{dll,def,lib} ../../package/x64/ 2>/dev/null || true
         cd ../..
-        
+
+        echo " - Copying x86 binaries..."
         cd build/x86
         rm -f libavcodec/avcodec.dll libavformat/avformat.dll libavutil/avutil.dll libswscale/swscale.dll
         cp libavcodec/*.{dll,def,lib} libavformat/*.{dll,def,lib} libavutil/*.{dll,def,lib} libswscale/*.{dll,def,lib} ../../package/x86/ 2>/dev/null || true
         cd ../..
 
+        echo " - Copying header files..."
         mkdir -p package/include/{libavcodec,libavformat,libavutil,libswscale}
         
         cp ffmpeg-src/libavcodec/{ac3_parser,adts_parser,avcodec,avdct,avfft,bsf,codec_desc,codec,codec_id,codec_par,d3d11va,defs,dirac,dv_profile,dxva2,jni,mediacodec,packet,qsv,vdpau,version,version_major,videotoolbox,vorbis_parser,xvmc}.h package/include/libavcodec/ 2>/dev/null || true
         cp ffmpeg-src/libavformat/{avformat,avio,version,version_major}.h package/include/libavformat/ 2>/dev/null || true
         cp ffmpeg-src/libavutil/{adler32,aes_ctr,aes,attributes,audio_fifo,avassert,avconfig,avstring,avutil,base64,blowfish,bprint,bswap,buffer,camellia,cast5,channel_layout,common,cpu,crc,des,detection_bbox,dict,display,dovi_meta,downmix_info,encryption_info,error,eval,ffversion,fifo,file,film_grain_params,frame,hash,hdr_dynamic_metadata,hmac,hwcontext_cuda,hwcontext_d3d11va,hwcontext_drm,hwcontext_dxva2,hwcontext,hwcontext_mediacodec,hwcontext_opencl,hwcontext_qsv,hwcontext_vaapi,hwcontext_vdpau,hwcontext_videotoolbox,hwcontext_vulkan,imgutils,intfloat,intreadwrite,lfg,log,lzo,macros,mastering_display_metadata,mathematics,md5,mem,motion_vector,murmur3,opt,parseutils,pixdesc,pixelutils,pixfmt,random_seed,rational,rc4,replaygain,ripemd,samplefmt,sha,sha512,spherical,stereo3d,tea,threadmessage,time,timecode,timestamp,tree,twofish,tx,version,version_major,video_enc_params,xtea}.h package/include/libavutil/ 2>/dev/null || true
         cp ffmpeg-src/libswscale/{swscale,version,version_major}.h package/include/libswscale/ 2>/dev/null || true
-        
-    - name: Create zip package and calculate hash
-      run: |
-        cd package
-        zip -r ../ffmpeg-w32.zip include/ x64/ x86/
-        cd ..
-        echo "Package size: $(ls -lh ffmpeg-w32.zip | awk '{print $5}')"
-        echo "SHA256: $(sha256sum ffmpeg-w32.zip | awk '{print $1}')"
 
+        echo " - All done here! Extract the artifact contents into the extern/ffmpeg-w32 directory."
+        echo " (e.g. extern/ffmpeg-w32/x64, extern/ffmpeg-w32/x86, extern/ffmpeg-w32/include)"
+        
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
