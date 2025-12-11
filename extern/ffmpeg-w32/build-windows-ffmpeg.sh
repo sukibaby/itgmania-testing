@@ -1,19 +1,21 @@
 #!/bin/sh
-# Build FFmpeg for Windows using Arch Linux with MinGW
+# Build FFmpeg libraries for Windows.
+# intended to be run from an Arch Linux system.
 
 set -e
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-FFMPEG_SRC="${SCRIPT_DIR}/../ffmpeg"
+FFMPEG_SRC="${SCRIPT_DIR}/ffmpeg"
 BUILD_DIR="${SCRIPT_DIR}/build"
 
-echo " - Installing MinGW dependencies..."
-sudo pacman -S --needed --noconfirm mingw-w64-binutils mingw-w64-crt mingw-w64-gcc mingw-w64-headers mingw-w64-winpthreads
-sudo yay -S --needed --noconfirm mingw-w64-zlib mingw-w64-bzip2 mingw-w64-pkg-config
-
+# validate FFmpeg source directory
 if [ ! -d "$FFMPEG_SRC" ]; then
     echo "Error: FFmpeg source not found at $FFMPEG_SRC !!"
     exit 1
 fi
+
+echo " - Installing MinGW dependencies..."
+sudo pacman -S --needed --noconfirm mingw-w64-binutils mingw-w64-crt mingw-w64-gcc mingw-w64-headers mingw-w64-winpthreads
+yay -S --needed --noconfirm mingw-w64-zlib mingw-w64-bzip2 mingw-w64-pkg-config
 
 # X86_64 Build
 echo " - Building x86_64 (64-bit) Windows FFmpeg..."
