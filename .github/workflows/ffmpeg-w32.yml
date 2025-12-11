@@ -25,6 +25,7 @@ jobs:
         sudo apt-get install -y mingw-w64 mingw-w64-tools gcc-mingw-w64-x86-64 gcc-mingw-w64-i686 \
           g++-mingw-w64-x86-64 g++-mingw-w64-i686 nasm pkg-config make wget tar
         
+        # Would be nice to pull the versions here automatically, but for now just update manually as needed.
         # We need to custom build zlib and bzip2 for mingw.
         # Build zlib
         wget https://zlib.net/zlib-1.3.1.tar.gz
@@ -49,22 +50,17 @@ jobs:
         sudo cp libbz2.a /usr/i686-w64-mingw32/lib/
         sudo cp bzlib.h /usr/i686-w64-mingw32/include/
 
+        # Download & extract FFmpeg 5.1.8 snapshot
+        curl -L --fail --silent --show-error -o ffmpeg-n5.1.8.tar.gz \
+        https://github.com/FFmpeg/FFmpeg/archive/refs/tags/n5.1.8.tar.gz
+        mkdir -p ffmpeg-src
+        tar -xzf ffmpeg-n5.1.8.tar.gz --strip-components=1 -C ffmpeg-src
+
     - name: Build FFmpeg for Windows using MinGW-w64
       run: |
-        # Would be nice to pull the versions here automatically, but for now just update manually as needed.
-        git clone --depth 1 --single-branch --branch n5.1.8 https://github.com/FFmpeg/FFmpeg.git ffmpeg-src
-        
         # Ensure generic x86_64 builds are made.
-        # Otherwise we will accidentally build code based on what instruction sets the runner's CPU supports.
-        COMMON_FLAGS_FFMPEG="--disable-runtime-cpudetect \
-          --disable-avx \
-          --disable-avx2 \
-          --disable-avx512 \
-          --disable-avx512icl \
-          --disable-xop \
-          --disable-fma3 \
-          --disable-fma4 \
-          --disable-aesni \
+        COMMON_FLAGS_FFMPEG="--cpu-generic \
+          --disable-runtime-cpudetect \
           --disable-autodetect \
           --disable-avdevice \
           --disable-avfilter \
@@ -93,14 +89,14 @@ jobs:
         # x64 build
         mkdir -p build/x64
         cd build/x64
-        ../../ffmpeg-src/configure --arch=x86_64 --cpu=generic --cross-prefix=x86_64-w64-mingw32- --target-os=mingw64 $COMMON_FLAGS_FFMPEG
+        ../../ffmpeg-src/configure --arch=x86_64 --cross-prefix=x86_64-w64-mingw32- --target-os=mingw64 $COMMON_FLAGS_FFMPEG
         make -j$(nproc)
         cd ../..
         
         # x86 build.... is this needed still though?
         mkdir -p build/x86
         cd build/x86
-        ../../ffmpeg-src/configure --arch=x86 --cpu=generic --cross-prefix=i686-w64-mingw32- --target-os=mingw32 $COMMON_FLAGS_FFMPEG
+        ../../ffmpeg-src/configure --arch=x86 --cross-prefix=i686-w64-mingw32- --target-os=mingw32 $COMMON_FLAGS_FFMPEG
         make -j$(nproc)
         cd ../..
 
