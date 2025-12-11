@@ -7,6 +7,8 @@ on:
       - '.github/workflows/build-ffmpeg-windows.yml'
   pull_request:
     branches: [ main, master ]
+  schedule:
+    - cron: '0 0 6 * *'
   workflow_dispatch:
 
 jobs:
@@ -16,6 +18,8 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
+      with:
+        submodules: recursive
 
     - name: Install MinGW-w64 and dependencies
       run: |
