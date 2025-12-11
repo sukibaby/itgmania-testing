@@ -7,7 +7,8 @@ FFMPEG_SRC="${SCRIPT_DIR}/../ffmpeg"
 BUILD_DIR="${SCRIPT_DIR}/build"
 
 echo " - Installing MinGW dependencies..."
-sudo pacman -S --needed --noconfirm mingw-w64-binutils mingw-w64-crt mingw-w64-gcc mingw-w64-headers mingw-w64-winpthreads mingw-w64-bzip2 mingw-w64-zlib mingw-w64-pkg-config
+sudo pacman -S --needed --noconfirm mingw-w64-binutils mingw-w64-crt mingw-w64-gcc mingw-w64-headers mingw-w64-winpthreads
+sudo yay -S --needed --noconfirm mingw-w64-zlib mingw-w64-bzip2 mingw-w64-pkg-config
 
 if [ ! -d "$FFMPEG_SRC" ]; then
     echo "Error: FFmpeg source not found at $FFMPEG_SRC !!"
