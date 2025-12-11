@@ -8,7 +8,7 @@ on:
   pull_request:
     branches: [ main, master ]
   schedule:
-    - cron: '0 0 6 * *'
+    - cron: '0 0 10 * *'
   workflow_dispatch:
 
 jobs:
@@ -32,9 +32,10 @@ jobs:
           g++-mingw-w64-x86-64 \
           g++-mingw-w64-i686 \
           nasm \
-          yasm \
           pkg-config \
-          make
+          make \
+          libbz2-dev \
+          zlib1g-dev
 
     - name: Build FFmpeg x86_64 (64-bit)
       run: |
