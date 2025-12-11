@@ -28,15 +28,14 @@ jobs:
           g++-mingw-w64-x86-64 \
           g++-mingw-w64-i686 \
           nasm \
+          yasm \
           pkg-config \
           make \
-
-    - name: Clone FFmpeg 5.1.8
-      run: |
-        git clone --depth 1 --single-branch --branch n5.1.8 https://github.com/FFmpeg/FFmpeg.git ffmpeg-src
+          git
 
     - name: Build FFmpeg x86_64 (64-bit)
       run: |
+        cp -r extern/ffmpeg ffmpeg-src
         mkdir -p build/x64
         cd build/x64
         
@@ -206,3 +205,4 @@ jobs:
       run: |
         echo "SHA256 hash of ffmpeg-w32-libraries.zip:"
         sha256sum ffmpeg-w32-libraries.zip
+v
