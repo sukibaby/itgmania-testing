@@ -14,7 +14,7 @@ on:
 
 jobs:
   build-ffmpeg:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     
     steps:
     - name: Checkout repository
@@ -24,11 +24,11 @@ jobs:
 
     - name: Setup build environment and dependencies
       run: |
-        # Install MinGW and build tools
         sudo apt-get update
         sudo apt-get install -y mingw-w64 mingw-w64-tools gcc-mingw-w64-x86-64 gcc-mingw-w64-i686 \
           g++-mingw-w64-x86-64 g++-mingw-w64-i686 nasm pkg-config make wget tar
         
+        # We need to custom build zlib and bzip2 for mingw.
         # Build zlib
         wget https://zlib.net/zlib-1.3.1.tar.gz
         tar -xzf zlib-1.3.1.tar.gz
@@ -54,7 +54,6 @@ jobs:
 
     - name: Build FFmpeg (x64)
       run: |
-        # Make a local copy.
         cp -r extern/ffmpeg ffmpeg-src
         
         COMMON_FLAGS_FFMPEG="--target-os=mingw32 --disable-autodetect --disable-avdevice --disable-avfilter \
@@ -110,5 +109,5 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: ffmpeg-w32
-        path: ffmpeg-w32.zip
+        path: package/
         retention-days: 30
