@@ -118,11 +118,12 @@ MovieDecoder_FFMpeg::MovieDecoder_FFMpeg()
 
 	av_format_context_ = nullptr;
 	av_stream_ = nullptr;
-	av_pixel_format_ = avcodec::AV_PIX_FMT_BGRA; // Default RGB target; may be overwritten by surface setup.
+	av_pixel_format_ = avcodec::AV_PIX_FMT_BGRA; // Always default to RGB, even though this can be overwritten
 	total_frames_ = 0;
 	end_of_file_ = 0;
-	// Frame buffer size will be calculated dynamically when the video is opened.
-	// For now, initialize with minimum slots to avoid null dereferences.
+
+	// We calculate the actual needed buffer size when opening the file,
+	// so it's safe to start with the minimum number of slots for now. 
 	for (size_t i = 0; i < kFrameBufferMinSlots; i++) {
 		frame_buffer_.emplace_back(std::make_unique<FrameHolder>());
 	}
