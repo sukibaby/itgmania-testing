@@ -393,6 +393,10 @@ int MovieDecoder_FFMpeg::DecodePacketIntoFrame(PacketHolder* packet, FrameHolder
 	int packet_offset = 0;
 	while (packet_offset <= packet->packet->size)
 	{
+		/* If we have no data on the first frame, just return EOF; passing an empty packet
+		 * to avcodec_decode_video in this case is crashing it.  However, passing an empty
+		 * packet is normal with B-frames, to flush.  This may be unnecessary in newer
+		 * versions of avcodec, but I'm waiting until a new stable release to upgrade. */
 		if (packet->packet->size == 0 && packet_buffer_position_ == 0) {
 			return 0; /* eof */
 		}
