@@ -366,6 +366,8 @@ void MovieDecoder_FFMpeg::UpdateFrameTiming(PacketHolder* packet, FrameHolder* f
 	}
 	else
 	{
+		/* If the timestamp is zero, this frame is to be played at the
+		 * time of the last frame plus the length of the last frame. */
 		if (packet_buffer_position_ != 0) {
 			packet->frame_timestamp += packet_buffer_[packet_buffer_.size() - 2]->frame_delay;
 		}
@@ -374,10 +376,13 @@ void MovieDecoder_FFMpeg::UpdateFrameTiming(PacketHolder* packet, FrameHolder* f
 		}
 	}
 
+	// Some movies start at a non-zero point in time (audio before video?)
 	if (packet_buffer_position_ == 0 && packet->frame_timestamp != 0) {
 		timestamp_offset_ = packet->frame_timestamp;
 	}
 
+	// Length of this frame, only used as a fallback for getting the frame
+	// timestamp above.
 	packet->frame_delay = static_cast<float>(av_q2d(av_stream_->time_base));
 	packet->frame_delay += frame->frame->repeat_pict * (packet->frame_delay * 0.5f);
 }
@@ -386,6 +391,8 @@ int MovieDecoder_FFMpeg::DecodePacketIntoFrame(PacketHolder* packet, FrameHolder
 	std::lock_guard<std::mutex> frame_lock(frame->lock);
 	std::lock_guard<std::mutex> packet_lock(packet->lock);
 
+	// If the movie is looping naturally, next_offset_ is decided where
+	// packet_buffer_position_ zero is decoded.
 	if (packet->decoded && packet_buffer_position_ == 0) {
 		next_offset_ = frame_buffer_position_;
 	}
@@ -401,6 +408,8 @@ int MovieDecoder_FFMpeg::DecodePacketIntoFrame(PacketHolder* packet, FrameHolder
 			return 0; /* eof */
 		}
 
+		/* Hack: we need to send size = 0 to flush frames at the end, but we have
+		 * to give it a buffer to read from since it tries to read anyway. */
 		packet->packet->data = packet->packet->size ? packet->packet->data : nullptr;
 		const int len = packet->packet->size;
 		avcodec::avcodec_send_packet(av_stream_codec_, packet->packet);
@@ -423,6 +432,8 @@ int MovieDecoder_FFMpeg::DecodePacketIntoFrame(PacketHolder* packet, FrameHolder
 				static_cast<int>(packet_buffer_.size() - 1),
 				avcodec_return);
 
+			// Not a fatal decoding error, and the FFMpeg code is robust enough to handle displaying
+			// somewhat mangled frames.
 			if (packet_offset <= packet->packet->size) {
 				continue;
 			}
@@ -504,6 +515,9 @@ int MovieDecoder_FFMpeg::GetFrame(RageSurface* surface_out)
 	std::lock_guard<std::mutex> lock(frame_buffer_[display_frame_in_buffer]->lock);
 
 	int scale_status = BlitFrameToSurface(frame_buffer_[display_frame_in_buffer].get(), surface_out);
+	
+	// Even if scale_status returns a failure, we mark displayed as true. The
+	// frame won't be displayed, but instead skipped over.
 	frame_buffer_[display_frame_in_buffer]->displayed = true;
 
 	if (LastFrame()) {
