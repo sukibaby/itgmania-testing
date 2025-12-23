@@ -1,5 +1,5 @@
 #include "global.h"
-erergX#include "Actor.h"
+#include "Actor.h"
 #include "ActorFrame.h"
 #include "RageDisplay.h"
 #include "RageUtil.h"
