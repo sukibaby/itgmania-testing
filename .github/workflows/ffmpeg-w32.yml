@@ -10,8 +10,9 @@
 name: Build ffmpeg-w32 libraries
 
 on:
-  schedule:
-    - cron: '0 0 1 * *'  # First day of every month
+  push:
+    branches:
+      - beta
 
 jobs:
   build-ffmpeg-w32:
