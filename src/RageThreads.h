@@ -131,14 +131,13 @@ class LockMutex
 
 	const char *file;
 	int line;
-	uint64_t locked_at;
 	bool locked;
 
 public:
 	LockMutex(RageMutex &mut, const char *file, int line);
-	LockMutex(RageMutex &mut): mutex(mut), file(nullptr), line(-1), locked_at(UINT64_MAX), locked(true) { mutex.Lock(); }
+	LockMutex(RageMutex &mut): mutex(mut), file(nullptr), line(-1), locked(true) { mutex.Lock(); }
 	~LockMutex();
-	LockMutex(LockMutex &cpy): mutex(cpy.mutex), file(nullptr), line(-1), locked_at(cpy.locked_at), locked(true) { mutex.Lock(); }
+	LockMutex(LockMutex &cpy): mutex(cpy.mutex), file(nullptr), line(-1), locked(true) { mutex.Lock(); }
 
 	/**
 	 * @brief Unlock the mutex (before this would normally go out of scope).
