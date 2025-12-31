@@ -12,7 +12,7 @@ name: Build ffmpeg-w32 libraries
 on:
   push:
     branches:
-      - beta
+      - ci-runner-test-ffmpeg
 
 jobs:
   build-ffmpeg-w32:
