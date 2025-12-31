@@ -520,7 +520,11 @@ if(WIN32)
           DESTINATION "${SM_FULL_INSTALLATION_PATH}")
   install(FILES "${SM_PROGRAM_DIR}/ITGmania.vdi"
           DESTINATION "${SM_FULL_INSTALLATION_PATH}")
+elseif(APPLE)
+  # On macOS, just install the .app bundle - resources are already inside it
+  install(TARGETS "${SM_EXE_NAME}" BUNDLE DESTINATION ".")
 else()
+  # Unix / Linux installation
   install(TARGETS "${SM_EXE_NAME}" DESTINATION "${SM_INSTALL_DESTINATION}")
   if(LINUX)
     install(FILES "${SM_ROOT_DIR}/itgmania.desktop"
@@ -528,30 +532,25 @@ else()
     install(PROGRAMS "${SM_ROOT_DIR}/Installer/setup.sh" DESTINATION ".")
   endif()
 endif()
-install(DIRECTORY "${SM_ROOT_DIR}/Announcers"
-        DESTINATION "${SM_INSTALL_DESTINATION}")
-install(DIRECTORY "${SM_ROOT_DIR}/BGAnimations"
-        DESTINATION "${SM_INSTALL_DESTINATION}")
-install(DIRECTORY "${SM_ROOT_DIR}/Themes"
-        DESTINATION "${SM_INSTALL_DESTINATION}")
-install(DIRECTORY "${SM_ROOT_DIR}/Characters"
-        DESTINATION "${SM_INSTALL_DESTINATION}")
-install(DIRECTORY "${SM_ROOT_DIR}/Scripts"
-        DESTINATION "${SM_INSTALL_DESTINATION}")
-install(DIRECTORY "${SM_ROOT_DIR}/Courses"
-        DESTINATION "${SM_INSTALL_DESTINATION}")
-install(DIRECTORY "${SM_ROOT_DIR}/BackgroundEffects"
-        DESTINATION "${SM_INSTALL_DESTINATION}")
-install(DIRECTORY "${SM_ROOT_DIR}/Data"
-        DESTINATION "${SM_INSTALL_DESTINATION}")
-install(DIRECTORY "${SM_ROOT_DIR}/BackgroundTransitions"
-        DESTINATION "${SM_INSTALL_DESTINATION}")
-install(DIRECTORY "${SM_ROOT_DIR}/Docs"
-        DESTINATION "${SM_INSTALL_DESTINATION}")
-install(DIRECTORY "${SM_ROOT_DIR}/NoteSkins"
-        DESTINATION "${SM_INSTALL_DESTINATION}")
-install(FILES "${SM_ROOT_DIR}/Songs/instructions.txt"
-        DESTINATION "${SM_INSTALL_DESTINATION}/Songs")
+
+# Install resources are installed into the platform install destination
+# on all platforms except macOS, which is bundled inside the .app, so we
+# do not want to install alongside it.
+if(NOT APPLE)
+  install(DIRECTORY "${SM_ROOT_DIR}/Announcers" DESTINATION "${SM_INSTALL_DESTINATION}")
+  install(DIRECTORY "${SM_ROOT_DIR}/BGAnimations" DESTINATION "${SM_INSTALL_DESTINATION}")
+  install(DIRECTORY "${SM_ROOT_DIR}/Themes" DESTINATION "${SM_INSTALL_DESTINATION}")
+  install(DIRECTORY "${SM_ROOT_DIR}/Characters" DESTINATION "${SM_INSTALL_DESTINATION}")
+  install(DIRECTORY "${SM_ROOT_DIR}/Scripts" DESTINATION "${SM_INSTALL_DESTINATION}")
+  install(DIRECTORY "${SM_ROOT_DIR}/Courses" DESTINATION "${SM_INSTALL_DESTINATION}")
+  install(DIRECTORY "${SM_ROOT_DIR}/BackgroundEffects" DESTINATION "${SM_INSTALL_DESTINATION}")
+  install(DIRECTORY "${SM_ROOT_DIR}/Data" DESTINATION "${SM_INSTALL_DESTINATION}")
+  install(DIRECTORY "${SM_ROOT_DIR}/BackgroundTransitions" DESTINATION "${SM_INSTALL_DESTINATION}")
+  install(DIRECTORY "${SM_ROOT_DIR}/Docs" DESTINATION "${SM_INSTALL_DESTINATION}")
+  install(DIRECTORY "${SM_ROOT_DIR}/NoteSkins" DESTINATION "${SM_INSTALL_DESTINATION}")
+  install(FILES "${SM_ROOT_DIR}/Songs/instructions.txt"
+          DESTINATION "${SM_INSTALL_DESTINATION}/Songs")
+endif()
 
 if(WITH_CLUB_FANTASTIC)
   # Fetch ClubFantastic packs
