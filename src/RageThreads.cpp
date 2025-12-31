@@ -685,7 +685,6 @@ LockMutex::LockMutex( RageMutex &pMutex, const char *file_, int line_ ):
 	mutex( pMutex ),
 	file( file_ ),
 	line( line_ ),
-	locked_at( RageTimer::GetTimeSinceStartMicroseconds() ),
 	locked(false) // ensure it gets locked inside.
 {
 	mutex.Lock();
@@ -704,17 +703,6 @@ void LockMutex::Unlock()
 	locked = false;
 
 	mutex.Unlock();
-
-	constexpr uint64_t THRESHOLD_USEC = 15000;
-
-	if (file && locked_at != UINT64_MAX)
-	{
-		const uint64_t current_usecs = RageTimer::GetTimeSinceStartMicroseconds();
-		const uint64_t dur_usecs = current_usecs - locked_at;
-
-		if (dur_usecs > THRESHOLD_USEC)
-			LOG->Trace("Lock at %s:%i took %" PRIu64 " microseconds", file, line, dur_usecs);
-	}
 }
 
 RageEvent::RageEvent( RString name ):
