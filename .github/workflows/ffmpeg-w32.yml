@@ -48,17 +48,10 @@ jobs:
         # Would be nice to pull the versions here automatically, but for now just update manually as needed.
         git clone --depth 1 --single-branch --branch n5.1.8 https://github.com/FFmpeg/FFmpeg.git ffmpeg-src
         
-        # Ensure generic x86_64 builds are made.
-        COMMON_FLAGS_FFMPEG="--cpu-generic \
+        # Keep this list arch-neutral so we can add other targets (e.g. arm64) later.
+        # For x86_64, --cpu=generic + --disable-runtime-cpudetect avoids emitting/using newer ISA at runtime.
+        COMMON_FLAGS_FFMPEG="--cpu=generic \
           --disable-runtime-cpudetect \
-          --disable-avx \
-          --disable-avx2 \
-          --disable-avx512 \
-          --disable-avx512icl \
-          --disable-xop \
-          --disable-fma3 \
-          --disable-fma4 \
-          --disable-aesni \
           --disable-autodetect \
           --disable-avdevice \
           --disable-avfilter \
