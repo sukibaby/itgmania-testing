@@ -253,15 +253,11 @@ RString ArchHooks::GetPreferredLanguage()
 int64_t ArchHooks::GetSystemTimeInMicroseconds()
 {
 	// http://developer.apple.com/qa/qa2004/qa1398.html
-	static double factor = 0.0;
-
-	if( unlikely(factor == 0.0) )
-	{
+	static const double factor = []() {
 		mach_timebase_info_data_t timeBase;
-
 		mach_timebase_info( &timeBase );
-		factor = timeBase.numer / ( 1000.0 * timeBase.denom );
-	}
+		return timeBase.numer / ( 1000.0 * timeBase.denom );
+	}();
 	return int64_t( mach_absolute_time() * factor );
 }
 
