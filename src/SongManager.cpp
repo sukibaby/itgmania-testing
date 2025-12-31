@@ -246,7 +246,7 @@ void SongManager::InitSongsFromDisk( LoadingWindow *ld, bool onlyAdditions )
 	IMAGECACHE->WriteToDisk();
 	IMAGECACHE->delay_save_cache = false;
 
-	LOG->Trace( "Found %d songs in %f seconds.", (int)m_pSongs.size(), tm.GetDeltaTime() );
+	LOG->Trace( "Found %d songs in %f seconds.", (int)m_pSongs.size(), RageTimerGetDeltaTime(tm) );
 }
 
 static LocalizedString FOLDER_CONTAINS_MUSIC_FILES( "SongManager", "The folder \"%s\" appears to be a song folder.  All song folders must reside in a group folder.  For example, \"Songs/Originals/My Song\"." );
@@ -370,7 +370,7 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
 	// loading_window_last_update_time provides a timer so the loading window
 	// isn't updated after every song and course. -Kyz
 	RageTimer loading_window_last_update_time;
-	loading_window_last_update_time.Touch();
+	RageTimerTouch( loading_window_last_update_time );
 	// Make sure sDir has a trailing slash.
 	if( Right(sDir, 1) != "/" )
 		sDir += "/";
@@ -395,9 +395,9 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
 	int sanity_index= 0;
 	for (RString const &sGroupDirName : arrayGroupDirs)	// foreach dir in /Songs/
 	{
-		if(ld && loading_window_last_update_time.Ago() > next_loading_window_update)
+		if(ld && RageTimerAgo(loading_window_last_update_time) > next_loading_window_update)
 		{
-			loading_window_last_update_time.Touch();
+			RageTimerTouch( loading_window_last_update_time );
 			ld->SetProgress(sanity_index);
 			ld->SetText(SANITY_CHECKING_GROUPS.GetValue() + ssprintf("\n%s",
 					Basename(sGroupDirName).c_str()));
@@ -463,9 +463,9 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
 			}
 
 			// this is a song directory. Load a new song.
-			if(ld && loading_window_last_update_time.Ago() > next_loading_window_update)
+			if(ld && RageTimerAgo(loading_window_last_update_time) > next_loading_window_update)
 			{
-				loading_window_last_update_time.Touch();
+				RageTimerTouch( loading_window_last_update_time );
 				ld->SetProgress(songIndex);
 				ld->SetText( LOADING_SONGS.GetValue() +
 					ssprintf("\n%s\n%s",
@@ -1058,7 +1058,7 @@ void SongManager::InitCoursesFromDisk( LoadingWindow *ld, bool onlyAdditions )
 		ld->SetText( LOADING_COURSES );
 
 	RageTimer loading_window_last_update_time;
-	loading_window_last_update_time.Touch();
+	RageTimerTouch( loading_window_last_update_time );
 
 	std::vector<RString> vsCourseGroupNames;
 	// Find all group directories in Courses dir
@@ -1096,9 +1096,9 @@ void SongManager::InitCoursesFromDisk( LoadingWindow *ld, bool onlyAdditions )
 					continue;
 			}
 
-			if(ld && loading_window_last_update_time.Ago() > next_loading_window_update)
+			if(ld && RageTimerAgo(loading_window_last_update_time) > next_loading_window_update)
 			{
-				loading_window_last_update_time.Touch();
+				RageTimerTouch( loading_window_last_update_time );
 				ld->SetProgress(courseIndex);
 				ld->SetText( LOADING_COURSES.GetValue()+ssprintf("\n%s\n%s",
 					base_course_group.c_str(),

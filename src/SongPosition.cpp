@@ -6,10 +6,10 @@ static Preference<float> g_fVisualDelaySeconds( "VisualDelaySeconds", 0.0f );
 void SongPosition::UpdateSongPosition( float fPositionSeconds, const TimingData &timing, const RageTimer &timestamp, float fAdditionalVisualDelay )
 {
 
-	if( !timestamp.IsZero() )
+	if( !RageTimerIsZero(timestamp) )
 		m_LastBeatUpdate = timestamp;
 	else
-		m_LastBeatUpdate.Touch();
+		RageTimerTouch( m_LastBeatUpdate );
 
 	TimingData::GetBeatArgs beat_info;
 	beat_info.elapsed_time= fPositionSeconds;

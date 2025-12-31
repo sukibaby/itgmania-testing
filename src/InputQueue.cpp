@@ -65,9 +65,9 @@ bool InputQueueCode::EnteredCode( GameController controller ) const
 
 	RageTimer OldestTimeAllowed;
 	if( m_fMaxSecondsBack == -1 )
-		OldestTimeAllowed.SetZero();
+		RageTimerSetZero( OldestTimeAllowed );
 	else
-		OldestTimeAllowed += -m_fMaxSecondsBack;
+		RageTimerAddSecondsInPlace( OldestTimeAllowed, -m_fMaxSecondsBack );
 
 	// iterate newest to oldest
 	int iSequenceIndex = m_aPresses.size()-1;	// count down
@@ -76,7 +76,7 @@ bool InputQueueCode::EnteredCode( GameController controller ) const
 	while( iQueueIndex >= 0 )
 	{
 		/* If the buttons are too old, stop searching because we're not going to find a match. */
-		if( !OldestTimeAllowed.IsZero() && aQueue[iQueueIndex].DeviceI.ts < OldestTimeAllowed )
+		if( !RageTimerIsZero(OldestTimeAllowed) && aQueue[iQueueIndex].DeviceI.ts < OldestTimeAllowed )
 			return false;
 
 		/* If the last press is an input type we're not interested in, skip it
@@ -91,7 +91,7 @@ bool InputQueueCode::EnteredCode( GameController controller ) const
 		/* Search backwards for all of Press.m_aButtonsToPress pressed within g_fTapThreshold seconds
 		 * with m_aButtonsToHold pressed.  Start looking at iQueueIndex. */
 		RageTimer OldestTimeAllowedForTap( aQueue[iQueueIndex].DeviceI.ts );
-		OldestTimeAllowedForTap += -g_fSimultaneousThreshold;
+		RageTimerAddSecondsInPlace( OldestTimeAllowedForTap, -g_fSimultaneousThreshold );
 
 		bool bMatched = false;
 		int iMinSearchIndexUsed = iQueueIndex;

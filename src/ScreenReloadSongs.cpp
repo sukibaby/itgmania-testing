@@ -31,9 +31,9 @@ public:
 	{
 		/* We load songs much faster than we draw frames. Cap the draw rate,
 		 * so we don't slow down the reload. */
-		if( m_LastDraw.Ago() < 1.0f/DrawFrameRate )
+		if( RageTimerAgo(m_LastDraw) < 1.0f/DrawFrameRate )
 			return;
-		m_LastDraw.GetDeltaTime();
+		RageTimerGetDeltaTime( m_LastDraw );
 
 		SCREENMAN->Draw();
 	}

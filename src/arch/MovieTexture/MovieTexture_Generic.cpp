@@ -60,7 +60,7 @@ RString MovieTexture_Generic::Init()
 			failure_ = true;
 		}
 
-		LOG->Trace("Done decoding video file \"%s\", took %f seconds", GetID().filename.c_str(), timer.Ago());
+		LOG->Trace("Done decoding video file \"%s\", took %f seconds", GetID().filename.c_str(), RageTimerAgo(timer));
 		});
 
 	LOG->Trace("Resolution: %ix%i (%ix%i, %ix%i)",

@@ -1037,7 +1037,7 @@ void Player::Update( float fDeltaTime )
 		// timing window. Let's find the cutoff point! (lastCheckRow)
 		const float rate = GAMESTATE->m_SongOptions.GetCurrent().m_fMusicRate;
 		const SongPosition songPosition = m_pPlayerState->m_Position;
-		const float musicPosition = songPosition.m_fMusicSeconds + (songPosition.m_LastBeatUpdate.Ago() * rate);
+		const float musicPosition = songPosition.m_fMusicSeconds + (RageTimerAgo(songPosition.m_LastBeatUpdate) * rate);
 		// We have to add 1 here, because GetBeatFromElapsedTime() can round down.
 		const int lastCheckRow = BeatToNoteRow(m_Timing->GetBeatFromElapsedTime(musicPosition + (largestWindow * rate)) + 1);
 
@@ -2083,9 +2083,9 @@ void Player::Step( int col, int row, const RageTimer &tm, bool bHeld, bool bRele
 
 	// Do everything that depends on a RageTimer here;
 	// set your breakpoints somewhere after this block.
-	const float fLastBeatUpdate = m_pPlayerState->m_Position.m_LastBeatUpdate.Ago();
-	const float fPositionSeconds = m_pPlayerState->m_Position.m_fMusicSeconds - tm.Ago();
-	const float fTimeSinceStep = tm.Ago();
+	const float fLastBeatUpdate = RageTimerAgo( m_pPlayerState->m_Position.m_LastBeatUpdate );
+	const float fPositionSeconds = m_pPlayerState->m_Position.m_fMusicSeconds - RageTimerAgo( tm );
+	const float fTimeSinceStep = RageTimerAgo( tm );
 
 	float fSongBeat = m_pPlayerState->m_Position.m_fSongBeat;
 
@@ -2886,7 +2886,7 @@ void Player::CrossedRows( int iLastRowCrossed, const RageTimer &now )
 							float fSecsHeld = INPUTMAPPER->GetSecsHeld(GameI[i], m_pPlayerState->m_mp);
 							if(fSecsHeld >= PREFSMAN->m_fPadStickSeconds)
 							{
-								Step(iTrack, -1, now - PREFSMAN->m_fPadStickSeconds, true, false);
+								Step(iTrack, -1, RageTimerAddSeconds(now, -PREFSMAN->m_fPadStickSeconds), true, false);
 							}
 						}
 					}
@@ -2914,7 +2914,7 @@ void Player::CrossedRows( int iLastRowCrossed, const RageTimer &now )
 						float fSecsHeld = INPUTMAPPER->GetSecsHeld(GameI[i], m_pPlayerState->m_mp);
 						if(fSecsHeld >= PREFSMAN->m_fPadStickSeconds)
 						{
-							Step( iTrack, -1, now - PREFSMAN->m_fPadStickSeconds, true, false );
+							Step( iTrack, -1, RageTimerAddSeconds(now, -PREFSMAN->m_fPadStickSeconds), true, false );
 						}
 					}
 				}

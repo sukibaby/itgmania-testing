@@ -75,7 +75,7 @@ DancingCharacters::DancingCharacters(): m_bDrawDangerLight(false),
 	FOREACH_PlayerNumber( p )
 	{
 		m_pCharacter[p] = new Model;
-		m_2DIdleTimer[p].SetZero();
+		RageTimerSetZero( m_2DIdleTimer[p] );
 		m_i2DAnimState[p] = AS2D_IDLE; // start on idle state
 		if( !GAMESTATE->IsPlayerEnabled(p) )
 			continue;

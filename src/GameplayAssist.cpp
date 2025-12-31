@@ -59,7 +59,7 @@ void GameplayAssist::PlayTicks( const NoteData &nd, const PlayerState *ps )
 			fSecondsUntil /= GAMESTATE->m_SongOptions.GetCurrent().m_fMusicRate; /* 2x music rate means the time until the tick is halved */
 
 			RageSoundParams p;
-			p.m_StartTime = position.m_LastBeatUpdate  + (fSecondsUntil - (float)CommonMetrics::TICK_EARLY_SECONDS);
+			p.m_StartTime = RageTimerAddSeconds( position.m_LastBeatUpdate, fSecondsUntil - (float)CommonMetrics::TICK_EARLY_SECONDS );
 			m_soundAssistClap.Play(false, &p);
 		}
 	}
@@ -95,7 +95,7 @@ void GameplayAssist::PlayTicks( const NoteData &nd, const PlayerState *ps )
 			fSecondsUntil /= GAMESTATE->m_SongOptions.GetCurrent().m_fMusicRate; /* 2x music rate means the time until the tick is halved */
 
 			RageSoundParams p;
-			p.m_StartTime = position.m_LastBeatUpdate  + (fSecondsUntil - (float)CommonMetrics::TICK_EARLY_SECONDS);
+			p.m_StartTime = RageTimerAddSeconds( position.m_LastBeatUpdate, fSecondsUntil - (float)CommonMetrics::TICK_EARLY_SECONDS );
 			if( bIsMeasure )
 				m_soundAssistMetronomeMeasure.Play(false, &p);
 			else

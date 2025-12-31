@@ -1267,7 +1267,7 @@ bool HandleGlobalInputs( const InputEventPlus &input )
 		bool bSaveCompressed = !bHoldingShift;
 		RageTimer timer;
 		StepMania::SaveScreenshot("Screenshots/", bSaveCompressed, false, "", "");
-		LOG->Trace( "Screenshot took %f seconds.", timer.GetDeltaTime() );
+		LOG->Trace( "Screenshot took %f seconds.", RageTimerGetDeltaTime(timer) );
 		return true; // handled
 	}
 

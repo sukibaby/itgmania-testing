@@ -13,15 +13,16 @@
 
 void InputHandler::UpdateTimer()
 {
-	m_LastUpdate.Touch();
+	RageTimerTouch( m_LastUpdate );
 	m_iInputsSinceUpdate = 0;
 }
 
 void InputHandler::ButtonPressed( DeviceInput di )
 {
-	if( di.ts.IsZero() )
+	if( RageTimerIsZero(di.ts) )
 	{
-		di.ts = m_LastUpdate.Half();
+		const auto now = RageTimer::clock::now();
+		di.ts = RageTimer( m_LastUpdate.tp + (now - m_LastUpdate.tp) / 2 );
 		++m_iInputsSinceUpdate;
 	}
 

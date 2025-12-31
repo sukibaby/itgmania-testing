@@ -135,9 +135,9 @@ void RageDisplay::ProcessStatsOnFlip()
 	g_iFramesRenderedSinceLastCheck++;
 	g_iFramesRenderedSinceLastReset++;
 
-	if( g_LastCheckTimer.Ago() >= 1.0f )	// update stats every 1 sec.
+	if( RageTimerAgo(g_LastCheckTimer) >= 1.0f )	// update stats every 1 sec.
 	{
-		float fActualTime = g_LastCheckTimer.GetDeltaTime();
+		float fActualTime = RageTimerGetDeltaTime(g_LastCheckTimer);
 		g_iNumChecksSinceLastReset++;
 		g_iFPS = std::lrint( g_iFramesRenderedSinceLastCheck / fActualTime );
 		g_iCFPS = g_iFramesRenderedSinceLastReset / g_iNumChecksSinceLastReset;
@@ -159,7 +159,7 @@ void RageDisplay::ResetStats()
 	g_iFramesRenderedSinceLastCheck = g_iFramesRenderedSinceLastReset = 0;
 	g_iNumChecksSinceLastReset = 0;
 	g_iVertsRenderedSinceLastCheck = 0;
-	g_LastCheckTimer.GetDeltaTime();
+	RageTimerGetDeltaTime( g_LastCheckTimer );
 }
 
 RString RageDisplay::GetStats() const
@@ -933,9 +933,9 @@ void RageDisplay::FrameLimitBeforeVsync( int iFPS )
 	ASSERT( iFPS != 0 );
 
 	int iDelayMicroseconds = 0;
-	if( g_fFrameLimitPercent.Get() > 0.0f && !g_LastFrameEndedAt.IsZero() )
+	if( g_fFrameLimitPercent.Get() > 0.0f && !RageTimerIsZero(g_LastFrameEndedAt) )
 	{
-		float fFrameTime = g_LastFrameEndedAt.GetDeltaTime();
+		float fFrameTime = RageTimerGetDeltaTime(g_LastFrameEndedAt);
 		float fExpectedTime = 1.0f / iFPS;
 
 		/* This is typically used to turn some of the delay that would normally
@@ -961,7 +961,7 @@ void RageDisplay::FrameLimitAfterVsync()
 	if( g_fFrameLimitPercent.Get() == 0.0f )
 		return;
 
-	g_LastFrameEndedAt.Touch();
+	RageTimerTouch( g_LastFrameEndedAt );
 }
 
 

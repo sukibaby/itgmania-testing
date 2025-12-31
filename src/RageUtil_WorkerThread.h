@@ -16,7 +16,7 @@ public:
 	 * per-request timeout; you have 10 seconds to do your work, at which point all
 	 * requests time out until SetTimeout is called again. */
 	void SetTimeout( float fSeconds );
-	bool TimeoutEnabled() const { return !m_Timeout.IsZero(); }
+	bool TimeoutEnabled() const { return !RageTimerIsZero( m_Timeout ); }
 
 	/* Return true if the last operation has timed out and has not yet recovered. */
 	bool IsTimedOut() const { return m_bTimedOut; }
@@ -45,7 +45,7 @@ protected:
 	/* Enable a heartbeat.  DoHeartbeat will be called every fSeconds while idle.
 	 * DoHeartbeat may safely time out; if DoRequest tries to start a request in
 	 * the main thread, it'll simply time out. */
-	void SetHeartbeat( float fSeconds ) { m_fHeartbeat = fSeconds; m_NextHeartbeat.Touch(); }
+	void SetHeartbeat( float fSeconds ) { m_fHeartbeat = fSeconds; RageTimerTouch( m_NextHeartbeat ); }
 	virtual void DoHeartbeat() { }
 
 private:

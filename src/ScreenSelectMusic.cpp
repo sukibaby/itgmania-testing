@@ -72,7 +72,7 @@ static LocalizedString PERMANENTLY_DELETE("ScreenSelectMusic", "PermanentlyDelet
 REGISTER_SCREEN_CLASS( ScreenSelectMusic );
 void ScreenSelectMusic::Init()
 {
-	g_ScreenStartedLoadingAt.Touch();
+	RageTimerTouch( g_ScreenStartedLoadingAt );
 	if( PREFSMAN->m_sTestInitialScreen.Get() == m_sName )
 	{
 		GAMESTATE->m_PlayMode.Set( PLAY_MODE_REGULAR );
@@ -231,8 +231,8 @@ void ScreenSelectMusic::Init()
 
 void ScreenSelectMusic::BeginScreen()
 {
-	g_ScreenStartedLoadingAt.Touch();
-	m_timerIdleComment.GetDeltaTime();
+	RageTimerTouch( g_ScreenStartedLoadingAt );
+	RageTimerGetDeltaTime( m_timerIdleComment );
 
 	if( CommonMetrics::AUTO_SET_STYLE )
 	{
@@ -363,11 +363,11 @@ void ScreenSelectMusic::CheckBackgroundRequests( bool bForce )
 	// Nothing else is going.  Start the music, if we haven't yet.
 	if( g_bSampleMusicWaiting )
 	{
-		if(g_ScreenStartedLoadingAt.Ago() < SAMPLE_MUSIC_DELAY_INIT)
+		if(RageTimerAgo(g_ScreenStartedLoadingAt) < SAMPLE_MUSIC_DELAY_INIT)
 			return;
 
 		// Don't start the music sample when moving fast.
-		if( g_StartedLoadingAt.Ago() < SAMPLE_MUSIC_DELAY && !bForce )
+		if( RageTimerAgo(g_StartedLoadingAt) < SAMPLE_MUSIC_DELAY && !bForce )
 			return;
 
 		g_bSampleMusicWaiting = false;
@@ -395,10 +395,10 @@ void ScreenSelectMusic::Update( float fDeltaTime )
 {
 	if( !IsTransitioning() )
 	{
-		if( IDLE_COMMENT_SECONDS > 0  &&  m_timerIdleComment.Ago() >= IDLE_COMMENT_SECONDS )
+		if( IDLE_COMMENT_SECONDS > 0  &&  RageTimerAgo(m_timerIdleComment) >= IDLE_COMMENT_SECONDS )
 		{
 			SOUND->PlayOnceFromAnnouncer( m_sName+" IdleComment" );
-			m_timerIdleComment.GetDeltaTime();
+			RageTimerGetDeltaTime( m_timerIdleComment );
 		}
 	}
 
@@ -424,7 +424,7 @@ bool ScreenSelectMusic::Input( const InputEventPlus &input )
 //	LOG->Trace( "ScreenSelectMusic::Input()" );
 
 	// reset announcer timer
-	m_timerIdleComment.GetDeltaTime();
+	RageTimerGetDeltaTime( m_timerIdleComment );
 
 	// debugging?
 	// I just like being able to see untransliterated titles occasionally.
@@ -630,8 +630,8 @@ bool ScreenSelectMusic::Input( const InputEventPlus &input )
 			m_bAcceptSelectRelease[input.pn] = false;
 		}
 		if( input.type == IET_FIRST_PRESS )
-			g_CanOpenOptionsList.Touch();
-		if( g_CanOpenOptionsList.Ago() > OPTIONS_LIST_TIMEOUT )
+			RageTimerTouch( g_CanOpenOptionsList );
+		if( RageTimerAgo(g_CanOpenOptionsList) > OPTIONS_LIST_TIMEOUT )
 			m_bAcceptSelectRelease[input.pn] = false;
 		return true;
 	}
@@ -2052,7 +2052,7 @@ void ScreenSelectMusic::AfterMusicChange()
 		}
 	}
 
-	g_StartedLoadingAt.Touch();
+	RageTimerTouch( g_StartedLoadingAt );
 
 	std::vector<PlayerNumber> vpns;
 	FOREACH_HumanPlayer( p )

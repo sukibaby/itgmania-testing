@@ -105,8 +105,8 @@ void ScreenSelect::BeginScreen()
 {
 	ScreenWithMenuElements::BeginScreen();
 
-	m_timerIdleComment.GetDeltaTime();
-	m_timerIdleTimeout.GetDeltaTime();
+	RageTimerGetDeltaTime( m_timerIdleComment );
+	RageTimerGetDeltaTime( m_timerIdleTimeout );
 }
 
 
@@ -121,16 +121,16 @@ void ScreenSelect::Update( float fDelta )
 {
 	if( !IsTransitioning() )
 	{
-		if( IDLE_COMMENT_SECONDS > 0  &&  m_timerIdleComment.Ago() >= IDLE_COMMENT_SECONDS )
+		if( IDLE_COMMENT_SECONDS > 0  &&  RageTimerAgo(m_timerIdleComment) >= IDLE_COMMENT_SECONDS )
 		{
 			SOUND->PlayOnceFromAnnouncer( m_sName+" IdleComment" );
-			m_timerIdleComment.GetDeltaTime();
+			RageTimerGetDeltaTime( m_timerIdleComment );
 		}
 
-		if( IDLE_TIMEOUT_SECONDS > 0  &&  m_timerIdleTimeout.Ago() >= IDLE_TIMEOUT_SECONDS )
+		if( IDLE_TIMEOUT_SECONDS > 0  &&  RageTimerAgo(m_timerIdleTimeout) >= IDLE_TIMEOUT_SECONDS )
 		{
 			SCREENMAN->SetNewScreen( IDLE_TIMEOUT_SCREEN );
-			m_timerIdleTimeout.GetDeltaTime();
+			RageTimerGetDeltaTime( m_timerIdleTimeout );
 			return;
 		}
 	}
@@ -143,8 +143,8 @@ bool ScreenSelect::Input( const InputEventPlus &input )
 //	LOG->Trace( "ScreenSelect::Input()" );
 
 	/* Reset the announcer timers when a key is pressed. */
-	m_timerIdleComment.GetDeltaTime();
-	m_timerIdleTimeout.GetDeltaTime();
+	RageTimerGetDeltaTime( m_timerIdleComment );
+	RageTimerGetDeltaTime( m_timerIdleTimeout );
 
 	/* Choices may change when more coins are inserted. */
 	if( input.MenuI == GAME_BUTTON_COIN && input.type == IET_FIRST_PRESS )

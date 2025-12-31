@@ -230,8 +230,8 @@ void RageSoundReader_ThreadedBuffer::BufferingThread()
 		if( m_Event.WaitTimeoutSupported() )
 		{
 			RageTimer time;
-			time.Touch();
-			time += fTimeToSleep;
+			RageTimerTouch( time );
+			RageTimerAddSecondsInPlace( time, fTimeToSleep );
 			m_Event.Wait( &time );
 		}
 		else

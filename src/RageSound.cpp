@@ -334,9 +334,9 @@ void RageSound::StartPlaying()
 
 	/* If m_StartTime is in the past, then we probably set a start time but took too
 	 * long loading.  We don't want that; log it, since it can be unobvious. */
-	if( !m_Param.m_StartTime.IsZero() && m_Param.m_StartTime.Ago() > 0 )
+	if( !RageTimerIsZero(m_Param.m_StartTime) && RageTimerAgo(m_Param.m_StartTime) > 0 )
 		LOG->Trace("Sound \"%s\" has a start time %f seconds in the past",
-			GetLoadedFilePath().c_str(), m_Param.m_StartTime.Ago() );
+			GetLoadedFilePath().c_str(), RageTimerAgo(m_Param.m_StartTime) );
 
 	/* Tell the sound manager to start mixing us. */
 //	LOG->Trace("set playing true for %p (StartPlaying) (%s)", this, this->GetLoadedFilePath().c_str());

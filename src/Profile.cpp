@@ -1201,7 +1201,7 @@ void Profile::LoadSongsFromDir(RString const& dir, ProfileSlot prof_slot, bool i
 		LOG->Trace("Found songs folder in profile.");
 		std::vector<RString> song_folders;
 		RageTimer song_load_start_time;
-		song_load_start_time.Touch();
+		RageTimerTouch( song_load_start_time );
 		FILEMAN->GetDirListing(songs_folder + "/*", song_folders, true, true);
 
 		StripCvsAndSvn(song_folders);
@@ -1229,12 +1229,12 @@ void Profile::LoadSongsFromDir(RString const& dir, ProfileSlot prof_slot, bool i
 				new_song->SetEnabled(true);
 				m_songs.push_back(new_song);
 			}
-			if(song_load_start_time.Ago() > PREFSMAN->m_custom_songs_load_timeout)
+			if(RageTimerAgo(song_load_start_time) > PREFSMAN->m_custom_songs_load_timeout)
 			{
 				break;
 			}
 		}
-		float load_time= song_load_start_time.Ago();
+		float load_time= RageTimerAgo(song_load_start_time);
 		LOG->Trace("Successfully loaded %zu songs in %.6f from profile.", m_songs.size(), load_time);
 		
 		if (m_songs.empty()) {

@@ -612,7 +612,7 @@ void BGAnimationLayer::UpdateInternal( float fDeltaTime )
 		break;
 	case TYPE_TILES:
 		{
-			double fSecs = RageTimer::GetTimeSinceStart();
+			double fSecs = RageTimerGetTimeSinceStart();
 			double fTotalWidth = static_cast<double>(m_iNumTilesWide) * m_fTilesSpacingX;
 			double fTotalHeight = static_cast<double>(m_iNumTilesHigh) * m_fTilesSpacingY;
 

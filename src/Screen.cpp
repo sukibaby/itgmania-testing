@@ -342,7 +342,7 @@ bool Screen::PassInputToLua(const InputEventPlus& input)
 		lua_setfield(L, -2, "z");
 		lua_pushboolean(L, input.DeviceI.bDown);
 		lua_setfield(L, -2, "down");
-		lua_pushnumber(L, input.DeviceI.ts.Ago());
+		lua_pushnumber(L, RageTimerAgo(input.DeviceI.ts));
 		lua_setfield(L, -2, "ago");
 		lua_pushboolean(L, input.DeviceI.IsJoystick());
 		lua_setfield(L, -2, "is_joystick");

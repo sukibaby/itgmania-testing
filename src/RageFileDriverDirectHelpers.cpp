@@ -221,7 +221,7 @@ void DirectFilenameDB::PopulateFileSet( FileSet &fs, const RString &path )
 	// Resolve path cases (path/Path -> PATH/path).
 	ResolvePath( sPath );
 
-	fs.age.GetDeltaTime(); // reset
+	RageTimerGetDeltaTime( fs.age ); // reset
 	fs.files.clear();
 
 #if defined(_WIN32)

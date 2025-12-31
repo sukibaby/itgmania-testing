@@ -26,7 +26,7 @@ void RageSoundDriver_Null::Update()
 
 int64_t RageSoundDriver_Null::GetPosition() const
 {
-	return (RageTimer::GetTimeSinceStartMicroseconds() * m_iSampleRate) / 1000000;
+	return (RageTimerGetTimeSinceStartMicroseconds() * m_iSampleRate) / 1000000;
 }
 
 RageSoundDriver_Null::RageSoundDriver_Null()

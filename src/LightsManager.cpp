@@ -114,7 +114,7 @@ LightsManager::LightsManager()
 	ZERO( m_fActorLights );
 	ZERO( m_fSecsLeftInActorLightBlink );
 	m_iQueuedCoinCounterPulses = 0;
-	m_CoinCounterTimer.SetZero();
+	RageTimerSetZero( m_CoinCounterTimer );
 
 	m_LightsMode = LIGHTSMODE_JOINING;
 	RString sDriver = g_sLightsDriver.Get();
@@ -193,17 +193,17 @@ void LightsManager::Update( float fDeltaTime )
 
 	{
 		m_LightsState.m_bCoinCounter = false;
-		if( !m_CoinCounterTimer.IsZero() )
+		if( !RageTimerIsZero( m_CoinCounterTimer ) )
 		{
-			float fAgo = m_CoinCounterTimer.Ago();
+			float fAgo = RageTimerAgo( m_CoinCounterTimer );
 			if( fAgo < g_fCoinPulseTime )
 				m_LightsState.m_bCoinCounter = true;
 			else if( fAgo >= g_fCoinPulseTime * 2 )
-				m_CoinCounterTimer.SetZero();
+				RageTimerSetZero( m_CoinCounterTimer );
 		}
 		else if( m_iQueuedCoinCounterPulses )
 		{
-			m_CoinCounterTimer.Touch();
+			RageTimerTouch( m_CoinCounterTimer );
 			--m_iQueuedCoinCounterPulses;
 		}
 	}
@@ -220,7 +220,7 @@ void LightsManager::Update( float fDeltaTime )
 
 		case LIGHTSMODE_ATTRACT:
 		{
-			int iSec = RageTimer::GetTimeSinceStartSeconds();
+			int iSec = RageTimerGetTimeSinceStartSeconds();
 			int iTopIndex = iSec % 4;
 
 			// Aldo: Disabled this line, apparently it was a forgotten initialization

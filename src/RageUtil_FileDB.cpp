@@ -317,7 +317,7 @@ FileSet *FilenameDB::GetFileSet( const RString &sDir_, bool bCreate )
 			continue;
 		}
 
-		if( ExpireSeconds == -1 || pFileSet->age.Ago() < ExpireSeconds )
+		if( ExpireSeconds == -1 || RageTimerAgo(pFileSet->age) < ExpireSeconds )
 		{
 			/* Found it, and it hasn't expired. */
 			return pFileSet;
@@ -368,7 +368,7 @@ FileSet *FilenameDB::GetFileSet( const RString &sDir_, bool bCreate )
 	if( pParentDirp != nullptr )
 		*pParentDirp = pRet;
 
-	pRet->age.Touch();
+	RageTimerTouch( pRet->age );
 	pRet->m_bFilled = true;
 
 	/* Signal the event, to wake up any other threads that might be waiting for this

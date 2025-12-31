@@ -347,31 +347,31 @@ bool EventImpl_Pthreads::Wait( RageTimer *pTimeout )
 		return true;
 	}
 
-	/* If the clock is not CLOCK_MONOTONIC, or we can't change the wait clock
-	 * (no condattr_setclock), pthread_cond_timedwait has an inherent race
-	 * condition: the system clock may change before we call it. */
+	// Convert a steady-clock deadline to an absolute timespec in the condvar's clock.
+	const auto nowSteady = RageTimer::clock::now();
+	const auto deadline = pTimeout->tp;
+	auto remaining = deadline - nowSteady;
+	if( remaining < RageTimer::duration::zero() )
+		remaining = RageTimer::duration::zero();
+
+	clockid_t waitClock = CLOCK_REALTIME;
+	if( g_CondattrSetclock != nullptr )
+		waitClock = GetClock();
+
+	timespec nowTs;
+	clock_gettime( waitClock, &nowTs );
+
+	const auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>(remaining);
+	const time_t addSec = static_cast<time_t>(ns.count() / 1000000000LL);
+	const long addNsec = static_cast<long>(ns.count() % 1000000000LL);
+
 	timespec abstime;
-	if( g_CondattrSetclock != nullptr || GetClock() == CLOCK_REALTIME )
+	abstime.tv_sec = nowTs.tv_sec + addSec;
+	abstime.tv_nsec = nowTs.tv_nsec + addNsec;
+	if( abstime.tv_nsec >= 1000000000L )
 	{
-		/* If we support condattr_setclock, we'll set the condition to use
-		 * the same clock as RageTimer and can use it directly. If the
-		 * clock is CLOCK_REALTIME, that's the default anyway. */
-		abstime.tv_sec = pTimeout->m_secs;
-		abstime.tv_nsec = pTimeout->m_us * 1000;
-	}
-	else
-	{
-		// The RageTimer clock is different than the wait clock; convert it.
-		timeval tv;
-		gettimeofday( &tv, nullptr );
-
-		RageTimer timeofday( tv.tv_sec, tv.tv_usec );
-
-		float fSecondsInFuture = -pTimeout->Ago();
-		timeofday += fSecondsInFuture;
-
-		abstime.tv_sec = timeofday.m_secs;
-		abstime.tv_nsec = timeofday.m_us * 1000;
+		abstime.tv_nsec -= 1000000000L;
+		++abstime.tv_sec;
 	}
 
 	int iRet = pthread_cond_timedwait( &m_Cond, &m_pParent->mutex, &abstime );

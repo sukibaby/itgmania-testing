@@ -435,9 +435,9 @@ void ScreenDebugOverlay::UpdateText()
 	{
 		/* More than once I've paused the game accidentally and wasted time
 		 * figuring out why, so warn. */
-		if( g_HaltTimer.Ago() >= 5.0f )
+		if( RageTimerAgo(g_HaltTimer) >= 5.0f )
 		{
-			g_HaltTimer.Touch();
+			RageTimerTouch( g_HaltTimer );
 			LOG->Warn( "Game halted" );
 		}
 	}
@@ -759,7 +759,7 @@ class DebugLineHalt : public IDebugLine
 	virtual void DoAndLog( RString &sMessageOut )
 	{
 		g_bIsHalt = !g_bIsHalt;
-		g_HaltTimer.Touch();
+		RageTimerTouch( g_HaltTimer );
 		SetSpeed();
 		IDebugLine::DoAndLog( sMessageOut );
 	}
@@ -1340,7 +1340,7 @@ class DebugLineForceCrash : public IDebugLine
 class DebugLineUptime : public IDebugLine
 {
 	virtual RString GetDisplayTitle() { return UPTIME.GetValue(); }
-	virtual RString GetDisplayValue() { return MicrosecondsToMMSSMsMsMs(RageTimer::GetTimeSinceStartMicroseconds()); }
+	virtual RString GetDisplayValue() { return MicrosecondsToMMSSMsMsMs(RageTimerGetTimeSinceStartMicroseconds()); }
 	virtual bool IsEnabled() { return false; }
 	virtual void DoAndLog( RString &sMessageOut ) {}
 };

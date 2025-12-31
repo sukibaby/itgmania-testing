@@ -271,7 +271,7 @@ void InputHandler_PumpHID::PushInputStateToEngine(std::uint32_t newInput) {
 
     // If we're in a thread, our timestamp is accurate.
     if (InputThread.IsCreated()) {
-      di.ts.Touch();
+	  RageTimerTouch( di.ts );
     }
 
     ButtonPressed(di);

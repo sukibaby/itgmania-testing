@@ -134,8 +134,8 @@ void Inventory::Update( float fDelta )
 	{
 		// every 1 seconds, try to use an item
 		int iDelta = static_cast<int>(fDelta);
-		int iLastSecond = RageTimer::GetTimeSinceStartSeconds() - iDelta;
-		int iThisSecond = RageTimer::GetTimeSinceStartSeconds();
+		int iLastSecond = RageTimerGetTimeSinceStartSeconds() - iDelta;
+		int iThisSecond = RageTimerGetTimeSinceStartSeconds();
 		if( iLastSecond != iThisSecond )
 		{
 			for( int s=0; s<NUM_INVENTORY_SLOTS; s++ )

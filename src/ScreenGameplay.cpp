@@ -832,8 +832,8 @@ void ScreenGameplay::Init()
 	 * positioned before we TweenOnScreen. */
 	LoadNextSong();
 
-	m_GiveUpTimer.SetZero();
-	m_SkipSongTimer.SetZero();
+	RageTimerSetZero( m_GiveUpTimer );
+	RageTimerSetZero( m_SkipSongTimer );
 	m_gave_up= false;
 	m_skipped_song= false;
 }
@@ -1547,7 +1547,7 @@ void ScreenGameplay::UpdateSongPosition( float fDeltaTime )
 	RageTimer tm;
 	const float fSeconds = m_pSoundMusic->GetPositionSeconds( &tm );
 	const float fAdjust = SOUND->GetFrameTimingAdjustment( fDeltaTime );
-	GAMESTATE->UpdateSongPosition( fSeconds+fAdjust, GAMESTATE->m_pCurSong->m_SongTiming, tm+fAdjust );
+	GAMESTATE->UpdateSongPosition( fSeconds+fAdjust, GAMESTATE->m_pCurSong->m_SongTiming, RageTimerAddSeconds(tm, fAdjust) );
 }
 
 void ScreenGameplay::BeginScreen()
@@ -1773,7 +1773,7 @@ void ScreenGameplay::Update( float fDeltaTime )
 			// Update living players' alive time
 			// HACK: Don't scale alive time when using tab/tilde.  Instead of accumulating time from a timer,
 			// this time should instead be tied to the music position.
-			float fUnscaledDeltaTime = m_timerGameplaySeconds.GetDeltaTime();
+			float fUnscaledDeltaTime = RageTimerGetDeltaTime( m_timerGameplaySeconds );
 
 			FOREACH_EnabledPlayerInfo( m_vPlayerInfo, pi )
 				if( !pi->GetPlayerStageStats()->m_bFailed )
@@ -1878,9 +1878,9 @@ void ScreenGameplay::Update( float fDeltaTime )
 
 			// update give up
 			bool bGiveUpTimerFired = false;
-			bGiveUpTimerFired= !m_GiveUpTimer.IsZero() && m_GiveUpTimer.Ago() > GIVE_UP_SECONDS;
+			bGiveUpTimerFired= !RageTimerIsZero(m_GiveUpTimer) && RageTimerAgo(m_GiveUpTimer) > GIVE_UP_SECONDS;
 			m_gave_up= bGiveUpTimerFired;
-			m_skipped_song= !m_SkipSongTimer.IsZero() && m_SkipSongTimer.Ago() > GIVE_UP_SECONDS;
+			m_skipped_song= !RageTimerIsZero(m_SkipSongTimer) && RageTimerAgo(m_SkipSongTimer) > GIVE_UP_SECONDS;
 
 
 			bool bAllHumanHaveBigMissCombo = true;
@@ -2329,22 +2329,22 @@ void ScreenGameplay::AbortGiveUpText(bool show_abort_text)
 
 void ScreenGameplay::AbortSkipSong(bool show_text)
 {
-	if(m_SkipSongTimer.IsZero())
+	if( RageTimerIsZero(m_SkipSongTimer) )
 	{
 		return;
 	}
 	AbortGiveUpText(show_text);
-	m_SkipSongTimer.SetZero();
+	RageTimerSetZero( m_SkipSongTimer );
 }
 
 void ScreenGameplay::AbortGiveUp( bool bShowText )
 {
-	if( m_GiveUpTimer.IsZero() )
+	if( RageTimerIsZero(m_GiveUpTimer) )
 	{
 		return;
 	}
 	AbortGiveUpText(bShowText);
-	m_GiveUpTimer.SetZero();
+	RageTimerSetZero( m_GiveUpTimer );
 }
 
 void ScreenGameplay::ResetGiveUpTimers(bool show_text)
@@ -2409,10 +2409,11 @@ bool ScreenGameplay::Input( const InputEventPlus &input )
 				AbortSkipSong(true);
 			}
 			else if(input.type == IET_FIRST_PRESS && m_SkipSongTimer.IsZero())
+			else if(input.type == IET_FIRST_PRESS && RageTimerIsZero(m_SkipSongTimer))
 			{
 				m_textDebug.SetText(SKIP_SONG_TEXT);
 				m_textDebug.PlayCommand("StartOn");
-				m_SkipSongTimer.Touch();
+				RageTimerTouch( m_SkipSongTimer );
 			}
 			return true;
 		}
@@ -2424,11 +2425,11 @@ bool ScreenGameplay::Input( const InputEventPlus &input )
 			{
 				AbortGiveUp( true );
 			}
-			else if( input.type==IET_FIRST_PRESS && m_GiveUpTimer.IsZero() )
+			else if( input.type==IET_FIRST_PRESS && RageTimerIsZero(m_GiveUpTimer) )
 			{
 				m_textDebug.SetText( GIVE_UP_START_TEXT );
 				m_textDebug.PlayCommand( "StartOn" );
-				m_GiveUpTimer.Touch(); // start the timer
+				RageTimerTouch( m_GiveUpTimer ); // start the timer
 			}
 
 			return true;
@@ -2678,7 +2679,7 @@ void ScreenGameplay::HandleScreenMessage( const ScreenMessage SM )
 			}
 		}
 
-		GAMESTATE->m_DanceStartTime.Touch();
+		RageTimerTouch( GAMESTATE->m_DanceStartTime );
 
 		GAMESTATE->m_bGameplayLeadIn.Set( false );
 		m_DancingState = STATE_DANCING; // STATE CHANGE!  Now the user is allowed to press Back
@@ -2744,7 +2745,7 @@ void ScreenGameplay::HandleScreenMessage( const ScreenMessage SM )
 	}
 	else if( SM == SM_LeaveGameplay )
 	{
-		GAMESTATE->m_DanceDuration= GAMESTATE->m_DanceStartTime.Ago();
+		GAMESTATE->m_DanceDuration= RageTimerAgo(GAMESTATE->m_DanceStartTime);
 		// update dancing characters for win / lose
 		DancingCharacters *pDancers = nullptr;
 		if( m_pSongBackground )

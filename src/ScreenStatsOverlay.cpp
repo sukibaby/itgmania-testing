@@ -70,7 +70,7 @@ void ScreenStatsOverlay::Update( float fDeltaTime )
 	{
 		// Reset skip timer when we toggle Stats on so we don't show a large skip
 		// from the span when stats were turned off.
-		m_timerSkip.Touch();
+		RageTimerTouch( m_timerSkip );
 	}
 	bShowStatsWasOn = PREFSMAN->m_bShowStats.Get();
 
@@ -101,7 +101,7 @@ void ScreenStatsOverlay::AddTimestampLine( const RString &txt, const RageColor &
 void ScreenStatsOverlay::UpdateSkips()
 {
 	/* Use our own timer, so we ignore `/tab. */
-	const float UpdateTime = m_timerSkip.GetDeltaTime();
+	const float UpdateTime = RageTimerGetDeltaTime( m_timerSkip );
 
 	/* FPS is 0 for a little while after we load a screen; don't report
 	 * during this time. Do clear the timer, though, so we don't report
@@ -125,7 +125,7 @@ void ScreenStatsOverlay::UpdateSkips()
 
 	if( skip )
 	{
-		RString sTime( MicrosecondsToMMSSMsMs(RageTimer::GetTimeSinceStartMicroseconds()) );
+		RString sTime( MicrosecondsToMMSSMsMs(RageTimerGetTimeSinceStartMicroseconds()) );
 
 		static const RageColor colors[] =
 		{

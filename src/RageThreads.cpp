@@ -720,7 +720,7 @@ bool RageEvent::Wait( RageTimer *pTimeout )
 	ASSERT( m_LockCnt == 0 );
 
 	/* A zero RageTimer also means no timeout. */
-	if( pTimeout != nullptr && pTimeout->IsZero() )
+	if( pTimeout != nullptr && RageTimerIsZero(*pTimeout) )
 		pTimeout = nullptr;
 	bool bRet = m_pEvent->Wait( pTimeout );
 

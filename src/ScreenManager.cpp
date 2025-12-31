@@ -578,7 +578,7 @@ Screen* ScreenManager::MakeNewScreen( const RString &sScreenName )
 	CreateScreenFn pfn = iter->second;
 	Screen *ret = pfn( sScreenName );
 
-	LOG->Trace( "Loaded \"%s\" (\"%s\") in %f", sScreenName.c_str(), sClassName.c_str(), t.GetDeltaTime() );
+	LOG->Trace( "Loaded \"%s\" (\"%s\") in %f", sScreenName.c_str(), sClassName.c_str(), RageTimerGetDeltaTime(t) );
 
 	return ret;
 }

@@ -231,9 +231,9 @@ void WheelBase::Update( float fDeltaTime )
 		}
 
 		if( PREFSMAN->m_iMusicWheelSwitchSpeed >= MAX_WHEEL_SOUND_SPEED &&
-			m_MovingSoundTimer.Ago() >= 1.0f / MAX_WHEEL_SOUND_SPEED )
+			RageTimerAgo(m_MovingSoundTimer) >= 1.0f / MAX_WHEEL_SOUND_SPEED )
 		{
-			m_MovingSoundTimer.GetDeltaTime();
+			RageTimerGetDeltaTime( m_MovingSoundTimer );
 			m_soundChangeMusic.Play(true);
 		}
 	}

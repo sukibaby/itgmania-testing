@@ -87,11 +87,11 @@ RageSoundMixBuffer &RageSoundDriver::MixIntoBuffer( int iFrames, int64_t iFrameN
 		int iFramesLeft = iFrames;
 
 		/* Does the sound have a start time? */
-		if( !s.m_StartTime.IsZero() && iCurrentFrame != -1 )
+		if( !RageTimerIsZero(s.m_StartTime) && iCurrentFrame != -1 )
 		{
 			/* If the sound is supposed to start at a time past this buffer, insert silence. */
 			const int64_t iFramesUntilThisBuffer = iFrameNumber - iCurrentFrame;
-			const float fSecondsBeforeStart = -s.m_StartTime.Ago();
+			const float fSecondsBeforeStart = -RageTimerAgo(s.m_StartTime);
 			const int64_t iFramesBeforeStart = int64_t(fSecondsBeforeStart * GetSampleRate());
 			const int iSilentFramesInThisBuffer = std::clamp( int(iFramesBeforeStart-iFramesUntilThisBuffer), 0, iFramesLeft );
 
@@ -100,7 +100,7 @@ RageSoundMixBuffer &RageSoundDriver::MixIntoBuffer( int iFrames, int64_t iFrameN
 
 			/* If we didn't completely fill the buffer, then we've written all of the silence. */
 			if( iFramesLeft )
-				s.m_StartTime.SetZero();
+				RageTimerSetZero( s.m_StartTime );
 		}
 
 		/* Fill actual data. */
@@ -293,7 +293,7 @@ void RageSoundDriver::Update()
 
 	constexpr uint64_t iUsecs = 1000000;
 	static uint64_t fNextUsecs = 0;
-	if (RageTimer::GetTimeSinceStartMicroseconds() >= fNextUsecs)
+	if (RageTimerGetTimeSinceStartMicroseconds() >= fNextUsecs)
 	{
 		/* Lockless: only Mix() can write to underruns. */
 		int current_underruns = underruns;
@@ -305,7 +305,7 @@ void RageSoundDriver::Update()
 
 			/* Don't log again for at least a second, or we'll burst output
 			 * and possibly cause more underruns. */
-			fNextUsecs = RageTimer::GetTimeSinceStartMicroseconds() + iUsecs;
+			fNextUsecs = RageTimerGetTimeSinceStartMicroseconds() + iUsecs;
 		}
 	}
 
@@ -475,7 +475,7 @@ int64_t RageSoundDriver::ClampHardwareFrame( int64_t iHardwareFrame ) const
 		/* Clamp the output to one per second, so one underruns don't cascade due to
 		 * output spam. */
 		static int64_t lastTime = 0;
-		int64_t currentTime = RageTimer::GetTimeSinceStartMicroseconds();
+		int64_t currentTime = static_cast<int64_t>(RageTimerGetTimeSinceStartMicroseconds());
 		if( lastTime == 0 || (currentTime - lastTime) > 1000000 )
 		{
 			LOG->Trace("RageSoundDriver: driver returned a lesser position (%" PRId64 " < %" PRId64 ")", iHardwareFrame, m_iMaxHardwareFrame);
@@ -511,9 +511,9 @@ int64_t RageSoundDriver::GetHardwareFrame( RageTimer *pTimestamp=nullptr ) const
 
 	do
 	{
-		iStartTime = RageTimer::GetTimeSinceStartMicroseconds();
+		iStartTime = RageTimerGetTimeSinceStartMicroseconds();
 		iPositionFrames = GetPosition();
-		uint64_t elapsedTime = RageTimer::GetTimeSinceStartMicroseconds() - iStartTime;
+		uint64_t elapsedTime = RageTimerGetTimeSinceStartMicroseconds() - iStartTime;
 		if (elapsedTime <= iThreshold) break;
 	} while (--iTries);
 

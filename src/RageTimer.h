@@ -3,54 +3,90 @@
 #ifndef RAGE_TIMER_H
 #define RAGE_TIMER_H
 
+#include <chrono>
 #include <cstdint>
 
 class RageTimer
 {
 public:
-	/* Initialize the m_secs and m_us values to 0 and then fill them with the current time. */
-	RageTimer(): m_secs(0), m_us(0) { Touch(); }
-	RageTimer( uint64_t secs, uint64_t us ): m_secs(secs), m_us(us) { }
+	using clock = std::chrono::steady_clock;
+	using time_point = clock::time_point;
+	using duration = clock::duration;
 
-	/* Time ago this RageTimer represents. */
-	float Ago() const;
-	void Touch();
-	inline bool IsZero() const { return m_secs == 0 && m_us == 0; }
-	inline void SetZero() { m_secs = m_us = 0; }
+	RageTimer(): tp(clock::now()) { }
+	explicit RageTimer( time_point t ): tp(t) { }
 
-	/* Time between last call to GetDeltaTime() (Ago() + Touch()): */
-	float GetDeltaTime();
-
-	static double GetTimeSinceStart();	// seconds since the program was started
-	static int GetTimeSinceStartSeconds(); 	// This is used where GetTimeSinceStart would be cast to an int without rounding.
-	static uint64_t GetTimeSinceStartMicroseconds();
-
-	/* Get a timer representing half of the time ago as this one. */
-	RageTimer Half() const;
-
-	/* Add (or subtract) a duration from a timestamp.  The result is another timestamp. */
-	RageTimer operator+( float tm ) const;
-	RageTimer operator-( float tm ) const { return *this + -tm; }
-	void operator+=( float tm ) { *this = *this + tm; }
-	void operator-=( float tm ) { *this = *this + -tm; }
-
-	/* Find the amount of time between two timestamps.  The result is a duration. */
-	float operator-( const RageTimer &rhs ) const;
-
-	bool operator<( const RageTimer &rhs ) const;
-
-	/* The following is a "time since start" RageTimer. Splitting the seconds and
-	 * microseconds values into two integers and combining them later allows for
-	 * better precision. Use caution when changing data types, since resolution
-	 * mismatch errors are easy to cause when changing things in RageTimer. */
-	uint64_t m_secs, m_us;
-
-private:
-	static RageTimer Sum( const RageTimer &lhs, float tm );
-	static double Difference( const RageTimer &lhs, const RageTimer &rhs );
+	// Thin wrapper: public storage to ease interop.
+	time_point tp;
 };
 
 extern const RageTimer RageZeroTimer;
+
+// ---- Free-function helpers (replacement for old RageTimer methods) ----
+inline bool RageTimerIsZero( const RageTimer &t )
+{
+	return t.tp == RageTimer::time_point{};
+}
+
+inline void RageTimerSetZero( RageTimer &t )
+{
+	t.tp = RageTimer::time_point{};
+}
+
+inline void RageTimerTouch( RageTimer &t )
+{
+	t.tp = RageTimer::clock::now();
+}
+
+inline float RageTimerAgo( const RageTimer &t )
+{
+	if( RageTimerIsZero(t) )
+		return 0.0f;
+	return std::chrono::duration<float>(RageTimer::clock::now() - t.tp).count();
+}
+
+inline float RageTimerGetDeltaTime( RageTimer &t )
+{
+	const auto now = RageTimer::clock::now();
+	if( RageTimerIsZero(t) )
+	{
+		t.tp = now;
+		return 0.0f;
+	}
+	const float diff = std::chrono::duration<float>(now - t.tp).count();
+	t.tp = now;
+	return diff;
+}
+
+inline RageTimer RageTimerAddSeconds( const RageTimer &t, float seconds )
+{
+	if( RageTimerIsZero(t) )
+		return t;
+	const auto delta = std::chrono::duration_cast<RageTimer::duration>(std::chrono::duration<float>(seconds));
+	return RageTimer(t.tp + delta);
+}
+
+inline void RageTimerAddSecondsInPlace( RageTimer &t, float seconds )
+{
+	t = RageTimerAddSeconds(t, seconds);
+}
+
+inline float RageTimerDiffSeconds( const RageTimer &lhs, const RageTimer &rhs )
+{
+	if( RageTimerIsZero(lhs) || RageTimerIsZero(rhs) )
+		return 0.0f;
+	return std::chrono::duration<float>(lhs.tp - rhs.tp).count();
+}
+
+// ---- Time since start (replacement for RageTimer::GetTimeSinceStart*) ----
+double RageTimerGetTimeSinceStart();
+int RageTimerGetTimeSinceStartSeconds();
+uint64_t RageTimerGetTimeSinceStartMicroseconds();
+
+inline bool operator<( const RageTimer &lhs, const RageTimer &rhs )
+{
+	return lhs.tp < rhs.tp;
+}
 
 #endif // RAGE_TIMER_H
 

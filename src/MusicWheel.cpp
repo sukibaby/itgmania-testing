@@ -148,7 +148,7 @@ void MusicWheel::BeginScreen()
 
 		if(g_bPrecacheAllSorts) {
 			readyWheelItemsData(so);
-			times += ssprintf( "%i:%.3f ", so, timer.GetDeltaTime() );
+			times += ssprintf( "%i:%.3f ", so, RageTimerGetDeltaTime(timer) );
 		}
 	}
 	if(g_bPrecacheAllSorts) {

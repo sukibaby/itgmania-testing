@@ -273,7 +273,7 @@ void GameLoop::UpdateAllButDraw(bool bRunningFromVBLANK)
 	// time from the gameplay timer.
 	float fDeltaTime = (g_fConstantUpdateDeltaSeconds > 0) 
 		? g_fConstantUpdateDeltaSeconds 
-		: g_GameplayTimer.GetDeltaTime();
+		: RageTimerGetDeltaTime( g_GameplayTimer );
 
 	// Use a static boolean to check the preference once per game launch.
 	// This is a rarely used debug feature, so we try to skip it if possible.
@@ -436,7 +436,7 @@ void ConcurrentRenderer::RenderThread()
 		{
 			SCREENMAN->Draw();
 
-			float fDeltaTime = g_GameplayTimer.GetDeltaTime();
+			float fDeltaTime = RageTimerGetDeltaTime( g_GameplayTimer );
 			SCREENMAN->Update( fDeltaTime );
 		}
 

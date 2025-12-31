@@ -158,9 +158,9 @@ int64_t pos_map_queue::Search( int64_t iSourceFrame ) const
 	 * 3. Underflow; we'll be given a larger frame number than we know about.
 	 */
 	static RageTimer last;
-	if( last.Ago() >= 1.0f )
+	if( RageTimerAgo(last) >= 1.0f )
 	{
-		last.Touch();
+		RageTimerTouch( last );
 		LOG->Trace("Audio position mismatch: frame %" PRId64 " outside buffered range (normal during start/stop)", iSourceFrame);
 	}
 

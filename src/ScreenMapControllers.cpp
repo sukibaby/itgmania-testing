@@ -223,7 +223,7 @@ void ScreenMapControllers::BeginScreen()
 
 	ScreenWithMenuElements::BeginScreen();
 
-	m_WaitingForPress.SetZero();
+	RageTimerSetZero( m_WaitingForPress );
 
 	Refresh();
 	AfterChangeFocus();
@@ -285,11 +285,11 @@ void ScreenMapControllers::Update( float fDeltaTime )
 		m_textDevices.SetText(INPUTMAN->GetDisplayDevicesString());
 		});
 
-	if( !m_WaitingForPress.IsZero() && m_DeviceIToMap.IsValid() ) // we're going to map an input
+	if( !RageTimerIsZero(m_WaitingForPress) && m_DeviceIToMap.IsValid() ) // we're going to map an input
 	{
-		if( m_WaitingForPress.Ago() < g_fSecondsToWaitForInput )
+		if( RageTimerAgo(m_WaitingForPress) < g_fSecondsToWaitForInput )
 			return; /* keep waiting */
-		m_WaitingForPress.SetZero();
+		RageTimerSetZero( m_WaitingForPress );
 
 		ASSERT(CursorOnKey());
 		const KeyToMap *pKey = &m_KeysToMap[CurKeyIndex()];
@@ -699,7 +699,7 @@ void ScreenMapControllers::StartWaitingForPress()
 	const KeyToMap *pKey = &m_KeysToMap[CurKeyIndex()];
 	BitmapText *pText = pKey->m_textMappedTo[m_CurController][m_CurSlot];
 	pText->PlayCommand( "Waiting" );
-	m_WaitingForPress.Touch();
+	RageTimerTouch( m_WaitingForPress );
 	m_DeviceIToMap.MakeInvalid();
 }
 

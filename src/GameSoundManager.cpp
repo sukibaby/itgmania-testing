@@ -250,7 +250,7 @@ static void StartMusic( MusicToPlay &ToPlay )
 		const float fMaximumDistance = 2;
 		const float fDistance = std::min( fSecondToStartOn - GAMESTATE->m_Position.m_fMusicSeconds, fMaximumDistance );
 
-		when = GAMESTATE->m_Position.m_LastBeatUpdate + fDistance;
+		when = RageTimerAddSeconds( GAMESTATE->m_Position.m_LastBeatUpdate, fDistance );
 	}
 
 	/* Important: don't hold the mutex while we load and seek the actual sound. */
@@ -610,7 +610,7 @@ void GameSoundManager::Update( float fDeltaTime )
 	// Check for song timing skips.
 	if( PREFSMAN->m_bLogSkips && !g_Playing->m_bTimingDelayed )
 	{
-		const float fExpectedTimePassed = (tm - GAMESTATE->m_Position.m_LastBeatUpdate) * g_Playing->m_Music->GetPlaybackRate();
+		const float fExpectedTimePassed = RageTimerDiffSeconds( tm, GAMESTATE->m_Position.m_LastBeatUpdate ) * g_Playing->m_Music->GetPlaybackRate();
 		const float fSoundTimePassed = fSeconds - GAMESTATE->m_Position.m_fMusicSeconds;
 		const float fDiff = fExpectedTimePassed - fSoundTimePassed;
 
@@ -641,7 +641,7 @@ void GameSoundManager::Update( float fDeltaTime )
 	}
 	else
 	{
-		GAMESTATE->UpdateSongPosition( fSeconds + fAdjust, g_Playing->m_Timing, tm + fAdjust );
+		GAMESTATE->UpdateSongPosition( fSeconds + fAdjust, g_Playing->m_Timing, RageTimerAddSeconds( tm, fAdjust ) );
 	}
 
 	// Send crossed messages

@@ -44,7 +44,7 @@ public:
 	{
 		// Don't let the mod approach speed be affected by Tab.
 		// TODO: Find a more elegant way of handling this.
-		fDelta = m_Timer.GetDeltaTime();
+		fDelta = RageTimerGetDeltaTime( m_Timer );
 		m_[ModsLevel_Current].Approach( m_[ModsLevel_Song], fDelta );
 	}
 

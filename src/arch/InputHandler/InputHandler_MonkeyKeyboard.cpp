@@ -74,7 +74,7 @@ void InputHandler_MonkeyKeyboard::Update()
 		return;
 	}
 
-	float fSecsAgo = m_timerPressButton.Ago();
+	float fSecsAgo = RageTimerAgo( m_timerPressButton );
 
 	if( fSecsAgo > 0.5 )
 	{
@@ -89,7 +89,7 @@ void InputHandler_MonkeyKeyboard::Update()
 		m_dbLast = GetRandomKeyboardKey();
 		DeviceInput di = DeviceInput( DEVICE_KEYBOARD, m_dbLast, 1 );
 		ButtonPressed( di );
-		m_timerPressButton.Touch();
+		RageTimerTouch( m_timerPressButton );
 	}
 
 	InputHandler::UpdateTimer();

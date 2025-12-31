@@ -189,7 +189,7 @@ void InputFilter::ButtonPressed( const DeviceInput &di )
 {
 	LockMut(*queuemutex);
 
-	if( di.ts.IsZero() )
+	if( RageTimerIsZero(di.ts) )
 		LOG->Warn( "InputFilter::ButtonPressed: zero timestamp is invalid" );
 
 	// Filter out input that is beyond the range of the current system.
@@ -260,12 +260,12 @@ void InputFilter::CheckButtonChange( ButtonState &bs, DeviceInput di, const Rage
 	{
 		/* If the last IET_FIRST_PRESS or IET_RELEASE event was sent too recently,
 		 * wait a while before sending it. */
-		if( now - bs.m_LastReportTime < g_fInputDebounceTime )
+		if( RageTimerDiffSeconds(now, bs.m_LastReportTime) < g_fInputDebounceTime )
 		{
 			return;
 		}
 	} else {
-		if( now - bs.m_LastReportTime < PREFSMAN->m_fDebounceCoinInputTime )
+		if( RageTimerDiffSeconds(now, bs.m_LastReportTime) < PREFSMAN->m_fDebounceCoinInputTime )
 		{
 			return;
 		}
@@ -345,7 +345,7 @@ void InputFilter::Update( float fDeltaTime )
 		{
 			// If the key isn't pressed, and hasn't been pressed for a while
 			// (so debouncing isn't interested in it), purge the entry.
-			if( now - bs.m_LastReportTime > g_fInputDebounceTime &&
+			if( RageTimerDiffSeconds(now, bs.m_LastReportTime) > g_fInputDebounceTime &&
 				 bs.m_DeviceInput.level == 0.0f )
 				ButtonsToErase.push_back( b );
 			continue;
@@ -379,7 +379,7 @@ void InputFilter::Update( float fDeltaTime )
 		/* Set the timestamp to the exact time of the repeat. This way, as long
 		 * as tab/` aren't being used, the timestamp will always increase steadily
 		 * during repeats. */
-		di.ts = bs.m_LastInputTime + fRepeatTime;
+		di.ts = RageTimerAddSeconds( bs.m_LastInputTime, fRepeatTime );
 
 		ReportButtonChange( di, IET_REPEAT );
 	}
@@ -415,7 +415,7 @@ float InputFilter::GetSecsHeld( const DeviceInput &di, const DeviceInputList *pB
 	const DeviceInput *pDI = FindItemBinarySearch( pButtonState->begin(), pButtonState->end(), di );
 	if( pDI == nullptr )
 		return 0;
-	return pDI->ts.Ago();
+	return RageTimerAgo( pDI->ts );
 }
 
 float InputFilter::GetLevel( const DeviceInput &di, const DeviceInputList *pButtonState ) const

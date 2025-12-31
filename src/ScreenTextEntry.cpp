@@ -197,9 +197,9 @@ void ScreenTextEntry::Update( float fDelta )
 {
 	ScreenWithMenuElements::Update( fDelta );
 
-	if( m_timerToggleCursor.Ago() > 0.25f )
+	if( RageTimerAgo(m_timerToggleCursor) > 0.25f )
 	{
-		m_timerToggleCursor.Touch();
+		RageTimerTouch( m_timerToggleCursor );
 		m_bShowAnswerCaret = !m_bShowAnswerCaret;
 		UpdateAnswerText();
 	}

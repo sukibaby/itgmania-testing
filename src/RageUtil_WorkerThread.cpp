@@ -8,7 +8,7 @@ RageWorkerThread::RageWorkerThread( const RString &sName ):
 	m_HeartbeatEvent( "\"" + sName + "\" heartbeat event" )
 {
 	m_sName = sName;
-	m_Timeout.SetZero();
+	RageTimerSetZero( m_Timeout );
 	m_iRequest = REQ_NONE;
 	m_bTimedOut = false;
 	m_fHeartbeat = -1;
@@ -27,11 +27,11 @@ void RageWorkerThread::SetTimeout( float fSeconds )
 {
 	m_WorkerEvent.Lock();
 	if( fSeconds < 0 )
-		m_Timeout.SetZero();
+		RageTimerSetZero( m_Timeout );
 	else
 	{
-		m_Timeout.Touch();
-		m_Timeout += fSeconds;
+		RageTimerTouch( m_Timeout );
+		RageTimerAddSecondsInPlace( m_Timeout, fSeconds );
 	}
 	m_WorkerEvent.Unlock();
 }
@@ -70,7 +70,7 @@ bool RageWorkerThread::DoRequest( int iRequest )
 	ASSERT( !m_bTimedOut );
 	ASSERT( m_iRequest == REQ_NONE );
 
-	if( m_Timeout.IsZero() && iRequest != REQ_SHUTDOWN )
+	if( RageTimerIsZero(m_Timeout) && iRequest != REQ_SHUTDOWN )
 		LOG->Warn( "Request made with timeout disabled (%s, iRequest = %i)", m_sName.c_str(), iRequest );
 
 	/* Set the request, and wake up the worker thread. */
@@ -134,8 +134,8 @@ void RageWorkerThread::WorkerMain()
 			m_HeartbeatEvent.Unlock();
 
 			/* Schedule the next heartbeat. */
-			m_NextHeartbeat.Touch();
-			m_NextHeartbeat += m_fHeartbeat;
+			RageTimerTouch( m_NextHeartbeat );
+			RageTimerAddSecondsInPlace( m_NextHeartbeat, m_fHeartbeat );
 		}
 
 		if( iRequest != REQ_NONE )

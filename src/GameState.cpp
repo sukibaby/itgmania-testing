@@ -150,7 +150,7 @@ GameState::GameState() :
 
 	m_pCurGame.Set(nullptr);
 	m_iCoins.Set( 0 );
-	m_timeGameStarted.SetZero();
+	RageTimerSetZero( m_timeGameStarted );
 	m_bDemonstrationOrJukebox = false;
 
 	m_iNumTimesThroughAttract = -1;	// initial screen will bump this up to 0
@@ -294,7 +294,7 @@ void GameState::Reset()
 
 	ASSERT( THEME != nullptr );
 
-	m_timeGameStarted.SetZero();
+	RageTimerSetZero( m_timeGameStarted );
 	SetCurrentStyle( nullptr, PLAYER_INVALID );
 	FOREACH_MultiPlayer( p )
 		m_MultiPlayerStatus[p] = MultiPlayerStatus_NotJoined;
@@ -580,7 +580,7 @@ int GameState::GetCoinsNeededToJoin() const
  *   Clears data which was stored by CommitStageStats. */
 void GameState::BeginGame()
 {
-	m_timeGameStarted.Touch();
+	RageTimerTouch( m_timeGameStarted );
 
 	m_vpsNamesThatWereFilled.clear();
 	m_sPlayersThatWereFilled.clear();
@@ -794,7 +794,7 @@ void GameState::CommitStageStats()
 	STATSMAN->CommitStatsToProfiles( &STATSMAN->m_CurStageStats );
 
 	// Update TotalPlaySeconds.
-	int iPlaySeconds = std::max( 0, (int) m_timeGameStarted.GetDeltaTime() );
+	int iPlaySeconds = std::max( 0, (int) RageTimerGetDeltaTime( m_timeGameStarted ) );
 
 	Profile* pMachineProfile = PROFILEMAN->GetMachineProfile();
 	pMachineProfile->m_iTotalSessionSeconds += iPlaySeconds;
@@ -1203,7 +1203,7 @@ const float GameState::MUSIC_SECONDS_INVALID = -5000.0f;
 void GameState::ResetMusicStatistics()
 {
 	m_Position.Reset();
-	m_LastPositionTimer.Touch();
+	RageTimerTouch( m_LastPositionTimer );
 	m_LastPositionSeconds = 0.0f;
 
 	Actor::SetBGMTime( 0, 0, 0, 0 );
@@ -1274,13 +1274,13 @@ void GameState::UpdateSongPosition( float fPositionSeconds, const TimingData &ti
 	 * This causes visual stuttering of the arrows. To compensate, keep a
 	 * RageTimer since the last change. */
 	if(fPositionSeconds == m_LastPositionSeconds && !m_paused)
-		fPositionSeconds += m_LastPositionTimer.Ago();
+		fPositionSeconds += RageTimerAgo( m_LastPositionTimer );
 	else
 	{
 		//LOG->Info("Time difference: %+f",
 		//	m_LastPositionTimer.Ago() - (fPositionSeconds - m_LastPositionSeconds)
 		//);
-		m_LastPositionTimer.Touch();
+		RageTimerTouch( m_LastPositionTimer );
 		m_LastPositionSeconds = fPositionSeconds;
 	}
 

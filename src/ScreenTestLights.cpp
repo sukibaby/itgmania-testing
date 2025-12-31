@@ -45,9 +45,9 @@ void ScreenTestLights::Update( float fDeltaTime )
 	Screen::Update( fDeltaTime );
 
 
-	if( m_timerBackToAutoCycle.Ago() > 20 )
+	if( RageTimerAgo(m_timerBackToAutoCycle) > 20 )
 	{
-		m_timerBackToAutoCycle.Touch();
+		RageTimerTouch( m_timerBackToAutoCycle );
 		LIGHTSMAN->SetLightsMode( LIGHTSMODE_TEST_AUTO_CYCLE );
 	}
 
@@ -104,7 +104,7 @@ bool ScreenTestLights::MenuLeft( const InputEventPlus &input )
 		LIGHTSMAN->PrevTestCabinetLight();
 	else
 		LIGHTSMAN->PrevTestGameButtonLight();
-	m_timerBackToAutoCycle.Touch();
+	RageTimerTouch( m_timerBackToAutoCycle );
 	return true;
 }
 
@@ -116,7 +116,7 @@ bool ScreenTestLights::MenuRight( const InputEventPlus &input )
 		LIGHTSMAN->NextTestCabinetLight();
 	else
 		LIGHTSMAN->NextTestGameButtonLight();
-	m_timerBackToAutoCycle.Touch();
+	RageTimerTouch( m_timerBackToAutoCycle );
 	return true;
 }
 
