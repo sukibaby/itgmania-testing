@@ -49,7 +49,7 @@ struct ThreadSlot
 	/* Format this beforehand, since it's easier to do that than to do it under crash conditions. */
 	char m_szThreadFormattedOutput[1024];
 
-	bool m_bUsed;
+	std::atomic<bool> m_bUsed;
 	uint64_t m_iID;
 
 	ThreadImpl *m_pImpl;
@@ -70,7 +70,7 @@ struct ThreadSlot
 	int m_iCurCheckpoint, m_iNumCheckpoints;
 	const char *GetFormattedCheckpoint( int lineno );
 
-	ThreadSlot(): m_bUsed(false), m_iID(GetInvalidThreadId()),
+	ThreadSlot(): m_bUsed{false}, m_iID(GetInvalidThreadId()),
 		m_pImpl(nullptr), m_iCurCheckpoint(0), m_iNumCheckpoints(0) {}
 	void Init()
 	{
@@ -79,7 +79,7 @@ struct ThreadSlot
 		m_pImpl = nullptr;
 
 		/* Reset used last; otherwise, a thread creation might pick up the slot. */
-		m_bUsed = false;
+		m_bUsed.store(false);
 	}
 
 	void Release()
@@ -160,10 +160,10 @@ static int FindEmptyThreadSlot()
 	LockMut( GetThreadSlotsLock() );
 	for( int entry = 0; entry < MAX_THREADS; ++entry )
 	{
-		if( g_ThreadSlots[entry].m_bUsed )
+		if( g_ThreadSlots[entry].m_bUsed.load() )
 			continue;
 
-		g_ThreadSlots[entry].m_bUsed = true;
+		g_ThreadSlots[entry].m_bUsed.store( true );
 		return entry;
 	}
 
@@ -202,7 +202,7 @@ static ThreadSlot *GetThreadSlotFromID( uint64_t iID )
 
 	for( int entry = 0; entry < MAX_THREADS; ++entry )
 	{
-		if( !g_ThreadSlots[entry].m_bUsed )
+		if( !g_ThreadSlots[entry].m_bUsed.load() )
 			continue;
 		if( g_ThreadSlots[entry].m_iID == iID )
 			return &g_ThreadSlots[entry];
@@ -313,7 +313,7 @@ bool RageThread::EnumThreadIDs( int n, uint64_t &iID )
 	LockMut(GetThreadSlotsLock());
 	const ThreadSlot *slot = &g_ThreadSlots[n];
 
-	if( slot->m_bUsed )
+	if( slot->m_bUsed.load() )
 		iID = slot->m_iID;
 	else
 		iID = GetInvalidThreadId();
@@ -352,7 +352,7 @@ void RageThread::HaltAllThreads( bool Kill )
 	const uint64_t ThisThreadID = GetThisThreadId();
 	for( int entry = 0; entry < MAX_THREADS; ++entry )
 	{
-		if( !g_ThreadSlots[entry].m_bUsed )
+		if( !g_ThreadSlots[entry].m_bUsed.load() )
 			continue;
 		if( ThisThreadID == g_ThreadSlots[entry].m_iID || g_ThreadSlots[entry].m_pImpl == nullptr )
 			continue;
@@ -365,7 +365,7 @@ void RageThread::ResumeAllThreads()
 	const uint64_t ThisThreadID = GetThisThreadId();
 	for( int entry = 0; entry < MAX_THREADS; ++entry )
 	{
-		if( !g_ThreadSlots[entry].m_bUsed )
+		if( !g_ThreadSlots[entry].m_bUsed.load() )
 			continue;
 		if( ThisThreadID == g_ThreadSlots[entry].m_iID || g_ThreadSlots[entry].m_pImpl == nullptr )
 			continue;
@@ -432,7 +432,7 @@ void Checkpoints::SetCheckpoint( const char *file, int line, const char *message
 static const char *GetCheckpointLog( int slotno, int lineno )
 {
 	ThreadSlot &slot = g_ThreadSlots[slotno];
-	if( !slot.m_bUsed )
+	if( !slot.m_bUsed.load() )
 		return nullptr;
 
 	/* Only show the "Unknown thread" entry if it has at least one checkpoint. */
