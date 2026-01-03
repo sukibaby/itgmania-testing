@@ -20,6 +20,7 @@
 #include <cinttypes>
 #include <cstdint>
 #include <set>
+#include <atomic>
 
 #include "arch/Threads/Threads.h"
 #include "arch/Dialog/Dialog.h"
@@ -34,7 +35,9 @@
 
 /* Assume TLS doesn't work until told otherwise.  It's ArchHooks's job to set this. */
 bool RageThread::s_bSystemSupportsTLS = false;
-bool RageThread::s_bIsShowingDialog = false;
+
+// Written from Dialog.cpp, read in RageThread.cpp
+std::atomic<bool> RageThread::s_bIsShowingDialog( false );
 
 #define MAX_THREADS 128
 //static std::vector<RageMutex*> *g_MutexList = nullptr; /* watch out for static initialization order problems */

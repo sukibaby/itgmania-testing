@@ -42,8 +42,8 @@ public:
 	static bool GetSupportsTLS() { return s_bSystemSupportsTLS; }
 	static void SetSupportsTLS( bool b ) { s_bSystemSupportsTLS = b; }
 
-	static bool GetIsShowingDialog() { return s_bIsShowingDialog; }
-	static void SetIsShowingDialog( bool b ) { s_bIsShowingDialog = b; }
+	static bool GetIsShowingDialog() { return s_bIsShowingDialog.load(); }
+	static void SetIsShowingDialog( bool b ) { s_bIsShowingDialog.store(b); }
 	static uint64_t GetInvalidThreadID();
 
 private:
@@ -51,7 +51,7 @@ private:
 	RString m_sName;
 
 	static bool s_bSystemSupportsTLS;
-	static bool s_bIsShowingDialog;
+	static std::atomic<bool> s_bIsShowingDialog;
 
 	// Swallow up warnings. If they must be used, define them.
 	RageThread& operator=(const RageThread& rhs);
