@@ -79,7 +79,7 @@ struct ThreadSlot
 		m_pImpl = nullptr;
 
 		/* Reset used last; otherwise, a thread creation might pick up the slot. */
-		m_bUsed = false;
+		m_bUsed.store(false);
 	}
 
 	void Release()
