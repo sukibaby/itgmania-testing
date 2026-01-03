@@ -20,6 +20,7 @@
 #include <cinttypes>
 #include <cstdint>
 #include <set>
+#include <atomic>
 
 #include "arch/Threads/Threads.h"
 #include "arch/Dialog/Dialog.h"
