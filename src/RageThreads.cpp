@@ -169,27 +169,16 @@ static int FindEmptyThreadSlot()
 
 static void InitThreads()
 {
-	/* We don't have to worry about two threads calling this at once, since it's
-	 * called when we create a thread. */
-	static bool bInitialized = false;
-	if( bInitialized )
-		return;
-
-	LockMut( GetThreadSlotsLock() );
-
-	/* Libraries might start threads on their own, which might call user callbacks,
-	 * which could come back here.  Make sure we don't accidentally initialize twice. */
-	if( bInitialized )
-		return;
-
-	bInitialized = true;
-
-	/* Register the "unknown thread" slot. */
-	int slot = FindEmptyThreadSlot();
-	strcpy( g_ThreadSlots[slot].m_szName, "Unknown thread" );
-	g_ThreadSlots[slot].m_iID = GetInvalidThreadId();
-	sprintf( g_ThreadSlots[slot].m_szThreadFormattedOutput, "Unknown thread" );
-	g_pUnknownThreadSlot = &g_ThreadSlots[slot];
+	static std::once_flag initialized_flag;
+	std::call_once(initialized_flag, []() {
+		LockMut( GetThreadSlotsLock() );
+		/* Register the "unknown thread" slot. */
+		int slot = FindEmptyThreadSlot();
+		g_ThreadSlots[slot].m_szName = "Unknown thread";
+		g_ThreadSlots[slot].m_iID = GetInvalidThreadId();
+		sprintf( g_ThreadSlots[slot].m_szThreadFormattedOutput, "Unknown thread" );
+		g_pUnknownThreadSlot = &g_ThreadSlots[slot];
+	});
 }
 
 
