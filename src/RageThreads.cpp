@@ -44,12 +44,12 @@ std::atomic<bool> RageThread::s_bIsShowingDialog( false );
 
 struct ThreadSlot
 {
-	mutable char m_szName[1024]; /* mutable so we can force nul-termination */
+	std::string m_szName;
 
 	/* Format this beforehand, since it's easier to do that than to do it under crash conditions. */
 	char m_szThreadFormattedOutput[1024];
 
-	bool m_bUsed;
+	std::atomic<bool> m_bUsed;
 	uint64_t m_iID;
 
 	ThreadImpl *m_pImpl;
@@ -60,7 +60,7 @@ struct ThreadSlot
 	{
 		const char *m_szFile, *m_szMessage;
 		int m_iLine;
-		char m_szFormattedBuf[1024];
+		std::string m_szFormattedBuf;
 
 		ThreadCheckpoint() { Set( nullptr, 0, nullptr ); }
 		void Set( const char *szFile, int iLine, const char *szMessage = nullptr );
@@ -70,7 +70,7 @@ struct ThreadSlot
 	int m_iCurCheckpoint, m_iNumCheckpoints;
 	const char *GetFormattedCheckpoint( int lineno );
 
-	ThreadSlot(): m_bUsed(false), m_iID(GetInvalidThreadId()),
+	ThreadSlot(): m_szName("unnamed"), m_bUsed(false), m_iID(GetInvalidThreadId()),
 		m_pImpl(nullptr), m_iCurCheckpoint(0), m_iNumCheckpoints(0) {}
 	void Init()
 	{
@@ -108,7 +108,7 @@ void ThreadSlot::ThreadCheckpoint::Set( const char *szFile, int iLine, const cha
 			m_szFile = p+1;
 	}
 
-	snprintf( m_szFormattedBuf, sizeof(m_szFormattedBuf), "        %s:%i %s", m_szFile, m_iLine, m_szMessage? m_szMessage:"" );
+	m_szFormattedBuf = ssprintf( "        %s:%i %s", m_szFile, m_iLine, m_szMessage? m_szMessage:"" );
 }
 
 const char *ThreadSlot::ThreadCheckpoint::GetFormattedCheckpoint()
@@ -116,10 +116,7 @@ const char *ThreadSlot::ThreadCheckpoint::GetFormattedCheckpoint()
 	if( m_szFile == nullptr )
 		return nullptr;
 
-	/* Make sure it's terminated: */
-	m_szFormattedBuf[ sizeof(m_szFormattedBuf)-1 ] = 0;
-
-	return m_szFormattedBuf;
+	return m_szFormattedBuf.c_str();
 }
 
 const char *ThreadSlot::GetFormattedCheckpoint( int lineno )
@@ -160,10 +157,10 @@ static int FindEmptyThreadSlot()
 	LockMut( GetThreadSlotsLock() );
 	for( int entry = 0; entry < MAX_THREADS; ++entry )
 	{
-		if( g_ThreadSlots[entry].m_bUsed )
+		if( g_ThreadSlots[entry].m_bUsed.load() )
 			continue;
 
-		g_ThreadSlots[entry].m_bUsed = true;
+		g_ThreadSlots[entry].m_bUsed.store( true );
 		return entry;
 	}
 
@@ -202,7 +199,7 @@ static ThreadSlot *GetThreadSlotFromID( uint64_t iID )
 
 	for( int entry = 0; entry < MAX_THREADS; ++entry )
 	{
-		if( !g_ThreadSlots[entry].m_bUsed )
+		if( !g_ThreadSlots[entry].m_bUsed.load() )
 			continue;
 		if( g_ThreadSlots[entry].m_iID == iID )
 			return &g_ThreadSlots[entry];
@@ -234,11 +231,7 @@ RageThread::~RageThread()
 
 const char *ThreadSlot::GetThreadName() const
 {
-	/* This function may be called in crash conditions, so guarantee the string
-	 * is null-terminated. */
-	m_szName[sizeof(m_szName)-1] = 0;
-
-	return m_szName;
+	return m_szName.c_str();
 }
 
 void RageThread::Create( int (*fn)(void *), void *data )
@@ -253,12 +246,11 @@ void RageThread::Create( int (*fn)(void *), void *data )
 
 	int slotno = FindEmptyThreadSlot();
 	m_pSlot = &g_ThreadSlots[slotno];
-
-	strcpy( m_pSlot->m_szName, m_sName.c_str() );
+	m_pSlot->m_szName = m_sName;
 
 	if( LOG )
 		LOG->Trace( "Starting thread: %s", m_sName.c_str() );
-	sprintf( m_pSlot->m_szThreadFormattedOutput, "Thread: %s", m_sName.c_str() );
+	snprintf( m_pSlot->m_szThreadFormattedOutput, sizeof(m_pSlot->m_szThreadFormattedOutput), "Thread: %s", m_sName.c_str() );
 
 	/* Start a thread using our own startup function.  We pass the id to fill in,
 	 * to make sure it's set before the thread actually starts.  (Otherwise, early
@@ -275,8 +267,8 @@ RageThreadRegister::RageThreadRegister( const RString &sName )
 
 	m_pSlot = &g_ThreadSlots[iSlot];
 
-	strcpy( m_pSlot->m_szName, sName.c_str() );
-	sprintf( m_pSlot->m_szThreadFormattedOutput, "Thread: %s", sName.c_str() );
+	m_pSlot->m_szName = sName;
+	snprintf( m_pSlot->m_szThreadFormattedOutput, sizeof(m_pSlot->m_szThreadFormattedOutput), "Thread: %s", sName.c_str() );
 
 	m_pSlot->m_iID = GetThisThreadId();
 	m_pSlot->m_pImpl = MakeThisThread();
@@ -313,7 +305,7 @@ bool RageThread::EnumThreadIDs( int n, uint64_t &iID )
 	LockMut(GetThreadSlotsLock());
 	const ThreadSlot *slot = &g_ThreadSlots[n];
 
-	if( slot->m_bUsed )
+	if( slot->m_bUsed.load() )
 		iID = slot->m_iID;
 	else
 		iID = GetInvalidThreadId();
@@ -352,7 +344,7 @@ void RageThread::HaltAllThreads( bool Kill )
 	const uint64_t ThisThreadID = GetThisThreadId();
 	for( int entry = 0; entry < MAX_THREADS; ++entry )
 	{
-		if( !g_ThreadSlots[entry].m_bUsed )
+		if( !g_ThreadSlots[entry].m_bUsed.load() )
 			continue;
 		if( ThisThreadID == g_ThreadSlots[entry].m_iID || g_ThreadSlots[entry].m_pImpl == nullptr )
 			continue;
@@ -365,7 +357,7 @@ void RageThread::ResumeAllThreads()
 	const uint64_t ThisThreadID = GetThisThreadId();
 	for( int entry = 0; entry < MAX_THREADS; ++entry )
 	{
-		if( !g_ThreadSlots[entry].m_bUsed )
+		if( !g_ThreadSlots[entry].m_bUsed.load() )
 			continue;
 		if( ThisThreadID == g_ThreadSlots[entry].m_iID || g_ThreadSlots[entry].m_pImpl == nullptr )
 			continue;
@@ -419,7 +411,7 @@ void Checkpoints::SetCheckpoint( const char *file, int line, const char *message
 	slot->m_Checkpoints[slot->m_iCurCheckpoint].Set( file, line, message );
 
 	if( g_LogCheckpoints )
-		LOG->Trace( "%s", slot->m_Checkpoints[slot->m_iCurCheckpoint].m_szFormattedBuf );
+		LOG->Trace( "%s", slot->m_Checkpoints[slot->m_iCurCheckpoint].m_szFormattedBuf.c_str() );
 
 	++slot->m_iCurCheckpoint;
 	slot->m_iNumCheckpoints = std::max( slot->m_iNumCheckpoints, slot->m_iCurCheckpoint );
@@ -432,7 +424,7 @@ void Checkpoints::SetCheckpoint( const char *file, int line, const char *message
 static const char *GetCheckpointLog( int slotno, int lineno )
 {
 	ThreadSlot &slot = g_ThreadSlots[slotno];
-	if( !slot.m_bUsed )
+	if( !slot.m_bUsed.load() )
 		return nullptr;
 
 	/* Only show the "Unknown thread" entry if it has at least one checkpoint. */
