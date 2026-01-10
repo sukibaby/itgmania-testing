@@ -68,6 +68,17 @@ endif()
 
 project(StepMania)
 
+# Check for libtool on macOS when using vcpkg (needed for libusb build)
+if(APPLE AND SM_USE_VCPKG)
+  find_program(LIBTOOL_EXECUTABLE libtool)
+  if(NOT LIBTOOL_EXECUTABLE)
+    message(WARNING 
+      "libtool is not installed. It is required to build libusb via vcpkg.\n"
+      "Install it with: brew install libtool\n"
+      "Then re-run the build.")
+  endif()
+endif()
+
 include(StepmaniaCore.cmake)
 
 if(DEFINED CMAKE_TOOLCHAIN_FILE AND CMAKE_TOOLCHAIN_FILE MATCHES "vcpkg.cmake")
