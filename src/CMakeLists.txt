@@ -540,19 +540,30 @@ if(DEFINED CMAKE_TOOLCHAIN_FILE AND CMAKE_TOOLCHAIN_FILE MATCHES "vcpkg.cmake")
   find_library(SM_TOMMATH_RELEASE  NAMES tommath  libtommath  PATHS "${SM_VCPKG_INSTALLED_BASE}/lib" NO_DEFAULT_PATH)
   find_library(SM_TOMMATH_DEBUG    NAMES tommath  libtommath  PATHS "${SM_VCPKG_INSTALLED_BASE}/debug/lib" NO_DEFAULT_PATH)
 
-  if(NOT SM_TOMCRYPT_RELEASE AND NOT SM_TOMCRYPT_DEBUG)
-    message(FATAL_ERROR "Could not find tomcrypt library in ${SM_VCPKG_INSTALLED_BASE}. Make sure it was installed by vcpkg")
-  endif()
-  if(NOT SM_TOMMATH_RELEASE AND NOT SM_TOMMATH_DEBUG)
-    message(FATAL_ERROR "Could not find tommath library in ${SM_VCPKG_INSTALLED_BASE}. Make sure it was installed by vcpkg")
+  # Link tomcrypt/tommath if found, otherwise warn and link by name
+  if(SM_TOMCRYPT_RELEASE OR SM_TOMCRYPT_DEBUG)
+    if(SM_TOMCRYPT_DEBUG)
+      target_link_libraries("${SM_EXE_NAME}" $<$<CONFIG:Debug>:${SM_TOMCRYPT_DEBUG}>)
+    endif()
+    if(SM_TOMCRYPT_RELEASE)
+      target_link_libraries("${SM_EXE_NAME}" $<$<NOT:$<CONFIG:Debug>>:${SM_TOMCRYPT_RELEASE}>)
+    endif()
+  else()
+    message(WARNING "Could not find tomcrypt library in ${SM_VCPKG_INSTALLED_BASE}/lib. Linking by name instead. If linker fails, ensure vcpkg installed libtomcrypt for triplet ${VCPKG_TARGET_TRIPLET}.")
+    target_link_libraries("${SM_EXE_NAME}" tomcrypt)
   endif()
 
-  target_link_libraries("${SM_EXE_NAME}" PRIVATE
-    $<$<CONFIG:Debug>:${SM_TOMCRYPT_DEBUG}>
-    $<$<NOT:$<CONFIG:Debug>>:${SM_TOMCRYPT_RELEASE}>
-    $<$<CONFIG:Debug>:${SM_TOMMATH_DEBUG}>
-    $<$<NOT:$<CONFIG:Debug>>:${SM_TOMMATH_RELEASE}>
-  )
+  if(SM_TOMMATH_RELEASE OR SM_TOMMATH_DEBUG)
+    if(SM_TOMMATH_DEBUG)
+      target_link_libraries("${SM_EXE_NAME}" $<$<CONFIG:Debug>:${SM_TOMMATH_DEBUG}>)
+    endif()
+    if(SM_TOMMATH_RELEASE)
+      target_link_libraries("${SM_EXE_NAME}" $<$<NOT:$<CONFIG:Debug>>:${SM_TOMMATH_RELEASE}>)
+    endif()
+  else()
+    message(WARNING "Could not find tommath library in ${SM_VCPKG_INSTALLED_BASE}/lib. Linking by name instead. If linker fails, ensure vcpkg installed libtommath for triplet ${VCPKG_TARGET_TRIPLET}.")
+    target_link_libraries("${SM_EXE_NAME}" tommath)
+  endif()
 endif()
 
 list(APPEND SM_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}
