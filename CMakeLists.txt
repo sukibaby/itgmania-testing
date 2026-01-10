@@ -1,19 +1,3 @@
-# Build commands:
-
-# With vcpkg:
-
-# cmake -S . -B Build \
-#   -DSM_USE_VCPKG=ON \
-#   -DCMAKE_TOOLCHAIN_FILE="$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake"
-
-# Without vcpkg:
-
-# cmake -S . -B Build \
-#   -DSM_USE_VCPKG=OFF \
-#   -DCMAKE_TOOLCHAIN_FILE:PATH=
-
-# Then run  cmake --build build as usual.
-
 cmake_minimum_required(VERSION 3.20)
 
 if(APPLE)
@@ -56,6 +40,16 @@ endif()
 
 project(StepMania)
 
+if(APPLE AND SM_USE_VCPKG)
+  find_program(LIBTOOL_EXECUTABLE libtool)
+  if(NOT LIBTOOL_EXECUTABLE)
+    message(WARNING 
+      "libtool is not installed. It is required to build libusb via vcpkg.\n"
+      "Install it with: brew install libtool\n"
+      "Then re-run the build.")
+  endif()
+endif()
+
 include(StepmaniaCore.cmake)
 
 if(DEFINED CMAKE_TOOLCHAIN_FILE AND CMAKE_TOOLCHAIN_FILE MATCHES "vcpkg.cmake")
@@ -75,7 +69,6 @@ if(DEFINED CMAKE_TOOLCHAIN_FILE AND CMAKE_TOOLCHAIN_FILE MATCHES "vcpkg.cmake")
   find_package(miniz CONFIG REQUIRED)
   find_package(jsoncpp CONFIG REQUIRED)
   find_package(unofficial-pcre CONFIG REQUIRED)
-
   find_package(MbedTLS REQUIRED)
   find_package(Ogg CONFIG REQUIRED)
   find_package(Vorbis CONFIG REQUIRED)
