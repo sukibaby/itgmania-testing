@@ -1,17 +1,18 @@
-# Build commands:
-
-# With vcpkg:
-
+# Building ITGmania with vcpkg:
+#
+# 1. git clone https://github.com/microsoft/vcpkg.git ~/vcpkg
+# 2. cd ~/vcpkg
+# 3. ./bootstrap-vcpkg.sh (or ./bootstrap-vcpkg.bat, on Windows)
+# 4. export vcpkg_ROOT=$HOME/vcpkg
+# 5. (macOS) $vcpkg_ROOT/vcpkg install --triplet arm64-osx
+#    (Windows) $vcpkg_ROOT/vcpkg install --triplet x64-windows-static
+#    (Linux) 
+# 6. cmake -B Build -DSM_USE_VCPKG=ON -DCMAKE_TOOLCHAIN_FILE=$vcpkg_ROOT/scripts/buildsystems/vcpkg.cmake
+# 7. cmake --build Build
 # cmake -S . -B Build \
-#   -DSM_USE_VCPKG=ON \
-#   -DCMAKE_TOOLCHAIN_FILE="$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake"
-
+#
 # Without vcpkg:
-
-# cmake -S . -B Build \
-#   -DSM_USE_VCPKG=OFF \
-#   -DCMAKE_TOOLCHAIN_FILE:PATH=
-
+# cmake -S . -B Build -DSM_USE_VCPKG=OFF -DCMAKE_TOOLCHAIN_FILE:PATH=
 # Then run  cmake --build build as usual.
 
 cmake_minimum_required(VERSION 3.20)
