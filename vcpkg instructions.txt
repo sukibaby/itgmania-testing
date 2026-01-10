@@ -1,0 +1,67 @@
+Prerequisites
+
+macOS
+libtool (required for libusb build): brew install libtool
+
+Setup Instructions
+
+1. Clone and Bootstrap vcpkg
+
+git clone https://github.com/microsoft/vcpkg.git ~/vcpkg
+cd ~/vcpkg
+./bootstrap-vcpkg.sh (this is .bat on windows)
+
+2. Set Environment Variable
+
+Add vcpkg to your shell configuration:
+macOS/Linux (add to ~/.zshrc or ~/.bashrc):
+
+export vcpkg_ROOT=$HOME/vcpkg
+
+Windows (PowerShell):
+
+$env:vcpkg_ROOT = "C:\path\to\vcpkg"
+
+3. Install Dependencies
+
+Navigate to the ITGmania source directory and install vcpkg packages:
+
+macOS (arm64):
+cd /path/to/itgmania
+$vcpkg_ROOT/vcpkg install --triplet arm64-osx
+
+macOS (x86_64):
+cd /path/to/itgmania
+$vcpkg_ROOT/vcpkg install --triplet x64-osx
+
+Windows:
+cd \path\to\itgmania
+$env:vcpkg_ROOT\vcpkg install --triplet x64-windows-static
+
+Linux:
+cd /path/to/itgmania
+$vcpkg_ROOT/vcpkg install --triplet x64-linux
+
+4. Configure with CMake
+cmake -B Build -DSM_USE_VCPKG=ON -DCMAKE_TOOLCHAIN_FILE=$vcpkg_ROOT/scripts/buildsystems/vcpkg.cmake
+
+5. Build
+
+macOS/Linux:
+cmake --build Build -j $(nproc)
+
+Windows:
+cmake --build Build -j %NUMBER_OF_PROCESSORS%
+
+Troubleshooting - Clean Rebuild
+
+If you encounter issues, try a clean rebuild:
+rm -rf Build vcpkg_installed
+
+Building WITHOUT vcpkg
+
+If you want to use the traditional custom build instead of vcpkg,
+you can build without vcpkg:
+
+cmake -B Build -DSM_USE_VCPKG=OFF
+cmake --build Build
