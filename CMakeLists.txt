@@ -9,8 +9,19 @@
 #    (Linux) 
 # 6. cmake -B Build -DSM_USE_VCPKG=ON -DCMAKE_TOOLCHAIN_FILE=$vcpkg_ROOT/scripts/buildsystems/vcpkg.cmake
 # 7. cmake --build Build
-# cmake -S . -B Build \
 #
+# Notes:
+# (macOS) libtool is needed for libusb to build via vcpkg (brew install libtool)
+
+
+
+
+
+
+
+
+
+
 # Without vcpkg:
 # cmake -S . -B Build -DSM_USE_VCPKG=OFF -DCMAKE_TOOLCHAIN_FILE:PATH=
 # Then run  cmake --build build as usual.
@@ -76,7 +87,6 @@ if(DEFINED CMAKE_TOOLCHAIN_FILE AND CMAKE_TOOLCHAIN_FILE MATCHES "vcpkg.cmake")
   find_package(miniz CONFIG REQUIRED)
   find_package(jsoncpp CONFIG REQUIRED)
   find_package(unofficial-pcre CONFIG REQUIRED)
-
   find_package(MbedTLS REQUIRED)
   find_package(Ogg CONFIG REQUIRED)
   find_package(Vorbis CONFIG REQUIRED)
