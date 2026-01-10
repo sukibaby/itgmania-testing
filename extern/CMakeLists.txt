@@ -6,10 +6,16 @@ endif()
 # Always build these because we rely on local forks or custom options.
 set(SM_EXTERN_PROJECTS_ALWAYS
   CMakeProject-lua.cmake
-  CMakeProject-tomcrypt.cmake
-  CMakeProject-tommath.cmake
   CMakeProject-libusb.cmake
 )
+
+# Build tomcrypt and tommath only if not using vcpkg
+if(NOT SM_USING_VCPKG)
+  list(APPEND SM_EXTERN_PROJECTS_ALWAYS
+    CMakeProject-tomcrypt.cmake
+    CMakeProject-tommath.cmake
+  )
+endif()
 
 foreach(project ${SM_EXTERN_PROJECTS_ALWAYS})
   include(${project})

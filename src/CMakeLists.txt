@@ -364,19 +364,9 @@ if(DEFINED CMAKE_TOOLCHAIN_FILE AND CMAKE_TOOLCHAIN_FILE MATCHES "vcpkg.cmake")
     Ogg::ogg
     Vorbis::vorbis
     Vorbis::vorbisfile
+    tomcrypt::tomcrypt
+    tommath::tommath
     ZLIB::ZLIB)
-  
-  if(TOMCRYPT_FOUND)
-    list(APPEND SMDATA_LINK_LIB ${TOMCRYPT_LIBRARIES})
-  else()
-    list(APPEND SMDATA_LINK_LIB "tomcrypt")
-  endif()
-  
-  if(TOMMATH_FOUND)
-    list(APPEND SMDATA_LINK_LIB ${TOMMATH_LIBRARIES})
-  else()
-    list(APPEND SMDATA_LINK_LIB "tommath")
-  endif()
   
   if(LIBUSB_FOUND)
     list(APPEND SMDATA_LINK_LIB ${LIBUSB_LIBRARIES})
