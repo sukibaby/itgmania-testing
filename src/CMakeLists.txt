@@ -366,24 +366,11 @@ if(DEFINED CMAKE_TOOLCHAIN_FILE AND CMAKE_TOOLCHAIN_FILE MATCHES "vcpkg.cmake")
     Vorbis::vorbisfile
     ZLIB::ZLIB)
   
-  if(TOMCRYPT_FOUND)
-    list(APPEND SMDATA_LINK_LIB ${TOMCRYPT_LIBRARIES})
-  else()
-    list(APPEND SMDATA_LINK_LIB "tomcrypt")
-  endif()
-  
-  if(TOMMATH_FOUND)
-    list(APPEND SMDATA_LINK_LIB ${TOMMATH_LIBRARIES})
-  else()
-    list(APPEND SMDATA_LINK_LIB "tommath")
-  endif()
-  
   if(LIBUSB_FOUND)
     list(APPEND SMDATA_LINK_LIB ${LIBUSB_LIBRARIES})
     target_include_directories("${SM_EXE_NAME}" PRIVATE ${LIBUSB_INCLUDE_DIRS})
     target_link_directories("${SM_EXE_NAME}" PRIVATE ${LIBUSB_LIBRARY_DIRS})
   else()
-    # libusb is always custom-built (ExternalProject)
     list(APPEND SMDATA_LINK_LIB ${LIBUSB_LIBRARY})
     target_include_directories("${SM_EXE_NAME}" PRIVATE ${LIBUSB_INCLUDE_DIR})
   endif()
@@ -530,6 +517,43 @@ else() # Unix / Linux TODO: Remember to find and locate the zip archive files.
 endif()
 
 target_link_libraries("${SM_EXE_NAME}" ${SMDATA_LINK_LIB})
+
+if(DEFINED CMAKE_TOOLCHAIN_FILE AND CMAKE_TOOLCHAIN_FILE MATCHES "vcpkg.cmake")
+  # Manifest-mode vcpkg installs into the source tree by default.
+  # Use those paths instead of $ENV{VCPKG_ROOT}/installed, which may not exist.
+  if(NOT DEFINED VCPKG_TARGET_TRIPLET)
+    if(APPLE AND CMAKE_OSX_ARCHITECTURES MATCHES "arm64")
+      set(VCPKG_TARGET_TRIPLET "arm64-osx")
+    elseif(APPLE AND CMAKE_OSX_ARCHITECTURES MATCHES "x86_64")
+      set(VCPKG_TARGET_TRIPLET "x64-osx")
+    endif()
+  endif()
+
+  set(SM_VCPKG_INSTALLED_BASE "${CMAKE_SOURCE_DIR}/vcpkg_installed/${VCPKG_TARGET_TRIPLET}")
+  if(EXISTS "${SM_VCPKG_INSTALLED_BASE}/include")
+    target_include_directories("${SM_EXE_NAME}" PRIVATE "${SM_VCPKG_INSTALLED_BASE}/include")
+  endif()
+
+  # libtomcrypt/libtommath do not provide CMake package config files, so link them via files.
+  find_library(SM_TOMCRYPT_RELEASE NAMES tomcrypt libtomcrypt PATHS "${SM_VCPKG_INSTALLED_BASE}/lib" NO_DEFAULT_PATH)
+  find_library(SM_TOMCRYPT_DEBUG   NAMES tomcrypt libtomcrypt PATHS "${SM_VCPKG_INSTALLED_BASE}/debug/lib" NO_DEFAULT_PATH)
+  find_library(SM_TOMMATH_RELEASE  NAMES tommath  libtommath  PATHS "${SM_VCPKG_INSTALLED_BASE}/lib" NO_DEFAULT_PATH)
+  find_library(SM_TOMMATH_DEBUG    NAMES tommath  libtommath  PATHS "${SM_VCPKG_INSTALLED_BASE}/debug/lib" NO_DEFAULT_PATH)
+
+  if(NOT SM_TOMCRYPT_RELEASE AND NOT SM_TOMCRYPT_DEBUG)
+    message(FATAL_ERROR "Could not find tomcrypt library in ${SM_VCPKG_INSTALLED_BASE}. Make sure it was installed by vcpkg")
+  endif()
+  if(NOT SM_TOMMATH_RELEASE AND NOT SM_TOMMATH_DEBUG)
+    message(FATAL_ERROR "Could not find tommath library in ${SM_VCPKG_INSTALLED_BASE}. Make sure it was installed by vcpkg")
+  endif()
+
+  target_link_libraries("${SM_EXE_NAME}" PRIVATE
+    $<$<CONFIG:Debug>:${SM_TOMCRYPT_DEBUG}>
+    $<$<NOT:$<CONFIG:Debug>>:${SM_TOMCRYPT_RELEASE}>
+    $<$<CONFIG:Debug>:${SM_TOMMATH_DEBUG}>
+    $<$<NOT:$<CONFIG:Debug>>:${SM_TOMMATH_RELEASE}>
+  )
+endif()
 
 list(APPEND SM_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}
             "${SM_GENERATED_SRC_DIR}")

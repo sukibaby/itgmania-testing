@@ -3,13 +3,18 @@ if(DEFINED CMAKE_TOOLCHAIN_FILE AND CMAKE_TOOLCHAIN_FILE MATCHES "vcpkg.cmake")
   set(SM_USING_VCPKG TRUE)
 endif()
 
-# Always build these because we rely on local forks or custom options.
+# Lua is never fetched via vcpkg; always use our copy in extern.
 set(SM_EXTERN_PROJECTS_ALWAYS
   CMakeProject-lua.cmake
-  CMakeProject-tomcrypt.cmake
-  CMakeProject-tommath.cmake
-  CMakeProject-libusb.cmake
 )
+
+if(NOT SM_USING_VCPKG)
+  list(APPEND SM_EXTERN_PROJECTS_ALWAYS
+    CMakeProject-tomcrypt.cmake
+    CMakeProject-tommath.cmake
+    CMakeProject-libusb.cmake
+  )
+endif()
 
 foreach(project ${SM_EXTERN_PROJECTS_ALWAYS})
   include(${project})
