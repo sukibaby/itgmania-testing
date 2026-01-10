@@ -4,6 +4,7 @@
 #pragma warning( push )
 #pragma warning( disable : 4565 )
 #include <tomcrypt.h>
+#include <tommath.h>
 #pragma warning ( pop )
 
 #include "CryptManager.h"

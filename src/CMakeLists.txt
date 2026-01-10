@@ -364,8 +364,8 @@ if(DEFINED CMAKE_TOOLCHAIN_FILE AND CMAKE_TOOLCHAIN_FILE MATCHES "vcpkg.cmake")
     Ogg::ogg
     Vorbis::vorbis
     Vorbis::vorbisfile
-    tomcrypt::tomcrypt
-    tommath::tommath
+    tomcrypt
+    tommath
     ZLIB::ZLIB)
   
   if(LIBUSB_FOUND)
@@ -377,6 +377,9 @@ if(DEFINED CMAKE_TOOLCHAIN_FILE AND CMAKE_TOOLCHAIN_FILE MATCHES "vcpkg.cmake")
     list(APPEND SMDATA_LINK_LIB ${LIBUSB_LIBRARY})
     target_include_directories("${SM_EXE_NAME}" PRIVATE ${LIBUSB_INCLUDE_DIR})
   endif()
+  
+  # Add include directories for vcpkg packages
+  target_include_directories("${SM_EXE_NAME}" PRIVATE ${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/include)
   
   if(TOMCRYPT_FOUND)
     target_include_directories("${SM_EXE_NAME}" PRIVATE ${TOMCRYPT_INCLUDE_DIRS})
