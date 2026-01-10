@@ -350,6 +350,9 @@ if(DEFINED CMAKE_TOOLCHAIN_FILE AND CMAKE_TOOLCHAIN_FILE MATCHES "vcpkg.cmake")
     list(APPEND SMDATA_LINK_LIB hidapi::hidapi)
   endif()
   
+  # vorbis and ogg seem to be linked implicitly via vorbisfile
+  # so we don't need to link them explicitly here or we would
+  # get multiple definition errors.
   list(APPEND SMDATA_LINK_LIB 
     GLEW::GLEW
     ixwebsocket::ixwebsocket
@@ -361,32 +364,44 @@ if(DEFINED CMAKE_TOOLCHAIN_FILE AND CMAKE_TOOLCHAIN_FILE MATCHES "vcpkg.cmake")
     JsonCpp::JsonCpp
     unofficial::pcre::pcre
     MbedTLS::mbedtls
-    Ogg::ogg
-    Vorbis::vorbis
     Vorbis::vorbisfile
     ZLIB::ZLIB)
   
-  if(TOMCRYPT_FOUND)
-    list(APPEND SMDATA_LINK_LIB ${TOMCRYPT_LIBRARIES})
-  else()
-    list(APPEND SMDATA_LINK_LIB "tomcrypt")
+  # Set up vcpkg include directory for all packages
+  if(NOT DEFINED VCPKG_TARGET_TRIPLET)
+    if(APPLE AND CMAKE_OSX_ARCHITECTURES MATCHES "arm64")
+      set(VCPKG_TARGET_TRIPLET "arm64-osx")
+    elseif(APPLE AND CMAKE_OSX_ARCHITECTURES MATCHES "x86_64")
+      set(VCPKG_TARGET_TRIPLET "x64-osx")
+    elseif(WIN32)
+      set(VCPKG_TARGET_TRIPLET "x64-windows-static")
+    else()
+      set(VCPKG_TARGET_TRIPLET "x64-linux")
+    endif()
   endif()
   
-  if(TOMMATH_FOUND)
-    list(APPEND SMDATA_LINK_LIB ${TOMMATH_LIBRARIES})
-  else()
-    list(APPEND SMDATA_LINK_LIB "tommath")
+    # Use the vcpkg manifest-mode installed directory.
+    if(DEFINED VCPKG_INSTALLED_DIR)
+      set(SM_VCPKG_INSTALLED_BASE "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}")
+    else()
+      set(SM_VCPKG_INSTALLED_BASE "${CMAKE_BINARY_DIR}/vcpkg_installed/${VCPKG_TARGET_TRIPLET}")
+    endif()
+  
+  # Add include directory for all vcpkg packages
+  if(EXISTS "${SM_VCPKG_INSTALLED_BASE}/include")
+    target_include_directories("${SM_EXE_NAME}" PRIVATE "${SM_VCPKG_INSTALLED_BASE}/include")
+  endif()
+
+  # vcpkg installs libusb headers as include/libusb-1.0/libusb.h.
+  if(EXISTS "${SM_VCPKG_INSTALLED_BASE}/include/libusb-1.0")
+    target_include_directories("${SM_EXE_NAME}" PRIVATE "${SM_VCPKG_INSTALLED_BASE}/include/libusb-1.0")
   endif()
   
-  if(LIBUSB_FOUND)
-    list(APPEND SMDATA_LINK_LIB ${LIBUSB_LIBRARIES})
-    target_include_directories("${SM_EXE_NAME}" PRIVATE ${LIBUSB_INCLUDE_DIRS})
-    target_link_directories("${SM_EXE_NAME}" PRIVATE ${LIBUSB_LIBRARY_DIRS})
-  else()
-    # libusb is always custom-built (ExternalProject)
-    list(APPEND SMDATA_LINK_LIB ${LIBUSB_LIBRARY})
-    target_include_directories("${SM_EXE_NAME}" PRIVATE ${LIBUSB_INCLUDE_DIR})
+  # Add lib directory for linker search
+  if(EXISTS "${SM_VCPKG_INSTALLED_BASE}/lib")
+    target_link_directories("${SM_EXE_NAME}" PRIVATE "${SM_VCPKG_INSTALLED_BASE}/lib")
   endif()
+  
   
   if(TOMCRYPT_FOUND)
     target_include_directories("${SM_EXE_NAME}" PRIVATE ${TOMCRYPT_INCLUDE_DIRS})
@@ -530,6 +545,64 @@ else() # Unix / Linux TODO: Remember to find and locate the zip archive files.
 endif()
 
 target_link_libraries("${SM_EXE_NAME}" ${SMDATA_LINK_LIB})
+
+if(DEFINED CMAKE_TOOLCHAIN_FILE AND CMAKE_TOOLCHAIN_FILE MATCHES "vcpkg.cmake")
+  # libusb: link directly from vcpkg_installed (no guaranteed CMake config target).
+  find_library(SM_LIBUSB_RELEASE NAMES usb-1.0 libusb-1.0 libusb PATHS "${SM_VCPKG_INSTALLED_BASE}/lib" NO_DEFAULT_PATH)
+  find_library(SM_LIBUSB_DEBUG   NAMES usb-1.0 libusb-1.0 libusb PATHS "${SM_VCPKG_INSTALLED_BASE}/debug/lib" NO_DEFAULT_PATH)
+
+  if(NOT SM_LIBUSB_RELEASE AND NOT SM_LIBUSB_DEBUG)
+    message(FATAL_ERROR
+      "Could not find libusb in ${SM_VCPKG_INSTALLED_BASE}.\n"
+      "Expected one of:\n"
+      "  ${SM_VCPKG_INSTALLED_BASE}/lib/libusb-1.0.* or libusb.*\n"
+      "  ${SM_VCPKG_INSTALLED_BASE}/debug/lib/libusb-1.0.* or libusb.*\n"
+      "Make sure vcpkg installed 'libusb' for triplet '${VCPKG_TARGET_TRIPLET}'.")
+  endif()
+
+  if(SM_LIBUSB_DEBUG)
+    target_link_libraries("${SM_EXE_NAME}" $<$<CONFIG:Debug>:${SM_LIBUSB_DEBUG}>)
+  endif()
+  if(SM_LIBUSB_RELEASE)
+    target_link_libraries("${SM_EXE_NAME}" $<$<NOT:$<CONFIG:Debug>>:${SM_LIBUSB_RELEASE}>)
+  endif()
+
+  # libtomcrypt/libtommath do not provide CMake package config files, so link them via files.
+  find_library(SM_TOMCRYPT_RELEASE NAMES tomcrypt libtomcrypt PATHS "${SM_VCPKG_INSTALLED_BASE}/lib" NO_DEFAULT_PATH)
+  find_library(SM_TOMCRYPT_DEBUG   NAMES tomcrypt libtomcrypt PATHS "${SM_VCPKG_INSTALLED_BASE}/debug/lib" NO_DEFAULT_PATH)
+  find_library(SM_TOMMATH_RELEASE  NAMES tommath  libtommath  PATHS "${SM_VCPKG_INSTALLED_BASE}/lib" NO_DEFAULT_PATH)
+  find_library(SM_TOMMATH_DEBUG    NAMES tommath  libtommath  PATHS "${SM_VCPKG_INSTALLED_BASE}/debug/lib" NO_DEFAULT_PATH)
+
+  if(NOT SM_TOMCRYPT_RELEASE AND NOT SM_TOMCRYPT_DEBUG)
+    message(FATAL_ERROR
+      "Could not find libtomcrypt in ${SM_VCPKG_INSTALLED_BASE}.\n"
+      "Expected one of:\n"
+      "  ${SM_VCPKG_INSTALLED_BASE}/lib/libtomcrypt.*\n"
+      "  ${SM_VCPKG_INSTALLED_BASE}/debug/lib/libtomcrypt.*\n"
+      "Make sure vcpkg installed 'libtomcrypt' for triplet '${VCPKG_TARGET_TRIPLET}'.")
+  endif()
+  if(SM_TOMCRYPT_DEBUG)
+    target_link_libraries("${SM_EXE_NAME}" $<$<CONFIG:Debug>:${SM_TOMCRYPT_DEBUG}>)
+  endif()
+  if(SM_TOMCRYPT_RELEASE)
+    target_link_libraries("${SM_EXE_NAME}" $<$<NOT:$<CONFIG:Debug>>:${SM_TOMCRYPT_RELEASE}>)
+  endif()
+
+  if(NOT SM_TOMMATH_RELEASE AND NOT SM_TOMMATH_DEBUG)
+    message(FATAL_ERROR
+      "Could not find libtommath in ${SM_VCPKG_INSTALLED_BASE}.\n"
+      "Expected one of:\n"
+      "  ${SM_VCPKG_INSTALLED_BASE}/lib/libtommath.*\n"
+      "  ${SM_VCPKG_INSTALLED_BASE}/debug/lib/libtommath.*\n"
+      "Make sure vcpkg installed 'libtommath' for triplet '${VCPKG_TARGET_TRIPLET}'.")
+  endif()
+  if(SM_TOMMATH_DEBUG)
+    target_link_libraries("${SM_EXE_NAME}" $<$<CONFIG:Debug>:${SM_TOMMATH_DEBUG}>)
+  endif()
+  if(SM_TOMMATH_RELEASE)
+    target_link_libraries("${SM_EXE_NAME}" $<$<NOT:$<CONFIG:Debug>>:${SM_TOMMATH_RELEASE}>)
+  endif()
+endif()
 
 list(APPEND SM_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}
             "${SM_GENERATED_SRC_DIR}")
