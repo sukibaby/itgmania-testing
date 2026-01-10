@@ -379,7 +379,10 @@ if(DEFINED CMAKE_TOOLCHAIN_FILE AND CMAKE_TOOLCHAIN_FILE MATCHES "vcpkg.cmake")
   endif()
   
   # Add include directories for vcpkg packages
-  target_include_directories("${SM_EXE_NAME}" PRIVATE ${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/include)
+  if(DEFINED ENV{VCPKG_ROOT})
+    target_include_directories("${SM_EXE_NAME}" PRIVATE "$ENV{VCPKG_ROOT}/installed/${VCPKG_TARGET_TRIPLET}/include")
+    target_link_directories("${SM_EXE_NAME}" PRIVATE "$ENV{VCPKG_ROOT}/installed/${VCPKG_TARGET_TRIPLET}/lib")
+  endif()
   
   if(TOMCRYPT_FOUND)
     target_include_directories("${SM_EXE_NAME}" PRIVATE ${TOMCRYPT_INCLUDE_DIRS})
