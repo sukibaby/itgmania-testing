@@ -137,7 +137,7 @@ void ScreenOptionsMaster::HandleScreenMessage( const ScreenMessage SM )
 		{
 			/* If the resolution or aspect ratio changes, always reload the theme.
 			 * Otherwise, only reload it if it changed. */
-			RString sNewTheme = PREFSMAN->m_sTheme.Get();
+			const std::string sNewTheme = PREFSMAN->m_sTheme.Get();
 			GameLoop::ChangeTheme(sNewTheme);
 		}
 
@@ -150,7 +150,8 @@ void ScreenOptionsMaster::HandleScreenMessage( const ScreenMessage SM )
 
 		if( m_iChangeMask & OPT_CHANGE_GAME )
 		{
-			GameLoop::ChangeGame(PREFSMAN->GetCurrentGame());
+			const std::string sNewGame = PREFSMAN->GetCurrentGame();
+			GameLoop::ChangeGame(sNewGame);
 		}
 
 		if( m_iChangeMask & OPT_APPLY_SOUND )
