@@ -1440,7 +1440,7 @@ public:
 
 	static int SetTheme(T* p, lua_State* L)
 	{
-		RString theme_name= SArg(1);
+		const std::string theme_name= SArg(1);
 		if(!p->IsThemeSelectable(theme_name))
 		{
 			luaL_error(L, "SetTheme: Invalid Theme: '%s'", theme_name.c_str());

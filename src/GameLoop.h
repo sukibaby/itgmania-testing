@@ -1,5 +1,8 @@
 #ifndef GAME_LOOP_H
 #define GAME_LOOP_H
+
+#include <string>
+
 /** @brief Main rendering and update loop. */
 namespace GameLoop
 {
@@ -7,8 +10,8 @@ namespace GameLoop
 	void UpdateAllButDraw( bool bRunningFromVBLANK);
 	void SetUpdateRate(float fUpdateRate);
 	float GetUpdateRate();
-	void ChangeTheme(const RString &sNewTheme);
-	void ChangeGame(const RString& new_game, const RString& new_theme= "");
+	void ChangeTheme(const std::string &sNewTheme);
+	void ChangeGame(const std::string &new_game, const std::string &new_theme= "");
 	void StartConcurrentRendering();
 	void FinishConcurrentRendering();
 
