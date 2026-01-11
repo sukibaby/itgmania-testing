@@ -11,7 +11,7 @@
 #include "RageLog.h"
 #include "RageTypes.h"
 #include "MessageManager.h"
-#include "ver.h"
+#include "version.hpp"
 
 #include <cassert>
 #include <cmath>

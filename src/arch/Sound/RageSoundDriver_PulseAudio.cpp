@@ -7,7 +7,7 @@
 #include "RageUtil.h"
 #include "RageTimer.h"
 #include "PrefsManager.h"
-#include "ver.h"
+#include "version.hpp"
 #include <pulse/error.h>
 #include <sys/time.h>
 #include <sys/resource.h>

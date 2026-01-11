@@ -347,8 +347,8 @@ endif(WIN32) # LINUX OR BSD, APPLE
 
 configure_file("${SM_SRC_DIR}/config.in.hpp"
                "${SM_GENERATED_SRC_DIR}/config.hpp")
-configure_file("${SM_SRC_DIR}/verstub.in.cpp"
-               "${SM_GENERATED_SRC_DIR}/verstub.cpp")
+configure_file("${SM_SRC_DIR}/version.hpp.in"
+               "${SM_GENERATED_SRC_DIR}/version.hpp")
 
 # Define installer based items for cpack.
 include("${CMAKE_CURRENT_LIST_DIR}/CMake/CPackSetup.cmake")

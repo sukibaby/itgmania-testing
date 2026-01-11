@@ -16,7 +16,7 @@
 #include "Preference.h"
 #include "JsonUtil.h"
 #include "ScreenInstallOverlay.h"
-#include "ver.h"
+#include "version.hpp"
 
 #include <vector>
 

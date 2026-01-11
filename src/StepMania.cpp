@@ -68,7 +68,7 @@
 #include "SpecialFiles.h"
 #include "Profile.h"
 #include "ActorUtil.h"
-#include "ver.h"
+#include "version.hpp"
 
 #include <cmath>
 #include <ctime>
