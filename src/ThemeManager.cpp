@@ -1445,7 +1445,8 @@ public:
 		{
 			luaL_error(L, "SetTheme: Invalid Theme: '%s'", theme_name.c_str());
 		}
-		GameLoop::ChangeTheme(theme_name);
+		const std::string sThemeName= theme_name;
+		GameLoop::ChangeTheme(sThemeName);
 		return 0;
 	}
 
