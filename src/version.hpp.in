@@ -12,8 +12,7 @@ namespace sm_version {
 	inline constexpr char const* timestamp_time = "@SM_TIMESTAMP_TIME@";
 }
 
-// Legacy globals (historically provided by a generated ver.cpp).
-// These are inline variables (C++17) so we don't need a generated .cpp TU.
+// Legacy globals
 inline constexpr char const* const product_version = sm_version::git;
 inline constexpr unsigned long version_num = 0;
 inline constexpr char const* const version_time = sm_version::timestamp_time;

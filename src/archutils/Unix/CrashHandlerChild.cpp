@@ -15,7 +15,7 @@
 #include "archutils/Darwin/Crash.h"
 #endif
 
-#include "ver.h"
+#include "version.hpp"
 
 #include <cstdio>
 #include <cstring>

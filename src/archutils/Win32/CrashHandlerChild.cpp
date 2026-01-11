@@ -16,7 +16,7 @@
 #include "XmlFileUtil.h"
 #include "LocalizedString.h"
 #include "RageFileDriverDeflate.h"
-#include "ver.h"
+#include "version.hpp"
 
 #include <cerrno>
 #include <cstddef>
@@ -35,7 +35,7 @@
 #pragma comment(lib, "dbghelp.lib")
 
 // XXX: What happens when we *don't* have version info? Does that ever actually happen?
-#include "ver.h"
+#include "version.hpp"
 
 #if _WIN64
 #define ADDRESS_ZEROS "016"

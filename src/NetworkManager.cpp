@@ -8,7 +8,7 @@
 #include "RageUtil.h"
 #include "SpecialFiles.h"
 #include "StdString.h"
-#include "ver.h"
+#include "version.hpp"
 
 #include <ixwebsocket/IXHttpClient.h>
 #include <ixwebsocket/IXNetSystem.h>
