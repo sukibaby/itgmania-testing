@@ -108,7 +108,7 @@ void GameLoop::ChangeTheme(const std::string &sNewTheme)
 	g_NewTheme = RString(sNewTheme);
 }
 
-void GameLoop::ChangeGame(const std::string& new_game, const std::string& new_theme)
+void GameLoop::ChangeGame(const std::string &new_game, const std::string &new_theme)
 {
 	g_NewGame = RString(new_game);
 	g_NewTheme = RString(new_theme);
