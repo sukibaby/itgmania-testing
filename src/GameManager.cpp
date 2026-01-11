@@ -3569,6 +3569,7 @@ public:
 				luaL_error(L, "SetGame: Invalid Theme: '%s'", theme.c_str());
 			}
 		}
+		// A future commit could make this function fully RString-free.
 		const std::string sGameName = game_name;
 		const std::string sTheme = theme;
 		GameLoop::ChangeGame(sGameName, sTheme);
