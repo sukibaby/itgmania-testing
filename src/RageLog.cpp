@@ -113,7 +113,7 @@ struct RageLog::LogWriter
 	struct LogCommand
 	{
 		LogCommandType type;
-		LogFileMask fileMask;
+		int fileMask;
 		RString line;
 		uint64_t token;
 		bool enable;
