@@ -59,8 +59,7 @@ bool ScreenTitleMenu::Input( const InputEventPlus &input )
 		if( CodeDetector::EnteredCode(input.GameI.controller,CODE_NEXT_THEME) ||
 			CodeDetector::EnteredCode(input.GameI.controller,CODE_NEXT_THEME2) )
 		{
-			const std::string rNewTheme = THEME->GetNextSelectableTheme();
-			GameLoop::ChangeTheme(rNewTheme);
+			GameLoop::ChangeTheme(THEME->GetNextSelectableTheme());
 			bHandled = true;
 		}
 		if( CodeDetector::EnteredCode(input.GameI.controller,CODE_NEXT_ANNOUNCER) ||
