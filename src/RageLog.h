@@ -17,15 +17,6 @@ public:
 	void UserLog( const RString &sType, const RString &sElement, const char *fmt, ... ) PRINTF(4,5);
 	void Flush();
 
-	/*
-	 * Control how aggressively the background writer flushes.
-	 *
-	 * Lower intervals reduce log loss on crash but increase disk activity.
-	 * SetFlushing(true) still forces a synchronous flush on each write.
-	 */
-	void SetDiskFlushIntervalMs( int ms );
-	void SetDiskMaxBatchBytes( int bytes );
-
 	void MapLog( const RString &key, const char *fmt, ... ) PRINTF(3,4);
 	void UnmapLog( const RString &key );
 
@@ -46,8 +37,6 @@ private:
 	bool m_bUserLogToDisk;
 	bool m_bFlush;
 	bool m_bShowLogOutput;
-	int m_iDiskFlushIntervalMs;
-	int m_iDiskMaxBatchBytes;
 
 	struct LogWriter;
 	LogWriter* m_pLogWriter;
