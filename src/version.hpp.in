@@ -12,4 +12,11 @@ namespace sm_version {
 	constexpr const char* timestamp_time = "@SM_TIMESTAMP_TIME@";
 }
 
+// Extern symbols for backward compatibility with existing code
+extern char const * const product_version;
+extern unsigned long const version_num;
+extern char const * const version_time;
+extern char const * const version_date;
+extern char const * const sm_version_git_hash;
+
 #endif

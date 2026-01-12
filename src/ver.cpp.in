@@ -1,0 +1,7 @@
+#include "version.hpp"
+
+char const * const product_version = sm_version::git;
+unsigned long const version_num = 0;
+char const * const version_time = sm_version::timestamp_time;
+char const * const version_date = sm_version::timestamp_date;
+char const * const sm_version_git_hash = sm_version::git_hash;
