@@ -7,6 +7,7 @@
 
 #include <ctime>
 #include <cstdarg>
+#include <deque>
 #include <map>
 #include <vector>
 
@@ -61,10 +62,13 @@ static std::map<RString, RString> LogMaps;
 #define TIME_PATH	"/Logs/timelog.txt"
 #define USER_PATH	"/Logs/userlog.txt"
 
+constexpr int FLUSH_INTERVAL_MS = 250;
+constexpr int MAX_BATCH_BYTES = 256*1024;
+
 static RageFile *g_fileLog, *g_fileInfo, *g_fileUserLog, *g_fileTimeLog;
 
-/* Mutex writes to the files.  Writing to files is not thread-aware, and this is the
- * only place we write to the same file from multiple threads. */
+/* Mutex protects in-memory structures (recent logs, static info, mapped log state)
+ * and keeps stdout printing from interleaving too badly. */
 static RageMutex *g_Mutex;
 
 /* staticlog gets info.txt
@@ -82,18 +86,81 @@ enum
 	WRITE_TO_TIME= 0x08
 };
 
+/* LogWriter is a background thread to handle writing logs to disk asynchronously. 
+   It is configured by the variables FLUSH_INTERVAL_MS and MAX_BATCH_BYTES.
+   The default values of 250ms and 256KB are conservative for most systems,
+   and does not cause a noticeable lag in logging responsiveness.
+   A LogWriter will coordinate flushes and file operations by itself. */
+struct RageLog::LogWriter
+{
+	enum FileMask
+	{
+		FileLog		= 0x01,
+		FileInfo	= 0x02,
+		FileUser	= 0x04,
+		FileTime	= 0x08
+	};
+
+	enum CmdType
+	{
+		CMD_WRITE_LINE,
+		CMD_SET_ENABLED,
+		CMD_FLUSH_SOON,
+		CMD_FLUSH_AND_WAIT,
+		CMD_SHUTDOWN
+	};
+
+	struct Cmd
+	{
+		CmdType type;
+		int fileMask;
+		RString line;
+		uint64_t token;
+		bool enable;
+	};
+
+	RageLog* m_pOwner;
+	RageThread m_Thread;
+	RageEvent m_Event;
+	std::deque<Cmd> m_Queue;
+	uint64_t m_uNextToken;
+	uint64_t m_uCompletedToken;
+	bool m_bWantFlushSoon;
+	bool m_bShutdown;
+	int m_iEnabledMask;
+
+	LogWriter( RageLog* owner );
+	static int StartThreadMain( void* p );
+	void Start();
+	void Stop();
+	void EnqueueLine( int fileMask, const RString& line );
+	void RequestFlushSoon();
+	void RequestFlushAndWait();
+	void RequestSetEnabledAndWait( int fileMask, bool enable );
+
+private:
+	uint64_t NextTokenLocked();
+	void CompleteTokenLocked( uint64_t token );
+	void WaitForTokenLocked( uint64_t token );
+	static void AppendLine( RString& out, const RString& line );
+	void FlushOpenFiles();
+	void SetEnabledInternal( int fileMask, bool enable );
+	int ThreadMain();
+};
+
 RageLog::RageLog(): m_bLogToDisk(false), m_bInfoToDisk(false),
-m_bUserLogToDisk(false), m_bFlush(false), m_bShowLogOutput(false)
+m_bUserLogToDisk(false), m_bFlush(false), m_bShowLogOutput(false),
+m_pLogWriter(nullptr)
 {
 	g_fileLog = new RageFile;
 	g_fileInfo = new RageFile;
 	g_fileUserLog = new RageFile;
 	g_fileTimeLog = new RageFile;
 
-	if(m_bLogToDisk && !g_fileTimeLog->Open(TIME_PATH, RageFile::WRITE|RageFile::STREAMED))
-	{ fprintf(stderr, "Couldn't open %s: %s\n", TIME_PATH, g_fileTimeLog->GetError().c_str()); }
-
 	g_Mutex = new RageMutex( "Log" );
+
+	m_pLogWriter = new LogWriter( this );
+	m_pLogWriter->Start();
 }
 
 RageLog::~RageLog()
@@ -109,6 +176,13 @@ RageLog::~RageLog()
 	}
 
 	Flush();
+
+	if( m_pLogWriter != nullptr )
+	{
+		m_pLogWriter->Stop();
+		delete m_pLogWriter;
+		m_pLogWriter = nullptr;
+	}
 	SetShowLogOutput( false );
 	g_fileLog->Close();
 	g_fileInfo->Close();
@@ -119,6 +193,7 @@ RageLog::~RageLog()
 	RageUtil::SafeDelete( g_fileLog );
 	RageUtil::SafeDelete( g_fileInfo );
 	RageUtil::SafeDelete( g_fileUserLog );
+	RageUtil::SafeDelete( g_fileTimeLog );
 }
 
 void RageLog::SetLogToDisk( bool b )
@@ -127,16 +202,8 @@ void RageLog::SetLogToDisk( bool b )
 		return;
 
 	m_bLogToDisk = b;
-
-	if( !m_bLogToDisk )
-	{
-		if( g_fileLog->IsOpen() )
-			g_fileLog->Close();
-		return;
-	}
-
-	if( !g_fileLog->Open( LOG_PATH, RageFile::WRITE|RageFile::STREAMED ) )
-		fprintf( stderr, "Couldn't open %s: %s\n", LOG_PATH, g_fileLog->GetError().c_str() );
+	if( m_pLogWriter != nullptr )
+		m_pLogWriter->RequestSetEnabledAndWait( LogWriter::FileLog | LogWriter::FileTime, b );
 }
 
 void RageLog::SetInfoToDisk( bool b )
@@ -145,16 +212,8 @@ void RageLog::SetInfoToDisk( bool b )
 		return;
 
 	m_bInfoToDisk = b;
-
-	if( !m_bInfoToDisk )
-	{
-		if( g_fileInfo->IsOpen() )
-			g_fileInfo->Close();
-		return;
-	}
-
-	if( !g_fileInfo->Open( INFO_PATH, RageFile::WRITE|RageFile::STREAMED ) )
-		fprintf( stderr, "Couldn't open %s: %s\n", INFO_PATH, g_fileInfo->GetError().c_str() );
+	if( m_pLogWriter != nullptr )
+		m_pLogWriter->RequestSetEnabledAndWait( LogWriter::FileInfo, b );
 }
 
 void RageLog::SetUserLogToDisk( bool b )
@@ -163,15 +222,8 @@ void RageLog::SetUserLogToDisk( bool b )
 		return;
 
 	m_bUserLogToDisk = b;
-
-	if( !m_bUserLogToDisk )
-	{
-		if( g_fileUserLog->IsOpen() )
-			g_fileUserLog->Close();
-		return;
-	}
-	if( !g_fileUserLog->Open(USER_PATH, RageFile::WRITE|RageFile::STREAMED) )
-		fprintf( stderr, "Couldn't open %s: %s\n", USER_PATH, g_fileUserLog->GetError().c_str() );
+	if( m_pLogWriter != nullptr )
+		m_pLogWriter->RequestSetEnabledAndWait( LogWriter::FileUser, b );
 }
 
 void RageLog::SetFlushing( bool b )
@@ -264,8 +316,8 @@ void RageLog::Write( int where, const RString &sLine )
 	split( sLine, "\n", asLines, false );
 	if( where & WRITE_LOUD )
 	{
-		if( m_bLogToDisk && g_fileLog->IsOpen() )
-			g_fileLog->PutLine( sWarningSeparator );
+		if( m_pLogWriter != nullptr )
+			m_pLogWriter->EnqueueLine( LogWriter::FileLog, sWarningSeparator );
 		puts( sWarningSeparator );
 	}
 
@@ -285,41 +337,350 @@ void RageLog::Write( int where, const RString &sLine )
 			puts(sStr.c_str()); //fputws( (const wchar_t *)sStr.c_str(), stdout );
 		if( where & WRITE_TO_INFO )
 			AddToInfo( sStr );
-		if( m_bLogToDisk && (where&WRITE_TO_INFO) && g_fileInfo->IsOpen() )
-			g_fileInfo->PutLine( sStr );
-		if( m_bUserLogToDisk && (where&WRITE_TO_USER_LOG) && g_fileUserLog->IsOpen() )
-			g_fileUserLog->PutLine( sStr );
+		if( m_pLogWriter != nullptr )
+		{
+			if( m_bInfoToDisk && (where&WRITE_TO_INFO) )
+				m_pLogWriter->EnqueueLine( LogWriter::FileInfo, sStr );
+			if( m_bUserLogToDisk && (where&WRITE_TO_USER_LOG) )
+				m_pLogWriter->EnqueueLine( LogWriter::FileUser, sStr );
+		}
 
 		/* Add a timestamp to log.txt and RecentLogs, but not the rest of info.txt
 		 * and stdout. */
 		sStr.insert( 0, sTimestamp );
 
-		if( m_bLogToDisk && (where & WRITE_TO_TIME))
-			g_fileTimeLog->PutLine(sStr);
+		if( m_pLogWriter != nullptr )
+		{
+			if( m_bLogToDisk && (where & WRITE_TO_TIME) )
+				m_pLogWriter->EnqueueLine( LogWriter::FileTime, sStr );
+			if( m_bLogToDisk )
+				m_pLogWriter->EnqueueLine( LogWriter::FileLog, sStr );
+		}
 
 		AddToRecentLogs( sStr );
-
-		if( m_bLogToDisk && g_fileLog->IsOpen() )
-			g_fileLog->PutLine( sStr );
 	}
 
 	if( where & WRITE_LOUD )
 	{
-		if( m_bLogToDisk && g_fileLog->IsOpen() && (where & WRITE_LOUD) )
-			g_fileLog->PutLine( sWarningSeparator );
+		if( m_pLogWriter != nullptr )
+			m_pLogWriter->EnqueueLine( LogWriter::FileLog, sWarningSeparator );
 		puts( sWarningSeparator );
 	}
-	if( m_bFlush || (where & WRITE_TO_INFO) )
+	if( m_pLogWriter != nullptr )	// async hint: flush soon for info/warn
+	{
+		if( where & WRITE_TO_INFO )
+			m_pLogWriter->RequestFlushSoon();
+	}
+	if( m_bFlush )
 		Flush();
 }
 
 
 void RageLog::Flush()
 {
-	g_fileLog->Flush();
-	g_fileInfo->Flush();
-	g_fileTimeLog->Flush();
-	g_fileUserLog->Flush();
+	if( m_pLogWriter != nullptr )
+		m_pLogWriter->RequestFlushAndWait();
+}
+
+
+RageLog::LogWriter::LogWriter( RageLog* owner ):
+	m_pOwner(owner),
+	m_Event("Log disk writer"),
+	m_uNextToken(1),
+	m_uCompletedToken(0),
+	m_bWantFlushSoon(false),
+	m_bShutdown(false),
+	m_iEnabledMask(0)
+{
+	m_Thread.SetName( "Log disk writer" );
+}
+
+int RageLog::LogWriter::StartThreadMain( void* p )
+{
+	return static_cast<LogWriter*>(p)->ThreadMain();
+}
+
+void RageLog::LogWriter::Start()
+{
+	m_Thread.Create( StartThreadMain, this );
+}
+
+void RageLog::LogWriter::Stop()
+{
+	RequestFlushAndWait();
+	{
+		m_Event.Lock();
+		Cmd cmd;
+		cmd.type = CMD_SHUTDOWN;
+		cmd.fileMask = 0;
+		cmd.token = NextTokenLocked();
+		cmd.enable = false;
+		m_Queue.push_back( cmd );
+		m_Event.Broadcast();
+		WaitForTokenLocked( cmd.token );
+		m_Event.Unlock();
+	}
+	m_Thread.Wait();
+}
+
+void RageLog::LogWriter::EnqueueLine( int fileMask, const RString& line )
+{
+	if( fileMask == 0 )
+		return;
+	m_Event.Lock();
+	Cmd cmd;
+	cmd.type = CMD_WRITE_LINE;
+	cmd.fileMask = fileMask;
+	cmd.line = line;
+	cmd.token = 0;
+	cmd.enable = false;
+	m_Queue.push_back( cmd );
+	m_Event.Broadcast();
+	m_Event.Unlock();
+}
+
+void RageLog::LogWriter::RequestFlushSoon()
+{
+	m_Event.Lock();
+	Cmd cmd;
+	cmd.type = CMD_FLUSH_SOON;
+	cmd.fileMask = 0;
+	cmd.token = 0;
+	cmd.enable = false;
+	m_Queue.push_back( cmd );
+	m_Event.Broadcast();
+	m_Event.Unlock();
+}
+
+void RageLog::LogWriter::RequestFlushAndWait()
+{
+	m_Event.Lock();
+	Cmd cmd;
+	cmd.type = CMD_FLUSH_AND_WAIT;
+	cmd.fileMask = 0;
+	cmd.token = NextTokenLocked();
+	cmd.enable = false;
+	m_Queue.push_back( cmd );
+	m_Event.Broadcast();
+	WaitForTokenLocked( cmd.token );
+	m_Event.Unlock();
+}
+
+void RageLog::LogWriter::RequestSetEnabledAndWait( int fileMask, bool enable )
+{
+	m_Event.Lock();
+	Cmd cmd;
+	cmd.type = CMD_SET_ENABLED;
+	cmd.fileMask = fileMask;
+	cmd.token = NextTokenLocked();
+	cmd.enable = enable;
+	m_Queue.push_back( cmd );
+	m_Event.Broadcast();
+	WaitForTokenLocked( cmd.token );
+	m_Event.Unlock();
+}
+
+uint64_t RageLog::LogWriter::NextTokenLocked()
+{
+	return m_uNextToken++;
+}
+
+void RageLog::LogWriter::CompleteTokenLocked( uint64_t token )
+{
+	if( token > m_uCompletedToken )
+		m_uCompletedToken = token;
+	m_Event.Broadcast();
+}
+
+void RageLog::LogWriter::WaitForTokenLocked( uint64_t token )
+{
+	while( m_uCompletedToken < token )
+		m_Event.Wait();
+}
+
+void RageLog::LogWriter::AppendLine( RString& out, const RString& line )
+{
+	out.append( line );
+	out.append( "\n" );
+}
+
+void RageLog::LogWriter::FlushOpenFiles() {
+	if ((m_iEnabledMask & FileLog) && g_fileLog->IsOpen()) {
+		g_fileLog->Flush();
+	}
+	if ((m_iEnabledMask & FileInfo) && g_fileInfo->IsOpen()) {
+		g_fileInfo->Flush();
+	}
+	if ((m_iEnabledMask & FileTime) && g_fileTimeLog->IsOpen()) {
+		g_fileTimeLog->Flush();
+	}
+	if ((m_iEnabledMask & FileUser) && g_fileUserLog->IsOpen()) {
+		g_fileUserLog->Flush();
+	}
+}
+
+// Enable or disable writing for the specified file mask.
+// When enabling, open files as needed; when disabling, flush and close to avoid losing buffered logs.
+void RageLog::LogWriter::SetEnabledInternal( int fileMask, bool enable )
+{
+	if( enable )
+	{
+		m_iEnabledMask |= fileMask;
+		if( (fileMask & FileLog) && !g_fileLog->IsOpen() )
+		{
+			if( !g_fileLog->Open( LOG_PATH, RageFile::WRITE|RageFile::STREAMED ) )
+				fprintf( stderr, "Couldn't open %s: %s\n", LOG_PATH, g_fileLog->GetError().c_str() );
+		}
+		if( (fileMask & FileInfo) && !g_fileInfo->IsOpen() )
+		{
+			if( !g_fileInfo->Open( INFO_PATH, RageFile::WRITE|RageFile::STREAMED ) )
+				fprintf( stderr, "Couldn't open %s: %s\n", INFO_PATH, g_fileInfo->GetError().c_str() );
+		}
+		if( (fileMask & FileUser) && !g_fileUserLog->IsOpen() )
+		{
+			if( !g_fileUserLog->Open( USER_PATH, RageFile::WRITE|RageFile::STREAMED ) )
+				fprintf( stderr, "Couldn't open %s: %s\n", USER_PATH, g_fileUserLog->GetError().c_str() );
+		}
+		if( (fileMask & FileTime) && !g_fileTimeLog->IsOpen() )
+		{
+			if( !g_fileTimeLog->Open( TIME_PATH, RageFile::WRITE|RageFile::STREAMED ) )
+				fprintf( stderr, "Couldn't open %s: %s\n", TIME_PATH, g_fileTimeLog->GetError().c_str() );
+		}
+	}
+	else
+	{
+		/* Drain to disk before closing to avoid dropping buffered logs. */
+		FlushOpenFiles();
+		m_iEnabledMask &= ~fileMask;
+		if( (fileMask & FileLog) && g_fileLog->IsOpen() )
+			g_fileLog->Close();
+		if( (fileMask & FileInfo) && g_fileInfo->IsOpen() )
+			g_fileInfo->Close();
+		if( (fileMask & FileUser) && g_fileUserLog->IsOpen() )
+			g_fileUserLog->Close();
+		if( (fileMask & FileTime) && g_fileTimeLog->IsOpen() )
+			g_fileTimeLog->Close();
+	}
+}
+
+int RageLog::LogWriter::ThreadMain()
+{
+	RageThreadRegister registerThread( "Log disk writer" );
+
+	bool wroteSinceFlush = false;
+	RageTimer nextFlush;
+	nextFlush.SetZero();
+
+	for(;;)
+	{
+		std::deque<Cmd> local;
+		bool timedOut = false;
+		m_Event.Lock();
+		for(;;)
+		{
+			if( !m_Queue.empty() )
+				break;
+
+			if( m_bShutdown )
+				break;
+
+			if( wroteSinceFlush )
+			{
+				if( nextFlush.IsZero() )
+				{
+					nextFlush.Touch();
+					nextFlush += (float)FLUSH_INTERVAL_MS / 1000.0f;
+				}
+				if( !m_Event.Wait( &nextFlush ) )
+					{ timedOut = true; break; }
+			}
+			else
+			{
+				m_Event.Wait();
+			}
+		}
+
+		local.swap( m_Queue );
+		m_Event.Unlock();
+
+		if( m_bShutdown && local.empty() )
+			break;
+
+		RString logBuf, infoBuf, userBuf, timeBuf;
+		int batchBytes = 0;
+		uint64_t completeToken = 0;
+		bool doFlushNow = timedOut;
+		bool setNextFlush = false;
+
+		for( LogWriter::Cmd &cmd : local )
+		{
+			switch( cmd.type )
+			{
+			case CMD_WRITE_LINE:
+				if( cmd.fileMask & FileLog ) { AppendLine( logBuf, cmd.line ); batchBytes += cmd.line.size()+1; }
+				if( cmd.fileMask & FileInfo ) { AppendLine( infoBuf, cmd.line ); batchBytes += cmd.line.size()+1; }
+				if( cmd.fileMask & FileUser ) { AppendLine( userBuf, cmd.line ); batchBytes += cmd.line.size()+1; }
+				if( cmd.fileMask & FileTime ) { AppendLine( timeBuf, cmd.line ); batchBytes += cmd.line.size()+1; }
+				wroteSinceFlush = true;
+				setNextFlush = true;
+				break;
+			case CMD_SET_ENABLED:
+				SetEnabledInternal( cmd.fileMask, cmd.enable );
+				completeToken = std::max<uint64_t>( completeToken, cmd.token );
+				break;
+			case CMD_FLUSH_SOON:
+				m_bWantFlushSoon = true;
+				break;
+			case CMD_FLUSH_AND_WAIT:
+				doFlushNow = true;
+				completeToken = std::max<uint64_t>( completeToken, cmd.token );
+				break;
+			case CMD_SHUTDOWN:
+				m_bShutdown = true;
+				doFlushNow = true;
+				completeToken = std::max<uint64_t>( completeToken, cmd.token );
+				break;
+			}
+
+		if( batchBytes >= MAX_BATCH_BYTES )
+
+		if( (m_iEnabledMask & FileLog) && g_fileLog->IsOpen() && !logBuf.empty() )
+			g_fileLog->Write( logBuf );
+		if( (m_iEnabledMask & FileInfo) && g_fileInfo->IsOpen() && !infoBuf.empty() )
+			g_fileInfo->Write( infoBuf );
+		if( (m_iEnabledMask & FileUser) && g_fileUserLog->IsOpen() && !userBuf.empty() )
+			g_fileUserLog->Write( userBuf );
+		if( (m_iEnabledMask & FileTime) && g_fileTimeLog->IsOpen() && !timeBuf.empty() )
+			g_fileTimeLog->Write( timeBuf );
+
+		if( m_bWantFlushSoon )
+		{
+			doFlushNow = true;
+			m_bWantFlushSoon = false;
+		}
+
+		if( doFlushNow && wroteSinceFlush )
+		{
+			FlushOpenFiles();
+			wroteSinceFlush = false;
+			nextFlush.SetZero();
+		}
+		else if( setNextFlush )
+		{
+			nextFlush.SetZero();
+		}
+
+		if( completeToken != 0 )
+		{
+			m_Event.Lock();
+			CompleteTokenLocked( completeToken );
+			m_Event.Unlock();
+		}
+	}
+
+	/* Final flush on exit. */
+	FlushOpenFiles();
+	return 0;
 }
 
 
@@ -414,6 +775,7 @@ const char *RageLog::GetAdditionalLog()
 
 void RageLog::MapLog( const RString &key, const char *fmt, ... )
 {
+	LockMut( *g_Mutex );
 	RString s;
 
 	va_list	va;
@@ -427,6 +789,7 @@ void RageLog::MapLog( const RString &key, const char *fmt, ... )
 
 void RageLog::UnmapLog( const RString &key )
 {
+	LockMut( *g_Mutex );
 	LogMaps.erase( key );
 	UpdateMappedLog();
 }
