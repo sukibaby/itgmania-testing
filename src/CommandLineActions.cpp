@@ -8,6 +8,7 @@
 #include "LuaManager.h"
 #include "ProductInfo.h"
 #include "DateTime.h"
+#include "version.hpp"
 
 #include "arch/Dialog/Dialog.h"
 #include "RageFileManager.h"
