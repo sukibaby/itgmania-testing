@@ -119,7 +119,6 @@ struct RageLog::LogWriter
 		bool enable;
 	};
 
-	RageLog* m_pOwner;
 	RageThread m_Thread;
 	RageEvent m_Event;
 	std::deque<LogCommand> m_Queue;
@@ -129,7 +128,7 @@ struct RageLog::LogWriter
 	bool m_bShutdown;
 	int m_iEnabledMask;
 
-	LogWriter( RageLog* owner );
+	LogWriter();
 	static int StartThreadMain( void* p );
 	void Start();
 	void Stop();
@@ -159,7 +158,7 @@ m_pLogWriter(nullptr)
 
 	g_Mutex = new RageMutex( "Log" );
 
-	m_pLogWriter = new LogWriter( this );
+	m_pLogWriter = new LogWriter();
 	m_pLogWriter->Start();
 }
 
@@ -385,8 +384,7 @@ void RageLog::Flush()
 }
 
 const char * ragelog_thread_name = "Log Writer";
-RageLog::LogWriter::LogWriter( RageLog* owner ):
-	m_pOwner(owner),
+RageLog::LogWriter::LogWriter():
 	m_Event(ragelog_thread_name),
 	m_uNextToken(1),
 	m_uCompletedToken(0),
