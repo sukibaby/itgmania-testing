@@ -93,7 +93,7 @@ constexpr int MAX_BATCH_BYTES = 256*1024;
 constexpr float FLUSH_INTERVAL_SEC = (float)FLUSH_INTERVAL_MS / 1000.0f;
 struct RageLog::LogWriter
 {
-	enum FileMask
+	enum LogFileMask
 	{
 		FileLog		= 0x01,
 		FileInfo	= 0x02,
@@ -101,7 +101,7 @@ struct RageLog::LogWriter
 		FileTime	= 0x08
 	};
 
-	enum CmdType
+	enum LogCommandType
 	{
 		RAGELOG_WRITE_LINE,
 		RAGELOG_ENABLE,
@@ -110,10 +110,10 @@ struct RageLog::LogWriter
 		RAGELOG_HALT
 	};
 
-	struct Cmd
+	struct LogCommand
 	{
-		CmdType type;
-		int fileMask;
+		LogCommandType type;
+		LogFileMask fileMask;
 		RString line;
 		uint64_t token;
 		bool enable;
@@ -122,7 +122,7 @@ struct RageLog::LogWriter
 	RageLog* m_pOwner;
 	RageThread m_Thread;
 	RageEvent m_Event;
-	std::deque<Cmd> m_Queue;
+	std::deque<LogCommand> m_Queue;
 	uint64_t m_uNextToken;
 	uint64_t m_uCompletedToken;
 	bool m_bWantFlushSoon;
@@ -412,7 +412,7 @@ void RageLog::LogWriter::Stop()
 	RequestFlushAndWait();
 	{
 		m_Event.Lock();
-		Cmd cmd;
+		LogCommand cmd;
 		cmd.type = RAGELOG_HALT;
 		cmd.fileMask = 0;
 		cmd.token = NextTokenLocked();
@@ -430,7 +430,7 @@ void RageLog::LogWriter::EnqueueLine( int fileMask, const RString& line )
 	if( fileMask == 0 )
 		return;
 	m_Event.Lock();
-	Cmd cmd;
+	LogCommand cmd;
 	cmd.type = RAGELOG_WRITE_LINE;
 	cmd.fileMask = fileMask;
 	cmd.line = line;
@@ -444,7 +444,7 @@ void RageLog::LogWriter::EnqueueLine( int fileMask, const RString& line )
 void RageLog::LogWriter::RequestFlushSoon()
 {
 	m_Event.Lock();
-	Cmd cmd;
+	LogCommand cmd;
 	cmd.type = RAGELOG_REQUEST_FLUSH;
 	cmd.fileMask = 0;
 	cmd.token = 0;
@@ -457,7 +457,7 @@ void RageLog::LogWriter::RequestFlushSoon()
 void RageLog::LogWriter::RequestFlushAndWait()
 {
 	m_Event.Lock();
-	Cmd cmd;
+	LogCommand cmd;
 	cmd.type = RAGELOG_FLUSH_AND_WAIT;
 	cmd.fileMask = 0;
 	cmd.token = NextTokenLocked();
@@ -471,7 +471,7 @@ void RageLog::LogWriter::RequestFlushAndWait()
 void RageLog::LogWriter::RequestSetEnabledAndWait( int fileMask, bool enable )
 {
 	m_Event.Lock();
-	Cmd cmd;
+	LogCommand cmd;
 	cmd.type = RAGELOG_ENABLE;
 	cmd.fileMask = fileMask;
 	cmd.token = NextTokenLocked();
@@ -588,7 +588,7 @@ int RageLog::LogWriter::ThreadMain()
 
 	while(true)
 	{
-		std::deque<Cmd> local;
+		std::deque<LogCommand> local;
 		bool timedOut = false;
 		m_Event.Lock();
 		while(true)
@@ -627,7 +627,7 @@ int RageLog::LogWriter::ThreadMain()
 		bool doFlushNow = timedOut;
 		bool setNextFlush = false;
 
-		for( LogWriter::Cmd &cmd : local )
+		for( LogWriter::LogCommand &cmd : local )
 		{
 			switch( cmd.type )
 			{
