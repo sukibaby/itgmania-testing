@@ -22,8 +22,15 @@ namespace avcodec
 	}
 };
 
-constexpr size_t kFFMpegBufferSize = 4096;
+constexpr size_t kFFMpegBufferSize = 32768; // 32kb
 constexpr int kSwsFlags = SWS_BICUBIC; // XXX: Reasonable default?
+// Target memory budget for frame buffer in bytes (100 MB). Actual buffer size is calculated
+// dynamically based on video resolution to stay within this budget.
+constexpr size_t kFrameBufferTargetMemory = 100 * 1024 * 1024; // 100 MB
+// Minimum frame buffer slots to maintain (for safety and smooth playback)
+constexpr size_t kFrameBufferMinSlots = 3;
+// Bytes per pixel for BGRA format (default)
+constexpr size_t kBytesPerPixelBGRA = 4;
 
 struct FrameHolder {
 	avcodec::AVFrame* frame = avcodec::av_frame_alloc();
@@ -133,6 +140,12 @@ private:
 	void Init();
 	RString OpenCodec();
 
+	// Returns the number of frame slots to allocate. Respects minimum slot requirement.
+	size_t CalculateFrameBufferSize(int width, int height);
+
+	// This encapsulates the sliding window logic: (display_frame_num + offset) % frame_buffer.size()
+	size_t GetFrameBufferIndex(size_t logical_frame_num) const;
+
 	// Read a packet and send it to our frame data buffer.
 	// Returns -2 on cancel, -1 on error, 0 on EOF, 1 on OK.
 	int SendPacketToBuffer();
@@ -141,6 +154,11 @@ private:
 	// at the next open position.
 	// Returns -2 on cancel, -1 on error, 0 if the packet is finished.
 	int DecodePacketToFrame();
+	bool PrepareFrameSlot(FrameHolder* frame);
+	int DecodePacketIntoFrame(PacketHolder* packet, FrameHolder* frame);
+	void UpdateFrameTiming(PacketHolder* packet, FrameHolder* frame);
+	bool EnsureSwsContext();
+	int BlitFrameToSurface(FrameHolder* frame, RageSurface* surface_out);
 	void HandleReset();
 
 	avcodec::AVStream* av_stream_;
@@ -148,6 +166,9 @@ private:
 	avcodec::SwsContext* av_sws_context_;
 	avcodec::AVCodecContext* av_stream_codec_;
 	avcodec::AVFormatContext* av_format_context_;
+	avcodec::AVFrame* rgb_frame_ = nullptr; // Reused destination frame for RGB blits.
+	int sws_width_ = 0;
+	int sws_height_ = 0;
 	std::size_t total_frames_; // Total number of frames in the movie.
 
 	unsigned char* av_buffer_;
