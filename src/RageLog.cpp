@@ -492,15 +492,17 @@ uint64_t RageLog::LogWriter::NextTokenLocked()
 // to be processed while waiting.
 void RageLog::LogWriter::CompleteTokenLocked( uint64_t token )
 {
-	if( token > m_uCompletedToken )
+	if( token > m_uCompletedToken ) {
 		m_uCompletedToken = token;
+	}
 	m_Event.Broadcast();
 }
 
 void RageLog::LogWriter::WaitForTokenLocked( uint64_t token )
 {
-	while( m_uCompletedToken < token )
+	while( m_uCompletedToken < token ) {
 		m_Event.Wait();
+	}
 }
 
 void RageLog::LogWriter::AppendLine( RString& out, const RString& line )
@@ -533,23 +535,27 @@ void RageLog::LogWriter::SetEnabledInternal( int fileMask, bool enable )
 		m_iEnabledMask |= fileMask;
 		if( (fileMask & FileLog) && !g_fileLog->IsOpen() )
 		{
-			if( !g_fileLog->Open( LOG_PATH, RageFile::WRITE|RageFile::STREAMED ) )
+			if( !g_fileLog->Open( LOG_PATH, RageFile::WRITE|RageFile::STREAMED ) ) {
 				fprintf( stderr, "Couldn't open %s: %s\n", LOG_PATH, g_fileLog->GetError().c_str() );
+			}
 		}
 		if( (fileMask & FileInfo) && !g_fileInfo->IsOpen() )
 		{
-			if( !g_fileInfo->Open( INFO_PATH, RageFile::WRITE|RageFile::STREAMED ) )
+			if( !g_fileInfo->Open( INFO_PATH, RageFile::WRITE|RageFile::STREAMED ) ) {
 				fprintf( stderr, "Couldn't open %s: %s\n", INFO_PATH, g_fileInfo->GetError().c_str() );
+			}
 		}
 		if( (fileMask & FileUser) && !g_fileUserLog->IsOpen() )
 		{
-			if( !g_fileUserLog->Open( USER_PATH, RageFile::WRITE|RageFile::STREAMED ) )
+			if( !g_fileUserLog->Open( USER_PATH, RageFile::WRITE|RageFile::STREAMED ) ) {
 				fprintf( stderr, "Couldn't open %s: %s\n", USER_PATH, g_fileUserLog->GetError().c_str() );
+			}
 		}
 		if( (fileMask & FileTime) && !g_fileTimeLog->IsOpen() )
 		{
-			if( !g_fileTimeLog->Open( TIME_PATH, RageFile::WRITE|RageFile::STREAMED ) )
+			if( !g_fileTimeLog->Open( TIME_PATH, RageFile::WRITE|RageFile::STREAMED ) ) {
 				fprintf( stderr, "Couldn't open %s: %s\n", TIME_PATH, g_fileTimeLog->GetError().c_str() );
+			}
 		}
 	}
 	else
@@ -557,14 +563,18 @@ void RageLog::LogWriter::SetEnabledInternal( int fileMask, bool enable )
 		/* Drain to disk before closing to avoid dropping buffered logs. */
 		FlushOpenFiles();
 		m_iEnabledMask &= ~fileMask;
-		if( (fileMask & FileLog) && g_fileLog->IsOpen() )
+		if( (fileMask & FileLog) && g_fileLog->IsOpen() ) {
 			g_fileLog->Close();
-		if( (fileMask & FileInfo) && g_fileInfo->IsOpen() )
+		}
+		if( (fileMask & FileInfo) && g_fileInfo->IsOpen() ) {
 			g_fileInfo->Close();
-		if( (fileMask & FileUser) && g_fileUserLog->IsOpen() )
+		}
+		if( (fileMask & FileUser) && g_fileUserLog->IsOpen() ) {
 			g_fileUserLog->Close();
-		if( (fileMask & FileTime) && g_fileTimeLog->IsOpen() )
+		}
+		if( (fileMask & FileTime) && g_fileTimeLog->IsOpen() ) {
 			g_fileTimeLog->Close();
+		}
 	}
 }
 
@@ -576,12 +586,12 @@ int RageLog::LogWriter::ThreadMain()
 	RageTimer nextFlush;
 	nextFlush.SetZero();
 
-	for(;;)
+	while(true)
 	{
 		std::deque<Cmd> local;
 		bool timedOut = false;
 		m_Event.Lock();
-		for(;;)
+		while(true)
 		{
 			if( !m_Queue.empty() )
 				break;
@@ -663,14 +673,18 @@ int RageLog::LogWriter::ThreadMain()
 				doFlushNow = true;
 		}
 
-		if( (m_iEnabledMask & FileLog) && g_fileLog->IsOpen() && !logBuf.empty() )
+		if( (m_iEnabledMask & FileLog) && g_fileLog->IsOpen() && !logBuf.empty() ) {
 			g_fileLog->Write( logBuf );
-		if( (m_iEnabledMask & FileInfo) && g_fileInfo->IsOpen() && !infoBuf.empty() )
+		}
+		if( (m_iEnabledMask & FileInfo) && g_fileInfo->IsOpen() && !infoBuf.empty() ) {
 			g_fileInfo->Write( infoBuf );
-		if( (m_iEnabledMask & FileUser) && g_fileUserLog->IsOpen() && !userBuf.empty() )
+		}
+		if( (m_iEnabledMask & FileUser) && g_fileUserLog->IsOpen() && !userBuf.empty() ) {
 			g_fileUserLog->Write( userBuf );
-		if( (m_iEnabledMask & FileTime) && g_fileTimeLog->IsOpen() && !timeBuf.empty() )
+		}
+		if( (m_iEnabledMask & FileTime) && g_fileTimeLog->IsOpen() && !timeBuf.empty() ) {
 			g_fileTimeLog->Write( timeBuf );
+		}
 
 		if( m_bWantFlushSoon )
 		{
