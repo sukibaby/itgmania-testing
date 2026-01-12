@@ -35,24 +35,24 @@ public:
 	ThemeManager();
 	~ThemeManager();
 
-	void GetThemeNames( std::vector<RString>& AddTo );
-	void GetSelectableThemeNames( std::vector<RString>& AddTo );
-	int GetNumSelectableThemes();
-	bool DoesThemeExist( const RString &sThemeName );
-	bool IsThemeSelectable(RString const& name);
-	bool IsThemeNameValid(RString const& name);
-	RString GetThemeDisplayName( const RString &sThemeName );
-	RString GetThemeAuthor( const RString &sThemeName );
-	void GetLanguages( std::vector<RString>& AddTo );
-	bool DoesLanguageExist( const RString &sLanguage );
+	void GetThemeNames( std::vector<RString>& AddTo ) const;
+	void GetSelectableThemeNames( std::vector<RString>& AddTo ) const;
+	int GetNumSelectableThemes() const;
+	bool DoesThemeExist( const RString &sThemeName ) const;
+	bool IsThemeSelectable(RString const& name) const;
+	bool IsThemeNameValid(RString const& name) const;
+	RString GetThemeDisplayName( const RString &sThemeName ) const;
+	RString GetThemeAuthor( const RString &sThemeName ) const;
+	void GetLanguages( std::vector<RString>& AddTo ) const;
+	bool DoesLanguageExist( const RString &sLanguage ) const;
 	void SwitchThemeAndLanguage( const RString &sThemeName, const RString &sLanguage, bool bPseudoLocalize, bool bForceThemeReload = false );
 	void UpdateLuaGlobals();
 	RString GetCurThemeName() const { return m_sCurThemeName; };
 	bool IsThemeLoaded() const { return !m_sCurThemeName.empty(); };
 	RString GetCurLanguage() const { return m_sCurLanguage; };
 	RString GetCurThemeDir() const { return GetThemeDirFromName(m_sCurThemeName); };
-	RString GetNextTheme();
-	RString GetNextSelectableTheme();
+	RString GetNextTheme() const;
+	RString GetNextSelectableTheme() const;
 	void ReloadMetrics();
 	void ReloadSubscribers();
 	void ClearSubscribers();
@@ -94,7 +94,7 @@ public:
 	bool	HasString( const RString &sMetricsGroup, const RString &sValueName );
 	RString	GetString( const RString &sMetricsGroup, const RString &sValueName );
 	void	GetString( const RString &sMetricsGroup, const RString &sValueName, RString &valueOut )		{ valueOut = GetString( sMetricsGroup, sValueName ); }
-	void FilterFileLanguages( std::vector<RString> &asElementPaths );
+	void FilterFileLanguages( std::vector<RString> &asElementPaths ) const;
 
 	void GetMetricsThatBeginWith( const RString &sMetricsGroup, const RString &sValueName, std::set<RString> &vsValueNamesOut );
 
@@ -125,7 +125,7 @@ protected:
 	static void GetLanguagesForTheme( const RString &sThemeName, std::vector<RString>& asLanguagesOut );
 	static RString GetLanguageIniPath( const RString &sThemeName, const RString &sLanguage );
 	void GetOptionalLanguageIniPaths( std::vector<RString> &vsPathsOut, const RString &sThemeName, const RString &sLanguage );
-	RString GetDefaultLanguage();
+	RString GetDefaultLanguage() const;
 
 	RString m_sCurThemeName;
 	RString m_sCurLanguage;

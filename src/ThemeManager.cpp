@@ -184,14 +184,14 @@ ThemeManager::~ThemeManager()
 	LUA->UnsetGlobal( "THEME" );
 }
 
-void ThemeManager::GetThemeNames( std::vector<RString>& AddTo )
+void ThemeManager::GetThemeNames( std::vector<RString>& AddTo ) const
 {
 	GetDirListing( SpecialFiles::THEMES_DIR + "*", AddTo, true );
 	StripCvsAndSvn( AddTo );
 	StripMacResourceForks( AddTo );
 }
 
-void ThemeManager::GetSelectableThemeNames( std::vector<RString>& AddTo )
+void ThemeManager::GetSelectableThemeNames( std::vector<RString>& AddTo ) const
 {
 	GetThemeNames( AddTo );
 	for( int i=AddTo.size()-1; i>=0; i-- )
@@ -203,14 +203,14 @@ void ThemeManager::GetSelectableThemeNames( std::vector<RString>& AddTo )
 	}
 }
 
-int ThemeManager::GetNumSelectableThemes()
+int ThemeManager::GetNumSelectableThemes() const
 {
 	std::vector<RString> vs;
 	GetSelectableThemeNames( vs );
 	return vs.size();
 }
 
-bool ThemeManager::DoesThemeExist( const RString &sThemeName )
+bool ThemeManager::DoesThemeExist( const RString &sThemeName ) const
 {
 	std::vector<RString> asThemeNames;
 	GetThemeNames( asThemeNames );
@@ -222,17 +222,17 @@ bool ThemeManager::DoesThemeExist( const RString &sThemeName )
 	return false;
 }
 
-bool ThemeManager::IsThemeSelectable(RString const& name)
+bool ThemeManager::IsThemeSelectable(RString const& name) const
 {
 	return IsThemeNameValid(name) && DoesThemeExist(name);
 }
 
-bool ThemeManager::IsThemeNameValid(RString const& name)
+bool ThemeManager::IsThemeNameValid(RString const& name) const
 {
 	return Left(name, 1) != "_";
 }
 
-RString ThemeManager::GetThemeDisplayName( const RString &sThemeName )
+RString ThemeManager::GetThemeDisplayName( const RString &sThemeName ) const
 {
 	RString sDir = GetThemeDirFromName(sThemeName);
 	IniFile ini;
@@ -245,7 +245,7 @@ RString ThemeManager::GetThemeDisplayName( const RString &sThemeName )
 	return sThemeName;
 }
 
-RString ThemeManager::GetThemeAuthor( const RString &sThemeName )
+RString ThemeManager::GetThemeAuthor( const RString &sThemeName ) const
 {
 	RString sDir = GetThemeDirFromName(sThemeName);
 	IniFile ini;
@@ -258,7 +258,7 @@ RString ThemeManager::GetThemeAuthor( const RString &sThemeName )
 	return "[unknown author]";
 }
 
-void ThemeManager::GetLanguages( std::vector<RString>& AddTo )
+void ThemeManager::GetLanguages( std::vector<RString>& AddTo ) const
 {
 	AddTo.clear();
 
@@ -271,7 +271,7 @@ void ThemeManager::GetLanguages( std::vector<RString>& AddTo )
 	AddTo.erase(it, AddTo.end());
 }
 
-bool ThemeManager::DoesLanguageExist( const RString &sLanguage )
+bool ThemeManager::DoesLanguageExist( const RString &sLanguage ) const
 {
 	std::vector<RString> asLanguages;
 	GetLanguages( asLanguages );
@@ -374,7 +374,7 @@ void ThemeManager::LoadThemeMetrics( const RString &sThemeName_, const RString &
 	LOG->MapLog( "language", "Language: %s", m_sCurLanguage.c_str() );
 }
 
-RString ThemeManager::GetDefaultLanguage()
+RString ThemeManager::GetDefaultLanguage() const
 {
 	RString sLangCode = HOOKS->GetPreferredLanguage();
 	return sLangCode;
@@ -600,7 +600,7 @@ struct CompareLanguageTag
  * files with the current language tag to the top, so choosing "ignore" from
  * the multiple-match dialog will cause it to default to the first entry, so
  * it'll still use a preferred language match if there were any. */
-void ThemeManager::FilterFileLanguages( std::vector<RString> &asPaths )
+void ThemeManager::FilterFileLanguages( std::vector<RString> &asPaths ) const
 {
 	if( asPaths.size() <= 1 )
 		return;
@@ -1145,7 +1145,7 @@ void ThemeManager::EvaluateString( RString &sText )
 	FontCharAliases::ReplaceMarkers( sText );
 }
 
-RString ThemeManager::GetNextTheme()
+RString ThemeManager::GetNextTheme() const
 {
 	std::vector<RString> as;
 	GetThemeNames( as );
@@ -1157,7 +1157,7 @@ RString ThemeManager::GetNextTheme()
 	return as[iNewIndex];
 }
 
-RString ThemeManager::GetNextSelectableTheme()
+RString ThemeManager::GetNextSelectableTheme() const
 {
 	std::vector<RString> as;
 	GetSelectableThemeNames( as );
