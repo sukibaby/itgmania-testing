@@ -384,17 +384,17 @@ void RageLog::Flush()
 		m_pLogWriter->RequestFlushAndWait();
 }
 
-
+const char * ragelog_thread_name = "Log Writer";
 RageLog::LogWriter::LogWriter( RageLog* owner ):
 	m_pOwner(owner),
-	m_Event("RageLog::LogWriter"),
+	m_Event(ragelog_thread_name),
 	m_uNextToken(1),
 	m_uCompletedToken(0),
 	m_bWantFlushSoon(false),
 	m_bShutdown(false),
 	m_iEnabledMask(0)
 {
-	m_Thread.SetName( "LogWriter" );
+	m_Thread.SetName( ragelog_thread_name);
 }
 
 int RageLog::LogWriter::StartThreadMain( void* p )
@@ -580,7 +580,7 @@ void RageLog::LogWriter::SetEnabledInternal( int fileMask, bool enable )
 
 int RageLog::LogWriter::ThreadMain()
 {
-	RageThreadRegister registerThread( "Log disk writer" );
+	RageThreadRegister registerThread( ragelog_thread_name );
 
 	bool wroteSinceFlush = false;
 	RageTimer nextFlush;
