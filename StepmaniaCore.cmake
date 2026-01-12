@@ -357,8 +357,6 @@ configure_file("${SM_SRC_DIR}/config.in.hpp"
                "${SM_GENERATED_SRC_DIR}/config.hpp")
 configure_file("${SM_SRC_DIR}/version.hpp.in"
                "${SM_GENERATED_SRC_DIR}/version.hpp")
-configure_file("${SM_SRC_DIR}/ver.cpp.in"
-               "${SM_GENERATED_SRC_DIR}/ver.cpp")
 
 # Define installer based items for cpack.
 include("${CMAKE_CURRENT_LIST_DIR}/CMake/CPackSetup.cmake")

@@ -2,21 +2,22 @@
 #define VERSION_HPP
 
 namespace sm_version {
-	constexpr int major = @SM_VERSION_MAJOR@;
-	constexpr int minor = @SM_VERSION_MINOR@;
-	constexpr int patch = @SM_VERSION_PATCH@;
-	constexpr const char* git_hash = "@SM_VERSION_GIT_HASH@";
-	constexpr const char* git = "@SM_VERSION_GIT@";
-	constexpr const char* traditional = "@SM_VERSION_TRADITIONAL@";
-	constexpr const char* timestamp_date = "@SM_TIMESTAMP_DATE@";
-	constexpr const char* timestamp_time = "@SM_TIMESTAMP_TIME@";
+	inline constexpr int major = @SM_VERSION_MAJOR@;
+	inline constexpr int minor = @SM_VERSION_MINOR@;
+	inline constexpr int patch = @SM_VERSION_PATCH@;
+	inline constexpr char const* git_hash = "@SM_VERSION_GIT_HASH@";
+	inline constexpr char const* git = "@SM_VERSION_GIT@";
+	inline constexpr char const* traditional = "@SM_VERSION_TRADITIONAL@";
+	inline constexpr char const* timestamp_date = "@SM_TIMESTAMP_DATE@";
+	inline constexpr char const* timestamp_time = "@SM_TIMESTAMP_TIME@";
 }
 
-// Extern symbols for backward compatibility with existing code
-extern char const * const product_version;
-extern unsigned long const version_num;
-extern char const * const version_time;
-extern char const * const version_date;
-extern char const * const sm_version_git_hash;
+// Legacy globals (historically provided by a generated ver.cpp).
+// These are inline variables (C++17) so we don't need a generated .cpp TU.
+inline constexpr char const* const product_version = sm_version::git;
+inline constexpr unsigned long version_num = 0;
+inline constexpr char const* const version_time = sm_version::timestamp_time;
+inline constexpr char const* const version_date = sm_version::timestamp_date;
+inline constexpr char const* const sm_version_git_hash = sm_version::git_hash;
 
 #endif
