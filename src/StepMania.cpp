@@ -20,6 +20,7 @@
 #include "arch/Dialog/Dialog.h"
 
 #include "ProductInfo.h"
+#include "version.hpp"
 
 #include "Screen.h"
 #include "InputEventPlus.h"

@@ -4,10 +4,11 @@ list(APPEND SMDATA_GLOBAL_FILES_SRC
             "SpecialFiles.cpp"
             "StdString.cpp"
             "StepMania.cpp" # TODO: Refactor into separate main project.
-            "${SM_GENERATED_SRC_DIR}/verstub.cpp")
+)
 
 list(APPEND SMDATA_GLOBAL_FILES_HPP
             "${SM_GENERATED_SRC_DIR}/config.hpp"
+            "${SM_GENERATED_SRC_DIR}/version.hpp"
             "GameLoop.h"
             "global.h"
             "PeriodicCaller.h"
