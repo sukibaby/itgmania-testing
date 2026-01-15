@@ -1161,6 +1161,7 @@ void ScreenSelectMusic::HandleScreenMessage( const ScreenMessage SM )
 		}
 		else if( DO_ROULETTE_ON_MENU_TIMER  &&  m_MusicWheel.GetSelectedSong() == nullptr  &&  m_MusicWheel.GetSelectedCourse() == nullptr )
 		{
+			m_MusicWheel.SetOpenSection( "" );
 			m_MusicWheel.StartRoulette();
 			m_MenuTimer->SetSeconds( ROULETTE_TIMER_SECONDS );
 			m_MenuTimer->Start();
