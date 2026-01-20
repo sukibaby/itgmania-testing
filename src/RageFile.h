@@ -85,10 +85,10 @@ public:
 private:
 	void SetError( const RString &err );
 
-	RageFileBasic *m_File;
+	RageFileBasic *m_File = nullptr;
 	RString	m_Path;
 	RString	m_sError;
-	int		m_Mode;
+	int		m_Mode = 0;
 
 	// Swallow up warnings. If they must be used, define them.
 	RageFile& operator=(const RageFile& rhs);
