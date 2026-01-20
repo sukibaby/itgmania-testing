@@ -37,7 +37,7 @@ RString RageFile::GetPath() const
 	if ( !IsOpen() )
 		return RString();
 
-	RString sRet = m_File->GetDisplayPath();
+	const RString sRet = m_File->GetDisplayPath();
 	if( sRet != "" )
 		return sRet;
 
@@ -82,7 +82,7 @@ void RageFile::Close()
 {
 	if( m_File == nullptr )
 		return;
-	RageFileBasic *file = m_File;
+	RageFileBasic *const file = m_File;
 	m_File = nullptr;
 	if( m_Mode & WRITE )
 		FILEMAN->CacheFile( file, m_Path );
@@ -222,7 +222,7 @@ void FileReading::ReadBytes( RageFileBasic &f, void *buf, int size, RString &sEr
 	if( sError.size() != 0 )
 		return;
 
-	int ret = f.Read( buf, size );
+	const int ret = f.Read( buf, size );
 	if( ret == -1 )
 		sError = f.GetError();
 	else if( ret < size )
@@ -235,7 +235,7 @@ RString FileReading::ReadString( RageFileBasic &f, int size, RString &sError )
 		return RString();
 
 	RString sBuf;
-	int ret = f.Read( sBuf, size );
+	const int ret = f.Read( sBuf, size );
 	if( ret == -1 )
 		sError = f.GetError();
 	else if( ret < size )
@@ -257,7 +257,7 @@ void FileReading::Seek( RageFileBasic &f, int iOffset, RString &sError )
 	if( sError.size() != 0 )
 		return;
 
-	int iGot = f.Seek( iOffset );
+	const int iGot = f.Seek( iOffset );
 	if( iGot == iOffset )
 		return;
 	if( iGot == -1 )
@@ -355,7 +355,7 @@ public:
 	static int Open( T* p, lua_State *L )
 	{
 		const RString path = SArg(1);
-		int mode = IArg(2);
+		const int mode = IArg(2);
 
 		if ((mode & RageFile::WRITE) && FILEMAN->IsPathProtected(path))
 		{
