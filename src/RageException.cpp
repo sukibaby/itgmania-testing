@@ -1,11 +1,15 @@
 #include "global.h"
 #include "RageException.h"
-#include "RageUtil.h"
 #include "RageLog.h"
 #include "RageThreads.h"
 
+#include <atomic>
 #include <cstdarg>
+#include <cstdio>
 #include <cstdint>
+#include <cstdlib>
+#include <string>
+#include <utility>
 
 #if defined(_WIN32) && defined(DEBUG)
 #define WIN32_LEAN_AND_MEAN
@@ -16,12 +20,33 @@ using CrashHandler::IsDebuggerPresent;
 using CrashHandler::DebugBreak;
 #endif
 
-static uint64_t g_HandlerThreadID = RageThread::GetInvalidThreadID();
-static void (*g_CleanupHandler)( const RString &sError ) = nullptr;
-void RageException::SetCleanupHandler( void (*pHandler)(const RString &sError) )
+static std::atomic<uint64_t> g_HandlerThreadID{ RageThread::GetInvalidThreadID() };
+static std::function<void(const std::string &sError)> g_CleanupHandler;
+
+static std::string VFormat( const char *fmt, va_list args )
 {
-	g_HandlerThreadID = RageThread::GetCurrentThreadID();
-	g_CleanupHandler = pHandler;
+	if( fmt == nullptr )
+		return {};
+
+	va_list args_copy;
+	va_copy( args_copy, args );
+	const int size = std::vsnprintf( nullptr, 0, fmt, args_copy );
+	va_end( args_copy );
+
+	if( size <= 0 )
+		return {};
+
+	std::string buffer;
+	buffer.resize( static_cast<size_t>(size) + 1 );
+	std::vsnprintf( buffer.data(), buffer.size(), fmt, args );
+	buffer.pop_back();
+	return buffer;
+}
+
+void RageException::SetCleanupHandler( std::function<void(const std::string &sError)> handler ) noexcept
+{
+	g_HandlerThreadID.store( RageThread::GetCurrentThreadID(), std::memory_order_relaxed );
+	g_CleanupHandler = std::move( handler );
 }
 
 /* This is no longer actually implemented by throwing an exception, but it acts
@@ -30,15 +55,17 @@ void RageException::Throw( const char *sFmt, ... )
 {
 	va_list	va;
 	va_start( va, sFmt );
-	RString error = vssprintf( sFmt, va );
+	std::string error = VFormat( sFmt, va );
 	va_end( va );
 
-	RString msg = ssprintf(
-		"\n"
-		"//////////////////////////////////////////////////////\n"
-		"Exception: %s\n"
-		"//////////////////////////////////////////////////////\n",
-		error.c_str() );
+	std::string msg;
+	msg.reserve( error.size() + 128 );
+	msg += "\n";
+	msg += "//////////////////////////////////////////////////////\n";
+	msg += "Exception: ";
+	msg += error;
+	msg += "\n";
+	msg += "//////////////////////////////////////////////////////\n";
 	if( LOG )
 	{
 		LOG->Trace( "%s", msg.c_str() );
@@ -46,8 +73,8 @@ void RageException::Throw( const char *sFmt, ... )
 	}
 	else
 	{
-		puts( msg.c_str() );
-		fflush( stdout );
+		std::fputs( msg.c_str(), stdout );
+		std::fflush( stdout );
 	}
 
 #if (defined(WINDOWS) && defined(DEBUG)) || defined(_XDBG) || defined(MACOSX)
@@ -55,12 +82,14 @@ void RageException::Throw( const char *sFmt, ... )
 		DebugBreak();
 #endif
 
-	ASSERT_M( g_HandlerThreadID == RageThread::GetInvalidThreadID() || g_HandlerThreadID == RageThread::GetCurrentThreadID(),
-		  ssprintf("RageException::Throw() on another thread: %s", error.c_str()) );
+	const uint64_t handler_thread_id = g_HandlerThreadID.load( std::memory_order_relaxed );
+	const std::string assert_msg = "RageException::Throw() on another thread: " + error;
+	ASSERT_M( handler_thread_id == RageThread::GetInvalidThreadID() || handler_thread_id == RageThread::GetCurrentThreadID(),
+		  assert_msg.c_str() );
 	if( g_CleanupHandler != nullptr )
 		g_CleanupHandler( error );
 
-	exit(1);
+	std::abort();
 }
 
 /*

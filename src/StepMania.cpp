@@ -1,5 +1,7 @@
 #include "global.h"
 
+#include <string>
+
 #include "StepMania.h"
 
 // Rage global classes
@@ -333,7 +335,7 @@ void ShutdownGame()
 	RageUtil::SafeDelete( HOOKS );
 }
 
-static void HandleException( const RString &sError )
+static void HandleException( const std::string &sError )
 {
 	if( g_bAutoRestart )
 		HOOKS->RestartProgram();
@@ -342,7 +344,7 @@ static void HandleException( const RString &sError )
 	ShutdownGame();
 
 	// Throw up a pretty error dialog.
-	Dialog::Error( sError );
+	Dialog::Error( sError.c_str() );
 	Dialog::Shutdown(); // Shut it back down.
 }
 

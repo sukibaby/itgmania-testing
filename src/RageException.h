@@ -3,6 +3,9 @@
 
 #include "config.hpp"
 
+#include <functional>
+#include <string>
+
 /**
  * @brief Namespace for throwing fatal errors.
  *
@@ -12,7 +15,7 @@ namespace RageException
 	[[noreturn]]
 	void Throw( const char *fmt, ... ) PRINTF(1,2);
 
-	void SetCleanupHandler( void (*pHandler)(const RString &sError) );
+	void SetCleanupHandler( std::function<void(const std::string &sError)> handler ) noexcept;
 }
 
 #endif
