@@ -84,9 +84,9 @@ void RageFile::Close()
 		return;
 	RageFileBasic *const file = m_File;
 	m_File = nullptr;
+	delete file;
 	if( m_Mode & WRITE )
 		FILEMAN->CacheFile( file, m_Path );
-	delete file;
 }
 
 void RageFile::AssertOpen() const
