@@ -100,7 +100,7 @@ void NoteSkinManager::RefreshNoteSkinData( const Game* pGame )
 	StripMacResourceForks( asNoteSkinNames );
 
 	std::map<RString, NoteSkinData> loadedNoteSkins;
-	for( unsigned j=0; j<asNoteSkinNames.size(); j++ )
+	for( size_t j=0; j<asNoteSkinNames.size(); j++ )
 	{
 		RString sName = asNoteSkinNames[j];
 		MakeLower(sName);
