@@ -16,16 +16,13 @@
 #include <cstddef>
 #include <cstdint>
 
-RageFile::RageFile()
-{
-	m_File = nullptr;
-}
+RageFile::RageFile(): m_File(nullptr), m_Mode(0) {}
 
 RageFile::RageFile( const RageFile &cpy ):
 	RageFileBasic( cpy )
 {
 	/* This will copy the file driver, including its internal file pointer. */
-	m_File = cpy.m_File->Copy();
+	m_File = cpy.m_File ? cpy.m_File->Copy() : nullptr;
 	m_Path = cpy.m_Path;
 	m_Mode = cpy.m_Mode;
 }
@@ -84,11 +81,16 @@ bool RageFile::Open( const RString& path, int mode )
 void RageFile::Close()
 {
 	if( m_File == nullptr )
+	{
 		return;
-	delete m_File;
-	if( m_Mode & WRITE )
-		FILEMAN->CacheFile( m_File, m_Path );
+	}
+	RageFileBasic *rageFileInstance = m_File;
 	m_File = nullptr;
+	delete rageFileInstance; // Always call destructor first to ensure rename/flush completes
+	if( m_Mode & WRITE )
+	{
+		FILEMAN->CacheFile( rageFileInstance, m_Path );
+	}
 }
 
 #define ASSERT_OPEN ASSERT_M( IsOpen(), ssprintf("\"%s\" is not open.", m_Path.c_str()) );
