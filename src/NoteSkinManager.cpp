@@ -46,6 +46,7 @@ struct NoteSkinData
 namespace
 {
 	static std::map<RString,NoteSkinData> g_mapNameToData;
+	static std::map<RString, std::map<RString, NoteSkinData>> g_mapGameToNoteSkinData;
 };
 
 NoteSkinManager::NoteSkinManager()
@@ -70,6 +71,7 @@ NoteSkinManager::~NoteSkinManager()
 	LUA->UnsetGlobal( "NOTESKIN" );
 
 	g_mapNameToData.clear();
+	g_mapGameToNoteSkinData.clear();
 }
 
 void NoteSkinManager::RefreshNoteSkinData( const Game* pGame )
@@ -79,6 +81,17 @@ void NoteSkinManager::RefreshNoteSkinData( const Game* pGame )
 	// clear path cache
 	g_PathCache.clear();
 
+	RString sGameName = pGame->m_szName;
+	MakeLower( sGameName );
+	std::map<RString, std::map<RString, NoteSkinData>>::iterator cached = g_mapGameToNoteSkinData.find( sGameName );
+	if( cached != g_mapGameToNoteSkinData.end() )
+	{
+		// Found cached noteskin data for this game: reuse it instead of
+		// re-scanning and reloading all noteskins and metrics.
+		g_mapNameToData = cached->second;
+		return;
+	}
+
 	RString sBaseSkinFolder = SpecialFiles::NOTESKINS_DIR + pGame->m_szName + "/";
 	std::vector<RString> asNoteSkinNames;
 	GetDirListing( sBaseSkinFolder + "*", asNoteSkinNames, true );
@@ -86,7 +99,7 @@ void NoteSkinManager::RefreshNoteSkinData( const Game* pGame )
 	StripCvsAndSvn( asNoteSkinNames );
 	StripMacResourceForks( asNoteSkinNames );
 
-	g_mapNameToData.clear();
+	std::map<RString, NoteSkinData> loadedNoteSkins;
 	for( unsigned j=0; j<asNoteSkinNames.size(); j++ )
 	{
 		RString sName = asNoteSkinNames[j];
@@ -94,12 +107,15 @@ void NoteSkinManager::RefreshNoteSkinData( const Game* pGame )
 		// Don't feel like changing the structure of this code to load the skin
 		// into a temp variable and move it, so if the load fails, then just
 		// delete it from the map. -Kyz
-		if(!LoadNoteSkinData(sName, g_mapNameToData[sName]))
+		if(!LoadNoteSkinData(sName, loadedNoteSkins[sName]))
 		{
-			std::map<RString, NoteSkinData>::iterator entry= g_mapNameToData.find(sName);
-			g_mapNameToData.erase(entry);
+			std::map<RString, NoteSkinData>::iterator entry= loadedNoteSkins.find(sName);
+			loadedNoteSkins.erase(entry);
 		}
 	}
+
+	g_mapNameToData = loadedNoteSkins;
+	g_mapGameToNoteSkinData[sGameName] = loadedNoteSkins;
 }
 
 bool NoteSkinManager::LoadNoteSkinData( const RString &sNoteSkinName, NoteSkinData& data_out )
