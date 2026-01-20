@@ -77,7 +77,7 @@ struct ThreadSlot
 		m_pImpl = nullptr;
 
 		/* Reset used last; otherwise, a thread creation might pick up the slot. */
-		m_bUsed.store(false);
+		m_bUsed.store(false, std::memory_order_release);
 	}
 
 	void Release()
@@ -158,10 +158,10 @@ static int FindEmptyThreadSlot()
 	LockMut( GetThreadSlotsLock() );
 	for( int entry = 0; entry < MAX_THREADS; ++entry )
 	{
-		if( g_ThreadSlots[entry].m_bUsed.load() )
+		if( g_ThreadSlots[entry].m_bUsed.load(std::memory_order_acquire) )
 			continue;
 
-		g_ThreadSlots[entry].m_bUsed.store( true );
+		g_ThreadSlots[entry].m_bUsed.store( true, std::memory_order_release );
 		return entry;
 	}
 
@@ -200,7 +200,7 @@ static ThreadSlot *GetThreadSlotFromID( uint64_t iID )
 
 	for( int entry = 0; entry < MAX_THREADS; ++entry )
 	{
-		if( !g_ThreadSlots[entry].m_bUsed.load() )
+		if( !g_ThreadSlots[entry].m_bUsed.load(std::memory_order_acquire) )
 			continue;
 		if( g_ThreadSlots[entry].m_iID == iID )
 			return &g_ThreadSlots[entry];
@@ -311,7 +311,7 @@ bool RageThread::EnumThreadIDs( int n, uint64_t &iID )
 	LockMut(GetThreadSlotsLock());
 	const ThreadSlot *slot = &g_ThreadSlots[n];
 
-	if( slot->m_bUsed.load() )
+	if( slot->m_bUsed.load(std::memory_order_acquire) )
 		iID = slot->m_iID;
 	else
 		iID = GetInvalidThreadId();
@@ -350,7 +350,7 @@ void RageThread::HaltAllThreads( bool Kill )
 	const uint64_t ThisThreadID = GetThisThreadId();
 	for( int entry = 0; entry < MAX_THREADS; ++entry )
 	{
-		if( !g_ThreadSlots[entry].m_bUsed.load() )
+		if( !g_ThreadSlots[entry].m_bUsed.load(std::memory_order_acquire) )
 			continue;
 		if( ThisThreadID == g_ThreadSlots[entry].m_iID || g_ThreadSlots[entry].m_pImpl == nullptr )
 			continue;
@@ -363,7 +363,7 @@ void RageThread::ResumeAllThreads()
 	const uint64_t ThisThreadID = GetThisThreadId();
 	for( int entry = 0; entry < MAX_THREADS; ++entry )
 	{
-		if( !g_ThreadSlots[entry].m_bUsed.load() )
+		if( !g_ThreadSlots[entry].m_bUsed.load(std::memory_order_acquire) )
 			continue;
 		if( ThisThreadID == g_ThreadSlots[entry].m_iID || g_ThreadSlots[entry].m_pImpl == nullptr )
 			continue;
@@ -430,7 +430,7 @@ void Checkpoints::SetCheckpoint( const char *file, int line, const char *message
 static const char *GetCheckpointLog( int slotno, int lineno )
 {
 	ThreadSlot &slot = g_ThreadSlots[slotno];
-	if( !slot.m_bUsed.load() )
+	if( !slot.m_bUsed.load(std::memory_order_acquire) )
 		return nullptr;
 
 	/* Only show the "Unknown thread" entry if it has at least one checkpoint. */
