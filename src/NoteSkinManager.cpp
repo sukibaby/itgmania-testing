@@ -82,16 +82,19 @@ void NoteSkinManager::RefreshNoteSkinData( const Game* pGame )
 	// clear path cache
 	g_PathCache.clear();
 
+	LOG->Info( "RefreshNoteSkinData called for game '%s'", pGame->m_szName );
+
 	RString sGameName = pGame->m_szName;
 	MakeLower( sGameName );
 	std::map<RString, std::map<RString, std::shared_ptr<NoteSkinData>>>::iterator cached = g_mapGameToNoteSkinData.find( sGameName );
 	if( cached != g_mapGameToNoteSkinData.end() )
 	{
-		// Found cached noteskin data for this game: reuse it instead of
-		// re-scanning and reloading all noteskins and metrics.
+		LOG->Info( "Using cached noteskins for game '%s' (%zu)", sGameName.c_str(), cached->second.size() );
 		g_mapNameToData = cached->second;
 		return;
 	}
+
+	LOG->Info( "Found noteskins that weren't cached for game '%s'", sGameName.c_str() );
 
 	RString sBaseSkinFolder = SpecialFiles::NOTESKINS_DIR + pGame->m_szName + "/";
 	std::vector<RString> asNoteSkinNames;
@@ -118,10 +121,12 @@ void NoteSkinManager::RefreshNoteSkinData( const Game* pGame )
 
 	g_mapNameToData = loadedNoteSkins;
 	g_mapGameToNoteSkinData.emplace(sGameName, loadedNoteSkins);
+	LOG->Info( "Cached %zu noteskins for game '%s'", loadedNoteSkins.size(), sGameName.c_str() );
 }
 
 bool NoteSkinManager::LoadNoteSkinData( const RString &sNoteSkinName, NoteSkinData& data_out )
 {
+	LOG->Info( "LoadNoteSkinData called for '%s'", sNoteSkinName.c_str() );
 	data_out.sName = sNoteSkinName;
 	data_out.metrics.Clear();
 	data_out.vsDirSearchOrder.clear();
