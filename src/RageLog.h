@@ -37,6 +37,9 @@ private:
 	bool m_bUserLogToDisk;
 	bool m_bFlush;
 	bool m_bShowLogOutput;
+
+	struct LogWriter;
+	LogWriter* m_pLogWriter;
 	void Write( int, const RString &str );
 	void UpdateMappedLog();
 	void AddToInfo( const RString &buf );
