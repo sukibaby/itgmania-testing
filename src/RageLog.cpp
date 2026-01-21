@@ -335,14 +335,14 @@ void RageLog::Write( int where, const RString &sLine )
 		if( sWarning.size() )
 			sStr.insert( 0, sWarning );
 
-        // NOTE: On Windows, m_bShowLogOutput determines whether we
-        // will open a console window for log output.
-        // But, on Linux/macOS, that preference won't open a new
-        // console window. Instead it determines whether or not
-        // info & trace logs are printed to stdout. This way,
-        // we have a consistent logging behavior across platforms,
-        // since typically in macOS or Linux, if one wants to see
-        // the stdout output, they'll run the game from a terminal.
+		// NOTE: On Windows, m_bShowLogOutput determines whether we
+		// will open a console window for log output.
+		// But, on Linux/macOS, that preference won't open a new
+		// console window. Instead it determines whether or not
+		// info & trace logs are printed to stdout. This way,
+		// we have a consistent logging behavior across platforms,
+		// since typically in macOS or Linux, if one wants to see
+		// the stdout output, they'll run the game from a terminal.
 #ifdef _WIN32
 		if (m_bShowLogOutput || (where & WRITE_TO_INFO))
 		{
@@ -353,13 +353,13 @@ void RageLog::Write( int where, const RString &sLine )
 			AddToInfo(sStr);
 		}
 #else
-        if (where & WRITE_TO_INFO)
+		if (where & WRITE_TO_INFO)
 		{
 			puts(sStr.c_str());
 			AddToInfo(sStr);
 		}
 #endif
-        if (m_pLogWriter != nullptr)
+		if (m_pLogWriter != nullptr)
 		{
 			if (m_bInfoToDisk && (where & WRITE_TO_INFO))
 			{
