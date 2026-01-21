@@ -17,6 +17,7 @@
 
 #include <cstddef>
 #include <map>
+#include <memory>
 #include <vector>
 
 
@@ -45,8 +46,8 @@ struct NoteSkinData
 
 namespace
 {
-	static std::map<RString,NoteSkinData> g_mapNameToData;
-	static std::map<RString, std::map<RString, NoteSkinData>> g_mapGameToNoteSkinData;
+	static std::map<RString, std::shared_ptr<NoteSkinData>> g_mapNameToData;
+	static std::map<RString, std::map<RString, std::shared_ptr<NoteSkinData>>> g_mapGameToNoteSkinData;
 };
 
 NoteSkinManager::NoteSkinManager()
@@ -83,7 +84,7 @@ void NoteSkinManager::RefreshNoteSkinData( const Game* pGame )
 
 	RString sGameName = pGame->m_szName;
 	MakeLower( sGameName );
-	std::map<RString, std::map<RString, NoteSkinData>>::iterator cached = g_mapGameToNoteSkinData.find( sGameName );
+	std::map<RString, std::map<RString, std::shared_ptr<NoteSkinData>>>::iterator cached = g_mapGameToNoteSkinData.find( sGameName );
 	if( cached != g_mapGameToNoteSkinData.end() )
 	{
 		// Found cached noteskin data for this game: reuse it instead of
@@ -99,7 +100,7 @@ void NoteSkinManager::RefreshNoteSkinData( const Game* pGame )
 	StripCvsAndSvn( asNoteSkinNames );
 	StripMacResourceForks( asNoteSkinNames );
 
-	std::map<RString, NoteSkinData> loadedNoteSkins;
+	std::map<RString, std::shared_ptr<NoteSkinData>> loadedNoteSkins;
 	for( size_t j=0; j<asNoteSkinNames.size(); j++ )
 	{
 		RString sName = asNoteSkinNames[j];
@@ -107,15 +108,16 @@ void NoteSkinManager::RefreshNoteSkinData( const Game* pGame )
 		// Don't feel like changing the structure of this code to load the skin
 		// into a temp variable and move it, so if the load fails, then just
 		// delete it from the map. -Kyz
-		if(!LoadNoteSkinData(sName, loadedNoteSkins[sName]))
+		auto data = std::make_shared<NoteSkinData>();
+		if(!LoadNoteSkinData(sName, *data))
 		{
-			std::map<RString, NoteSkinData>::iterator entry= loadedNoteSkins.find(sName);
-			loadedNoteSkins.erase(entry);
+			continue;
 		}
+		loadedNoteSkins.emplace(sName, std::move(data));
 	}
 
 	g_mapNameToData = loadedNoteSkins;
-	g_mapGameToNoteSkinData[sGameName] = loadedNoteSkins;
+	g_mapGameToNoteSkinData.emplace(sGameName, loadedNoteSkins);
 }
 
 bool NoteSkinManager::LoadNoteSkinData( const RString &sNoteSkinName, NoteSkinData& data_out )
@@ -287,10 +289,10 @@ void NoteSkinManager::GetAllNoteSkinNamesForGame( const Game *pGame, std::vector
 	if( pGame == m_pCurGame )
 	{
 		// Faster:
-		for( std::map<RString, NoteSkinData>::const_iterator iter = g_mapNameToData.begin();
+		for( std::map<RString, std::shared_ptr<NoteSkinData>>::const_iterator iter = g_mapNameToData.begin();
 		     iter != g_mapNameToData.end(); ++iter )
 		{
-			AddTo.push_back( iter->second.sName );
+			AddTo.push_back( iter->second->sName );
 		}
 	}
 	else
@@ -311,9 +313,9 @@ RString NoteSkinManager::GetMetric( const RString &sButtonName, const RString &s
 	}
 	RString sNoteSkinName = m_sCurrentNoteSkin;
 	MakeLower(sNoteSkinName);
-	std::map<RString, NoteSkinData>::const_iterator it = g_mapNameToData.find(sNoteSkinName);
+	std::map<RString, std::shared_ptr<NoteSkinData>>::const_iterator it = g_mapNameToData.find(sNoteSkinName);
 	ASSERT_M( it != g_mapNameToData.end(), sNoteSkinName );	// this NoteSkin doesn't exist!
-	const NoteSkinData& data = it->second;
+	const NoteSkinData& data = *it->second;
 
 	RString sReturn;
 	if( data.metrics.GetValue( sButtonName, sValue, sReturn ) )
@@ -363,9 +365,9 @@ RString NoteSkinManager::GetPath( const RString &sButtonName, const RString &sEl
 	}
 	RString sNoteSkinName = m_sCurrentNoteSkin;
 	MakeLower(sNoteSkinName);
-	std::map<RString, NoteSkinData>::const_iterator iter = g_mapNameToData.find( sNoteSkinName );
+	std::map<RString, std::shared_ptr<NoteSkinData>>::const_iterator iter = g_mapNameToData.find( sNoteSkinName );
 	ASSERT( iter != g_mapNameToData.end() );
-	const NoteSkinData &data = iter->second;
+	const NoteSkinData &data = *iter->second;
 
 	RString sPath;	// fill this in below
 	for (RString const &directory : data.vsDirSearchOrder)
@@ -476,13 +478,13 @@ RString NoteSkinManager::GetPath( const RString &sButtonName, const RString &sEl
 
 bool NoteSkinManager::PushActorTemplate( Lua *L, const RString &sButton, const RString &sElement, bool bSpriteOnly )
 {
-	std::map<RString, NoteSkinData>::const_iterator iter = g_mapNameToData.find( m_sCurrentNoteSkin );
+	std::map<RString, std::shared_ptr<NoteSkinData>>::const_iterator iter = g_mapNameToData.find( m_sCurrentNoteSkin );
 	if(iter == g_mapNameToData.end())
 	{
 		LuaHelpers::ReportScriptError("No current noteskin set!", "NOTESKIN_ERROR");
 		return false;
 	}
-	const NoteSkinData &data = iter->second;
+	const NoteSkinData &data = *iter->second;
 
 	LuaThreadVariable varPlayer( "Player", LuaReference::Create(m_PlayerNumber) );
 	LuaThreadVariable varController( "Controller", LuaReference::Create(m_GameController) );
