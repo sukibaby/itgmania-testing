@@ -4,48 +4,55 @@
 #define SubscriptionManager_H
 
 #include <set>
+#include <vector>
 
-// Since this class has only POD types and no constructor, there's no 
-// initialize order problem.
-template<class T>
-class SubscriptionManager
-{
-public:
-	// TRICKY: If we make this a global instead of a global pointer,
-	// then we'd have to be careful that the static constructors of all
-	// subscribers are called before the collection constructor.  It's
-	// impossible to enfore that in C++.  Instead, we'll allocate the 
-	// collection ourself on first use.  SubscriptionHandler itself is
-	// a POD type, so a static SubscriptionHandler will always have
-	// m_pSubscribers == nullptr (before any static constructors are called).
-	std::set<T*>* m_pSubscribers;
+// Since this class is trivially constructible, there's no initialization
+// order problem. The std::set<T*> itself is not trivially constructible,
+// so we use a function-local static to avoid static initialization order
+// issues, and we rely on the std::set destructor to clean up at program exit.
+template <class T>
+class SubscriptionManager {
+ public:
+  using container_t = std::set<T*>;
 
-	// Use this to access m_pSubscribers, so you don't have to worry about
-	// it being nullptr.
-	std::set<T*> &Get()
-	{
-		if( m_pSubscribers == nullptr )
-			m_pSubscribers = new std::set<T*>;
-		return *m_pSubscribers;
-	}
+  // TRICKY: Avoid static initialization order issues by storing the
+  // container as a function-local static (constructed on first use).
+  static container_t& Subscribers() {
+    static container_t s;
+    return s;
+  }
 
-	void Subscribe( T* p )
-	{
-		if( m_pSubscribers == nullptr )
-			m_pSubscribers = new std::set<T*>;
+  container_t& Get() { return Subscribers(); }
+  const container_t& Get() const { return Subscribers(); }
+
+  bool Empty() const { return Subscribers().empty(); }
+
+  // Return a copy of the subscriber list, rather than a direct
+  // reference to the internal container. This allows us to iterate
+  // without worrying about locking or if the container is being modified.
+  std::vector<T*> Snapshot() const {
+    const auto& s = Subscribers();
+    return std::vector<T*>(s.begin(), s.end());
+  }
+
+  void Subscribe(T* p) {
+    auto& s = Subscribers();
 #ifdef DEBUG
-		typename std::set<T*>::iterator iter = m_pSubscribers->find( p );
-		ASSERT_M( iter == m_pSubscribers->end(), "already subscribed" );
+		typename container_t::iterator iter = s.find( p );
+		ASSERT_M( iter == s.end(), "already subscribed" );
 #endif
-		m_pSubscribers->insert( p );
+		s.insert( p );
 	}
 
 	void Unsubscribe( T* p )
 	{
-		typename std::set<T*>::iterator iter = m_pSubscribers->find( p );
-		ASSERT( iter != m_pSubscribers->end() );
-		m_pSubscribers->erase( iter );
+		auto &s = Subscribers();
+		typename container_t::iterator iter = s.find( p );
+		ASSERT( iter != s.end() );
+		s.erase( iter );
 	}
+
+	bool IsSubscriberListPopulated() const { return !Subscribers().empty(); }
 };
 
 #endif

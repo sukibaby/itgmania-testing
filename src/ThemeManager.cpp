@@ -477,18 +477,18 @@ void ThemeManager::SwitchThemeAndLanguage( const RString &sThemeName_, const RSt
 void ThemeManager::ReloadSubscribers()
 {
 	// reload subscribers
-	if( g_Subscribers.m_pSubscribers )
+	if( g_Subscribers.IsSubscriberListPopulated() )
 	{
-		for (IThemeMetric *metric : *g_Subscribers.m_pSubscribers)
+		for (IThemeMetric *metric : g_Subscribers.Snapshot())
 			metric->Read();
 	}
 }
 
 void ThemeManager::ClearSubscribers()
 {
-	if( g_Subscribers.m_pSubscribers )
+	if( g_Subscribers.IsSubscriberListPopulated() )
 	{
-		for (IThemeMetric *metric : *g_Subscribers.m_pSubscribers)
+		for (IThemeMetric *metric : g_Subscribers.Snapshot())
 			metric->Clear();
 	}
 }

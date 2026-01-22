@@ -27,7 +27,7 @@ static LocalizedString::MakeLocalizer g_pMakeLocalizedStringImpl = LocalizedStri
 void LocalizedString::RegisterLocalizer( MakeLocalizer pFunc )
 {
 	g_pMakeLocalizedStringImpl = pFunc;
-	for (LocalizedString *pLoc : *m_Subscribers.m_pSubscribers)
+	for (LocalizedString *pLoc : m_Subscribers.Snapshot())
 	{
 		pLoc->CreateImpl();
 	}
