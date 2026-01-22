@@ -11,12 +11,12 @@ namespace
 {
 	void RegisterTypes( lua_State *L )
 	{
-		if( m_Subscribers.m_pSubscribers == nullptr )
+		if( m_Subscribers.Snapshot().empty() )
 			return;
 
 		/* Register base classes first. */
 		std::map<RString, LuaBinding*> mapToRegister;
-		for (LuaBinding *binding : *m_Subscribers.m_pSubscribers)
+		for (LuaBinding *binding : m_Subscribers.Snapshot())
 			mapToRegister[binding->GetClassName()] = binding;
 
 		std::set<RString> setRegisteredAlready;
