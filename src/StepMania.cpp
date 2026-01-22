@@ -798,11 +798,20 @@ static void WriteLogHeader()
 
 static void ApplyLogPreferences()
 {
+	// unchanged
 	LOG->SetShowLogOutput( PREFSMAN->m_bShowLogOutput );
-	LOG->SetLogToDisk( PREFSMAN->m_bLogToDisk );
-	LOG->SetInfoToDisk( PREFSMAN->m_bLogToDisk );
+
+	// Ensure all logs go to both disk and stdout.
+	LOG->SetLogToDisk( true );
+	LOG->SetInfoToDisk( true );
+
+	// User should be able to choose if the game logs to disk or not.
 	LOG->SetUserLogToDisk( PREFSMAN->m_bLogToDisk );
-	LOG->SetFlushing( PREFSMAN->m_bForceLogFlush );
+
+	// Irrelevant with threaded logging. Force historical default setting.
+	LOG->SetFlushing( false );
+
+	// unchanged
 	Checkpoints::LogCheckpoints( PREFSMAN->m_bLogCheckpoints );
 }
 
