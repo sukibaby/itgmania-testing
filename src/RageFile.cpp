@@ -25,7 +25,6 @@ RageFile::RageFile( const RageFile &cpy ):
 	RageFileBasic( cpy )
 {
 	/* This will copy the file driver, including its internal file pointer. */
-	// Note: do we guarantee m_File is not being modified elsewhere while we copy it?
 	RageFileBasic* const filePointer = cpy.m_File;
 	m_File = filePointer ? filePointer->Copy() : nullptr;
 	m_Path = cpy.m_Path;
