@@ -1,7 +1,6 @@
 ## Prerequisites
 
-### macOS 
-- **libtool** (required for libusb build): `brew install libtool`
+_Note: **libtool** is required on Linux and macOS when using vcpkg to build the game. If it is not installed, libusb will fail to build with vcpkg. libtool can be installed on macOS using Homebrew (`brew install libtool`), or using your package manager of choice._
 
 ---
 
