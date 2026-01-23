@@ -12,10 +12,11 @@ permissions:
 on:
   push:
     branches:
-      - beta
+      - betaaz
     paths:
       - extern/ffmpeg
       - extern/ffmpeg/**
+      - .github/workflows/ffmpeg-w32.yml
 
 jobs:
   build-ffmpeg-w32:
