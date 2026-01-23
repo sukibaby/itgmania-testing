@@ -101,3 +101,14 @@ If you want to use the traditional custom build instead of vcpkg, you can build 
 cmake -B Build -DSM_USE_VCPKG=OFF
 cmake --build Build
 ```
+
+---
+
+
+## Continuous Integration
+
+Pushes to the `beta` branch of the repository are built with a [GitHub Actions workflow](https://github.com/itgmania/itgmania/actions/workflows/release.yml), in which "nightly releases" are compiled for a matrix of operating systems and architectures. Full releases are built on pushses to the `release` branch.
+
+By default, GitHub stores build artifacts for 90 days. You will need to be signed into GitHub to download one of these automated builds. They can be downloaded from the Artifacts section of the Summary page on an execution of the workflow.
+
+If you click on _Actions_, you will see a list of workflows categories. One of the categories will be titled _Release_. Click on that, and then click on the most recent workflow (item with a green checkmark next to it). Scroll to the bottom of the page, where you will see a section called _Artifacts_ which contains the links to the downloads.
