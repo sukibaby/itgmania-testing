@@ -56,9 +56,6 @@ jobs:
 
     - name: Build FFmpeg for Windows using MinGW-w64
       run: |
-        # Initialize ffmpeg submodule from the checkout
-        git submodule update --init extern/ffmpeg
-        
         FFMPEG_SHA="$(git -C extern/ffmpeg rev-parse --short=12 HEAD)"
         ln -s extern/ffmpeg ffmpeg-src
         echo "FFMPEG_SHA=$FFMPEG_SHA" >> "$GITHUB_ENV"
