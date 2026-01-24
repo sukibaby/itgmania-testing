@@ -28,6 +28,7 @@ jobs:
         ref: beta
         fetch-depth: 0
         persist-credentials: true
+        submodules: recursive
 
     - name: Setup build environment and dependencies
       run: |
