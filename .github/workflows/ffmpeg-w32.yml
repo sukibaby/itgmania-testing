@@ -1,6 +1,6 @@
 # .github/workflows/ffmpeg-w32.yml
 # These libraries can't be built with MSVC, so we use mingw-w64 to cross-compile for Windows.
-# This workflow watches the beta branch for changes to extern/ffmpeg (submodule updates or source),
+# This workflow watches the beta branch for changes to extern/ffmpeg (submodule updates or source),f
 # rebuilds the ffmpeg-w32 x86_64 prebuilts, and commits the updated binaries/headers to beta.
 
 name: Build ffmpeg-w32 libraries
