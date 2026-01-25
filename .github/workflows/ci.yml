@@ -1,5 +1,7 @@
 on:
   push:
+   branches:
+     - newnew
   pull_request:
     paths-ignore:
       - '**.md'
