@@ -102,7 +102,11 @@ jobs:
         
         mkdir -p build/x64
         cd build/x64
-        ../../ffmpeg-src/configure --arch=x86_64 --cross-prefix=x86_64-w64-mingw32- --target-os=mingw64 $COMMON_FLAGS_FFMPEG
+        echo "=== Running FFmpeg configure ==="
+        ../../ffmpeg-src/configure --arch=x86_64 --cross-prefix=x86_64-w64-mingw32- --target-os=mingw64 $COMMON_FLAGS_FFMPEG || { echo "Configure failed!"; exit 1; }
+        echo "=== Configure completed, checking for generated files ==="
+        ls -la libavutil/avconfig.h || { echo "ERROR: avconfig.h not generated!"; find . -name "avconfig.h" -o -name "config.h"; exit 1; }
+        echo "=== Running make ==="
         make -j$(nproc)
         cd ../..
 
@@ -120,7 +124,14 @@ jobs:
         cp ffmpeg-src/libavcodec/{ac3_parser,adts_parser,avcodec,avdct,avfft,bsf,codec_desc,codec,codec_id,codec_par,d3d11va,defs,dirac,dv_profile,dxva2,jni,mediacodec,packet,qsv,vdpau,version,version_major,videotoolbox,vorbis_parser,xvmc}.h package/include/libavcodec/ 2>/dev/null || true
         cp ffmpeg-src/libavformat/{avformat,avio,version,version_major}.h package/include/libavformat/ 2>/dev/null || true
         cp ffmpeg-src/libavutil/{adler32,aes_ctr,aes,attributes,audio_fifo,avassert,avstring,avutil,base64,blowfish,bprint,bswap,buffer,camellia,cast5,channel_layout,common,cpu,crc,des,detection_bbox,dict,display,dovi_meta,downmix_info,encryption_info,error,eval,ffversion,fifo,file,film_grain_params,frame,hash,hdr_dynamic_metadata,hmac,hwcontext_cuda,hwcontext_d3d11va,hwcontext_drm,hwcontext_dxva2,hwcontext,hwcontext_mediacodec,hwcontext_opencl,hwcontext_qsv,hwcontext_vaapi,hwcontext_vdpau,hwcontext_videotoolbox,hwcontext_vulkan,imgutils,intfloat,intreadwrite,lfg,log,lzo,macros,mastering_display_metadata,mathematics,md5,mem,motion_vector,murmur3,opt,parseutils,pixdesc,pixelutils,pixfmt,random_seed,rational,rc4,replaygain,ripemd,samplefmt,sha,sha512,spherical,stereo3d,tea,threadmessage,time,timecode,timestamp,tree,twofish,tx,version,version_major,video_enc_params,xtea}.h package/include/libavutil/ 2>/dev/null || true
-        cp build/x64/libavutil/avconfig.h package/include/libavutil/ 2>/dev/null || true
+        
+        if [ -f build/x64/libavutil/avconfig.h ]; then
+          cp build/x64/libavutil/avconfig.h package/include/libavutil/
+        else
+          echo "ERROR: avconfig.h not found in build tree" >&2
+          find build -name "avconfig.h" 2>/dev/null || echo "avconfig.h not found anywhere in build/"
+          exit 1
+        fi
         cp ffmpeg-src/libswscale/{swscale,version,version_major}.h package/include/libswscale/ 2>/dev/null || true
         
     - name: Upload artifact
