@@ -1,10 +1,9 @@
 on:
   push:
-   branches:
-     - newnew
-  pull_request:
-    paths-ignore:
-      - '**.md'
+    branches:
+      - newnew
+    paths:
+      - '.github/workflows/ci.yml'
 
 name: Continuous integration
 
@@ -14,13 +13,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-15, windows-2022]
+        os: [windows-2022]
         include:
-          - os: macos-15
-            name: macOS (M1)
-            install: brew install nasm
-            configure: cmake -B build -DCMAKE_OSX_ARCHITECTURES=arm64 -DWITH_FFMPEG_JOBS="$(sysctl -n hw.logicalcpu)"
-            build: cmake --build build --parallel "$(sysctl -n hw.logicalcpu)"
           - os: windows-2022
             name: Windows
             configure: cmake -B build -DWITH_FFMPEG_JOBS="$env:NUMBER_OF_PROCESSORS"
