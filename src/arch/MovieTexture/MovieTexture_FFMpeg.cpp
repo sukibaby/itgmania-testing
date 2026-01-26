@@ -261,7 +261,7 @@ int MovieDecoder_FFMpeg::DecodeFrame()
 		return status;
 	}
 
-	status = DecodePacketToFrame();
+	status = ProcessFrameFromPacket();
 	frame_buffer_position_ = (frame_buffer_position_ + 1) % frame_buffer_.size();
 	packet_buffer_position_ = (packet_buffer_position_ + 1) % total_frames_;
 	return status;
@@ -388,7 +388,7 @@ void MovieDecoder_FFMpeg::UpdateFrameTiming(PacketHolder* packet, FrameHolder* f
 	packet->frame_delay += frame->frame->repeat_pict * (packet->frame_delay * 0.5f);
 }
 
-int MovieDecoder_FFMpeg::DecodePacketIntoFrame(PacketHolder* packet, FrameHolder* frame) {
+int MovieDecoder_FFMpeg::DecodePacketToFrame(PacketHolder* packet, FrameHolder* frame) {
 	std::lock_guard<std::mutex> frame_lock(frame->lock);
 	std::lock_guard<std::mutex> packet_lock(packet->lock);
 
@@ -448,7 +448,7 @@ int MovieDecoder_FFMpeg::DecodePacketIntoFrame(PacketHolder* packet, FrameHolder
 	return 0; /* packet done */
 }
 
-int MovieDecoder_FFMpeg::DecodePacketToFrame() {
+int MovieDecoder_FFMpeg::ProcessFrameFromPacket() {
 	if (cancel_) {
 		return -2;
 	}
@@ -462,7 +462,7 @@ int MovieDecoder_FFMpeg::DecodePacketToFrame() {
 		return cancel_ ? -2 : 0;
 	}
 
-	return DecodePacketIntoFrame(packet, frame);
+	return DecodePacketToFrame(packet, frame);
 }
 
 bool MovieDecoder_FFMpeg::EnsureSwsContext()

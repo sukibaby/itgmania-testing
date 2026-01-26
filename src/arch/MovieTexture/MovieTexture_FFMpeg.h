@@ -153,9 +153,13 @@ private:
 	// Send the packet at packet_buffer_position_ to the frame buffer
 	// at the next open position.
 	// Returns -2 on cancel, -1 on error, 0 if the packet is finished.
-	int DecodePacketToFrame();
+	int ProcessFrameFromPacket();
+
+	// Returns true if the packet buffer size is smaller than the frame buffer size.
+	// Performs a 1ms wait while the frame is displayed and returns false if we get
+	// a cancel or reset signal. 
 	bool PrepareFrameSlot(FrameHolder* frame);
-	int DecodePacketIntoFrame(PacketHolder* packet, FrameHolder* frame);
+	int DecodePacketToFrame(PacketHolder* packet, FrameHolder* frame);
 	void UpdateFrameTiming(PacketHolder* packet, FrameHolder* frame);
 	bool EnsureSwsContext();
 	int BlitFrameToSurface(FrameHolder* frame, RageSurface* surface_out);
