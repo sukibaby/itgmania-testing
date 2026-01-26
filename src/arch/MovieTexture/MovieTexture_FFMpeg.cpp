@@ -722,11 +722,10 @@ size_t MovieDecoder_FFMpeg::CalculateFrameBufferSize(int width, int height)
 		return kFrameBufferMinSlots;
 	}
 
-	size_t frame_size_bytes = static_cast<size_t>(width) * static_cast<size_t>(height) * kBytesPerPixelBGRA;
-
-	size_t optimal_slots = kFrameBufferTargetMemory / frame_size_bytes;
-
-	return std::max(optimal_slots, kFrameBufferMinSlots);
+	return std::max(
+	kFrameBufferTargetMemory /
+		(size_t(width) * size_t(height) * kBytesPerPixelBGRA),
+	kFrameBufferMinSlots);
 }
 
 size_t MovieDecoder_FFMpeg::GetFrameBufferIndex(size_t logical_frame_num) const
