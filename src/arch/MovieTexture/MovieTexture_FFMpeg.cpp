@@ -640,13 +640,18 @@ RString MovieDecoder_FFMpeg::Open(RString file)
 
 	// Resize frame buffer based on video resolution and target memory budget.
 	size_t optimal_buffer_size = CalculateFrameBufferSize(av_stream_codec_->width, av_stream_codec_->height);
-	if (optimal_buffer_size < frame_buffer_.size()) {
+	if (optimal_buffer_size < frame_buffer_.size())
+	{
 		frame_buffer_.resize(optimal_buffer_size);
-	} else if (optimal_buffer_size > frame_buffer_.size()) {
-		while (frame_buffer_.size() < optimal_buffer_size) {
+	}
+	else if (optimal_buffer_size > frame_buffer_.size())
+	{
+		while (frame_buffer_.size() < optimal_buffer_size)
+		{
 			frame_buffer_.emplace_back(std::make_unique<FrameHolder>());
 		}
 	}
+
 	// Additional safeguard: if video is shorter than buffer, shrink to match.
 	if (total_frames_ < frame_buffer_.size()) {
 		LOG->Trace("Video shorter than frame buffer (%zu frames vs %zu slots), shrinking the buffer.",
