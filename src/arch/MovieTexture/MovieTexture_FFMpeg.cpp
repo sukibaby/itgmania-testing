@@ -654,14 +654,9 @@ RString MovieDecoder_FFMpeg::Open(RString file)
 
 	// Additional safeguard: if video is shorter than buffer, shrink to match.
 	if (total_frames_ < frame_buffer_.size()) {
-		LOG->Trace("Video shorter than frame buffer (%zu frames vs %zu slots), shrinking the buffer.",
-			total_frames_, frame_buffer_.size());
 		frame_buffer_.resize(total_frames_);
 	}
-	LOG->Trace("Frame buffer finalized: %zu slots for %dx%d video at %.1f MB per frame, ~%.1f MB total.",
-		frame_buffer_.size(), av_stream_codec_->width, av_stream_codec_->height,
-		(av_stream_codec_->width * av_stream_codec_->height * kBytesPerPixelBGRA) / (1024.0 * 1024.0),
-		(frame_buffer_.size() * av_stream_codec_->width * av_stream_codec_->height * kBytesPerPixelBGRA) / (1024.0 * 1024.0));
+
 	LOG->Trace("Number of frames detected: %zu", total_frames_);
 
 	return RString();
