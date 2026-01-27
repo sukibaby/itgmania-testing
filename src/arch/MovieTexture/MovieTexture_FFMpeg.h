@@ -139,6 +139,7 @@ public:
 private:
 	void Init();
 	RString OpenCodec();
+	void HandleReset();
 
 	// Returns the number of frame slots to allocate. Respects minimum slot requirement.
 	size_t CalculateFrameBufferSize(int width, int height);
@@ -159,11 +160,24 @@ private:
 	// Performs a 1ms wait while the frame is displayed and returns false if we get
 	// a cancel or reset signal. 
 	bool PrepareFrameSlot(FrameHolder* frame);
+
+	// Packet decoding and offset management logic. Called from within ProcessFrameFromPacket.
+	// Returns 1 if frame decode succeeded, 0 if packet is finished, -1 on error
 	int DecodePacketToFrame(PacketHolder* packet, FrameHolder* frame);
+
+	// Determines the frame timestamp. Will use the frame length as a fallback if necessary.
 	void UpdateFrameTiming(PacketHolder* packet, FrameHolder* frame);
+
+	// Checks if we already have a SWS context to use. If so, this returns true early and uses
+	// the cached context. If it has to create a new context, it will return true after doing so.
 	bool EnsureSwsContext();
+
+	// Ensures a SWS context exist to blit to our reusable RGB destination frame, and calls
+	// sws_scale on the target frame. Returns the number of output lines written by sws_scale
+	// on success, 0 if no blit performed (presumably due to packet/frame mismatch), or a
+	// negative value on error. -1 is returned if the SWS context fails to initialize. Other
+	// negative values would be returned directly from sws_scale.
 	int BlitFrameToSurface(FrameHolder* frame, RageSurface* surface_out);
-	void HandleReset();
 
 	avcodec::AVStream* av_stream_;
 	avcodec::AVPixelFormat av_pixel_format_;	/* pixel format of output surface */
