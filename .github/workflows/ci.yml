@@ -59,6 +59,11 @@ jobs:
           fi
           echo "JOBS=$JOBS" >> $GITHUB_ENV
 
+      - name: Setup vcpkg environment
+        shell: bash
+        run: |
+          echo "VCPKG_ROOT=$VCPKG_INSTALLATION_ROOT" >> $GITHUB_ENV
+
       - name: Configure
         shell: bash
         run: |
