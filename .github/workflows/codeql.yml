@@ -55,12 +55,7 @@ jobs:
 
     - name: Setup vcpkg
       run: |
-        if [ ! -d "$HOME/vcpkg" ]; then
-          git clone https://github.com/microsoft/vcpkg.git $HOME/vcpkg
-          cd $HOME/vcpkg
-          ./bootstrap-vcpkg.sh -disableMetrics
-        fi
-        echo "VCPKG_ROOT=$HOME/vcpkg" >> $GITHUB_ENV
+        echo "VCPKG_ROOT=$VCPKG_INSTALLATION_ROOT" >> $GITHUB_ENV
 
     - name: Configure
       run: cmake -B build
