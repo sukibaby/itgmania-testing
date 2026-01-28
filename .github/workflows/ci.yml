@@ -70,19 +70,19 @@ jobs:
           if [ "$RUNNER_OS" == "Windows" ]; then
             cmake -B build \
               -DSM_USE_VCPKG=ON \
-              -DCMAKE_TOOLCHAIN_FILE=$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake \
+              -DCMAKE_TOOLCHAIN_FILE="$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" \
               -DVCPKG_TARGET_TRIPLET=x64-windows-static \
-              -DWITH_FFMPEG_JOBS=${{ env.JOBS }}
+              -DWITH_FFMPEG_JOBS="$JOBS"
           else
             cmake -B build \
               -DSM_USE_VCPKG=ON \
-              -DCMAKE_TOOLCHAIN_FILE=$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake \
-              -DWITH_FFMPEG_JOBS=${{ env.JOBS }}
+              -DCMAKE_TOOLCHAIN_FILE="$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" \
+              -DWITH_FFMPEG_JOBS="$JOBS"
           fi
 
       - name: Build
         shell: bash
-        run: cmake --build build --parallel ${{ env.JOBS }}
+        run: cmake --build build --parallel "$JOBS"
 
   validate-xml-docs:
     name: Validate Lua.xml, LuaDocumentation.xml
