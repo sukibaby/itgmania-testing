@@ -1,14 +1,18 @@
 /* This reader simply precaches all of the data from another reader. This
  * reduces CPU usage for sounds that are played several times at once. */
 
-#include "global.h"
 #include "RageSoundReader_Preload.h"
-#include "RageUtil.h"
-#include "RageSoundUtil.h"
-#include "Preference.h"
 
-#include <cmath>
+#include <algorithm>
 #include <cstdint>
+#include <cstring>
+#include <string>
+
+#include "Preference.h"
+#include "RageSoundReader.h"
+#include "RageSoundUtil.h"
+#include "RageUtil.h"
+#include "global.h"
 
 /* If true, preloaded sounds are stored in 16-bit instead of floats.  Most
  * processing happens after preloading, and it's usually a waste to store high-
@@ -37,7 +41,7 @@ bool RageSoundReader_Preload::PreloadSound( RageSoundReader *&pSound )
 }
 
 RageSoundReader_Preload::RageSoundReader_Preload():
-	m_Buffer( new RString ), m_bBufferIs16Bit(false),
+	m_Buffer( new std::string ), m_bBufferIs16Bit(false),
 	m_iPosition(0), m_iSampleRate(0), m_iChannels(0), m_fRate(0.0f)
 {
 	m_bBufferIs16Bit = g_bSoundPreload16bit.Get();

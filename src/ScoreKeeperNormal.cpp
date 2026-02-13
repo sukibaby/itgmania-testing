@@ -1,32 +1,43 @@
-#include "global.h"
 #include "ScoreKeeperNormal.h"
-#include "GameState.h"
-#include "PrefsManager.h"
-#include "GamePreferences.h"
-#include "Steps.h"
-#include "ScreenManager.h"
-#include "GameState.h"
-#include "Course.h"
-#include "SongManager.h"
-#include "NoteDataUtil.h"
-#include "NoteData.h"
-#include "RageLog.h"
-#include "StageStats.h"
-#include "ProfileManager.h"
-#include "PlayerState.h"
-#include "Game.h"
-#include "Style.h"
-#include "Song.h"
-#include "TimingData.h"
-#include "NoteDataWithScoring.h"
 
+#include <algorithm>
 #include <cstddef>
 #include <cstdint>
+#include <cstring>
+#include <string>
 #include <vector>
 
+#include "Course.h"
+#include "Difficulty.h"
+#include "Game.h"
+#include "GameConstantsAndTypes.h"
+#include "GamePreferences.h"
+#include "GameState.h"
+#include "LuaManager.h"
+#include "MessageManager.h"
+#include "NoteData.h"
+#include "NoteDataUtil.h"
+#include "NoteDataWithScoring.h"
+#include "NoteTypes.h"
+#include "PlayerNumber.h"
+#include "PlayerState.h"
+#include "PrefsManager.h"
+#include "ProfileManager.h"
+#include "RageUtil.h"
+#include "ScoreKeeper.h"
+#include "ScreenManager.h"
+#include "Song.h"
+#include "SongManager.h"
+#include "StageStats.h"
+#include "Steps.h"
+#include "Style.h"
+#include "ThemeMetric.h"
+#include "TimingData.h"
+#include "TimingSegments.h"
+#include "global.h"
 
-static RString PercentScoreWeightName( size_t i ) { return "PercentScoreWeight" + ScoreEventToString( (ScoreEvent)i ); }
-static RString GradeWeightName( size_t i ) { return "GradeWeight" + ScoreEventToString( (ScoreEvent)i ); }
+static std::string PercentScoreWeightName( size_t i ) { return "PercentScoreWeight" + ScoreEventToString( (ScoreEvent)i ); }
+static std::string GradeWeightName( size_t i ) { return "GradeWeight" + ScoreEventToString( (ScoreEvent)i ); }
 
 static ThemeMetric1D<int> g_iPercentScoreWeight("ScoreKeeperNormal", PercentScoreWeightName, NUM_ScoreEvent );
 static ThemeMetric1D<int> g_iGradeWeight("ScoreKeeperNormal", GradeWeightName, NUM_ScoreEvent );
@@ -348,7 +359,7 @@ int ScoreKeeperNormal::CalcNextToastyAt(int level)
 			break;
 		case LUA_TFUNCTION:
 			{
-				RString err= "Error running ToastyTriggersAt: ";
+				std::string err= "Error running ToastyTriggersAt: ";
 				LuaHelpers::Push(L, m_pPlayerState->m_PlayerNumber);
 				lua_pushnumber(L, level);
 				if(LuaHelpers::RunScriptOnStack(L, err, 2, 1, true))

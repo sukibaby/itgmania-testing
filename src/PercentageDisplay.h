@@ -1,11 +1,13 @@
 #ifndef PERCENTAGE_DISPLAY_H
 #define PERCENTAGE_DISPLAY_H
 
+#include <string>
+
+#include "Actor.h"
 #include "ActorFrame.h"
-#include "PlayerNumber.h"
 #include "BitmapText.h"
-#include "StageStats.h"
-#include "ThemeMetric.h"
+#include "LuaReference.h"
+#include "PlayerStageStats.h"
 
 class PlayerState;
 
@@ -15,7 +17,7 @@ class PercentageDisplay: public ActorFrame
 public:
 	PercentageDisplay();
 	void Load( const PlayerState *pPlayerState, const PlayerStageStats *pPlayerStageStats );
-	void Load( const PlayerState *pPlayerState, const PlayerStageStats *pPlayerStageStats, const RString &sMetricsGroup, bool bAutoRefresh );
+	void Load( const PlayerState *pPlayerState, const PlayerStageStats *pPlayerStageStats, const std::string &sMetricsGroup, bool bAutoRefresh );
 	void Update( float fDeltaTime );
 	virtual void LoadFromNode( const XNode* pNode );
 	virtual PercentageDisplay *Copy() const;
@@ -37,8 +39,8 @@ private:
 	int m_LastMax;
 	BitmapText	m_textPercent;
 	BitmapText	m_textPercentRemainder;
-	RString m_sPercentFormat;
-	RString m_sRemainderFormat;
+	std::string m_sPercentFormat;
+	std::string m_sRemainderFormat;
 
 	LuaReference m_FormatPercentScore;
 };

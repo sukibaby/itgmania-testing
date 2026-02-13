@@ -1,8 +1,13 @@
-#include "global.h"
 #include "RageSoundReader_PostBuffering.h"
+
+#include <algorithm>
+#include <string>
+
+#include "RageSoundReader.h"
+#include "RageSoundReader_Filter.h"
 #include "RageSoundUtil.h"
 #include "RageThreads.h"
-#include "RageUtil.h"
+#include "global.h"
 
 /*
  * This filter is normally inserted after extended buffering, implementing
@@ -44,7 +49,7 @@ int RageSoundReader_PostBuffering::Read( float *pBuf, int iFrames )
 	return iFrames;
 }
 
-bool RageSoundReader_PostBuffering::SetProperty( const RString &sProperty, float fValue )
+bool RageSoundReader_PostBuffering::SetProperty( const std::string &sProperty, float fValue )
 {
 	if( sProperty == "Volume" )
 	{

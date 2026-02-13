@@ -1,19 +1,33 @@
-#include "global.h"
 #include "PlayerStageStats.h"
-#include "RageLog.h"
-#include "ThemeManager.h"
-#include "LuaManager.h"
-#include "GameState.h"
-#include "Course.h"
-#include "Steps.h"
-#include "ScoreKeeperNormal.h"
-#include "PrefsManager.h"
-#include "CommonMetrics.h"
 
+#include <algorithm>
 #include <cfloat>
 #include <cmath>
 #include <cstddef>
+#include <deque>
+#include <map>
 #include <numeric>
+#include <string>
+
+#include "CommonMetrics.h"
+#include "Course.h"
+#include "Difficulty.h"
+#include "EnumHelper.h"
+#include "GameConstantsAndTypes.h"
+#include "GameState.h"
+#include "Grade.h"
+#include "HighScore.h"
+#include "LuaManager.h"
+#include "MessageManager.h"
+#include "PlayerNumber.h"
+#include "PrefsManager.h"
+#include "RageLog.h"
+#include "RageUtil.h"
+#include "ScoreKeeperNormal.h"
+#include "Steps.h"
+#include "ThemeManager.h"
+#include "ThemeMetric.h"
+#include "global.h"
 
 #define GRADE_PERCENT_TIER(i)	THEME->GetMetricF("PlayerStageStats",ssprintf("GradePercent%s",GradeToString((Grade)i).c_str()))
 // deprecated, but no solution to replace them exists yet:
@@ -273,11 +287,11 @@ float PlayerStageStats::MakePercentScore( int iActual, int iPossible )
 	return fPercent;
 }
 
-RString PlayerStageStats::FormatPercentScore( float fPercentDancePoints )
+std::string PlayerStageStats::FormatPercentScore( float fPercentDancePoints )
 {
 	int iPercentTotalDigits = 3 + CommonMetrics::PERCENT_SCORE_DECIMAL_PLACES;	// "100" + "." + "00"
 
-	RString s = ssprintf( "%*.*f%%", iPercentTotalDigits,
+	std::string s = ssprintf( "%*.*f%%", iPercentTotalDigits,
 			     (int)CommonMetrics::PERCENT_SCORE_DECIMAL_PLACES,
 			     fPercentDancePoints*100 );
 	return s;

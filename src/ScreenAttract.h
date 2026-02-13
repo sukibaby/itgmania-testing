@@ -3,7 +3,13 @@
 #ifndef ScreenAttract_H
 #define ScreenAttract_H
 
+#include <string>
+
+#include "InputQueue.h"
+#include "Screen.h"
+#include "ScreenMessage.h"
 #include "ScreenWithMenuElements.h"
+#include "ThemeMetric.h"
 
 AutoScreenMessage( SM_GoToStartScreen );
 
@@ -14,7 +20,7 @@ public:
 	virtual void BeginScreen();
 
 	static bool AttractInput( const InputEventPlus &input, ScreenWithMenuElements *pScreen );
-	static void GoToStartScreen( RString sScreenName );
+	static void GoToStartScreen( std::string sScreenName );
 	static void SetAttractVolume( bool bInAttract );
 
 	virtual bool Input( const InputEventPlus &input );

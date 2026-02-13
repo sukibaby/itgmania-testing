@@ -1,10 +1,12 @@
 #ifndef SCORE_DISPLAY_BATTLE_H
 #define SCORE_DISPLAY_BATTLE_H
 
-#include "ScoreDisplay.h"
+#include <string>
+
 #include "GameConstantsAndTypes.h"
-#include "Sprite.h"
 #include "RageTexturePreloader.h"
+#include "ScoreDisplay.h"
+#include "Sprite.h"
 
 /** @brief ScoreDisplay implementation for PLAY_MODE_BATTLE. */
 class ScoreDisplayBattle : public ScoreDisplay
@@ -19,7 +21,7 @@ protected:
 	Sprite	m_sprFrame;
 	Sprite	m_ItemIcon[NUM_INVENTORY_SLOTS];
 
-	RString m_iLastSeenInventory[NUM_INVENTORY_SLOTS];
+	std::string m_iLastSeenInventory[NUM_INVENTORY_SLOTS];
 	RageTexturePreloader m_TexturePreload;
 };
 

@@ -1,11 +1,14 @@
 #ifndef ScreenOptionsManageEditSteps_H
 #define ScreenOptionsManageEditSteps_H
 
-#include "ScreenOptions.h"
-#include "GameConstantsAndTypes.h"
-
+#include <string>
 #include <vector>
 
+#include "InputEventPlus.h"
+#include "PlayerNumber.h"
+#include "ScreenMessage.h"
+#include "ScreenOptions.h"
+#include "ThemeMetric.h"
 
 class Steps;
 
@@ -28,7 +31,7 @@ protected:
 
 	std::vector<Steps*> m_vpSteps;
 
-	ThemeMetric<RString> CREATE_NEW_SCREEN;
+	ThemeMetric<std::string> CREATE_NEW_SCREEN;
 };
 
 #endif

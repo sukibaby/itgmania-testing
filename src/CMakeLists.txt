@@ -69,22 +69,6 @@ if(APPLE)
                  ${SMDATA_ALL_FILES_SRC}
                  ${SMDATA_ALL_FILES_HPP})
 else()
-  if(MSVC)
-    foreach(sm_src_file ${SMDATA_ALL_FILES_SRC})
-      get_filename_component(sm_src_raw "${sm_src_file}" NAME_WE)
-      if(${sm_src_raw} MATCHES "global")
-        set_source_files_properties("${sm_src_raw}.cpp"
-                                    PROPERTIES
-                                    COMPILE_FLAGS
-                                    "/Ycglobal.h")
-      elseif(NOT (${sm_src_raw} MATCHES "verstub"))
-        set_source_files_properties("${sm_src_raw}.cpp"
-                                    PROPERTIES
-                                    COMPILE_FLAGS
-                                    "/Yuglobal.h")
-      endif()
-    endforeach()
-  endif()
   add_executable("${SM_EXE_NAME}" ${SMDATA_ALL_FILES_SRC}
                  ${SMDATA_ALL_FILES_HPP})
 endif()
@@ -174,6 +158,9 @@ if(WIN32)
   target_compile_definitions("${SM_EXE_NAME}" PRIVATE _WINDOWS) # TODO: Remove this potential duplicate.
   target_compile_definitions("${SM_EXE_NAME}" PRIVATE _CRT_SECURE_NO_WARNINGS)
   target_compile_definitions("${SM_EXE_NAME}" PRIVATE _WINSOCK_DEPRECATED_NO_WARNINGS)
+  target_compile_definitions("${SM_EXE_NAME}" PRIVATE NOMINMAX)
+  target_compile_definitions("${SM_EXE_NAME}" PRIVATE WIN32_LEAN_AND_MEAN)
+  target_compile_definitions("${SM_EXE_NAME}" PRIVATE VC_EXTRALEAN)
 
   set_target_properties("${SM_EXE_NAME}"
                         PROPERTIES RUNTIME_OUTPUT_DIRECTORY
@@ -520,6 +507,9 @@ if(WIN32)
           DESTINATION "${SM_FULL_INSTALLATION_PATH}")
   install(FILES "${SM_PROGRAM_DIR}/ITGmania.vdi"
           DESTINATION "${SM_FULL_INSTALLATION_PATH}")
+elseif(APPLE)
+  # On macOS, just install the .app bundle - resources are already inside it
+  install(TARGETS "${SM_EXE_NAME}" BUNDLE DESTINATION ".")
 else()
   install(TARGETS "${SM_EXE_NAME}" DESTINATION "${SM_INSTALL_DESTINATION}")
   if(LINUX)
@@ -528,30 +518,22 @@ else()
     install(PROGRAMS "${SM_ROOT_DIR}/Installer/setup.sh" DESTINATION ".")
   endif()
 endif()
-install(DIRECTORY "${SM_ROOT_DIR}/Announcers"
-        DESTINATION "${SM_INSTALL_DESTINATION}")
-install(DIRECTORY "${SM_ROOT_DIR}/BGAnimations"
-        DESTINATION "${SM_INSTALL_DESTINATION}")
-install(DIRECTORY "${SM_ROOT_DIR}/Themes"
-        DESTINATION "${SM_INSTALL_DESTINATION}")
-install(DIRECTORY "${SM_ROOT_DIR}/Characters"
-        DESTINATION "${SM_INSTALL_DESTINATION}")
-install(DIRECTORY "${SM_ROOT_DIR}/Scripts"
-        DESTINATION "${SM_INSTALL_DESTINATION}")
-install(DIRECTORY "${SM_ROOT_DIR}/Courses"
-        DESTINATION "${SM_INSTALL_DESTINATION}")
-install(DIRECTORY "${SM_ROOT_DIR}/BackgroundEffects"
-        DESTINATION "${SM_INSTALL_DESTINATION}")
-install(DIRECTORY "${SM_ROOT_DIR}/Data"
-        DESTINATION "${SM_INSTALL_DESTINATION}")
-install(DIRECTORY "${SM_ROOT_DIR}/BackgroundTransitions"
-        DESTINATION "${SM_INSTALL_DESTINATION}")
-install(DIRECTORY "${SM_ROOT_DIR}/Docs"
-        DESTINATION "${SM_INSTALL_DESTINATION}")
-install(DIRECTORY "${SM_ROOT_DIR}/NoteSkins"
-        DESTINATION "${SM_INSTALL_DESTINATION}")
-install(FILES "${SM_ROOT_DIR}/Songs/instructions.txt"
-        DESTINATION "${SM_INSTALL_DESTINATION}/Songs")
+
+if(NOT APPLE)
+  install(DIRECTORY "${SM_ROOT_DIR}/Announcers" DESTINATION "${SM_INSTALL_DESTINATION}")
+  install(DIRECTORY "${SM_ROOT_DIR}/BGAnimations" DESTINATION "${SM_INSTALL_DESTINATION}")
+  install(DIRECTORY "${SM_ROOT_DIR}/Themes" DESTINATION "${SM_INSTALL_DESTINATION}")
+  install(DIRECTORY "${SM_ROOT_DIR}/Characters" DESTINATION "${SM_INSTALL_DESTINATION}")
+  install(DIRECTORY "${SM_ROOT_DIR}/Scripts" DESTINATION "${SM_INSTALL_DESTINATION}")
+  install(DIRECTORY "${SM_ROOT_DIR}/Courses" DESTINATION "${SM_INSTALL_DESTINATION}")
+  install(DIRECTORY "${SM_ROOT_DIR}/BackgroundEffects" DESTINATION "${SM_INSTALL_DESTINATION}")
+  install(DIRECTORY "${SM_ROOT_DIR}/Data" DESTINATION "${SM_INSTALL_DESTINATION}")
+  install(DIRECTORY "${SM_ROOT_DIR}/BackgroundTransitions" DESTINATION "${SM_INSTALL_DESTINATION}")
+  install(DIRECTORY "${SM_ROOT_DIR}/Docs" DESTINATION "${SM_INSTALL_DESTINATION}")
+  install(DIRECTORY "${SM_ROOT_DIR}/NoteSkins" DESTINATION "${SM_INSTALL_DESTINATION}")
+  install(FILES "${SM_ROOT_DIR}/Songs/instructions.txt"
+          DESTINATION "${SM_INSTALL_DESTINATION}/Songs")
+endif()
 
 if(WITH_CLUB_FANTASTIC)
   # Fetch ClubFantastic packs

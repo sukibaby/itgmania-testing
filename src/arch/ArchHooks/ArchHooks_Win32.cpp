@@ -1,21 +1,23 @@
-#include "global.h"
 #include "ArchHooks_Win32.h"
-#include "RageUtil.h"
+
+#include <windows.h>
+#include <versionhelpers.h>
+
+#include <cstdint>
+#include <string>
+#include <vector>
+
+#include "ProductInfo.h"
 #include "RageLog.h"
 #include "RageThreads.h"
-#include "ProductInfo.h"
+#include "RageUtil.h"
+#include "archutils/Win32/RegistryAccess.h"
 #include "archutils/win32/AppInstance.h"
-#include "archutils/win32/crash.h"
 #include "archutils/win32/DebugInfoHunt.h"
 #include "archutils/win32/ErrorStrings.h"
 #include "archutils/win32/RestartProgram.h"
-#include "archutils/Win32/RegistryAccess.h"
-
-#include "VersionHelpers.h"
-
-#include <cstdint>
-#include <vector>
-
+#include "archutils/win32/crash.h"
+#include "global.h"
 
 static HANDLE g_hInstanceMutex;
 static bool g_bIsMultipleInstance = false;
@@ -110,10 +112,10 @@ bool ArchHooks_Win32::CheckForMultipleInstances(int argc, char* argv[])
 			SetForegroundWindow( hWnd );
 
 		// Send the command line to the existing window.
-		std::vector<RString> vsArgs;
+		std::vector<std::string> vsArgs;
 		for( int i=0; i<argc; i++ )
 			vsArgs.push_back( argv[i] );
-		RString sAllArgs = join("|", vsArgs);
+		std::string sAllArgs = join("|", vsArgs);
 		COPYDATASTRUCT cds;
 		cds.dwData = 0;
 		cds.cbData = sAllArgs.size();
@@ -180,11 +182,11 @@ float ArchHooks_Win32::GetDisplayAspectRatio()
 	return dm.dmPelsWidth / (float)dm.dmPelsHeight;
 }
 
-RString ArchHooks_Win32::GetClipboard()
+std::string ArchHooks_Win32::GetClipboard()
 {
 	HGLOBAL hgl;
 	LPTSTR lpstr;
-	RString ret;
+	std::string ret;
 
 	// First make sure that the clipboard actually contains a string
 	// (or something stringifiable)
@@ -210,7 +212,7 @@ RString ArchHooks_Win32::GetClipboard()
 #ifdef UNICODE
 	ret = WStringToRString( wstring()+*lpstr );
 #else
-	ret = RString( lpstr );
+	ret = std::string( lpstr );
 #endif
 
 	// And now we clean up.

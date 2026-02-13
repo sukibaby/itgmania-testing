@@ -1,21 +1,29 @@
-#include "global.h"
 #include "EditMenu.h"
-#include "RageLog.h"
-#include "SongManager.h"
-#include "GameState.h"
-#include "ThemeManager.h"
-#include "GameManager.h"
-#include "Steps.h"
-#include "Song.h"
-#include "StepsUtil.h"
-#include "CommonMetrics.h"
-#include "ImageCache.h"
-#include "UnlockManager.h"
-#include "SongUtil.h"
 
 #include <cstddef>
+#include <string>
 #include <vector>
 
+#include "ActorUtil.h"
+#include "CommonMetrics.h"
+#include "Difficulty.h"
+#include "EnumHelper.h"
+#include "GameConstantsAndTypes.h"
+#include "GameManager.h"
+#include "GameState.h"
+#include "ImageCache.h"
+#include "LocalizedString.h"
+#include "PlayerNumber.h"
+#include "RageLog.h"
+#include "RageUtil.h"
+#include "Song.h"
+#include "SongManager.h"
+#include "SongUtil.h"
+#include "Steps.h"
+#include "StepsUtil.h"
+#include "ThemeManager.h"
+#include "UnlockManager.h"
+#include "global.h"
 
 static const char *EditMenuRowNames[] = {
 	"Group",
@@ -40,8 +48,8 @@ XToString( EditMenuAction );
 XToLocalizedString( EditMenuAction );
 StringToX( EditMenuAction );
 
-static RString ARROWS_X_NAME( size_t i )	{ return ssprintf("Arrows%dX",int(i+1)); }
-static RString ROW_Y_NAME( size_t i )		{ return ssprintf("Row%dY",int(i+1)); }
+static std::string ARROWS_X_NAME( size_t i )	{ return ssprintf("Arrows%dX",int(i+1)); }
+static std::string ROW_Y_NAME( size_t i )		{ return ssprintf("Row%dY",int(i+1)); }
 
 void EditMenu::StripLockedStepsAndDifficulty( std::vector<StepsAndDifficulty> &v )
 {
@@ -53,7 +61,7 @@ void EditMenu::StripLockedStepsAndDifficulty( std::vector<StepsAndDifficulty> &v
 	}
 }
 
-void EditMenu::GetSongsToShowForGroup( const RString &sGroup, std::vector<Song*> &vpSongsOut )
+void EditMenu::GetSongsToShowForGroup( const std::string &sGroup, std::vector<Song*> &vpSongsOut )
 {
 	if(sGroup == "")
 	{
@@ -82,7 +90,7 @@ void EditMenu::GetSongsToShowForGroup( const RString &sGroup, std::vector<Song*>
 	SongUtil::SortSongPointerArrayByTitle( vpSongsOut );
 }
 
-void EditMenu::GetGroupsToShow( std::vector<RString> &vsGroupsOut )
+void EditMenu::GetGroupsToShow( std::vector<std::string> &vsGroupsOut )
 {
 	vsGroupsOut.clear();
 	if( !SHOW_GROUPS.GetValue() )
@@ -91,7 +99,7 @@ void EditMenu::GetGroupsToShow( std::vector<RString> &vsGroupsOut )
 	SONGMAN->GetSongGroupNames( vsGroupsOut );
 	for( int i = vsGroupsOut.size()-1; i>=0; i-- )
 	{
-		const RString &sGroup = vsGroupsOut[i];
+		const std::string &sGroup = vsGroupsOut[i];
 		std::vector<Song*> vpSongs;
 		GetSongsToShowForGroup( sGroup, vpSongs );
 		// strip groups that have no unlocked songs
@@ -109,7 +117,7 @@ EditMenu::~EditMenu()
 	IMAGECACHE->Undemand("Banner");
 }
 
-void EditMenu::Load( const RString &sType )
+void EditMenu::Load( const std::string &sType )
 {
 	LOG->Trace( "EditMenu::Load" );
 
@@ -570,7 +578,7 @@ void EditMenu::OnRowValueChanged( EditMenuRow row )
 					break;
 				}
 			}
-			CLAMP( m_iSelection[ROW_STEPS], 0, m_vpSteps.size()-1 );
+			rage_clamp( m_iSelection[ROW_STEPS], 0, m_vpSteps.size()-1 );
 		}
 		[[fallthrough]];
 	case ROW_STEPS:
@@ -581,7 +589,7 @@ void EditMenu::OnRowValueChanged( EditMenuRow row )
 		}
 		else
 		{
-			RString s = CustomDifficultyToLocalizedString( GetCustomDifficulty( GetSelectedStepsType(), GetSelectedDifficulty(), CourseType_Invalid ) );
+			std::string s = CustomDifficultyToLocalizedString( GetCustomDifficulty( GetSelectedStepsType(), GetSelectedDifficulty(), CourseType_Invalid ) );
 
 			m_textValue[ROW_STEPS].SetText( s );
 			if( GetSelectedSteps() )
@@ -627,7 +635,7 @@ void EditMenu::OnRowValueChanged( EditMenuRow row )
 				}
 			}
 			StripLockedStepsAndDifficulty( m_vpSteps );
-			CLAMP( m_iSelection[ROW_SOURCE_STEPS], 0, m_vpSourceSteps.size()-1 );
+			rage_clamp( m_iSelection[ROW_SOURCE_STEPS], 0, m_vpSourceSteps.size()-1 );
 		}
 		[[fallthrough]];
 	case ROW_SOURCE_STEPS:
@@ -643,7 +651,7 @@ void EditMenu::OnRowValueChanged( EditMenuRow row )
 			m_textLabel[ROW_SOURCE_STEPS].SetVisible( GetSelectedSteps() ? false : true );
 			m_textValue[ROW_SOURCE_STEPS].SetVisible( GetSelectedSteps() ? false : true );
 			{
-				RString s;
+				std::string s;
 				if( GetSelectedSourceDifficulty() == Difficulty_Invalid )
 				{
 					s = BLANK;

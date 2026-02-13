@@ -2,12 +2,12 @@
 #define RAGE_DISPLAY_OGL_HELPERS_H
 
 /* Import RageDisplay, for types.  Do not include RageDisplay_Legacy.h. */
+#include <cstdint>
+#include <string>
+
 #include "RageDisplay.h"
 
-#include <cstdint>
-
 #if defined(_WIN32)
-#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #endif
 
@@ -22,7 +22,7 @@
 namespace RageDisplay_Legacy_Helpers
 {
 	void Init();
-	RString GLToString( GLenum e );
+	std::string GLToString( GLenum e );
 };
 
 class RenderTarget

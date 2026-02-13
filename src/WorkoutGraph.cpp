@@ -1,18 +1,22 @@
-#include "global.h"
 #include "WorkoutGraph.h"
-#include "RageUtil.h"
-#include "ActorUtil.h"
-#include "Sprite.h"
-#include "Trail.h"
-#include "Steps.h"
-#include "GameState.h"
-#include "ThemeManager.h"
-#include "StatsManager.h"
-#include "Course.h"
-#include "Style.h"
 
+#include <algorithm>
 #include <vector>
 
+#include "Actor.h"
+#include "ActorFrame.h"
+#include "ActorUtil.h"
+#include "GameConstantsAndTypes.h"
+#include "GameState.h"
+#include "LuaManager.h"
+#include "PlayerNumber.h"
+#include "RageTypes.h"
+#include "RageUtil.h"
+#include "Sprite.h"
+#include "Steps.h"
+#include "ThemeManager.h"
+#include "Trail.h"
+#include "global.h"
 
 const int MAX_METERS_TO_SHOW = 50;
 
@@ -75,11 +79,11 @@ void WorkoutGraph::SetInternal( int iMinSongsPlayed )
 
 	const float fMaxWidth = 300;
 	float fTotalWidth = SCALE( iBlocksWide, 1.0f, 10.0f, 50.0f, fMaxWidth );
-	CLAMP( fTotalWidth, 50, fMaxWidth );
+	rage_clamp( fTotalWidth, 50, fMaxWidth );
 
 	const float fMaxHeight = 130;
 	float fTotalHeight = SCALE( iBlocksHigh, 1.0f, 10.0f, 50.0f, fMaxHeight );
-	CLAMP( fTotalHeight, 50, fMaxHeight );
+	rage_clamp( fTotalHeight, 50, fMaxHeight );
 
 	float fBlockSize = std::min( fTotalWidth / iBlocksWide, fTotalHeight / iBlocksHigh );
 

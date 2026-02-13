@@ -15,24 +15,30 @@
  * for imported BMS files, which don't have an offset value, but it's annoying.
  */
 
-#include "global.h"
 #include "AutoKeysounds.h"
+
+#include <algorithm>
+#include <climits>
+#include <string>
+#include <vector>
+
+#include "EnumHelper.h"
 #include "GameState.h"
-#include "Song.h"
+#include "NoteData.h"
+#include "NoteTypes.h"
+#include "PlayerNumber.h"
+#include "RageSoundManager.h"
 #include "RageSoundReader_Chain.h"
-#include "RageSoundReader_ChannelSplit.h"
 #include "RageSoundReader_Extend.h"
+#include "RageSoundReader_FileReader.h"
 #include "RageSoundReader_Merge.h"
 #include "RageSoundReader_Pan.h"
 #include "RageSoundReader_PitchChange.h"
 #include "RageSoundReader_PostBuffering.h"
 #include "RageSoundReader_ThreadedBuffer.h"
-#include "RageSoundManager.h"
-#include "RageLog.h"
-#include "RageSoundReader_FileReader.h"
-
-#include <vector>
-
+#include "RageUtil.h"
+#include "Song.h"
+#include "global.h"
 
 void AutoKeysounds::Load( PlayerNumber pn, const NoteData& ndAutoKeysoundsOnly )
 {
@@ -45,7 +51,7 @@ void AutoKeysounds::LoadAutoplaySoundsInto( RageSoundReader_Chain *pChain )
 	// Load sounds.
 	//
 	Song* pSong = GAMESTATE->m_pCurSong;
-	RString sSongDir = pSong->GetSongDir();
+	std::string sSongDir = pSong->GetSongDir();
 
 	/*
 	 * Add all current autoplay sounds in both players to the chain.
@@ -88,7 +94,7 @@ void AutoKeysounds::LoadAutoplaySoundsInto( RageSoundReader_Chain *pChain )
 				ASSERT( tn[pn].type == TapNoteType_AutoKeysound );
 				if( tn[pn].iKeysoundIndex >= 0 )
 				{
-					RString sKeysoundFilePath = sSongDir + pSong->m_vsKeysoundFile[tn[pn].iKeysoundIndex];
+					std::string sKeysoundFilePath = sSongDir + pSong->m_vsKeysoundFile[tn[pn].iKeysoundIndex];
 					float fSeconds = GAMESTATE->m_pCurSteps[pn]->GetTimingData()->GetElapsedTimeFromBeatNoOffset( NoteRowToBeat(iRow) ) + SOUNDMAN->GetPlayLatency();
 
 					float fPan = 0;
@@ -113,8 +119,8 @@ void AutoKeysounds::LoadTracks( const Song *pSong, RageSoundReader *&pShared, Ra
 	pPlayer2 = nullptr;
 	pShared = nullptr;
 
-	std::vector<RString> vsMusicFile;
-	const RString sMusicPath = GAMESTATE->m_pCurSteps[GAMESTATE->GetMasterPlayerNumber()]->GetMusicPath();
+	std::vector<std::string> vsMusicFile;
+	const std::string sMusicPath = GAMESTATE->m_pCurSteps[GAMESTATE->GetMasterPlayerNumber()]->GetMusicPath();
 
 	if( !sMusicPath.empty() )
 		vsMusicFile.push_back( sMusicPath );
@@ -129,9 +135,9 @@ void AutoKeysounds::LoadTracks( const Song *pSong, RageSoundReader *&pShared, Ra
 
 
 	std::vector<RageSoundReader *> vpSounds;
-	for (RString const &s : vsMusicFile)
+	for (std::string const &s : vsMusicFile)
 	{
-		RString sError;
+		std::string sError;
 		RageSoundReader *pSongReader = RageSoundReader_FileReader::OpenFile( s, sError );
 		vpSounds.push_back( pSongReader );
 	}
@@ -164,7 +170,7 @@ void AutoKeysounds::LoadTracks( const Song *pSong, RageSoundReader *&pShared, Ra
 
 	if( pSong->HasInstrumentTrack(InstrumentTrack_Guitar) )
 	{
-		RString sError;
+		std::string sError;
 		RageSoundReader *pGuitarTrackReader = RageSoundReader_FileReader::OpenFile( pSong->GetInstrumentTrackPath(InstrumentTrack_Guitar), sError );
 		// Load the buffering filter before the effects filters, so effects aren't delayed.
 		pGuitarTrackReader = new RageSoundReader_Extend( pGuitarTrackReader );

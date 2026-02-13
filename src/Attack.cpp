@@ -1,14 +1,17 @@
-#include "global.h"
 #include "Attack.h"
-#include "GameState.h"
-#include "RageUtil.h"
-#include "Song.h"
-#include "PlayerOptions.h"
-#include "PlayerState.h"
 
+#include <algorithm>
 #include <cmath>
+#include <string>
 #include <vector>
 
+#include "GameConstantsAndTypes.h"
+#include "GameState.h"
+#include "PlayerOptions.h"
+#include "PlayerState.h"
+#include "RageUtil.h"
+#include "Song.h"
+#include "global.h"
 
 void Attack::GetAttackBeats( const Song *pSong, float &fStartBeat, float &fEndBeat ) const
 {
@@ -68,7 +71,7 @@ bool Attack::ContainsTransformOrTurn() const
 	return po.ContainsTransformOrTurn();
 }
 
-Attack Attack::FromGlobalCourseModifier( const RString &sModifiers )
+Attack Attack::FromGlobalCourseModifier( const std::string &sModifiers )
 {
 	Attack a;
 	a.fStartSecond = 0;
@@ -79,15 +82,15 @@ Attack Attack::FromGlobalCourseModifier( const RString &sModifiers )
 	return a;
 }
 
-RString Attack::GetTextDescription() const
+std::string Attack::GetTextDescription() const
 {
-	RString s = sModifiers + " " + ssprintf("(%.2f seconds)", fSecsRemaining);
+	std::string s = sModifiers + " " + ssprintf("(%.2f seconds)", fSecsRemaining);
 	return s;
 }
 
 int Attack::GetNumAttacks() const
 {
-	std::vector<RString> tmp;
+	std::vector<std::string> tmp;
 	split(this->sModifiers, ",", tmp);
 	return tmp.size();
 }
@@ -97,9 +100,9 @@ bool AttackArray::ContainsTransformOrTurn() const
 	return std::any_of((*this).begin(), (*this).end(), [](Attack const &a) { return a.ContainsTransformOrTurn(); });
 }
 
-std::vector<RString> AttackArray::ToVectorString() const
+std::vector<std::string> AttackArray::ToVectorString() const
 {
-	std::vector<RString> ret;
+	std::vector<std::string> ret;
 	for (Attack const &a : *this)
 	{
 		ret.push_back(ssprintf("TIME=%f:LEN=%f:MODS=%s",

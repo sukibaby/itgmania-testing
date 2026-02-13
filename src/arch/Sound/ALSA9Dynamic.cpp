@@ -1,7 +1,9 @@
-#include "global.h"
-
 #include <dlfcn.h>
 #include <sys/stat.h>
+
+#include <string>
+
+#include "global.h"
 
 #define ALSA_PCM_NEW_HW_PARAMS_API
 #define ALSA_PCM_NEW_SW_PARAMS_API
@@ -17,8 +19,8 @@ static void *Handle = nullptr;
 #include "ALSA9Functions.h"
 #undef FUNC
 
-static const RString lib = "libasound.so.2";
-RString LoadALSA()
+static const std::string lib = "libasound.so.2";
+std::string LoadALSA()
 {
 	/* If /proc/asound/ doesn't exist, chances are we're on an OSS system.  We shouldn't
 	 * touch ALSA at all, since many OSS systems have old, broken versions of ALSA lying
@@ -39,7 +41,7 @@ RString LoadALSA()
 	if( Handle == nullptr )
 		return ssprintf("dlopen(%s): %s", lib.c_str(), dlerror());
 
-	RString error;
+	std::string error;
 	/* Eww.  The "new" HW and SW API functions are really prefixed by __,
 	 * eg. __snd_pcm_hw_params_set_rate_near. */
 #define FUNC(ret, name, proto) \

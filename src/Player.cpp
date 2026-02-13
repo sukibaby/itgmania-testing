@@ -1,53 +1,71 @@
-#include "global.h"
 #include "Player.h"
-#include "GameConstantsAndTypes.h"
-#include "RageUtil.h"
-#include "PrefsManager.h"
-#include "GameManager.h"
-#include "InputMapper.h"
-#include "SongManager.h"
-#include "GameState.h"
-#include "ScoreKeeperNormal.h"
-#include "RageLog.h"
-#include "RageDisplay.h"
-#include "ThemeManager.h"
-#include "ScoreDisplay.h"
-#include "LifeMeter.h"
-#include "CombinedLifeMeter.h"
-#include "PlayerAI.h"
-#include "NoteField.h"
-#include "NoteDataUtil.h"
-#include "ScreenMessage.h"
-#include "ScreenManager.h"
-#include "StageStats.h"
-#include "ActorUtil.h"
-#include "ArrowEffects.h"
-#include "Game.h"
-#include "DancingCharacters.h"
-#include "ScreenDimensions.h"
-#include "RageSoundManager.h"
-#include "ThemeMetric.h"
-#include "PlayerState.h"
-#include "GameSoundManager.h"
-#include "Style.h"
-#include "MessageManager.h"
-#include "ProfileManager.h"
-#include "Profile.h"
-#include "StatsManager.h"
-#include "Song.h"
-#include "Steps.h"
-#include "GameCommand.h"
-#include "LocalizedString.h"
-#include "AdjustSync.h"
-#include "RageUtil/RandomNumbers.h"
 
+#include <algorithm>
+#include <climits>
 #include <cmath>
 #include <cstddef>
+#include <set>
+#include <string>
 #include <vector>
 
+#include "ActorFrame.h"
+#include "ActorUtil.h"
+#include "AdjustSync.h"
+#include "ArrowEffects.h"
+#include "Attack.h"
+#include "AttackDisplay.h"
+#include "CombinedLifeMeter.h"
+#include "Game.h"
+#include "GameCommand.h"
+#include "GameConstantsAndTypes.h"
+#include "GameInput.h"
+#include "GameManager.h"
+#include "GameSoundManager.h"
+#include "GameState.h"
+#include "HoldJudgment.h"
+#include "InputMapper.h"
+#include "LifeMeter.h"
+#include "LuaManager.h"
+#include "MessageManager.h"
+#include "NoteDataUtil.h"
+#include "NoteDataWithScoring.h"
+#include "NoteField.h"
+#include "NoteTypes.h"
+#include "PlayerAI.h"
+#include "PlayerNumber.h"
+#include "PlayerOptions.h"
+#include "PlayerState.h"
+#include "Preference.h"
+#include "PrefsManager.h"
+#include "Profile.h"
+#include "ProfileManager.h"
+#include "RageDisplay.h"
+#include "RageLog.h"
+#include "RageSound.h"
+#include "RageSoundManager.h"
+#include "RageUtil.h"
+#include "RageUtil/RandomNumbers.h"
+#include "ScoreDisplay.h"
+#include "ScoreKeeperNormal.h"
+#include "ScreenDimensions.h"
+#include "ScreenManager.h"
+#include "ScreenMessage.h"
+#include "Song.h"
+#include "SongManager.h"
+#include "SongPosition.h"
+#include "StageStats.h"
+#include "StatsManager.h"
+#include "Steps.h"
+#include "Style.h"
+#include "ThemeManager.h"
+#include "ThemeMetric.h"
+#include "TimingData.h"
+#include "TimingSegments.h"
+#include "Trail.h"
+#include "global.h"
 
-RString ATTACK_DISPLAY_X_NAME( size_t p, size_t both_sides );
-void TimingWindowSecondsInit( size_t /*TimingWindow*/ i, RString &sNameOut, float &defaultValueOut );
+std::string ATTACK_DISPLAY_X_NAME( size_t p, size_t both_sides );
+void TimingWindowSecondsInit( size_t /*TimingWindow*/ i, std::string &sNameOut, float &defaultValueOut );
 
 /**
  * @brief Helper class to ensure that each row is only judged once without taking too much memory.
@@ -98,7 +116,7 @@ public:
 };
 
 
-RString ATTACK_DISPLAY_X_NAME( size_t p, size_t both_sides )	{ return "AttackDisplayXOffset" + (both_sides ? RString("BothSides") : ssprintf("OneSideP%d",int(p+1)) ); }
+std::string ATTACK_DISPLAY_X_NAME( size_t p, size_t both_sides )	{ return "AttackDisplayXOffset" + (both_sides ? std::string("BothSides") : ssprintf("OneSideP%d",int(p+1)) ); }
 
 /**
  * @brief Distance to search for a note in Step(), in seconds.
@@ -106,7 +124,7 @@ RString ATTACK_DISPLAY_X_NAME( size_t p, size_t both_sides )	{ return "AttackDis
  * TODO: This should be calculated based on the max size of the current judgment windows. */
 static const float StepSearchDistance = 1.0f;
 
-void TimingWindowSecondsInit( size_t /*TimingWindow*/ i, RString &sNameOut, float &defaultValueOut )
+void TimingWindowSecondsInit( size_t /*TimingWindow*/ i, std::string &sNameOut, float &defaultValueOut )
 {
 	sNameOut = "TimingWindowSeconds" + TimingWindowToString( static_cast<TimingWindow>(i) );
 	switch( i )
@@ -314,7 +332,7 @@ Player::~Player()
 
 /* Init() does the expensive stuff: load sounds and noteskins.  Load() just loads a NoteData. */
 void Player::Init(
-	const RString &sType,
+	const std::string &sType,
 	PlayerState* pPlayerState,
 	PlayerStageStats* pPlayerStageStats,
 	LifeMeter* pLM,
@@ -767,7 +785,7 @@ void Player::Load()
 	// a separate object, used alongside ScreenGameplay::m_pSoundMusic and ScreenEdit::m_pSoundMusic?)
 	// We don't have to load separate copies to set player fade: always make a copy, and set the
 	// fade on the copy.
-	RString sSongDir = pSong->GetSongDir();
+	std::string sSongDir = pSong->GetSongDir();
 	m_vKeysounds.resize( pSong->m_vsKeysoundFile.size() );
 
 	// parameters are invalid somehow... -aj
@@ -777,7 +795,7 @@ void Player::Load()
 	float fBalance = GameSoundManager::GetPlayerBalance( pn );
 	for( unsigned i=0; i<m_vKeysounds.size(); i++ )
 	{
-		RString sKeysoundFilePath = sSongDir + pSong->m_vsKeysoundFile[i];
+		std::string sKeysoundFilePath = sSongDir + pSong->m_vsKeysoundFile[i];
 		RageSound& sound = m_vKeysounds[i];
 		if( sound.GetLoadedFilePath() != sKeysoundFilePath )
 			sound.Load( sKeysoundFilePath, true, &SoundParams );
@@ -3470,7 +3488,7 @@ void Player::IncrementComboOrMissCombo(bool bComboOrMissCombo)
 		SendComboMessages( iOldCombo, iOldMissCombo );
 }
 
-RString Player::ApplyRandomAttack()
+std::string Player::ApplyRandomAttack()
 {
 	if( GAMESTATE->m_RandomAttacks.size() < 1 )
 		return "";

@@ -1,9 +1,11 @@
 #ifndef SCORE_DISPLAY_NORMAL_H
 #define SCORE_DISPLAY_NORMAL_H
 
-#include "ScoreDisplay.h"
-#include "RollingNumbers.h"
+#include <string>
+
 #include "AutoActor.h"
+#include "RollingNumbers.h"
+#include "ScoreDisplay.h"
 
 /** @brief Shows point score during gameplay and some menus. */
 class ScoreDisplayNormal : public ScoreDisplay
@@ -14,7 +16,7 @@ public:
 	virtual void Init( const PlayerState* pPlayerState, const PlayerStageStats* pPlayerStageStats );
 
 	virtual void SetScore( int iNewScore );
-	virtual void SetText( RString s ) { m_text.SetText(s); }
+	virtual void SetText( std::string s ) { m_text.SetText(s); }
 
 protected:
 	AutoActor	m_sprFrame;

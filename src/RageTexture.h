@@ -3,12 +3,12 @@
 #ifndef RAGE_TEXTURE_H
 #define RAGE_TEXTURE_H
 
-#include "RageTypes.h"
-#include "RageTextureID.h"
-
 #include <cstdint>
+#include <string>
 #include <vector>
 
+#include "RageTextureID.h"
+#include "RageTypes.h"
 
 struct lua_State;
 class RageTexture
@@ -65,7 +65,7 @@ public:
 	// The ID that we were asked to load:
 	const RageTextureID &GetID() const { return m_ID; }
 
-	static void GetFrameDimensionsFromFileName( RString sPath, int* puFramesWide, int* puFramesHigh, int source_width= 0, int source_height= 0 );
+	static void GetFrameDimensionsFromFileName( std::string sPath, int* puFramesWide, int* puFramesHigh, int source_width= 0, int source_height= 0 );
 
 	// Lua
 	virtual void PushSelf( lua_State *L );

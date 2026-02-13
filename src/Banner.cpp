@@ -1,17 +1,27 @@
-#include "global.h"
 #include "Banner.h"
+
+#include <string>
+
+#include "Actor.h"
+#include "ActorUtil.h"
+#include "Character.h"
+#include "CharacterManager.h"
+#include "Course.h"
+#include "EnumHelper.h"
+#include "GameConstantsAndTypes.h"
 #include "ImageCache.h"
-#include "SongManager.h"
+#include "LuaManager.h"
+#include "PrefsManager.h"
+#include "RageTextureID.h"
+#include "RageTextureManager.h"
+#include "RageTypes.h"
 #include "RageUtil.h"
 #include "Song.h"
-#include "RageTextureManager.h"
-#include "Course.h"
-#include "Character.h"
+#include "SongManager.h"
+#include "Sprite.h"
+#include "ThemeManager.h"
 #include "ThemeMetric.h"
-#include "CharacterManager.h"
-#include "ActorUtil.h"
 #include "UnlockManager.h"
-#include "PrefsManager.h"
 
 REGISTER_ACTOR_CLASS( Banner );
 
@@ -51,7 +61,7 @@ void Banner::Load( RageTextureID ID, bool bIsBanner )
 	TEXTUREMAN->EnableOddDimensionWarning();
 };
 
-void Banner::LoadFromCachedBanner( const RString &sPath )
+void Banner::LoadFromCachedBanner( const std::string &sPath )
 {
 	if( sPath.empty() )
 	{
@@ -125,9 +135,9 @@ void Banner::LoadMode()
 	m_bScrolling = (bool)SCROLL_MODE;
 }
 
-void Banner::LoadFromSongGroup( RString sSongGroup )
+void Banner::LoadFromSongGroup( std::string sSongGroup )
 {
-	RString sGroupBannerPath = SONGMAN->GetSongGroupBannerPath( sSongGroup );
+	std::string sGroupBannerPath = SONGMAN->GetSongGroupBannerPath( sSongGroup );
 	if( sGroupBannerPath != "" )			Load( sGroupBannerPath );
 	else						LoadGroupFallback();
 	m_bScrolling = false;
@@ -166,7 +176,7 @@ void Banner::LoadBannerFromUnlockEntry( const UnlockEntry* pUE )
 		LoadFallback();
 	else 
 	{
-		RString sFile = pUE->GetBannerFile();
+		std::string sFile = pUE->GetBannerFile();
 		Load( sFile );
 		m_bScrolling = false;
 	}
@@ -178,7 +188,7 @@ void Banner::LoadBackgroundFromUnlockEntry( const UnlockEntry* pUE )
 		LoadFallback();
 	else 
 	{
-		RString sFile = pUE->GetBackgroundFile();
+		std::string sFile = pUE->GetBackgroundFile();
 		Load( sFile );
 		m_bScrolling = false;
 	}

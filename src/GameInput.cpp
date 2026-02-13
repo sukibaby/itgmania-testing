@@ -1,10 +1,11 @@
-#include "global.h"
 #include "GameInput.h"
-#include "RageLog.h"
-#include "RageUtil.h"
+
+#include <cstdio>
+#include <string>
+
+#include "EnumHelper.h"
 #include "InputMapper.h"
 #include "ThemeManager.h"
-
 
 static const char *GameControllerNames[] = {
 	"1",
@@ -15,17 +16,17 @@ StringToX( GameController );
 LuaXType( GameController );
 
 
-RString GameButtonToString( const InputScheme* pInputs, GameButton i )
+std::string GameButtonToString( const InputScheme* pInputs, GameButton i )
 {
 	return pInputs->GetGameButtonName(i);
 }
 
-RString GameButtonToLocalizedString( const InputScheme* pInputs, GameButton i )
+std::string GameButtonToLocalizedString( const InputScheme* pInputs, GameButton i )
 {
 	return THEME->GetString( "GameButton", GameButtonToString(pInputs,i) );
 }
 
-GameButton StringToGameButton( const InputScheme* pInputs, const RString& s )
+GameButton StringToGameButton( const InputScheme* pInputs, const std::string& s )
 {
 	FOREACH_GameButtonInScheme( pInputs, i )
 	{
@@ -36,12 +37,12 @@ GameButton StringToGameButton( const InputScheme* pInputs, const RString& s )
 }
 
 
-RString GameInput::ToString( const InputScheme* pInputs ) const
+std::string GameInput::ToString( const InputScheme* pInputs ) const
 {
-	return GameControllerToString(controller) + RString("_") + GameButtonToString(pInputs,button);
+	return GameControllerToString(controller) + std::string("_") + GameButtonToString(pInputs,button);
 }
 
-bool GameInput::FromString( const InputScheme* pInputs, const RString &s )
+bool GameInput::FromString( const InputScheme* pInputs, const std::string &s )
 { 
 	char szController[32] = "";
 	char szButton[32] = "";

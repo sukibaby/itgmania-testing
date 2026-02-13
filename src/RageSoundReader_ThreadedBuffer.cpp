@@ -1,10 +1,15 @@
-#include "global.h"
 #include "RageSoundReader_ThreadedBuffer.h"
-#include "RageUtil.h"
-#include "RageTimer.h"
-#include "RageLog.h"
 
-#include <cmath>
+#include <algorithm>
+#include <chrono>
+#include <list>
+#include <string>
+#include <thread>
+
+#include "RageSoundReader.h"
+#include "RageSoundReader_Filter.h"
+#include "RageTimer.h"
+#include "global.h"
 
 /* Implement threaded read-ahead buffering.
  *
@@ -184,7 +189,7 @@ int RageSoundReader_ThreadedBuffer::GetLength_Fast() const
 	return iRet;
 }
 
-bool RageSoundReader_ThreadedBuffer::SetProperty( const RString &sProperty, float fValue )
+bool RageSoundReader_ThreadedBuffer::SetProperty( const std::string &sProperty, float fValue )
 {
 	return m_pSource->SetProperty( sProperty, fValue );
 }
@@ -222,10 +227,7 @@ void RageSoundReader_ThreadedBuffer::BufferingThread()
 
 		/* Sleep proportionately to the amount of data we buffered, so we
 		 * fill at a reasonable pace. */
-		float fTimeFilled = float(g_iReadBlockSizeFrames) / m_iSampleRate;
-		float fTimeToSleep = fTimeFilled / 2;
-		if( fTimeToSleep == 0 )
-			fTimeToSleep = float(g_iReadBlockSizeFrames) / m_iSampleRate;
+		const float fTimeToSleep = static_cast<float>(g_iReadBlockSizeFrames) / (m_iSampleRate * 2.0f);
 
 		if( m_Event.WaitTimeoutSupported() )
 		{
@@ -237,7 +239,9 @@ void RageSoundReader_ThreadedBuffer::BufferingThread()
 		else
 		{
 			m_Event.Unlock();
-			usleep( static_cast<int>((fTimeToSleep * 1000000) + 0.5) );
+			const auto sleep_duration_us = std::chrono::duration_cast<std::chrono::microseconds>(
+				std::chrono::duration<float>(fTimeToSleep));
+			std::this_thread::sleep_for(sleep_duration_us);
 			m_Event.Lock();
 		}
 	}

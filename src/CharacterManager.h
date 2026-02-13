@@ -1,8 +1,8 @@
 #ifndef CHARACTER_MANAGER_H
 #define CHARACTER_MANAGER_H
 
+#include <string>
 #include <vector>
-
 
 class Character;
 struct lua_State;
@@ -23,7 +23,7 @@ public:
 	/** @brief Get the character assigned as the default.
 	 * @return The default character. */
 	Character* GetDefaultCharacter();
-	Character* GetCharacterFromID( RString sCharacterID );
+	Character* GetCharacterFromID( std::string sCharacterID );
 
 	void DemandGraphics();
 	void UndemandGraphics();

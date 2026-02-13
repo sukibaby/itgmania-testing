@@ -3,9 +3,12 @@
 #ifndef FADING_BANNER_H
 #define FADING_BANNER_H
 
-#include "Banner.h"
+#include <string>
+
 #include "ActorFrame.h"
-#include "RageTimer.h"
+#include "Banner.h"
+#include "GameConstantsAndTypes.h"
+#include "RageTextureID.h"
 
 class FadingBanner : public ActorFrame
 {
@@ -20,7 +23,7 @@ public:
 	void Load( RageTextureID ID, bool bLowResToHighRes=false );
 	void LoadFromSong( const Song* pSong );		// nullptr means no song
 	void LoadMode();
-	void LoadFromSongGroup( RString sSongGroup );
+	void LoadFromSongGroup( std::string sSongGroup );
 	void LoadFromCourse( const Course* pCourse );
 	void LoadIconFromCharacter( Character* pCharacter );
 	void LoadBannerFromUnlockEntry( const UnlockEntry* pUE );
@@ -29,9 +32,9 @@ public:
 	void LoadFromSortOrder( SortOrder so );
 	void LoadFallback();
 	void LoadCourseFallback();
-	void LoadCustom( RString sBanner );
+	void LoadCustom( std::string sBanner );
 
-	bool LoadFromCachedBanner( const RString &path );
+	bool LoadFromCachedBanner( const std::string &path );
 
 	void SetMovingFast( bool fast ) { m_bMovingFast=fast; }
 	virtual void UpdateInternal( float fDeltaTime );

@@ -1,12 +1,11 @@
 #ifndef BGANIMATIONLAYER_H
 #define BGANIMATIONLAYER_H
 
-#include "GameConstantsAndTypes.h"
-#include "ActorFrame.h"
-
-#include <map>
+#include <string>
 #include <vector>
 
+#include "ActorFrame.h"
+#include "RageTypes.h"
 
 class XNode;
 
@@ -17,7 +16,7 @@ public:
 	BGAnimationLayer();
 	~BGAnimationLayer();
 
-	void LoadFromAniLayerFile( const RString& sPath );
+	void LoadFromAniLayerFile( const std::string& sPath );
 	void LoadFromNode( const XNode* pNode );
 
 	void UpdateInternal( float fDeltaTime );

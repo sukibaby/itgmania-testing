@@ -3,12 +3,13 @@
 #ifndef ControllerStateDisplay_H
 #define ControllerStateDisplay_H
 
+#include <string>
+
 #include "ActorFrame.h"
-#include "ActorUtil.h"
-#include "PlayerNumber.h"
 #include "AutoActor.h"
-#include "RageInput.h"
 #include "GameInput.h"
+#include "PlayerNumber.h"
+#include "RageInputDevice.h"
 
 enum ControllerStateButton
 {
@@ -60,8 +61,8 @@ class ControllerStateDisplay : public ActorFrame
 {
 public:
 	ControllerStateDisplay();
-	void LoadMultiPlayer( RString sType, MultiPlayer mp );
-	void LoadGameController( RString sType, GameController gc );
+	void LoadMultiPlayer( std::string sType, MultiPlayer mp );
+	void LoadGameController( std::string sType, GameController gc );
 	virtual void Update( float fDelta );
 	bool IsLoaded() const { return m_bIsLoaded; }
 
@@ -71,7 +72,7 @@ public:
 	virtual void PushSelf( lua_State *L );
 
 protected:
-	void LoadInternal( RString sType, MultiPlayer mp, GameController gc );
+	void LoadInternal( std::string sType, MultiPlayer mp, GameController gc );
 	MultiPlayer m_mp;
 
 	bool m_bIsLoaded;

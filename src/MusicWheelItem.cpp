@@ -1,23 +1,34 @@
-#include "global.h"
 #include "MusicWheelItem.h"
-#include "RageUtil.h"
-#include "SongManager.h"
-#include "GameManager.h"
-#include "RageLog.h"
-#include "GameConstantsAndTypes.h"
-#include "GameState.h"
-#include "ThemeManager.h"
-#include "Steps.h"
-#include "Song.h"
-#include "Course.h"
-#include "ProfileManager.h"
-#include "Profile.h"
-#include "Style.h"
+
+#include <string>
+
 #include "ActorUtil.h"
-#include "ThemeMetric.h"
+#include "BitmapText.h"
+#include "Course.h"
+#include "Difficulty.h"
+#include "EnumHelper.h"
+#include "GameConstantsAndTypes.h"
+#include "GameManager.h"
+#include "GameState.h"
+#include "Group.h"
 #include "HighScore.h"
-#include "ScreenSelectMusic.h"
+#include "MessageManager.h"
+#include "PlayerNumber.h"
+#include "Profile.h"
+#include "ProfileManager.h"
+#include "RageTypes.h"
+#include "RageUtil.h"
 #include "ScreenManager.h"
+#include "Song.h"
+#include "SongManager.h"
+#include "SongUtil.h"
+#include "Steps.h"
+#include "Style.h"
+#include "ThemeManager.h"
+#include "ThemeMetric.h"
+#include "WheelItemBase.h"
+#include "WheelNotifyIcon.h"
+#include "global.h"
 
 static const char *MusicWheelItemTypeNames[] = {
 	"Song",
@@ -34,13 +45,13 @@ static const char *MusicWheelItemTypeNames[] = {
 XToString( MusicWheelItemType );
 
 MusicWheelItemData::MusicWheelItemData( WheelItemDataType type, Song* pSong, 
-				       RString sSectionName, Course* pCourse, Group* pGroup,
+				       std::string sSectionName, Course* pCourse, Group* pGroup,
 				       RageColor color, int iSectionCount ):
 	WheelItemBaseData(type, sSectionName, color),
 	m_pCourse(pCourse), m_pSong(pSong), m_pGroup(pGroup), m_Flags(WheelNotifyIcon::Flags()),
 	m_iSectionCount(iSectionCount), m_sLabel(""), m_pAction() {}
 
-MusicWheelItem::MusicWheelItem( RString sType ):
+MusicWheelItem::MusicWheelItem( std::string sType ):
 	WheelItemBase( sType )
 {
 	GRADES_SHOW_MACHINE.Load( sType, "GradesShowMachine" );
@@ -202,7 +213,7 @@ void MusicWheelItem::LoadFromWheelItemData( const WheelItemBaseData *pData, int 
 
 
 	// Fill these in below
-	RString sDisplayName, sTranslitName;
+	std::string sDisplayName, sTranslitName;
 	MusicWheelItemType type = MusicWheelItemType_Invalid;
 
 	switch( pWID->m_Type )

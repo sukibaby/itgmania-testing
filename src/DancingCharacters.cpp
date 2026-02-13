@@ -1,16 +1,23 @@
-#include "global.h"
 #include "DancingCharacters.h"
-#include "GameConstantsAndTypes.h"
-#include "RageDisplay.h"
-#include "RageUtil.h"
-#include "RageMath.h"
-#include "GameState.h"
-#include "Song.h"
+
+#include <string>
+
 #include "Character.h"
-#include "StatsManager.h"
-#include "PrefsManager.h"
+#include "GameConstantsAndTypes.h"
+#include "GameState.h"
 #include "Model.h"
+#include "PlayerNumber.h"
+#include "PrefsManager.h"
+#include "RageDisplay.h"
+#include "RageMath.h"
+#include "RageTypes.h"
+#include "RageUtil.h"
 #include "RageUtil/RandomNumbers.h"
+#include "Song.h"
+#include "StatsManager.h"
+#include "ThemeManager.h"
+#include "ThemeMetric.h"
+#include "global.h"
 
 int Neg1OrPos1();
 
@@ -85,8 +92,8 @@ DancingCharacters::DancingCharacters(): m_bDrawDangerLight(false),
 			continue;
 
 		// load in any potential 2D stuff
-		RString sCharacterDirectory = pChar->m_sCharDir;
-		RString sCurrentAnim;
+		std::string sCharacterDirectory = pChar->m_sCharDir;
+		std::string sCurrentAnim;
 		sCurrentAnim = sCharacterDirectory + "2DIdle";
 		if( DoesFileExist(sCurrentAnim + "/BGAnimation.ini") ) // check 2D Idle BGAnim exists
 		{
@@ -211,7 +218,7 @@ void DancingCharacters::Update( float fDelta )
 		// make the characters move
 		float fBPM = GAMESTATE->m_Position.m_fCurBPS*60;
 		float fUpdateScale = SCALE( fBPM, 60.f, 300.f, 0.75f, 1.5f );
-		CLAMP( fUpdateScale, 0.75f, 1.5f );
+		rage_clamp( fUpdateScale, 0.75f, 1.5f );
 
 		/* It's OK for the animation to go slower than natural when we're
 		 * at a very low music rate. */

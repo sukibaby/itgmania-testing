@@ -1,23 +1,30 @@
 #ifndef NETWORK_MANAGER_H
 #define NETWORK_MANAGER_H
 
-#include "Preference.h"
-#include "StdString.h"
-
-#include <atomic>
-#include <functional>
-#include <memory>
-#include <mutex>
-#include <string>
-#include <unordered_map>
-
 #include <ixwebsocket/IXHttp.h>
 #include <ixwebsocket/IXHttpClient.h>
 #include <ixwebsocket/IXSocketTLSOptions.h>
 #include <ixwebsocket/IXWebSocket.h>
 
+#include <atomic>
+#include <condition_variable>
+#include <cstddef>
+#include <functional>
+#include <memory>
+#include <mutex>
+#include <queue>
+#include <string>
+#include <thread>
+#include <unordered_map>
+#include <vector>
+
 #include "EnumHelper.h"
-#include "LuaManager.h"
+#include "Preference.h"
+#include "ixwebsocket/IXWebSocketCloseInfo.h"
+#include "ixwebsocket/IXWebSocketErrorInfo.h"
+#include "ixwebsocket/IXWebSocketMessage.h"
+#include "ixwebsocket/IXWebSocketMessageType.h"
+#include "ixwebsocket/IXWebSocketOpenInfo.h"
 
 struct lua_State;
 
@@ -47,8 +54,8 @@ enum HttpErrorCode
 	NUM_HttpErrorCode,
 	HttpErrorCode_Invalid,
 };
-const RString& HttpErrorCodeToString(HttpErrorCode dc);
-HttpErrorCode StringToHttpErrorCode(const RString& sDC);
+const std::string& HttpErrorCodeToString(HttpErrorCode dc);
+HttpErrorCode StringToHttpErrorCode(const std::string& sDC);
 LuaDeclareType(HttpErrorCode);
 
 enum WebSocketMessageType
@@ -62,8 +69,8 @@ enum WebSocketMessageType
 	NUM_WebSocketMessageType,
 	WebSocketMessageType_Invalid,
 };
-const RString& WebSocketMessageTypeToString(WebSocketMessageType dc);
-WebSocketMessageType StringToWebSocketMessageType(const RString& sDC);
+const std::string& WebSocketMessageTypeToString(WebSocketMessageType dc);
+WebSocketMessageType StringToWebSocketMessageType(const std::string& sDC);
 LuaDeclareType(WebSocketMessageType);
 
 struct HttpRequestArgs
@@ -95,6 +102,25 @@ private:
 
 typedef std::shared_ptr<HttpRequestFuture> HttpRequestFuturePtr;
 
+struct CopiedWebSocketMessage {
+	ix::WebSocketMessageType type;
+	const std::string str;
+	size_t wireSize;
+	ix::WebSocketErrorInfo errorInfo;
+	ix::WebSocketOpenInfo openInfo;
+	ix::WebSocketCloseInfo closeInfo;
+	bool binary;
+
+	CopiedWebSocketMessage(const ix::WebSocketMessagePtr& wsmp)
+		: type(wsmp->type),
+		str(wsmp->str),
+		wireSize(wsmp->wireSize),
+		errorInfo(wsmp->errorInfo),
+		openInfo(wsmp->openInfo),
+		closeInfo(wsmp->closeInfo),
+		binary(wsmp->binary) {}
+};
+
 struct WebSocketArgs
 {
 	std::string url;
@@ -102,7 +128,7 @@ struct WebSocketArgs
 	int handshakeTimeout = -1;
 	int pingInterval = -1;
 	bool automaticReconnect = true;
-	std::function<void(const ix::WebSocketMessagePtr& response)> onMessage;
+	std::function<void(const CopiedWebSocketMessage*)> onMessage;
 	std::function<void()> onClose;
 };
 
@@ -111,6 +137,8 @@ class WebSocketHandle
 public:
 	WebSocketHandle() {};
 	~WebSocketHandle();
+
+	void SendThread();
 	
 	static int Collect(lua_State *L);
 	static int Close(lua_State *L);
@@ -118,6 +146,15 @@ public:
 
 	ix::WebSocket webSocket;
 	std::function<void()> onClose;
+	std::queue<CopiedWebSocketMessage> readQueue;
+	std::mutex readMutex;
+	std::function<void(const CopiedWebSocketMessage* response)> onMessage;
+
+	std::thread sendThread;
+	std::queue<std::string> sendQueue;
+	std::mutex sendQueueMutex;
+	std::condition_variable sendQueueCV;
+	std::atomic<bool> stopFlag = false;
 };
 
 typedef std::shared_ptr<WebSocketHandle> WebSocketHandlePtr;
@@ -134,6 +171,8 @@ public:
 	std::string UrlEncode(const std::string& value);
 	std::string EncodeQueryParameters(const std::unordered_map<std::string, std::string>& query);
 
+	void Update(float fDelta);
+
 	// Lua
 	void PushSelf(lua_State *L);
 
@@ -146,7 +185,7 @@ private:
 	ix::SocketTLSOptions tlsOptions;
 
 	static Preference<bool> httpEnabled;
-	static Preference<RString> httpAllowHosts;
+	static Preference<std::string> httpAllowHosts;
 
 	std::vector<std::shared_ptr<WebSocketHandle>> webSocketHandles;
 };

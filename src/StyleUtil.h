@@ -1,14 +1,16 @@
 #ifndef STYLEUTIL_H
 #define STYLEUTIL_H
 
+#include <string>
+
 class Style;
 class Song;
 class XNode;
 
 class StyleID
 {
-	RString sGame;
-	RString sStyle;
+	std::string sGame;
+	std::string sStyle;
 
 public:
 	StyleID(): sGame(""), sStyle("") { }

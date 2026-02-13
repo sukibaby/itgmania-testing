@@ -1,10 +1,15 @@
-#include "global.h"
 #include "RageInput.h"
-#include "RageLog.h"
-#include "arch/InputHandler/InputHandler.h"
-#include "Preference.h"
-#include "LuaManager.h"
+
+#include <map>
+
 #include "LocalizedString.h"
+#include "LuaManager.h"
+#include "Preference.h"
+#include "RageInputDevice.h"
+#include "RageLog.h"
+#include "RageUtil.h"
+#include "arch/InputHandler/InputHandler.h"
+#include "global.h"
 
 #if LINUX
 // FIXME: bit gross to include this here, see GH issue #73:
@@ -12,13 +17,13 @@
 #include "arch/InputHandler/LinuxInputManager.h"
 #endif
 
+#include <string>
 #include <vector>
-
 
 RageInput* INPUTMAN = nullptr; // global and accessible from anywhere in our program
 
-Preference<RString> g_sInputDrivers( "InputDrivers", "" ); // "" == DEFAULT_INPUT_DRIVER_LIST
-Preference<RString> g_sInputDeviceOrder( "InputDeviceOrder", "" ); // "" == DEFAULT_LINUX_INPUT_DEVICE_ORDER_LIST
+Preference<std::string> g_sInputDrivers( "InputDrivers", "" ); // "" == DEFAULT_INPUT_DRIVER_LIST
+Preference<std::string> g_sInputDeviceOrder( "InputDeviceOrder", "" ); // "" == DEFAULT_LINUX_INPUT_DEVICE_ORDER_LIST
 
 namespace
 {
@@ -138,7 +143,7 @@ InputHandler *RageInput::GetHandlerForDevice( const InputDevice id )
 	return it->second;
 }
 
-RString RageInput::GetDeviceSpecificInputString( const DeviceInput &di )
+std::string RageInput::GetDeviceSpecificInputString( const DeviceInput &di )
 {
 	InputHandler *pDriver = GetHandlerForDevice( di.device );
 	if( pDriver != nullptr )
@@ -147,7 +152,7 @@ RString RageInput::GetDeviceSpecificInputString( const DeviceInput &di )
 		return di.ToString();
 }
 
-RString RageInput::GetLocalizedInputString( const DeviceInput &di )
+std::string RageInput::GetLocalizedInputString( const DeviceInput &di )
 {
 	InputHandler *pDriver = GetHandlerForDevice( di.device );
 	if( pDriver != nullptr )
@@ -174,15 +179,15 @@ InputDeviceState RageInput::GetInputDeviceState( InputDevice id )
 		return InputDeviceState_NoInputHandler;
 }
 
-RString RageInput::GetDisplayDevicesString() const
+std::string RageInput::GetDisplayDevicesString() const
 {
 	std::vector<InputDeviceInfo> vDevices;
 	GetDevicesAndDescriptions( vDevices );
 
-	std::vector<RString> vs;
+	std::vector<std::string> vs;
 	for( unsigned i=0; i<vDevices.size(); ++i )
 	{
-		const RString &sDescription = vDevices[i].sDesc;
+		const std::string &sDescription = vDevices[i].sDesc;
 		InputDevice id = vDevices[i].id;
 		if( sDescription == "MonkeyKeyboard" )
 			continue;	// hide this
@@ -202,7 +207,7 @@ public:
 	{
 		std::vector<InputDeviceInfo> vDevices;
 		p->GetDevicesAndDescriptions( vDevices );
-		std::vector<RString> vsDescriptions;
+		std::vector<std::string> vsDescriptions;
 		for (InputDeviceInfo const &idi : vDevices)
 			vsDescriptions.push_back( idi.sDesc );
 		LuaHelpers::CreateTableFromArray( vsDescriptions, L );

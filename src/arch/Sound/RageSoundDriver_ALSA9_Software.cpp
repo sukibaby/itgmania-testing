@@ -1,19 +1,20 @@
-#include "global.h"
 #include "RageSoundDriver_ALSA9_Software.h"
 
+#include <sys/resource.h>
+#include <sys/time.h>
+
+#include <cstdint>
+#include <string>
+
+#include "ALSA9Dynamic.h"
+#include "PrefsManager.h"
 #include "RageLog.h"
 #include "RageSound.h"
 #include "RageSoundManager.h"
-#include "RageUtil.h"
 #include "RageTimer.h"
-#include "ALSA9Dynamic.h"
-#include "PrefsManager.h"
-
+#include "RageUtil.h"
 #include "archutils/Unix/GetSysInfo.h"
-
-#include <cstdint>
-#include <sys/time.h>
-#include <sys/resource.h>
+#include "global.h"
 
 REGISTER_SOUND_DRIVER_CLASS2( ALSA-sw, ALSA9_Software );
 
@@ -94,14 +95,14 @@ RageSoundDriver_ALSA9_Software::RageSoundDriver_ALSA9_Software()
 	m_bShutdown = false;
 }
 
-RString RageSoundDriver_ALSA9_Software::Init()
+std::string RageSoundDriver_ALSA9_Software::Init()
 {
-	RString sError = LoadALSA();
+	std::string sError = LoadALSA();
 	if( sError != "" )
 		return ssprintf( "Driver unusable: %s", sError.c_str() );
 
 	g_iMaxWriteahead = safe_writeahead;
-	RString sys;
+	std::string sys;
 	int vers;
 	GetKernel( sys, vers );
 	LOG->Trace( "OS: %s ver %06i", sys.c_str(), vers );

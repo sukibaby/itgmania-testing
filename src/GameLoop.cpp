@@ -1,29 +1,31 @@
-#include "global.h"
-#include "PeriodicCaller.h"
 #include "GameLoop.h"
-#include "RageLog.h"
-#include "RageTextureManager.h"
-#include "RageSoundManager.h"
-#include "PrefsManager.h"
-#include "RageDisplay.h"
-
-#include "arch/ArchHooks/ArchHooks.h"
-
-#include "GameSoundManager.h"
-#include "ThemeManager.h"
-#include "SongManager.h"
-#include "GameState.h"
-#include "MemoryCardManager.h"
-#include "ScreenManager.h"
-#include "InputFilter.h"
-#include "InputMapper.h"
-#include "RageFileManager.h"
-#include "LightsManager.h"
-#include "RageTimer.h"
-#include "RageInput.h"
 
 #include <cmath>
-#include <vector>
+#include <string>
+
+#include "GameSoundManager.h"
+#include "GameState.h"
+#include "InputFilter.h"
+#include "InputMapper.h"
+#include "LightsManager.h"
+#include "LuaManager.h"
+#include "MemoryCardManager.h"
+#include "NetworkManager.h"
+#include "PeriodicCaller.h"
+#include "Preference.h"
+#include "PrefsManager.h"
+#include "RageDisplay.h"
+#include "RageInput.h"
+#include "RageLog.h"
+#include "RageSoundManager.h"
+#include "RageTextureManager.h"
+#include "RageThreads.h"
+#include "RageTimer.h"
+#include "RageUtil.h"
+#include "ScreenManager.h"
+#include "ThemeManager.h"
+#include "arch/ArchHooks/ArchHooks.h"
+#include "global.h"
 
 static RageTimer g_GameplayTimer;
 
@@ -94,21 +96,21 @@ static void CheckInputDevices()
 	{
 		INPUTFILTER->Reset();    // fix "buttons stuck" if button held while unplugged
 		INPUTMAN->LoadDrivers();
-		RString sMessage;
+		std::string sMessage;
 		if (INPUTMAPPER->CheckForChangedInputDevicesAndRemap(sMessage))
 			SCREENMAN->SystemMessage(sMessage);
 	}
 }
 
 // On the next update, change themes, and load sNewScreen.
-static RString g_NewTheme;
-static RString g_NewGame;
-void GameLoop::ChangeTheme(const RString &sNewTheme)
+static std::string g_NewTheme;
+static std::string g_NewGame;
+void GameLoop::ChangeTheme(const std::string &sNewTheme)
 {
 	g_NewTheme = sNewTheme;
 }
 
-void GameLoop::ChangeGame(const RString& new_game, const RString& new_theme)
+void GameLoop::ChangeGame(const std::string& new_game, const std::string& new_theme)
 {
 	g_NewGame= new_game;
 	g_NewTheme= new_theme;
@@ -119,18 +121,18 @@ void GameLoop::ChangeGame(const RString& new_game, const RString& new_theme)
 #include "Game.h"
 namespace
 {
-	RString GetNewScreenName()
+	std::string GetNewScreenName()
 	{
 		if (THEME->HasMetric("Common", "AfterThemeChangeScreen"))
 		{
-			RString after_screen = THEME->GetMetric("Common", "AfterThemeChangeScreen");
+			std::string after_screen = THEME->GetMetric("Common", "AfterThemeChangeScreen");
 			if (SCREENMAN->IsScreenNameValid(after_screen))
 			{
 				return after_screen;
 			}
 		}
 
-		RString new_screen = THEME->GetMetric("Common", "InitialScreen");
+		std::string new_screen = THEME->GetMetric("Common", "InitialScreen");
 		if (!SCREENMAN->IsScreenNameValid(new_screen))
 		{
 			return "ScreenInitialScreenIsInvalid";
@@ -166,11 +168,11 @@ namespace
 		// So now the correct thing to do is for a theme to specify its entry
 		// point after a theme change, ensuring that we are going to a valid
 		// screen and not crashing. -Kyz
-		RString newScreenName = GetNewScreenName();
+		std::string newScreenName = GetNewScreenName();
 		SCREENMAN->SetNewScreen(newScreenName);
 
 		// Indicate no further theme change is needed
-		g_NewTheme = RString();
+		g_NewTheme = std::string();
 	}
 
 	void DoChangeGame()
@@ -203,8 +205,8 @@ namespace
 			SCREENMAN= new ScreenManager();
 		}
 		StepMania::ResetGame();
-		RString new_screen= THEME->GetMetric("Common", "InitialScreen");
-		RString after_screen;
+		std::string new_screen= THEME->GetMetric("Common", "InitialScreen");
+		std::string after_screen;
 		if(theme_changing)
 		{
 			SCREENMAN->ThemeChanged();
@@ -240,8 +242,8 @@ namespace
 		 * what it'd be. -aj */
 		THEME->UpdateLuaGlobals();
 		THEME->ReloadMetrics();
-		g_NewGame= RString();
-		g_NewTheme= RString();
+		g_NewGame= std::string();
+		g_NewTheme= std::string();
 	}
 }
 
@@ -296,6 +298,7 @@ void GameLoop::UpdateAllButDraw(bool bRunningFromVBLANK)
 	GAMESTATE->Update(fDeltaTime);
 	SCREENMAN->Update(fDeltaTime);
 	MEMCARDMAN->Update();
+    NETWORK->Update(fDeltaTime);
 
 	/* Important: Process input AFTER updating game logic, or input will be
 	 * acting on song beat from last frame */

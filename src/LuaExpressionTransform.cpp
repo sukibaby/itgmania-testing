@@ -1,7 +1,12 @@
-#include "global.h"
 #include "LuaExpressionTransform.h"
+
+#include <map>
+#include <string>
+
+#include "Actor.h"
 #include "LuaManager.h"
 #include "RageUtil.h"
+#include "global.h"
 
 LuaExpressionTransform::LuaExpressionTransform()
 {
@@ -26,7 +31,7 @@ void LuaExpressionTransform::TransformItemDirect( Actor &a, float fPositionOffse
 	LuaHelpers::Push( L, fPositionOffsetFromCenter );
 	LuaHelpers::Push( L, iItemIndex );
 	LuaHelpers::Push( L, iNumItems );
-	RString error= "Lua error in Transform function: ";
+	std::string error= "Lua error in Transform function: ";
 	LuaHelpers::RunScriptOnStack(L, error, 4, 0, true);
 	LUA->Release(L);
 }

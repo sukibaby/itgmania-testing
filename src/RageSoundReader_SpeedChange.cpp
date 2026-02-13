@@ -1,10 +1,15 @@
-#include "global.h"
 #include "RageSoundReader_SpeedChange.h"
-#include "RageUtil.h"
-#include "RageLog.h"
 
+#include <algorithm>
 #include <cmath>
 #include <cstddef>
+#include <cstring>
+#include <string>
+
+#include "RageSoundReader.h"
+#include "RageSoundReader_Filter.h"
+#include "RageUtil.h"
+#include "global.h"
 
 static const int WINDOW_SIZE_MS = 30;
 
@@ -299,7 +304,7 @@ int RageSoundReader_SpeedChange::SetPosition( int iFrame )
 	return RageSoundReader_Filter::SetPosition( iFrame );
 }
 
-bool RageSoundReader_SpeedChange::SetProperty( const RString &sProperty, float fValue )
+bool RageSoundReader_SpeedChange::SetProperty( const std::string &sProperty, float fValue )
 {
 	if( sProperty == "Speed" )
 	{

@@ -1,8 +1,14 @@
-#include "global.h"
 #include "ScoreKeeper.h"
+
+#include <string>
+
+#include "GameConstantsAndTypes.h"
 #include "NoteData.h"
-#include "PlayerState.h"
 #include "NoteDataWithScoring.h"
+#include "NoteTypes.h"
+#include "PlayerState.h"
+#include "RageUtil.h"
+#include "global.h"
 
 ScoreKeeper::ScoreKeeper( PlayerState *pPlayerState, PlayerStageStats *pPlayerStageStats )
 {
@@ -31,7 +37,7 @@ void ScoreKeeper::GetScoreOfLastTapInRow( const NoteData &nd, int iRow,
 #include "ScoreKeeperRave.h"
 #include "ScoreKeeperShared.h"
 
-ScoreKeeper* ScoreKeeper::MakeScoreKeeper( RString sClassName, PlayerState *pPlayerState, PlayerStageStats *pPlayerStageStats )
+ScoreKeeper* ScoreKeeper::MakeScoreKeeper( std::string sClassName, PlayerState *pPlayerState, PlayerStageStats *pPlayerStageStats )
 {
 	if( sClassName == "ScoreKeeperNormal" )
 		return new ScoreKeeperNormal( pPlayerState, pPlayerStageStats );

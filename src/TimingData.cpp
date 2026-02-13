@@ -1,17 +1,21 @@
-#include "global.h"
 #include "TimingData.h"
-#include "PrefsManager.h"
-#include "GameState.h"
-#include "RageUtil.h"
-#include "RageLog.h"
-#include "ThemeManager.h"
-#include "NoteTypes.h"
 
+#include <algorithm>
 #include <cfloat>
+#include <climits>
 #include <cmath>
 #include <cstddef>
+#include <string>
 #include <vector>
 
+#include "GameState.h"
+#include "LuaManager.h"
+#include "NoteTypes.h"
+#include "PrefsManager.h"
+#include "RageLog.h"
+#include "RageUtil.h"
+#include "TimingSegments.h"
+#include "global.h"
 
 static void EraseSegment(std::vector<TimingSegment*> &vSegs, int index, TimingSegment *cur);
 static const int INVALID_INDEX = -1;
@@ -129,7 +133,7 @@ void TimingData::ReleaseLookup()
 	m_time_start_lookup = beat_start_lookup_t();
 }
 
-RString SegInfoStr(const std::vector<TimingSegment*>& segs, unsigned int index, const RString& name)
+std::string SegInfoStr(const std::vector<TimingSegment*>& segs, unsigned int index, const std::string& name)
 {
 	if(index < segs.size())
 	{
@@ -138,7 +142,7 @@ RString SegInfoStr(const std::vector<TimingSegment*>& segs, unsigned int index, 
 	return ssprintf("%s: %d at end", name.c_str(), index);
 }
 
-void TimingData::DumpOneTable(const beat_start_lookup_t& lookup, const RString& name)
+void TimingData::DumpOneTable(const beat_start_lookup_t& lookup, const std::string& name)
 {
 	const std::vector<TimingSegment*>& bpms= m_avpTimingSegments[SEGMENT_BPM];
 	const std::vector<TimingSegment*>& warps= m_avpTimingSegments[SEGMENT_WARP];
@@ -150,7 +154,7 @@ void TimingData::DumpOneTable(const beat_start_lookup_t& lookup, const RString& 
 		const lookup_item_t& item= lookup[lit];
 		const GetBeatStarts& starts= item.second;
 		LOG->Trace("%zu: %f", lit, item.first);
-		RString str= ssprintf("  %s, %s, %s, %s,\n"
+		std::string str= ssprintf("  %s, %s, %s, %s,\n"
 			"  last_row: %d, last_time: %.3f,\n"
 			"  warp_destination: %.3f, is_warping: %d",
 			SegInfoStr(bpms, starts.bpm, "bpm").c_str(),
@@ -743,7 +747,7 @@ void TimingData::AddSegment( const TimingSegment *seg )
 	}
 }
 
-bool TimingData::DoesLabelExist( const RString& sLabel ) const
+bool TimingData::DoesLabelExist( const std::string& sLabel ) const
 {
 	const std::vector<TimingSegment*> &labels = GetTimingSegments(SEGMENT_LABEL);
 	for (unsigned i = 0; i < labels.size(); i++)
@@ -1258,18 +1262,19 @@ void TimingData::NoteRowToMeasureAndBeat( int iNoteRow, int &iMeasureIndexOut, i
 	for (unsigned i = 0; i < tSigs.size(); i++)
 	{
 		TimeSignatureSegment *curSig = ToTimeSignature(tSigs[i]);
-		int iSegmentEndRow = (i + 1 == tSigs.size()) ? INT_MAX : curSig->GetRow();
+		int iSegmentEndRow = (i + 1 == tSigs.size()) ? INT_MAX : tSigs[i + 1]->GetRow();
 
 		int iRowsPerMeasureThisSegment = curSig->GetNoteRowsPerMeasure();
 
-		if( iNoteRow >= curSig->GetRow() )
+		if( iNoteRow < iSegmentEndRow )
 		{
 			// iNoteRow lands in this segment
 			int iNumRowsThisSegment = iNoteRow - curSig->GetRow();
 			int iNumMeasuresThisSegment = (iNumRowsThisSegment) / iRowsPerMeasureThisSegment;	// don't round up
 			iMeasureIndexOut += iNumMeasuresThisSegment;
-			iBeatIndexOut = iNumRowsThisSegment / iRowsPerMeasureThisSegment;
-			iRowsRemainder = iNumRowsThisSegment % iRowsPerMeasureThisSegment;
+			int iNumRowsThisMeasure = iNumRowsThisSegment % iRowsPerMeasureThisSegment;
+			iBeatIndexOut = iNumRowsThisMeasure / ROWS_PER_BEAT;
+			iRowsRemainder = iNumRowsThisMeasure % ROWS_PER_BEAT;
 			return;
 		}
 		else
@@ -1285,10 +1290,10 @@ void TimingData::NoteRowToMeasureAndBeat( int iNoteRow, int &iMeasureIndexOut, i
 	FAIL_M("Failed to get measure and beat for note row");
 }
 
-std::vector<RString> TimingData::ToVectorString(TimingSegmentType tst, int dec) const
+std::vector<std::string> TimingData::ToVectorString(TimingSegmentType tst, int dec) const
 {
 	const std::vector<TimingSegment*> segs = GetTimingSegments(tst);
-	std::vector<RString> ret;
+	std::vector<std::string> ret;
 
 	for (unsigned i = 0; i < segs.size(); i++)
 	{

@@ -1,18 +1,33 @@
-#include "global.h"
 #include "ScreenGameplaySyncMachine.h"
-#include "NotesLoaderSSC.h"
-#include "NotesLoaderSM.h"
-#include "GameState.h"
-#include "GameManager.h"
-#include "PrefsManager.h"
-#include "GamePreferences.h"
-#include "AdjustSync.h"
-#include "ScreenDimensions.h"
-#include "InputEventPlus.h"
-#include "SongUtil.h"
 
+#include <string>
 #include <vector>
 
+#include "ActorUtil.h"
+#include "AdjustSync.h"
+#include "GameConstantsAndTypes.h"
+#include "GameInput.h"
+#include "GameManager.h"
+#include "GamePreferences.h"
+#include "GameState.h"
+#include "InputEventPlus.h"
+#include "LocalizedString.h"
+#include "MessageManager.h"
+#include "ModsGroup.h"
+#include "NotesLoaderSM.h"
+#include "NotesLoaderSSC.h"
+#include "PlayerNumber.h"
+#include "PrefsManager.h"
+#include "RageUtil.h"
+#include "Screen.h"
+#include "ScreenGameplay.h"
+#include "ScreenGameplayNormal.h"
+#include "ScreenMessage.h"
+#include "SongOptions.h"
+#include "SongUtil.h"
+#include "StdString.h"
+#include "ThemeManager.h"
+#include "global.h"
 
 REGISTER_SCREEN_CLASS( ScreenGameplaySyncMachine );
 
@@ -22,7 +37,7 @@ void ScreenGameplaySyncMachine::Init()
 	GAMESTATE->SetCurrentStyle( GAMEMAN->GetHowToPlayStyleForGame(GAMESTATE->m_pCurGame), PLAYER_INVALID );
 	AdjustSync::ResetOriginalSyncData();
 
-	RString sFile = THEME->GetPathO("ScreenGameplaySyncMachine","music");
+	std::string sFile = THEME->GetPathO("ScreenGameplaySyncMachine","music");
 	// Allow themers to use either a .ssc or .sm file for this. -aj
 	SSCLoader loaderSSC;
 	SMLoader loaderSM;
@@ -124,7 +139,7 @@ void ScreenGameplaySyncMachine::RefreshText()
 	float fNew = PREFSMAN->m_fGlobalOffsetSeconds;
 	float fOld = AdjustSync::s_fGlobalOffsetSecondsOriginal;
 	float fStdDev = AdjustSync::s_fStandardDeviation;
-	RString s;
+	std::string s;
 	s += OLD_OFFSET.GetValue() + ssprintf( ": %0.3f\n", fOld );
 	s += NEW_OFFSET.GetValue() + ssprintf( ": %0.3f\n", fNew );
 	s += STANDARD_DEVIATION.GetValue() + ssprintf( ": %0.3f\n", fStdDev );

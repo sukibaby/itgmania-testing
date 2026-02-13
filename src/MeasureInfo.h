@@ -1,8 +1,11 @@
 #ifndef MEASURE_INFO_H
 #define MEASURE_INFO_H
 
-#include "GameConstantsAndTypes.h"
+#include <string>
+#include <vector>
+
 #include "NoteData.h"
+#include "TimingData.h"
 
 struct MeasureInfo
 {
@@ -24,9 +27,9 @@ struct MeasureInfo
 		notesPerMeasure.clear();
 	}
 
-	RString ToString() const;
-	void FromString(const RString& sValues );
-	static void CalculateMeasureInfo(const NoteData &in, MeasureInfo &out);
+	std::string ToString() const;
+	void FromString(const std::string& sValues );
+	static void CalculateMeasureInfo(const NoteData &in, TimingData * timing, MeasureInfo &out);
 };
 
 #endif

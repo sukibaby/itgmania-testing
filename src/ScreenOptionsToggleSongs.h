@@ -1,16 +1,18 @@
 #ifndef SCREEN_OPTIONS_TOGGLE_SONGS_H
 #define SCREEN_OPTIONS_TOGGLE_SONGS_H
 
-#include "ScreenOptions.h"
-#include "Song.h"
-
+#include <string>
 #include <vector>
 
+#include "InputEventPlus.h"
+#include "PlayerNumber.h"
+#include "ScreenOptions.h"
+#include "Song.h"
 
 // Can this be done any better? -aj
 namespace ToggleSongs
 {
-	RString m_sGroup;
+	std::string m_sGroup;
 }
 
 class ScreenOptionsToggleSongs: public ScreenOptions
@@ -23,7 +25,7 @@ private:
 	virtual void ExportOptions( int row, const std::vector<PlayerNumber> &vpns );
 	virtual void ProcessMenuStart( const InputEventPlus &input );
 
-	std::vector<RString> m_asGroups;
+	std::vector<std::string> m_asGroups;
 };
 
 class ScreenOptionsToggleSongsSubPage: public ScreenOptions

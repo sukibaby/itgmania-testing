@@ -1,24 +1,28 @@
-#include "global.h"
 #include "RageBitmapTexture.h"
-#include "RageUtil.h"
-#include "RageUtil/Regex.h"
-#include "RageLog.h"
-#include "RageTextureManager.h"
-#include "RageDisplay.h"
-#include "RageTypes.h"
-#include "RageSurface.h"
-#include "RageSurfaceUtils.h"
-#include "RageSurfaceUtils_Zoom.h"
-#include "RageSurfaceUtils_Dither.h"
-#include "RageSurface_Load.h"
-#include "arch/Dialog/Dialog.h"
-#include "StepMania.h"
 
+#include <algorithm>
 #include <cmath>
+#include <string>
 #include <vector>
 
+#include "RageDisplay.h"
+#include "RageLog.h"
+#include "RageSurface.h"
+#include "RageSurfaceUtils.h"
+#include "RageSurfaceUtils_Dither.h"
+#include "RageSurfaceUtils_Zoom.h"
+#include "RageSurface_Load.h"
+#include "RageTexture.h"
+#include "RageTextureID.h"
+#include "RageTextureManager.h"
+#include "RageUtil.h"
+#include "RageUtil/Regex.h"
+#include "StdString.h"
+#include "StepMania.h"
+#include "arch/Dialog/Dialog.h"
+#include "global.h"
 
-static void GetResolutionFromFileName( RString sPath, int &iWidth, int &iHeight )
+static void GetResolutionFromFileName( std::string sPath, int &iWidth, int &iHeight )
 {
 	/* Match:
 	 *  Foo (res 512x128).png
@@ -27,7 +31,7 @@ static void GetResolutionFromFileName( RString sPath, int &iWidth, int &iHeight 
 	 * Be careful that this doesn't get mixed up with frame dimensions. */
 	static Regex re( "\\([^\\)]*res ([0-9]+)x([0-9]+).*\\)" );
 
-	std::vector<RString> asMatches;
+	std::vector<std::string> asMatches;
 	if( !re.Compare(sPath, asMatches) )
 		return;
 
@@ -76,7 +80,7 @@ void RageBitmapTexture::Create()
 	ASSERT( actualID.filename != "" );
 
 	/* Load the image into a RageSurface. */
-	RString error;
+	std::string error;
 	RageSurface *pImg = nullptr;
 	if(actualID.filename == TEXTUREMAN->GetScreenTextureID().filename)
 	{
@@ -90,7 +94,7 @@ void RageBitmapTexture::Create()
 	/* Tolerate corrupt/unknown images. */
 	if( pImg == nullptr )
 	{
-		RString warning = ssprintf("RageBitmapTexture: Couldn't load %s: %s",
+		std::string warning = ssprintf("RageBitmapTexture: Couldn't load %s: %s",
 			actualID.filename.c_str(), error.c_str());
 		LOG->Warn("%s", warning.c_str());
 		Dialog::OK(warning, "missing_texture");
@@ -112,7 +116,7 @@ void RageBitmapTexture::Create()
 	}
 
 	// look in the file name for a format hints
-	RString sHintString = GetID().filename + actualID.AdditionalTextureHints;
+	std::string sHintString = GetID().filename + actualID.AdditionalTextureHints;
 	MakeLower(sHintString);
 
 	if( sHintString.find("32bpp") != std::string::npos )			actualID.iColorDepth = 32;
@@ -338,7 +342,7 @@ void RageBitmapTexture::Create()
 	}
 
 
-	RString sProperties;
+	std::string sProperties;
 	sProperties += RagePixelFormatToString( pixfmt ) + " ";
 	if( actualID.iAlphaBits == 0 ) sProperties += "opaque ";
 	if( actualID.iAlphaBits == 1 ) sProperties += "matte ";

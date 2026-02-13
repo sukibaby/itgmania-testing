@@ -1,19 +1,21 @@
-#include "global.h"
 #include "ScreenTitleMenu.h"
-#include "ScreenManager.h"
-#include "RageUtil.h"
-#include "GamePreferences.h"
-#include "RageLog.h"
+
+#include <string>
+
 #include "AnnouncerManager.h"
-#include "GameState.h"
-#include "ThemeManager.h"
-#include "GameSoundManager.h"
 #include "CodeDetector.h"
-#include "Game.h"
-#include "InputMapper.h"
-#include "InputEventPlus.h"
-#include "LocalizedString.h"
 #include "GameLoop.h"
+#include "GamePreferences.h"
+#include "GameSoundManager.h"
+#include "GameState.h"
+#include "InputEventPlus.h"
+#include "InputFilter.h"
+#include "LocalizedString.h"
+#include "MessageManager.h"
+#include "Screen.h"
+#include "ScreenManager.h"
+#include "ScreenSelectMaster.h"
+#include "ThemeManager.h"
 
 #define COIN_MODE_CHANGE_SCREEN		THEME->GetMetric (m_sName,"CoinModeChangeScreen")
 
@@ -66,7 +68,7 @@ bool ScreenTitleMenu::Input( const InputEventPlus &input )
 			CodeDetector::EnteredCode(input.GameI.controller,CODE_NEXT_ANNOUNCER2) )
 		{
 			ANNOUNCER->NextAnnouncer();
-			RString sName = ANNOUNCER->GetCurAnnouncerName();
+			std::string sName = ANNOUNCER->GetCurAnnouncerName();
 			if( sName=="" ) sName = "(none)";
 			SCREENMAN->SystemMessage( ANNOUNCER_.GetValue()+": "+sName );
 			SCREENMAN->SetNewScreen( m_sName );

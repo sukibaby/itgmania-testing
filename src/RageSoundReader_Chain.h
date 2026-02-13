@@ -3,12 +3,12 @@
 #ifndef RAGE_SOUND_READER_CHAIN
 #define RAGE_SOUND_READER_CHAIN
 
-#include "RageSoundReader.h"
-
 #include <cstdint>
 #include <map>
+#include <string>
 #include <vector>
 
+#include "RageSoundReader.h"
 
 class RageSoundReader_Chain: public RageSoundReader
 {
@@ -21,7 +21,7 @@ public:
 	 * use different sample rates. */
 	void SetPreferredSampleRate( int iSampleRate ) { m_iPreferredSampleRate = iSampleRate; }
 
-	int LoadSound( RString sPath );
+	int LoadSound( std::string sPath );
 	int LoadSound( RageSoundReader *pSound );
 
 	/* Add the given sound to play after fOffsetSecs seconds.  Takes ownership
@@ -40,10 +40,10 @@ public:
 	int Read( float *pBuf, int iFrames );
 	int GetSampleRate() const;
 	unsigned GetNumChannels() const { return m_iChannels; }
-	bool SetProperty( const RString &sProperty, float fValue );
+	bool SetProperty( const std::string &sProperty, float fValue );
 	int GetNextSourceFrame() const;
 	float GetStreamToSourceRatio() const;
-	RString GetError() const { return ""; }
+	std::string GetError() const { return ""; }
 
 private:
 	int GetSampleRateInternal() const;
@@ -52,7 +52,7 @@ private:
 	int m_iActualSampleRate;
 	unsigned m_iChannels;
 
-	std::map<RString, RageSoundReader*> m_apNamedSounds;
+	std::map<std::string, RageSoundReader*> m_apNamedSounds;
 	std::vector<RageSoundReader*> m_apLoadedSounds;
 
 	struct Sound

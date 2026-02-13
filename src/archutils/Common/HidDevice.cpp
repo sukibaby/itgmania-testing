@@ -1,6 +1,12 @@
-#include "global.h"
 #include "HidDevice.h"
+
+#include <cstddef>
+#include <cstdio>
+#include <string>
+#include <vector>
+
 #include "RageLog.h"
+#include "hidapi.h"
 
 HidDevice::HidDevice(int vid, const std::vector<int> pids, int interfaceNum, bool autoReconnection, bool nonBlockingRead) :
 	vid{ vid },
@@ -97,9 +103,9 @@ bool HidDevice::FoundOnce()
 	return foundOnce;
 }
 
-const RString HidDevice::GetPidsString(const std::vector<int> pids)
+const std::string HidDevice::GetPidsString(const std::vector<int> pids)
 {
-	RString pidsString;
+	std::string pidsString;
 	char pid[5] = { 0 };
 	size_t size = pids.size();
 

@@ -3,6 +3,9 @@
 #ifndef TEXTBANNER_H
 #define TEXTBANNER_H
 
+#include <string>
+
+#include "Actor.h"
 #include "ActorFrame.h"
 #include "BitmapText.h"
 class Song;
@@ -15,12 +18,12 @@ public:
 	virtual TextBanner *Copy() const;
 
 	void LoadFromNode( const XNode* pNode );
-	void Load( RString sMetricsGroup );	// load metrics
+	void Load( std::string sMetricsGroup );	// load metrics
 	void SetFromSong( const Song *pSong );
 	void SetFromString( 
-		const RString &sDisplayTitle, const RString &sTranslitTitle, 
-		const RString &sDisplaySubTitle, const RString &sTranslitSubTitle, 
-		const RString &sDisplayArtist, const RString &sTranslitArtist );
+		const std::string &sDisplayTitle, const std::string &sTranslitTitle, 
+		const std::string &sDisplaySubTitle, const std::string &sTranslitSubTitle, 
+		const std::string &sDisplayArtist, const std::string &sTranslitArtist );
 
 	// Lua
 	void PushSelf( lua_State *L );
@@ -28,7 +31,7 @@ public:
 private:
 	bool m_bInitted;
 	BitmapText	m_textTitle, m_textSubTitle, m_textArtist;
-	RString		m_sArtistPrependString;
+	std::string		m_sArtistPrependString;
 };
 
 #endif

@@ -3,14 +3,14 @@
 #ifndef RAGE_SOUND_READER_WAV_H
 #define RAGE_SOUND_READER_WAV_H
 
-#include "RageSoundReader_FileReader.h"
-#include "RageFile.h"
-
 #include <cstdint>
+#include <string>
+
+#include "RageSoundReader_FileReader.h"
 
 struct WavReader;
 
-RString ReadString( RageFileBasic &f, int iSize, RString &sError );
+std::string ReadString( RageFileBasic &f, int iSize, std::string &sError );
 
 class RageSoundReader_WAV: public RageSoundReader_FileReader
 {

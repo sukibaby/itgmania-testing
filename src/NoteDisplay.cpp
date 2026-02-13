@@ -1,35 +1,49 @@
-#include "global.h"
-
 #include "NoteDisplay.h"
 
-#include "ActorUtil.h"
+#include <algorithm>
+#include <cmath>
+#include <cstdint>
+#include <cstdlib>
+#include <cstring>
+#include <map>
+#include <string>
+#include <vector>
+
+#include "Actor.h"
 #include "ArrowEffects.h"
+#include "CubicSpline.h"
+#include "EnumHelper.h"
+#include "GameConstantsAndTypes.h"
+#include "GameInput.h"
 #include "GameState.h"
 #include "GhostArrowRow.h"
 #include "LuaBinding.h"
+#include "LuaManager.h"
+#include "MessageManager.h"
 #include "NoteData.h"
 #include "NoteSkinManager.h"
 #include "NoteTypes.h"
+#include "PlayerNumber.h"
 #include "PlayerState.h"
 #include "Preference.h"
+#include "PrefsManager.h"
 #include "RageDisplay.h"
-#include "RageLog.h"
 #include "RageMath.h"
+#include "RageTexture.h"
+#include "RageTypes.h"
+#include "RageUtil.h"
 #include "ReceptorArrowRow.h"
 #include "Sprite.h"
 #include "Style.h"
-
-#include <cmath>
-#include <cstdint>
-#include <vector>
-
+#include "Tween.h"
+#include "global.h"
 
 static Preference<bool> g_bRenderEarlierNotesOnTop( "RenderEarlierNotesOnTop", false );
 
 static const double PI_180= PI / 180.0;
 static const double PI_180R= 180.0 / PI;
 
-const RString& NoteNotePartToString( NotePart i );
+const std::string& NoteNotePartToString( NotePart i );
 /** @brief A foreach loop going through the different NoteParts. */
 #define FOREACH_NotePart( i ) FOREACH_ENUM( NotePart, i )
 
@@ -101,17 +115,17 @@ struct NoteMetricCache_t
 	bool m_bTopHoldAnchorWhenReverse;
 	bool m_bHoldActiveIsAddLayer;
 
-	void Load( const RString &sButton );
+	void Load( const std::string &sButton );
 } *NoteMetricCache;
 
-void NoteMetricCache_t::Load( const RString &sButton )
+void NoteMetricCache_t::Load( const std::string &sButton )
 {
 	m_bDrawHoldHeadForTapsOnSameRow = NOTESKIN->GetMetricB(sButton,"DrawHoldHeadForTapsOnSameRow");
 	m_bDrawRollHeadForTapsOnSameRow = NOTESKIN->GetMetricB(sButton,"DrawRollHeadForTapsOnSameRow");
 	m_bTapHoldRollOnRowMeansHold = NOTESKIN->GetMetricB(sButton,"TapHoldRollOnRowMeansHold");
 	FOREACH_NotePart( p )
 	{
-		const RString &s = NotePartToString(p);
+		const std::string &s = NotePartToString(p);
 		m_fAnimationLength[p] = NOTESKIN->GetMetricF(sButton,s+"AnimationLength");
 		m_bAnimationIsVivid[p] = NOTESKIN->GetMetricB(sButton,s+"AnimationIsVivid");
 		m_fAdditionTextureCoordOffset[p].x = NOTESKIN->GetMetricF(sButton,s+"AdditionTextureCoordOffsetX");
@@ -120,7 +134,7 @@ void NoteMetricCache_t::Load( const RString &sButton )
 		m_fNoteColorTextureCoordSpacing[p].y = NOTESKIN->GetMetricF(sButton,s+"NoteColorTextureCoordSpacingY");
 		m_iNoteColorCount[p] = NOTESKIN->GetMetricI(sButton,s+"NoteColorCount");
 
-		RString ct = NOTESKIN->GetMetric(sButton,s+"NoteColorType");
+		std::string ct = NOTESKIN->GetMetric(sButton,s+"NoteColorType");
 		m_NoteColorType[p] = StringToNoteColorType(ct);
 	}
 	//I was here -DaisuMaster
@@ -139,9 +153,9 @@ void NoteMetricCache_t::Load( const RString &sButton )
 
 struct NoteSkinAndPath
 {
-	NoteSkinAndPath( const RString sNoteSkin_, const RString sPath_, const PlayerNumber pn_, const GameController gc_ ) : sNoteSkin(sNoteSkin_), sPath(sPath_), pn(pn_), gc(gc_) { }
-	RString sNoteSkin;
-	RString sPath;
+	NoteSkinAndPath( const std::string sNoteSkin_, const std::string sPath_, const PlayerNumber pn_, const GameController gc_ ) : sNoteSkin(sNoteSkin_), sPath(sPath_), pn(pn_), gc(gc_) { }
+	std::string sNoteSkin;
+	std::string sPath;
 	PlayerNumber pn;
 	GameController gc;
 	bool operator<( const NoteSkinAndPath &other ) const
@@ -199,9 +213,9 @@ struct NoteResource
 
 static std::map<NoteSkinAndPath, NoteResource *> g_NoteResource;
 
-static NoteResource *MakeNoteResource( const RString &sButton, const RString &sElement, PlayerNumber pn, GameController gc, bool bSpriteOnly )
+static NoteResource *MakeNoteResource( const std::string &sButton, const std::string &sElement, PlayerNumber pn, GameController gc, bool bSpriteOnly )
 {
-	RString sElementAndType = ssprintf( "%s, %s", sButton.c_str(), sElement.c_str() );
+	std::string sElementAndType = ssprintf( "%s, %s", sButton.c_str(), sElement.c_str() );
 	NoteSkinAndPath nsap( NOTESKIN->GetCurrentNoteSkin(), sElementAndType, pn, gc );
 
 	std::map<NoteSkinAndPath, NoteResource *>::iterator it = g_NoteResource.find( nsap );
@@ -250,7 +264,7 @@ NoteColorActor::~NoteColorActor()
 		DeleteNoteResource( m_p );
 }
 
-void NoteColorActor::Load( const RString &sButton, const RString &sElement, PlayerNumber pn, GameController gc )
+void NoteColorActor::Load( const std::string &sButton, const std::string &sElement, PlayerNumber pn, GameController gc )
 {
 	m_p = MakeNoteResource( sButton, sElement, pn, gc, false );
 }
@@ -274,7 +288,7 @@ NoteColorSprite::~NoteColorSprite()
 		DeleteNoteResource( m_p );
 }
 
-void NoteColorSprite::Load( const RString &sButton, const RString &sElement, PlayerNumber pn, GameController gc )
+void NoteColorSprite::Load( const std::string &sButton, const std::string &sElement, PlayerNumber pn, GameController gc )
 {
 	m_p = MakeNoteResource( sButton, sElement, pn, gc, true );
 }
@@ -429,7 +443,7 @@ void NoteDisplay::Load( int iColNum, const PlayerState* pPlayerState, float fYRe
 	std::vector<GameInput> GameI;
 	GAMESTATE->GetCurrentStyle(pPlayerState->m_PlayerNumber)->StyleInputToGameInput( iColNum, pn, GameI );
 
-	const RString &sButton = GAMESTATE->GetCurrentStyle(pPlayerState->m_PlayerNumber)->ColToButtonName( iColNum );
+	const std::string &sButton = GAMESTATE->GetCurrentStyle(pPlayerState->m_PlayerNumber)->ColToButtonName( iColNum );
 
 	cache->Load( sButton );
 

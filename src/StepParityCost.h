@@ -1,7 +1,8 @@
 #ifndef STEP_PARITY_COST_H
 #define STEP_PARITY_COST_H
 
-#include "GameConstantsAndTypes.h"
+#include <vector>
+
 #include "StepParityDatastructs.h"
 
 namespace StepParity
@@ -39,10 +40,10 @@ namespace StepParity
 	class StepParityCost
 	{
 	private:
-		StageLayout layout;
+		const StageLayout* layout;
 
 	public:
-		StepParityCost(const StageLayout& _layout): layout(_layout) {}
+		StepParityCost(const StageLayout* _layout): layout(_layout) {}
 
 		/// @brief Computes and returns a cost value for the player moving from initialState to resultState.
 		/// @param initialState The starting position of the player
@@ -50,13 +51,12 @@ namespace StepParity
 		/// @param rows 
 		/// @param rowIndex The index of the row represented by resultState
 		/// @return The computed cost
-		float getActionCost(State * initialState, State * resultState, std::vector<Row> &rows, int rowIndex, float elapsedTime);
+		float getActionCost(State * initialState, State * resultState, std::vector<Row> &rows, const FootPlacement & columns, int rowIndex, float elapsedTime);
 
 	private:
-		float calcMineCost(State * initialState, State * resultState, Row &row, int columnCount);
+		float calcMineCost(State * resultState, Row &row, int columnCount);
 		float calcHoldSwitchCost(State * initialState, State * resultState, Row &row, int columnCount);
 		float calcBracketTapCost(State * initialState, State * resultState, Row &row, int leftHeel, int leftToe, int rightHeel, int rightToe, float elapsedTime, int columnCount);
-		float calcMovingFootWhileOtherIsntOnPadCost(State * initialState, State * resultState, int columnCount);
 		float calcBracketJackCost(State * initialState, State * resultState, std::vector<Row> &rows, int rowIndex, bool movedLeft, bool movedRight, bool jackedLeft, bool jackedRight, bool didJump, int columnCount);
 		float calcDoublestepCost(State * initialState, State * resultState, std::vector<Row> & rows, int rowIndex, bool movedLeft, bool movedRight, bool jackedLeft, bool jackedRight, bool didJump, int columnCount);
 		float calcJumpCost(Row &row, bool movedLeft, bool movedRight, float elapsedTime, int columnCount);
@@ -65,11 +65,10 @@ namespace StepParity
 		float calcMissedFootswitchCost(Row &row, bool jackedLeft, bool jackedRight, int columnCount);
 		float calcFacingCosts(State * initialState, State * resultState, int columnCount);
 		float calcSpinCosts(State * initialState, State * resultState, int columnCount);
-		float caclFootswitchCost(State * initialState, State * resultState, Row &row, float elapsedTime, int columnCount);
-		float calcSideswitchCost(State * initialState, State * resultState, int columnCount);
+		float calcFootswitchCost(State * initialState, const FootPlacement &columns, Row &row, float elapsedTime, int columnCount);
+		float calcSideswitchCost(State * initialState, State * resultState, const FootPlacement & columns, int columnCount);
 		float calcJackCost(bool movedLeft, bool movedRight, bool jackedLeft, bool jackedRight, float elapsedTime, int columnCount);
 		float calcBigMovementsQuicklyCost(State * initialState, State * resultState, float elapsedTime, int columnCount);
-		float calcCrowdedBracketCost(State * initialState, State * resultState, float elapsedTime, int columnCount);
         
 		bool didDoubleStep(State * initialState, State * resultState, std::vector<Row> &rows, int rowIndex, bool movedLeft, bool jackedLeft, bool movedRight, bool jackedRight, int columnCount);
 		bool didJackLeft(State * initialState, State * resultState, int leftHeel, int leftToe, bool movedLeft, bool didJump, int columnCount);

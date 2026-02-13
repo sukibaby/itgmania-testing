@@ -1,16 +1,22 @@
-#include "global.h"
-
 #include "PercentageDisplay.h"
-#include "GameState.h"
-#include "ThemeManager.h"
-#include "PrefsManager.h"
-#include "ActorUtil.h"
-#include "RageLog.h"
-#include "StageStats.h"
-#include "PlayerState.h"
-#include "XmlFile.h"
-#include "Course.h"
 
+#include <algorithm>
+#include <string>
+
+#include "ActorFrame.h"
+#include "ActorUtil.h"
+#include "Course.h"
+#include "GameState.h"
+#include "LuaManager.h"
+#include "PlayerNumber.h"
+#include "PlayerStageStats.h"
+#include "PlayerState.h"
+#include "RageLog.h"
+#include "RageUtil.h"
+#include "StdString.h"
+#include "ThemeManager.h"
+#include "XmlFile.h"
+#include "global.h"
 
 REGISTER_ACTOR_CLASS( PercentageDisplay );
 
@@ -85,7 +91,7 @@ void PercentageDisplay::Load( const PlayerState *pPlayerState, const PlayerStage
 	Refresh();
 }
 
-void PercentageDisplay::Load( const PlayerState *pPlayerState, const PlayerStageStats *pPlayerStageStats, const RString &sMetricsGroup, bool bAutoRefresh )
+void PercentageDisplay::Load( const PlayerState *pPlayerState, const PlayerStageStats *pPlayerStageStats, const std::string &sMetricsGroup, bool bAutoRefresh )
 {
 	m_pPlayerState = pPlayerState;
 	m_pPlayerStageStats = pPlayerStageStats;
@@ -150,7 +156,7 @@ void PercentageDisplay::Refresh()
 	m_Last = iActualDancePoints;
 	m_LastMax = iCurPossibleDancePoints;
 
-	RString sNumToDisplay;
+	std::string sNumToDisplay;
 
 	if( ShowDancePointsNotPercentage() )
 	{
@@ -161,7 +167,7 @@ void PercentageDisplay::Refresh()
 		float fPercentDancePoints = m_pPlayerStageStats->GetPercentDancePoints();
 
 		// clamp percentage - feedback is that negative numbers look weird here.
-		CLAMP( fPercentDancePoints, 0.f, 1.f );
+		rage_clamp( fPercentDancePoints, 0.f, 1.f );
 
 		if( m_bUseRemainder )
 		{
@@ -177,7 +183,7 @@ void PercentageDisplay::Refresh()
 				Lua *L = LUA->Get();
 				m_FormatPercentScore.PushSelf( L );
 				LuaHelpers::Push( L, fPercentDancePoints );
-				RString Error= "Error running FormatPercentScore: ";
+				std::string Error= "Error running FormatPercentScore: ";
 				LuaHelpers::RunScriptOnStack(L, Error, 1, 1, true); // 1 arg, 1 result
 				LuaHelpers::Pop( L, sNumToDisplay );
 				LUA->Release(L);

@@ -1,5 +1,10 @@
-#include "global.h"
 #include "RageSoundReader_Pan.h"
+
+#include <algorithm>
+#include <string>
+
+#include "RageSoundReader.h"
+#include "RageSoundReader_Filter.h"
 #include "RageSoundUtil.h"
 
 RageSoundReader_Pan::RageSoundReader_Pan( RageSoundReader *pSource ):
@@ -35,7 +40,7 @@ unsigned RageSoundReader_Pan::GetNumChannels() const
 	return std::max( 2u, RageSoundReader_Filter::GetNumChannels() );
 }
 
-bool RageSoundReader_Pan::SetProperty( const RString &sProperty, float fValue )
+bool RageSoundReader_Pan::SetProperty( const std::string &sProperty, float fValue )
 {
 	if( sProperty == "Pan" )
 	{

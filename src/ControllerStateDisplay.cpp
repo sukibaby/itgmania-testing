@@ -1,13 +1,19 @@
-#include "global.h"
 #include "ControllerStateDisplay.h"
+
+#include <string>
+
+#include "ActorFrame.h"
+#include "ActorUtil.h"
 #include "EnumHelper.h"
-#include "RageUtil.h"
+#include "GameInput.h"
+#include "InputMapper.h"
+#include "LuaBinding.h"
+#include "LuaManager.h"
+#include "PlayerNumber.h"
+#include "RageInput.h"
 #include "RageInputDevice.h"
 #include "ThemeManager.h"
-#include "InputMapper.h"
-#include "InputFilter.h"
-#include "RageLog.h"
-#include "LuaBinding.h"
+#include "global.h"
 
 static const char *ControllerStateButtonNames[] = {
 	"UpLeft",
@@ -36,17 +42,17 @@ ControllerStateDisplay::ControllerStateDisplay()
 	m_idsLast = InputDeviceState_Invalid;
 }
 
-void ControllerStateDisplay::LoadMultiPlayer( RString sType, MultiPlayer mp )
+void ControllerStateDisplay::LoadMultiPlayer( std::string sType, MultiPlayer mp )
 {
 	LoadInternal( sType, mp, GameController_1 );
 }
 
-void ControllerStateDisplay::LoadGameController( RString sType, GameController gc )
+void ControllerStateDisplay::LoadGameController( std::string sType, GameController gc )
 {
 	LoadInternal( sType, MultiPlayer_Invalid, gc );
 }
 
-void ControllerStateDisplay::LoadInternal( RString sType, MultiPlayer mp, GameController gc )
+void ControllerStateDisplay::LoadInternal( std::string sType, MultiPlayer mp, GameController gc )
 {
 	ASSERT( !m_bIsLoaded );
 	m_bIsLoaded = true;
@@ -60,7 +66,7 @@ void ControllerStateDisplay::LoadInternal( RString sType, MultiPlayer mp, GameCo
 	{
 		Button &button = m_Buttons[ b ];
 
-		RString sPath = THEME->GetPathG( sType, ControllerStateButtonToString(b) );
+		std::string sPath = THEME->GetPathG( sType, ControllerStateButtonToString(b) );
 		button.spr.Load( sPath );
 		this->AddChild( m_Buttons[b].spr );
 		

@@ -1,16 +1,17 @@
-#include "global.h"
 #include "MemoryCardDriverThreaded_Windows.h"
-#include "RageUtil.h"
-#include "RageLog.h"
-#include "archutils/Win32/ErrorStrings.h"
-#include "PlayerNumber.h"
-#include "MemoryCardManager.h"
-#include "RageUtil/RandomNumbers.h"
 
 #include <cmath>
 #include <cstddef>
+#include <string>
 #include <vector>
 
+#include "MemoryCardManager.h"
+#include "PlayerNumber.h"
+#include "RageLog.h"
+#include "RageUtil.h"
+#include "RageUtil/RandomNumbers.h"
+#include "archutils/Win32/ErrorStrings.h"
+#include "global.h"
 
 MemoryCardDriverThreaded_Windows::MemoryCardDriverThreaded_Windows()
 {
@@ -21,7 +22,7 @@ MemoryCardDriverThreaded_Windows::~MemoryCardDriverThreaded_Windows()
 {
 }
 
-static bool TestReady( const RString &sDrive, RString &sVolumeLabelOut )
+static bool TestReady( const std::string &sDrive, std::string &sVolumeLabelOut )
 {
 	TCHAR szVolumeNameBuffer[MAX_PATH];
 	DWORD dwVolumeSerialNumber;
@@ -73,7 +74,7 @@ bool MemoryCardDriverThreaded_Windows::TestWrite( UsbStorageDevice* pDevice )
 	return false;
 }
 
-static bool IsFloppyDrive( const RString &sDrive )
+static bool IsFloppyDrive( const std::string &sDrive )
 {
 	char szBuf[1024];
 
@@ -113,7 +114,7 @@ void MemoryCardDriverThreaded_Windows::GetUSBStorageDevices( std::vector<UsbStor
 		if( !(m_dwLastLogicalDrives & mask) )
 			continue; // drive letter is invalid
 
-		RString sDrive = ssprintf( "%c:", 'A'+i%26 );
+		std::string sDrive = ssprintf( "%c:", 'A'+i%26 );
 
 		LOG->Trace(sDrive.c_str());
 
@@ -131,7 +132,7 @@ void MemoryCardDriverThreaded_Windows::GetUSBStorageDevices( std::vector<UsbStor
 		FOREACH_ENUM( PlayerNumber, p )
 			bIsSpecifiedMountPoint |= EqualsNoCase(MEMCARDMAN->m_sMemoryCardOsMountPoint[p].Get(), sDrive.c_str());
 
-		RString sDrivePath = sDrive + "\\";
+		std::string sDrivePath = sDrive + "\\";
 
 		if( bIsSpecifiedMountPoint )
 		{
@@ -146,7 +147,7 @@ void MemoryCardDriverThreaded_Windows::GetUSBStorageDevices( std::vector<UsbStor
 			}
 		}
 
-		RString sVolumeLabel;
+		std::string sVolumeLabel;
 		if( !TestReady(sDrivePath.c_str(), sVolumeLabel) )
 		{
 			LOG->Trace( "not TestReady" );
@@ -156,7 +157,7 @@ void MemoryCardDriverThreaded_Windows::GetUSBStorageDevices( std::vector<UsbStor
 		vDevicesOut.push_back( UsbStorageDevice() );
 		UsbStorageDevice &usbd = vDevicesOut.back();
 		usbd.SetOsMountDir( sDrive.c_str() );
-		usbd.sDevice = RString("\\\\.\\") + sDrive.c_str();
+		usbd.sDevice = std::string("\\\\.\\") + sDrive.c_str();
 		usbd.sVolumeLabel = sVolumeLabel;
 	}
 

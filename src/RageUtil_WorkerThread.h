@@ -3,13 +3,15 @@
 #ifndef RAGE_UTIL_WORKER_THREAD_H
 #define RAGE_UTIL_WORKER_THREAD_H
 
+#include <string>
+
 #include "RageThreads.h"
 #include "RageTimer.h"
 
 class RageWorkerThread
 {
 public:
-	RageWorkerThread( const RString &sName );
+	RageWorkerThread( const std::string &sName );
 	virtual ~RageWorkerThread();
 
 	/* Call SetTimeout(10) to start a timeout period of 10 seconds.  This is not a
@@ -55,7 +57,7 @@ private:
 	enum { REQ_SHUTDOWN = -1, REQ_NONE = -2 };
 	RageThread m_WorkerThread;
 	RageEvent m_WorkerEvent;
-	RString m_sName;
+	std::string m_sName;
 	int m_iRequest;
 	bool m_bRequestFinished;
 	bool m_bTimedOut;

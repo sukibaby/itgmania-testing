@@ -1,10 +1,11 @@
 #ifndef OPTIONS_CURSOR_H
 #define OPTIONS_CURSOR_H
 
-#include "Sprite.h"
+#include <string>
+
 #include "ActorFrame.h"
-#include "PlayerNumber.h"
 #include "AutoActor.h"
+#include "Tween.h"
 /** @brief A cursor for ScreenOptions. */
 class OptionsCursor : public ActorFrame
 {
@@ -16,7 +17,7 @@ public:
 	 * @param cpy the OptionsCursor we are copying. */
 	OptionsCursor( const OptionsCursor &cpy );
 
-	void Load( const RString &sMetricsGroup, bool bLoadCanGos );
+	void Load( const std::string &sMetricsGroup, bool bLoadCanGos );
 
 	void StopTweening() override;
 	void BeginTweening( float fSecs, TweenType tt = TWEEN_LINEAR ) override;

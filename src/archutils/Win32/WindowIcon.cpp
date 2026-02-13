@@ -1,15 +1,17 @@
-#include "global.h"
 #include "archutils/Win32/WindowIcon.h"
+
+#include <wingdi.h>
+
+#include <cstdint>
+#include <string>
+
 #include "RageLog.h"
-#include "RageUtil.h"
 #include "RageSurface.h"
 #include "RageSurfaceUtils.h"
 #include "RageSurface_Load.h"
+#include "RageUtil.h"
 #include "archutils/Win32/ErrorStrings.h"
-
-#include <cstdint>
-
-#include <wingdi.h>
+#include "global.h"
 
 HICON IconFromSurface( const RageSurface *pSrcImg )
 {
@@ -91,9 +93,9 @@ HICON IconFromSurface( const RageSurface *pSrcImg )
 	return icon;
 }
 
-HICON IconFromFile( const RString &sIconFile )
+HICON IconFromFile( const std::string &sIconFile )
 {
-	RString sError;
+	std::string sError;
 	RageSurface *pImg = RageSurfaceUtils::LoadFile( sIconFile, sError );
 	if( pImg == nullptr )
 	{

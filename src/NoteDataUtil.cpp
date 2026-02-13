@@ -1,22 +1,34 @@
-#include "global.h"
 #include "NoteDataUtil.h"
-#include "NoteData.h"
-#include "RageUtil.h"
-#include "RageLog.h"
-#include "PlayerOptions.h"
-#include "Song.h"
-#include "Style.h"
-#include "GameState.h"
-#include "RadarValues.h"
-#include "TimingData.h"
-#include "RageUtil/RandomNumbers.h"
 
+#include <algorithm>
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
+#include <cstdio>
+#include <cstring>
+#include <set>
+#include <string>
 #include <utility>
 #include <vector>
 
+#include "Attack.h"
+#include "EnumHelper.h"
+#include "GameConstantsAndTypes.h"
+#include "GameState.h"
+#include "NoteData.h"
+#include "NoteTypes.h"
+#include "PlayerNumber.h"
+#include "PlayerOptions.h"
+#include "PrefsManager.h"
+#include "RadarValues.h"
+#include "RageLog.h"
+#include "RageUtil.h"
+#include "RageUtil/RandomNumbers.h"
+#include "Song.h"
+#include "Style.h"
+#include "TimingData.h"
+#include "TimingSegments.h"
+#include "global.h"
 
 // TODO: Remove these constants that aren't time signature-aware
 static const int BEATS_PER_MEASURE = 4;
@@ -60,7 +72,7 @@ NoteType NoteDataUtil::GetSmallestNoteTypeInRange( const NoteData &n, int iStart
 	return NoteType_Invalid;	// well-formed notes created in the editor should never get here
 }
 
-static void LoadFromSMNoteDataStringWithPlayer( NoteData& out, const RString &sSMNoteData, int start,
+static void LoadFromSMNoteDataStringWithPlayer( NoteData& out, const std::string &sSMNoteData, int start,
 						int len, PlayerNumber pn, int iNumTracks )
 {
 	/* Don't allocate memory for the entire string, nor per measure. Instead, use the in-place
@@ -92,7 +104,7 @@ static void LoadFromSMNoteDataStringWithPlayer( NoteData& out, const RString &sS
 			{
 				break;
 			}
-			//RString &line = sSMNoteData.substr( measureLineStart, measureLineSize );
+			//std::string &line = sSMNoteData.substr( measureLineStart, measureLineSize );
 			const char *beginLine = sSMNoteData.data() + measureLineStart;
 			const char *endLine = beginLine + measureLineSize;
 
@@ -273,22 +285,22 @@ static void LoadFromSMNoteDataStringWithPlayer( NoteData& out, const RString &sS
 	out.RevalidateATIs(std::vector<int>(), false);
 }
 
-void NoteDataUtil::LoadFromSMNoteDataString( NoteData &out, const RString &sSMNoteData_, bool bComposite )
+void NoteDataUtil::LoadFromSMNoteDataString( NoteData &out, const std::string &sSMNoteData_, bool bComposite )
 {
 	// Load note data
-	RString sSMNoteData;
-	RString::size_type iIndexCommentStart = 0;
-	RString::size_type iIndexCommentEnd = 0;
-	RString::size_type origSize = sSMNoteData_.size();
+	std::string sSMNoteData;
+	std::string::size_type iIndexCommentStart = 0;
+	std::string::size_type iIndexCommentEnd = 0;
+	std::string::size_type origSize = sSMNoteData_.size();
 	const char *p = sSMNoteData_.data();
 
 	sSMNoteData.reserve( origSize );
-	while( (iIndexCommentStart = sSMNoteData_.find("//", iIndexCommentEnd)) != RString::npos )
+	while( (iIndexCommentStart = sSMNoteData_.find("//", iIndexCommentEnd)) != std::string::npos )
 	{
 		sSMNoteData.append( p, iIndexCommentStart - iIndexCommentEnd );
 		p += iIndexCommentStart - iIndexCommentEnd;
 		iIndexCommentEnd = sSMNoteData_.find( "\n", iIndexCommentStart );
-		iIndexCommentEnd = (iIndexCommentEnd == RString::npos ? origSize : iIndexCommentEnd+1);
+		iIndexCommentEnd = (iIndexCommentEnd == std::string::npos ? origSize : iIndexCommentEnd+1);
 		p += iIndexCommentEnd - iIndexCommentStart;
 	}
 	sSMNoteData.append( p, origSize - iIndexCommentEnd );
@@ -349,7 +361,7 @@ void NoteDataUtil::InsertHoldTails( NoteData &inout )
 	}
 }
 
-void NoteDataUtil::GetSMNoteDataString( const NoteData &in, RString &sRet )
+void NoteDataUtil::GetSMNoteDataString( const NoteData &in, std::string &sRet )
 {
 	// Get note data
 	std::vector<NoteData> parts;
@@ -555,7 +567,7 @@ void NoteDataUtil::LoadTransformedSlidingWindow( const NoteData &in, NoteData &o
 				iCurTrackOffset += bOffsetIncreasing ? 1 : -1;
 				if( iCurTrackOffset == iTrackOffsetMin  ||  iCurTrackOffset == iTrackOffsetMax )
 					bOffsetIncreasing ^= true;
-				CLAMP( iCurTrackOffset, iTrackOffsetMin, iTrackOffsetMax );
+				rage_clamp( iCurTrackOffset, iTrackOffsetMin, iTrackOffsetMax );
 			}
 		}
 
@@ -1030,6 +1042,12 @@ static void DoRowEndRadarCalc(crv_state& state, RadarValues& out)
 
 void NoteDataUtil::CalculateRadarValues( const NoteData &in, float fSongSeconds, RadarValues& out )
 {
+	TimingData* timing= GAMESTATE->GetProcessedTimingData();
+	CalculateRadarValues(in, fSongSeconds, timing, out);
+}
+
+void NoteDataUtil::CalculateRadarValues( const NoteData &in, float fSongSeconds, const TimingData * timing, RadarValues& out )
+{
 	// Anybody editing this function should also examine
 	// NoteDataWithScoring::GetActualRadarValues to make sure it handles things
 	// the same way.
@@ -1042,7 +1060,7 @@ void NoteDataUtil::CalculateRadarValues( const NoteData &in, float fSongSeconds,
 	std::vector<recent_note> recent_notes;
 	NoteData::all_tracks_const_iterator curr_note=
 		in.GetTapNoteRangeAllTracks(0, MAX_NOTE_ROW);
-	TimingData* timing= GAMESTATE->GetProcessedTimingData();
+
 	// total_taps exists because the stream calculation needs GetNumTapNotes,
 	// but TapsAndHolds + Jumps + Hands would be inaccurate. -Kyz
 	float total_taps= 0;
@@ -2333,13 +2351,13 @@ void NoteDataUtil::Wide( NoteData &inout, int iStartIndex, int iEndIndex )
 		int iBeat = std::lrint( NoteRowToBeat(i) );
 		int iTrackOfNote = inout.GetFirstTrackWithTap(i);
 		int iTrackToAdd = iTrackOfNote + (iBeat%5)-2;	// won't be more than 2 tracks away from the existing note
-		CLAMP( iTrackToAdd, 0, inout.GetNumTracks()-1 );
+		rage_clamp( iTrackToAdd, 0, inout.GetNumTracks()-1 );
 		if( iTrackToAdd == iTrackOfNote )
 			iTrackToAdd++;
-		CLAMP( iTrackToAdd, 0, inout.GetNumTracks()-1 );
+		rage_clamp( iTrackToAdd, 0, inout.GetNumTracks()-1 );
 		if( iTrackToAdd == iTrackOfNote )
 			iTrackToAdd--;
-		CLAMP( iTrackToAdd, 0, inout.GetNumTracks()-1 );
+		rage_clamp( iTrackToAdd, 0, inout.GetNumTracks()-1 );
 
 		if( inout.GetTapNote(iTrackToAdd, i).type != TapNoteType_Empty  &&  inout.GetTapNote(iTrackToAdd, i).type != TapNoteType_Fake )
 		{

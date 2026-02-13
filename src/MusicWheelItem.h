@@ -1,16 +1,21 @@
 #ifndef MUSIC_WHEEL_ITEM_H
 #define MUSIC_WHEEL_ITEM_H
 
-#include "ActorFrame.h"
-#include "BitmapText.h"
-#include "WheelNotifyIcon.h"
-#include "TextBanner.h"
-#include "GameConstantsAndTypes.h"
-#include "Song.h"
-#include "GameCommand.h"
-#include "WheelItemBase.h"
+#include <string>
+
 #include "AutoActor.h"
+#include "BitmapText.h"
+#include "GameCommand.h"
+#include "Group.h"
+#include "MessageManager.h"
+#include "PlayerNumber.h"
+#include "RageTypes.h"
+#include "RageUtil_AutoPtr.h"
+#include "Song.h"
+#include "TextBanner.h"
 #include "ThemeMetric.h"
+#include "WheelItemBase.h"
+#include "WheelNotifyIcon.h"
 
 class Course;
 class Song;
@@ -32,12 +37,12 @@ enum MusicWheelItemType
 	NUM_MusicWheelItemType,
 	MusicWheelItemType_Invalid,
 };
-const RString& MusicWheelItemTypeToString( MusicWheelItemType i );
+const std::string& MusicWheelItemTypeToString( MusicWheelItemType i );
 /** @brief An item on the MusicWheel. */
 class MusicWheelItem : public WheelItemBase
 {
 public:
-	MusicWheelItem(RString sType = "MusicWheelItem");
+	MusicWheelItem(std::string sType = "MusicWheelItem");
 	MusicWheelItem( const MusicWheelItem &cpy );
 	virtual ~MusicWheelItem();
 	virtual MusicWheelItem *Copy() const { return new MusicWheelItem(*this); }
@@ -66,7 +71,7 @@ struct MusicWheelItemData : public WheelItemBaseData
 	MusicWheelItemData() : m_pCourse(nullptr), m_pSong(nullptr), m_pGroup(nullptr), m_Flags(),
 		m_iSectionCount(0), m_sLabel(""), m_pAction() { }
 	MusicWheelItemData( WheelItemDataType type, Song* pSong, 
-			   RString sSectionName, Course* pCourse, Group* pGroup, 
+			   std::string sSectionName, Course* pCourse, Group* pGroup, 
 			   RageColor color, int iSectionCount );
 
 	Course*			m_pCourse;
@@ -78,7 +83,7 @@ struct MusicWheelItemData : public WheelItemBaseData
 	int			m_iSectionCount;
 
 	// for TYPE_SORT
-	RString			m_sLabel;
+	std::string			m_sLabel;
 	HiddenPtr<GameCommand>	m_pAction;
 };
 

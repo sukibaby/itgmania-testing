@@ -1,23 +1,31 @@
-#include "global.h"
 #include "ArrowEffects.h"
-#include "Steps.h"
-#include "GameConstantsAndTypes.h"
-#include "GameManager.h"
-#include "RageTimer.h"
-#include "NoteDisplay.h"
-#include "Song.h"
-#include "RageMath.h"
-#include "ScreenDimensions.h"
-#include "PlayerState.h"
-#include "GameState.h"
-#include "Style.h"
-#include "ThemeMetric.h"
 
+#include <algorithm>
 #include <cfloat>
 #include <cmath>
 #include <cstddef>
+#include <string>
 #include <vector>
 
+#include "GameConstantsAndTypes.h"
+#include "GameManager.h"
+#include "GameState.h"
+#include "LuaManager.h"
+#include "NoteDisplay.h"
+#include "NoteTypes.h"
+#include "PlayerNumber.h"
+#include "PlayerOptions.h"
+#include "PlayerState.h"
+#include "RageMath.h"
+#include "RageTimer.h"
+#include "RageUtil.h"
+#include "ScreenDimensions.h"
+#include "Song.h"
+#include "SongPosition.h"
+#include "Steps.h"
+#include "Style.h"
+#include "ThemeMetric.h"
+#include "global.h"
 
 static char const dimension_names[4]= "XYZ";
 
@@ -53,15 +61,15 @@ static ThemeMetric<float>	TIPSY_OFFSET_TIMER_FREQUENCY( "ArrowEffects", "TipsyOf
 static ThemeMetric<float>	TIPSY_OFFSET_COLUMN_FREQUENCY( "ArrowEffects", "TipsyOffsetColumnFrequency" );
 static ThemeMetric<float>	TIPSY_OFFSET_ARROW_MAGNITUDE( "ArrowEffects", "TipsyOffsetArrowMagnitude" );
 
-static RString TPSTL_NAME(size_t i) { return ssprintf("Tornado%cPositionScaleToLow", dimension_names[i]); }
+static std::string TPSTL_NAME(size_t i) { return ssprintf("Tornado%cPositionScaleToLow", dimension_names[i]); }
 static ThemeMetric1D<float> TORNADO_POSITION_SCALE_TO_LOW("ArrowEffects", TPSTL_NAME, 3);
-static RString TPSTH_NAME(size_t i) { return ssprintf("Tornado%cPositionScaleToHigh", dimension_names[i]); }
+static std::string TPSTH_NAME(size_t i) { return ssprintf("Tornado%cPositionScaleToHigh", dimension_names[i]); }
 static ThemeMetric1D<float> TORNADO_POSITION_SCALE_TO_HIGH("ArrowEffects", TPSTH_NAME, 3);
-static RString TOF_NAME(size_t i) { return ssprintf("Tornado%cOffsetFrequency", dimension_names[i]); }
+static std::string TOF_NAME(size_t i) { return ssprintf("Tornado%cOffsetFrequency", dimension_names[i]); }
 static ThemeMetric1D<float> TORNADO_OFFSET_FREQUENCY("ArrowEffects", TOF_NAME, 3);
-static RString TOSFL_NAME(size_t i) { return ssprintf("Tornado%cOffsetScaleFromLow", dimension_names[i]); }
+static std::string TOSFL_NAME(size_t i) { return ssprintf("Tornado%cOffsetScaleFromLow", dimension_names[i]); }
 static ThemeMetric1D<float> TORNADO_OFFSET_SCALE_FROM_LOW("ArrowEffects", TOSFL_NAME, 3);
-static RString TOSFH_NAME(size_t i) { return ssprintf("Tornado%cOffsetScaleFromHigh", dimension_names[i]); }
+static std::string TOSFH_NAME(size_t i) { return ssprintf("Tornado%cOffsetScaleFromHigh", dimension_names[i]); }
 static ThemeMetric1D<float> TORNADO_OFFSET_SCALE_FROM_HIGH("ArrowEffects", TOSFH_NAME, 3);
 
 static ThemeMetric<float>	DRUNK_COLUMN_FREQUENCY( "ArrowEffects", "DrunkColumnFrequency" );
@@ -297,8 +305,8 @@ void ArrowEffects::Init(PlayerNumber pn)
 		{
 			int start_col= col_id - width;
 			int end_col= col_id + width;
-			CLAMP(start_col, 0, max_player_col);
-			CLAMP(end_col, 0, max_player_col);
+			rage_clamp(start_col, 0, max_player_col);
+			rage_clamp(end_col, 0, max_player_col);
 			data.m_MinTornado[dimension][col_id]= FLT_MAX;
 			data.m_MaxTornado[dimension][col_id]= FLT_MIN;
 			for(int i= start_col; i <= end_col; ++i)
@@ -539,7 +547,7 @@ float ArrowEffects::GetYOffset( const PlayerState* pPlayerState, int iCol, float
 		float fNewYOffset = fYOffset * 1.5f / ((fYOffset+fEffectHeight/1.2f)/fEffectHeight);
 		float fAccelYAdjust =	fAccels[PlayerOptions::ACCEL_BOOST] * (fNewYOffset - fYOffset);
 		// TRICKY: Clamp this value, or else BOOST+BOOMERANG will draw a ton of arrows on the screen.
-		CLAMP( fAccelYAdjust, BOOST_MOD_MIN_CLAMP, BOOST_MOD_MAX_CLAMP );
+		rage_clamp( fAccelYAdjust, BOOST_MOD_MIN_CLAMP, BOOST_MOD_MAX_CLAMP );
 		fYAdjust += fAccelYAdjust;
 	}
 	if( fAccels[PlayerOptions::ACCEL_BRAKE] != 0 )
@@ -549,7 +557,7 @@ float ArrowEffects::GetYOffset( const PlayerState* pPlayerState, int iCol, float
 		float fNewYOffset = fYOffset * fScale;
 		float fBrakeYAdjust = fAccels[PlayerOptions::ACCEL_BRAKE] * (fNewYOffset - fYOffset);
 		// TRICKY: Clamp this value the same way as BOOST so that in BOOST+BRAKE, BRAKE doesn't overpower BOOST
-		CLAMP( fBrakeYAdjust, BRAKE_MOD_MIN_CLAMP, BRAKE_MOD_MAX_CLAMP );
+		rage_clamp( fBrakeYAdjust, BRAKE_MOD_MIN_CLAMP, BRAKE_MOD_MAX_CLAMP );
 		fYAdjust += fBrakeYAdjust;
 	}
 	if( fAccels[PlayerOptions::ACCEL_WAVE] != 0 )
@@ -1102,13 +1110,13 @@ float ArrowGetPercentVisible(float fYPosWithoutReverse, int iCol, float fYOffset
 	if( fAppearances[PlayerOptions::APPEARANCE_HIDDEN] != 0 )
 	{
 		float fHiddenVisibleAdjust = SCALE( fYPos, GetHiddenStartLine(), GetHiddenEndLine(), 0, -1 );
-		CLAMP( fHiddenVisibleAdjust, -1, 0 );
+		rage_clamp( fHiddenVisibleAdjust, -1, 0 );
 		fVisibleAdjust += fAppearances[PlayerOptions::APPEARANCE_HIDDEN] * fHiddenVisibleAdjust;
 	}
 	if( fAppearances[PlayerOptions::APPEARANCE_SUDDEN] != 0 )
 	{
 		float fSuddenVisibleAdjust = SCALE( fYPos, GetSuddenStartLine(), GetSuddenEndLine(), -1, 0 );
-		CLAMP( fSuddenVisibleAdjust, -1, 0 );
+		rage_clamp( fSuddenVisibleAdjust, -1, 0 );
 		fVisibleAdjust += fAppearances[PlayerOptions::APPEARANCE_SUDDEN] * fSuddenVisibleAdjust;
 	}
 
@@ -1176,7 +1184,7 @@ float ArrowEffects::GetBrightness( const PlayerState* pPlayerState, float fNoteB
 	float fBeatsUntilStep = fNoteBeat - fSongBeat;
 
 	float fBrightness = SCALE( fBeatsUntilStep, 0, -1, 1.f, 0.f );
-	CLAMP( fBrightness, 0, 1 );
+	rage_clamp( fBrightness, 0, 1 );
 	return fBrightness;
 }
 
@@ -1417,7 +1425,7 @@ float ArrowEffects::GetFrameWidthScale( const PlayerState* pPlayerState, float f
 		float fTrailingPixels = FRAME_WIDTH_LOCK_EFFECTS_TWEEN_PIXELS;
 		float fTrailingSeconds = fTrailingPixels / fPixelsPerSecond;
 		float fScaleEffect = SCALE( fFromEndOfOverlapped, 0.0f, fTrailingSeconds, 0.0f, 1.0f );
-		CLAMP( fScaleEffect, 0.0f, 1.0f );
+		rage_clamp( fScaleEffect, 0.0f, 1.0f );
 		fWidthEffect *= fScaleEffect;
 	}
 

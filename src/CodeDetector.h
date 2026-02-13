@@ -3,6 +3,8 @@
 #ifndef CODE_DETECTOR_H
 #define CODE_DETECTOR_H
 
+#include <string>
+
 #include "GameInput.h"
 
 enum Code {
@@ -55,7 +57,7 @@ enum Code {
 class CodeDetector
 {
 public:
-	static void RefreshCacheItems( RString sClass="" );	// call this before checking codes, but call infrequently
+	static void RefreshCacheItems( std::string sClass="" );	// call this before checking codes, but call infrequently
 	static bool EnteredPrevSteps( GameController controller );
 	static bool EnteredNextSteps( GameController controller );
 	static bool EnteredNextSort( GameController controller );

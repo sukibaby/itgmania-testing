@@ -3,11 +3,11 @@
 #ifndef RAGE_MOVIE_TEXTURE_FFMPEG_H
 #define RAGE_MOVIE_TEXTURE_FFMPEG_H
 
-#include "MovieTexture_Generic.h"
-
 #include <cstdint>
 #include <limits>
 #include <mutex>
+
+#include "MovieTexture_Generic.h"
 
 struct RageSurface;
 
@@ -64,7 +64,7 @@ public:
 class RageMovieTextureDriver_FFMpeg : public RageMovieTextureDriver
 {
 public:
-	virtual RageMovieTexture* Create(RageTextureID ID, RString& sError);
+	virtual RageMovieTexture* Create(RageTextureID ID, std::string& sError);
 	static RageSurface* AVCodecCreateCompatibleSurface(int iTextureWidth, int iTextureHeight, bool bPreferHighColor, int& iAVTexfmt, MovieDecoderPixelFormatYCbCr& fmtout);
 };
 
@@ -74,7 +74,7 @@ public:
 	MovieDecoder_FFMpeg();
 	~MovieDecoder_FFMpeg();
 
-	RString Open(RString file);
+	std::string Open(std::string file);
 	void Close();
 
 	// Rewind sends the reset signal to DecodeMovie. See DecodeMovie
@@ -131,7 +131,7 @@ public:
 
 private:
 	void Init();
-	RString OpenCodec();
+	std::string OpenCodec();
 
 	// Read a packet and send it to our frame data buffer.
 	// Returns -2 on cancel, -1 on error, 0 on EOF, 1 on OK.

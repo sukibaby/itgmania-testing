@@ -1,18 +1,17 @@
-#include "global.h"
-
-#include "RageDisplay.h"
 #include "RageDisplay_Null.h"
-#include "RageUtil.h"
-#include "RageLog.h"
-#include "RageTimer.h"
-#include "RageMath.h"
-#include "RageTypes.h"
-#include "RageUtil.h"
-#include "RageSurface.h"
-#include "DisplaySpec.h"
 
+#include <cstring>
+#include <string>
 #include <vector>
 
+#include "DisplaySpec.h"
+#include "ModelTypes.h"
+#include "RageDisplay.h"
+#include "RageLog.h"
+#include "RageMath.h"
+#include "RageSurface.h"
+#include "RageTypes.h"
+#include "global.h"
 
 static RageDisplay::RagePixelFormatDesc PIXEL_FORMAT_DESC[NUM_RagePixelFormat] = {
 	{
@@ -77,11 +76,11 @@ RageDisplay_Null::RageDisplay_Null()
 	LOG->MapLog("renderer", "Current renderer: null");
 }
 
-RString RageDisplay_Null::Init( const VideoModeParams &p, bool /* bAllowUnacceleratedRenderer */ )
+std::string RageDisplay_Null::Init( const VideoModeParams &p, bool /* bAllowUnacceleratedRenderer */ )
 {
 	bool bIgnore = false;
 	SetVideoMode( p, bIgnore );
-	return RString();
+	return std::string();
 }
 
 void RageDisplay_Null::GetDisplaySpecs(DisplaySpecs &out) const

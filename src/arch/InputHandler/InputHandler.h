@@ -16,17 +16,18 @@
  * completely distinct methods of getting input for the same device; we have no
  * method to allocate device numbers. We don't need this now; I'll write it
  * if it becomes needed.) */
-#include "RageInputDevice.h"	// for InputDevice
-#include "arch/RageDriver.h"
-
+#include <string>
 #include <vector>
 
+#include "RageInputDevice.h"  // for InputDevice
+#include "RageTimer.h"
+#include "arch/RageDriver.h"
 
 /** @brief A class designed to handle special input devices. */
 class InputHandler: public RageDriver
 {
 public:
-	static void Create( const RString &sDrivers, std::vector<InputHandler *> &apAdd );
+	static void Create( const std::string &sDrivers, std::vector<InputHandler *> &apAdd );
 	static DriverList m_pDriverList;
 
 	InputHandler(): m_LastUpdate(), m_iInputsSinceUpdate(0) {}
@@ -36,8 +37,8 @@ public:
 	virtual void GetDevicesAndDescriptions( std::vector<InputDeviceInfo>& vDevicesOut ) = 0;
 
 	// Override to return a pretty string that's specific to the controller type.
-	virtual RString GetDeviceSpecificInputString( const DeviceInput &di );
-	virtual RString GetLocalizedInputString( const DeviceInput &di );
+	virtual std::string GetDeviceSpecificInputString( const DeviceInput &di );
+	virtual std::string GetLocalizedInputString( const DeviceInput &di );
 	virtual wchar_t DeviceButtonToChar( DeviceButton button, bool bUseCurrentKeyModifiers );
 
 	// Override to find out whether the controller is currently plugged in.

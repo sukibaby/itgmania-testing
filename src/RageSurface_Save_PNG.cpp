@@ -1,14 +1,18 @@
-#include "global.h"
+#include "RageSurface_Save_PNG.h"
 
 #include <png.h>
 
-#include "RageSurface_Save_PNG.h"
-#include "RageSurface.h"
-#include "RageSurfaceUtils.h"
+#include <csetjmp>
+#include <cstdio>
+#include <cstring>
+#include <string>
+
 #include "RageFile.h"
 #include "RageLog.h"
-#include "RageUtil.h"
+#include "RageSurface.h"
+#include "RageSurfaceUtils.h"
 #include "RageUtil/Endian.h"
+#include "pngconf.h"
 
 #if defined(_MSC_VER)
 #if defined(_BINARY_PNG)
@@ -17,7 +21,7 @@
 #pragma warning(disable: 4611) /* interaction between '_setjmp' and C++ object destruction is non-portable */
 #endif // _MSC_VER
 
-static void SafePngError( png_struct *pPng, const RString &sStr )
+static void SafePngError( png_struct *pPng, const std::string &sStr )
 {
 	/* png_error will call PNG_Error, which will longjmp.  If we just pass
 	 * GetError().c_str() to it, a temporary may be created; since control
@@ -127,7 +131,7 @@ static bool RageSurface_Save_PNG( RageFile &f, char szErrorbuf[1024], RageSurfac
 	return true;
 }
 
-bool RageSurfaceUtils::SavePNG( RageSurface *pImg, RageFile &f, RString &sError )
+bool RageSurfaceUtils::SavePNG( RageSurface *pImg, RageFile &f, std::string &sError )
 {
 	char szErrorBuf[1024];
 	if( !RageSurface_Save_PNG(f, szErrorBuf, pImg) )

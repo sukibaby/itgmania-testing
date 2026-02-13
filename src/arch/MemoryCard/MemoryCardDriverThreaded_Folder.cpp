@@ -1,17 +1,17 @@
-#include "global.h"
 #include "MemoryCardDriverThreaded_Folder.h"
-#include "RageLog.h"
-#include "RageUtil.h"
-#include "PlayerNumber.h"
-#include "MemoryCardManager.h"
 
-#include <bitset>
-#include <climits>
-#include <cstdlib>
-#include <vector>
-#include <sys/types.h>
 #include <sys/stat.h>
 
+#include <cerrno>
+#include <cstdlib>
+#include <string>
+#include <vector>
+
+#include "MemoryCardManager.h"
+#include "PlayerNumber.h"
+#include "RageLog.h"
+#include "RageUtil.h"
+#include "arch/MemoryCard/MemoryCardDriver.h"
 
 static int g_currentSerial = 0;
 
@@ -24,7 +24,7 @@ MemoryCardDriverThreaded_Folder::~MemoryCardDriverThreaded_Folder()
 {
 }
 
-bool MemoryCardDriverThreaded_Folder::FolderExists(RString path)
+bool MemoryCardDriverThreaded_Folder::FolderExists(std::string path)
 {
 	if (path.empty()) {
 		return false;
@@ -61,7 +61,7 @@ int MemoryCardDriverThreaded_Folder::GetActivePlayerMask()
 
 	FOREACH_PlayerNumber( p )
 	{
-		const RString folder = MEMCARDMAN->m_sMemoryCardOsMountPoint[p];
+		const std::string folder = MEMCARDMAN->m_sMemoryCardOsMountPoint[p];
 
 		if(FolderExists(folder)) {
 			ret |= 1 << p;

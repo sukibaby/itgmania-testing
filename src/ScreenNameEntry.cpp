@@ -1,33 +1,43 @@
-#include "global.h"
 #include "ScreenNameEntry.h"
+
+#include "AnnouncerManager.h"
+#include "Course.h"
+#include "DateTime.h"
 #include "GameConstantsAndTypes.h"
-#include "RageUtil.h"
-#include "PrefsManager.h"
+#include "GameInput.h"
 #include "GameManager.h"
-#include "RageLog.h"
 #include "GameSoundManager.h"
 #include "GameState.h"
-#include "ThemeManager.h"
-#include "Course.h"
-#include "AnnouncerManager.h"
-#include "ProfileManager.h"
-#include "Profile.h"
-#include "StageStats.h"
-#include "ScreenDimensions.h"
-#include "PlayerState.h"
-#include "Style.h"
-#include "NoteSkinManager.h"
+#include "Grade.h"
 #include "InputEventPlus.h"
+#include "InputFilter.h"
 #include "InputMapper.h"
+#include "ModsGroup.h"
+#include "NoteSkinManager.h"
+#include "PlayerNumber.h"
+#include "PlayerState.h"
+#include "PrefsManager.h"
+#include "Profile.h"
+#include "ProfileManager.h"
+#include "RageUtil.h"
+#include "Screen.h"
+#include "ScreenMessage.h"
+#include "ScreenWithMenuElements.h"
+#include "StageStats.h"
+#include "Style.h"
+#include "ThemeManager.h"
+#include "global.h"
 
 // used in TestScreen section
-#include "SongManager.h"
-#include "Song.h"
-#include "StatsManager.h"
-
+#include <algorithm>
 #include <cmath>
 #include <cstddef>
+#include <string>
 #include <vector>
+
+#include "Song.h"
+#include "SongManager.h"
+#include "StatsManager.h"
 
 // Defines specific to ScreenNameEntry
 #define CATEGORY_Y			THEME->GetMetricF(m_sName,"CategoryY")
@@ -54,7 +64,7 @@ static int	g_iNumCharsToDrawBehind;
 static int	g_iNumCharsToDrawTotal;
 static float	g_fFakeBeatsPerSec;
 
-void ScreenNameEntry::ScrollingText::Init( const RString &sName, const std::vector<float> &xs )
+void ScreenNameEntry::ScrollingText::Init( const std::string &sName, const std::vector<float> &xs )
 {
 	SetName( sName );
 	m_Xs = xs;
@@ -74,7 +84,7 @@ void ScreenNameEntry::ScrollingText::DrawPrimitives()
 
 	for( int i = 0; i < NUM_CHARS_TO_DRAW_TOTAL; ++i )
 	{
-		const RString c = CHARS_CHOICES.substr( iCharIndex, 1 );
+		const std::string c = CHARS_CHOICES.substr( iCharIndex, 1 );
 		float fZoom = g_fCharsZoomSmall;
 		float fAlpha = 1.f;
 
@@ -305,7 +315,7 @@ void ScreenNameEntry::Init()
 		m_textCategory[p].SetX( fPlayerX );
 		m_textCategory[p].SetY( CATEGORY_Y );
 		m_textCategory[p].SetZoom( CATEGORY_ZOOM );
-		RString joined;
+		std::string joined;
 		for( unsigned j = 0; j < aFeats[p].size(); ++j )
 		{
 			if( j )
@@ -358,7 +368,7 @@ bool ScreenNameEntry::Input( const InputEventPlus &input )
 			m_ReceptorArrowRow[input.pn].Step( iCol, TNS_W1 );
 			m_soundStep.Play(true);
 			char c = m_Text[input.pn].GetClosestChar( m_fFakeBeat );
-			m_textSelectedChars[input.pn][iCol].SetText( RString(1, c) );
+			m_textSelectedChars[input.pn][iCol].SetText( std::string(1, c) );
 			m_sSelectedName[input.pn][iStringIndex] = c;
 		}
 		bHandled = true;

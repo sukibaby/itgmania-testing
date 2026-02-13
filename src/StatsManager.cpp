@@ -1,28 +1,41 @@
-#include "global.h"
 #include "StatsManager.h"
-#include "RageFileManager.h"
-#include "GameState.h"
-#include "ProfileManager.h"
-#include "Profile.h"
-#include "PrefsManager.h"
-#include "Steps.h"
-#include "StyleUtil.h"
-#include "LuaManager.h"
-#include "Profile.h"
-#include "XmlFile.h"
-#include "CryptManager.h"
-#include "XmlFileUtil.h"
-#include "Song.h"
-#include "RageFileDriverMemory.h"
-#include "NotesWriterSM.h"
-#include "PlayerOptions.h"
-#include "PlayerState.h"
-#include "Player.h"
 
+#include <algorithm>
 #include <cmath>
 #include <cstddef>
+#include <memory>
+#include <set>
+#include <string>
 #include <vector>
 
+#include "CourseUtil.h"
+#include "CryptManager.h"
+#include "EnumHelper.h"
+#include "GameConstantsAndTypes.h"
+#include "GameState.h"
+#include "Grade.h"
+#include "LuaManager.h"
+#include "ModsGroup.h"
+#include "NotesWriterSM.h"
+#include "Player.h"
+#include "PlayerNumber.h"
+#include "PlayerOptions.h"
+#include "PlayerState.h"
+#include "Preference.h"
+#include "PrefsManager.h"
+#include "Profile.h"
+#include "ProfileManager.h"
+#include "RageFileDriverMemory.h"
+#include "RageLog.h"
+#include "Song.h"
+#include "SongUtil.h"
+#include "StdString.h"
+#include "Steps.h"
+#include "StyleUtil.h"
+#include "TrailUtil.h"
+#include "XmlFile.h"
+#include "XmlFileUtil.h"
+#include "global.h"
 
 StatsManager*	STATSMAN = nullptr;	// global object accessible from anywhere in the program
 
@@ -285,18 +298,18 @@ void StatsManager::SaveUploadFile( const StageStats *pSS )
 		}
 	}
 
-	RString sDate = DateTime::GetNowDate().GetString();
+	std::string sDate = DateTime::GetNowDate().GetString();
 	Replace(sDate, ":", "-");
 
-	const RString UPLOAD_DIR = "/Save/Upload/";
-	RString sFileNameNoExtension = Profile::MakeUniqueFileNameNoExtension(UPLOAD_DIR, sDate + " " );
-	RString fn = UPLOAD_DIR + sFileNameNoExtension + ".xml";
+	const std::string UPLOAD_DIR = "/Save/Upload/";
+	std::string sFileNameNoExtension = Profile::MakeUniqueFileNameNoExtension(UPLOAD_DIR, sDate + " " );
+	std::string fn = UPLOAD_DIR + sFileNameNoExtension + ".xml";
 
 	bool bSaved = XmlFileUtil::SaveToFile( xml.get(), fn, "", false );
 
 	if( bSaved )
 	{
-		RString sStatsXmlSigFile = fn + SIGNATURE_APPEND;
+		std::string sStatsXmlSigFile = fn + SIGNATURE_APPEND;
 		CryptManager::SignFileToFile(fn, sStatsXmlSigFile);
 	}
 }
@@ -307,7 +320,7 @@ void StatsManager::SavePadmissScore( const StageStats *pSS, PlayerNumber pn )
 
 	std::unique_ptr<XNode> xml( new XNode("SongScore") );
 
-	RString sDate = DateTime::GetNowDate().GetString();
+	std::string sDate = DateTime::GetNowDate().GetString();
 	Replace(sDate, ":", "-");
 
 	XNode *taps = xml->AppendChild( "TapNoteScores" );
@@ -445,7 +458,7 @@ void StatsManager::SavePadmissScore( const StageStats *pSS, PlayerNumber pn )
 	perspectives->AppendChild( "Tilt", opts.m_fPerspectiveTilt );
 	perspectives->AppendChild( "Skew", opts.m_fSkew );
 
-	RString speedModType;
+	std::string speedModType;
 	float speedModValue;
 	if ( opts.m_fTimeSpacing )
 	{
@@ -468,8 +481,8 @@ void StatsManager::SavePadmissScore( const StageStats *pSS, PlayerNumber pn )
 	FOREACH_ENUM( TimingWindow, tw )
 		timingWindows->AppendChild( TimingWindowToString( tw ), Player::GetWindowSeconds( tw ) );
 
-	RString dir = "/Save/Padmiss/";
-	RString fn = dir + Profile::MakeUniqueFileNameNoExtension( dir, sDate + " " ) + ".xml";
+	std::string dir = "/Save/Padmiss/";
+	std::string fn = dir + Profile::MakeUniqueFileNameNoExtension( dir, sDate + " " ) + ".xml";
 	XmlFileUtil::SaveToFile( xml.get(), fn, "", true );
 }
 

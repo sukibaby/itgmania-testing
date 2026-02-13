@@ -1,8 +1,11 @@
 #ifndef PREFSMANAGER_H
 #define PREFSMANAGER_H
 
-#include "Preference.h"
+#include <map>
+#include <string>
+
 #include "GameConstantsAndTypes.h"
+#include "Preference.h"
 
 class IniFile;
 
@@ -141,16 +144,16 @@ public:
 
 	void Init();
 
-	void SetCurrentGame( const RString &sGame );
-	RString	GetCurrentGame() { return m_sCurrentGame; }
+	void SetCurrentGame( const std::string &sGame );
+	std::string	GetCurrentGame() { return m_sCurrentGame; }
 protected:
-	Preference<RString>	m_sCurrentGame;
+	Preference<std::string>	m_sCurrentGame;
 
 public:
 	// Game-specific prefs.  Copy these off and save them every time the game changes
-	Preference<RString>	m_sAnnouncer;
-	Preference<RString>	m_sTheme;
-	Preference<RString>	m_sDefaultModifiers;
+	Preference<std::string>	m_sAnnouncer;
+	Preference<std::string>	m_sTheme;
+	Preference<std::string>	m_sDefaultModifiers;
 protected:
 	void StoreGamePrefs();
 	void RestoreGamePrefs();
@@ -159,15 +162,15 @@ protected:
 		// See GamePrefs::GamePrefs in PrefsManager.cpp for some default settings
 		GamePrefs();
 
-		RString	m_sAnnouncer;
-		RString m_sTheme;
-		RString	m_sDefaultModifiers;
+		std::string	m_sAnnouncer;
+		std::string m_sTheme;
+		std::string	m_sDefaultModifiers;
 	};
-	std::map<RString, GamePrefs> m_mapGameNameToGamePrefs;
+	std::map<std::string, GamePrefs> m_mapGameNameToGamePrefs;
 
 public:
 	Preference<bool>	m_bWindowed;
-	Preference<RString>	m_sDisplayId;
+	Preference<std::string>	m_sDisplayId;
 	Preference<int>	m_iDisplayWidth;
 	Preference<int>	m_iDisplayHeight;
 	Preference<float>	m_fDisplayAspectRatio;
@@ -194,7 +197,7 @@ public:
 	Preference<bool>	m_bDelayedModelDelete;
 	Preference<ImageCacheMode>		m_ImageCache;
 	Preference<bool>	m_bFastLoad;
-	Preference<RString> m_NeverCacheList;
+	Preference<std::string> m_NeverCacheList;
 
 	Preference<bool>	m_bOnlyDedicatedMenuButtons;
 	Preference<bool>	m_bMenuTimer;
@@ -226,6 +229,11 @@ public:
 	Preference<bool>	m_ThreeKeyNavigation;
 	Preference<MusicWheelUsesSections>		m_MusicWheelUsesSections;
 	Preference<int>	m_iMusicWheelSwitchSpeed;
+	// Should Random sorts prioritize finding a song of your preferred difficulty?
+	// This means that if your preferred difficulty is Challenge, it will find a random
+	// song with a Challenge difficulty (If it can't find one after so many attempts, it will
+	// stop prioritizing difficulty and find any random playable song)
+	Preference<bool>	m_bRandomPrioritizeDifficulty;
 	Preference<AllowW1>	m_AllowW1; // this should almost always be on, given use cases. -aj
 	Preference<bool>	m_bEventMode;
 	Preference<int>	m_iCoinsPerCredit;
@@ -254,8 +262,8 @@ public:
 	Preference<int>	m_iProgressiveNonstopLifebar;
 	Preference<bool>	m_bShowBeginnerHelper;
 	Preference<bool>	m_bDisableScreenSaver;
-	Preference<RString>	m_sLanguage;
-	Preference<RString>	m_sMemoryCardProfileSubdir; // the directory on a memory card to look in for a profile
+	Preference<std::string>	m_sLanguage;
+	Preference<std::string>	m_sMemoryCardProfileSubdir; // the directory on a memory card to look in for a profile
 	Preference<int>	m_iProductID; // Saved in HighScore to track what software version a score came from.
 	Preference<int>	m_iCenterImageTranslateX;
 	Preference<int>	m_iCenterImageTranslateY;
@@ -305,33 +313,33 @@ public:
 	Preference<bool>	m_bSubSortByNumSteps;
 	Preference<GetRankingName>	m_GetRankingName;
 
-	Preference<RString>	m_sAdditionalSongFoldersReadOnly;
-	Preference<RString>	m_sAdditionalSongFoldersWritable;
-	Preference<RString>	m_sAdditionalCourseFoldersReadOnly;
-	Preference<RString>	m_sAdditionalCourseFoldersWritable;
-	Preference<RString>	m_sAdditionalFoldersReadOnly;
-	Preference<RString>	m_sAdditionalFoldersWritable;
+	Preference<std::string>	m_sAdditionalSongFoldersReadOnly;
+	Preference<std::string>	m_sAdditionalSongFoldersWritable;
+	Preference<std::string>	m_sAdditionalCourseFoldersReadOnly;
+	Preference<std::string>	m_sAdditionalCourseFoldersWritable;
+	Preference<std::string>	m_sAdditionalFoldersReadOnly;
+	Preference<std::string>	m_sAdditionalFoldersWritable;
 
 	// failsafe
-	Preference<RString>	m_sDefaultTheme;
+	Preference<std::string>	m_sDefaultTheme;
 
-	Preference<RString>	m_sLastSeenVideoDriver;
-	Preference<RString>	m_sVideoRenderers; // StepMania.cpp sets these on first run based on the card
+	Preference<std::string>	m_sLastSeenVideoDriver;
+	Preference<std::string>	m_sVideoRenderers; // StepMania.cpp sets these on first run based on the card
 	Preference<bool>	m_bSmoothLines;
 	Preference<int>	m_iSoundWriteAhead;
-	Preference<RString>	m_iSoundDevice;
+	Preference<std::string>	m_iSoundDevice;
 	Preference<int>	m_iSoundPreferredSampleRate;
-	Preference<RString>	m_sLightsStepsDifficulty;
+	Preference<std::string>	m_sLightsStepsDifficulty;
 	Preference<bool>	m_bLightsSimplifyBass;
 	Preference<bool>	m_bLightsBassParallel;
 	Preference<bool>	m_bAllowUnacceleratedRenderer;
 	Preference<bool>	m_bThreadedInput;
 	Preference<bool>	m_bThreadedMovieDecode;
-	Preference<RString>	m_sTestInitialScreen;
+	Preference<std::string>	m_sTestInitialScreen;
 	Preference<bool>	m_bDebugLights;
 	Preference<bool>	m_bMonkeyInput;
-	Preference<RString>	m_sMachineName;
-	Preference<RString>	m_sCoursesToShowRanking;
+	Preference<std::string>	m_sMachineName;
+	Preference<std::string>	m_sCoursesToShowRanking;
 	Preference<bool> m_MuteActions;
 	Preference<bool> m_bAllowSongDeletion; // Allow the user to remove songs from their collection through UI / keyboard shortcut
 
@@ -355,9 +363,9 @@ public:
 	Preference<bool>	m_bPseudoLocalize;
 	Preference<bool>	m_show_theme_errors;
 
-	void ReadPrefsFromIni( const IniFile &ini, const RString &sSection, bool bIsStatic );
-	void ReadGamePrefsFromIni( const RString &sIni );
-	void ReadDefaultsFromIni( const IniFile &ini, const RString &sSection );
+	void ReadPrefsFromIni( const IniFile &ini, const std::string &sSection, bool bIsStatic );
+	void ReadGamePrefsFromIni( const std::string &sIni );
+	void ReadDefaultsFromIni( const IniFile &ini, const std::string &sSection );
 	void SavePrefsToIni( IniFile &ini );
 
 	void ReadPrefsFromDisk();
@@ -365,19 +373,19 @@ public:
 
 	void ResetToFactoryDefaults();
 
-	RString GetPreferencesSection() const;
+	std::string GetPreferencesSection() const;
 
 	// Lua
 	void PushSelf( lua_State *L );
 
 protected:
-	void ReadPrefsFromFile( const RString &sIni, const RString &sSection, bool bIsStatic );
-	void ReadDefaultsFromFile( const RString &sIni, const RString &sSection );
+	void ReadPrefsFromFile( const std::string &sIni, const std::string &sSection, bool bIsStatic );
+	void ReadDefaultsFromFile( const std::string &sIni, const std::string &sSection );
 	void TranslateDeprecatedFlags();
 
-	Preference<RString>	m_sAdditionalSongFolders;	// deprecated
-	Preference<RString>	m_sAdditionalCourseFolders;	// deprecated
-	Preference<RString>	m_sAdditionalFolders;		// deprecated
+	Preference<std::string>	m_sAdditionalSongFolders;	// deprecated
+	Preference<std::string>	m_sAdditionalCourseFolders;	// deprecated
+	Preference<std::string>	m_sAdditionalFolders;		// deprecated
 };
 
 /* This is global, because it can be accessed by crash handlers and error handlers

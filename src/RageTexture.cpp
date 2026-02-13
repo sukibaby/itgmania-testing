@@ -1,13 +1,14 @@
-#include "global.h"
-
 #include "RageTexture.h"
-#include "RageUtil.h"
-#include "RageUtil/Regex.h"
-#include "RageTextureManager.h"
 
 #include <cstring>
+#include <string>
 #include <vector>
 
+#include "LuaManager.h"
+#include "RageTextureID.h"
+#include "RageTypes.h"
+#include "RageUtil.h"
+#include "RageUtil/Regex.h"
 
 RageTexture::RageTexture( RageTextureID name ):
 	m_iRefCount(1), m_bWasUsed(false), m_ID(name),
@@ -52,10 +53,10 @@ void RageTexture::CreateFrameRects()
 	}
 }
 
-void RageTexture::GetFrameDimensionsFromFileName( RString sPath, int* piFramesWide, int* piFramesHigh, int source_width, int source_height )
+void RageTexture::GetFrameDimensionsFromFileName( std::string sPath, int* piFramesWide, int* piFramesHigh, int source_width, int source_height )
 {
 	static Regex match( " ([0-9]+)x([0-9]+)([\\. ]|$)" );
-	std::vector<RString> asMatch;
+	std::vector<std::string> asMatch;
 	if( !match.Compare(sPath, asMatch) )
 	{
 		*piFramesWide = *piFramesHigh = 1;

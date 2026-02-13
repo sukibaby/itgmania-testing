@@ -3,6 +3,7 @@
 #ifndef CreateZip_H
 #define CreateZip_H
 
+#include <string>
 
 // ZIP functions -- for creating zip files
 // This file is a repackaged form of the Info-Zip source code available
@@ -24,10 +25,10 @@ class CreateZip
 public:
 	CreateZip();
 	bool Start(RageFile *f);
-	bool AddFile(RString fn);
-	bool AddDir(RString fn);
+	bool AddFile(std::string fn);
+	bool AddDir(std::string fn);
 	bool Finish();
-	RString GetError();
+	std::string GetError();
 };
 
 

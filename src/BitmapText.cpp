@@ -1,20 +1,30 @@
-#include "global.h"
 #include "BitmapText.h"
-#include "XmlFile.h"
-#include "FontManager.h"
-#include "RageLog.h"
-#include "RageDisplay.h"
-#include "ThemeManager.h"
-#include "Font.h"
-#include "ActorUtil.h"
-#include "LuaBinding.h"
-#include "RageTimer.h"
-#include "RageUtil/RandomNumbers.h"
 
+#include <algorithm>
 #include <cmath>
 #include <cstddef>
+#include <map>
+#include <string>
 #include <vector>
 
+#include "Actor.h"
+#include "ActorUtil.h"
+#include "EnumHelper.h"
+#include "Font.h"
+#include "FontManager.h"
+#include "LuaBinding.h"
+#include "LuaManager.h"
+#include "RageDisplay.h"
+#include "RageThreads.h"
+#include "RageTimer.h"
+#include "RageTypes.h"
+#include "RageUtil.h"
+#include "RageUtil/RandomNumbers.h"
+#include "StdString.h"
+#include "ThemeManager.h"
+#include "Tween.h"
+#include "XmlFile.h"
+#include "global.h"
 
 REGISTER_ACTOR_CLASS( BitmapText );
 
@@ -183,15 +193,15 @@ void BitmapText::BMT_TweenState::MakeWeightedAverage(BMT_TweenState& out,
 
 void BitmapText::LoadFromNode( const XNode* node )
 {
-	RString text;
+	std::string text;
 	node->GetAttrValue("Text", text);
-	RString alt_text;
+	std::string alt_text;
 	node->GetAttrValue("AltText", alt_text);
 
 	ThemeManager::EvaluateString(text);
 	ThemeManager::EvaluateString(alt_text);
 
-	RString font;
+	std::string font;
 	// Pass optional= true so that an error will not be reported if the path
 	// doesn't resolve to a file.  This way, a font can be either a path or the
 	// name of a font to look up in Fonts/.  -Kyz
@@ -214,7 +224,7 @@ void BitmapText::LoadFromNode( const XNode* node )
 	Actor::LoadFromNode(node);
 }
 
-bool BitmapText::LoadFromFont( const RString& sFontFilePath )
+bool BitmapText::LoadFromFont( const std::string& sFontFilePath )
 {
 	CHECKPOINT_M( ssprintf("BitmapText::LoadFromFont(%s)", sFontFilePath.c_str()) );
 
@@ -233,7 +243,7 @@ bool BitmapText::LoadFromFont( const RString& sFontFilePath )
 	return true;
 }
 
-bool BitmapText::LoadFromTextureAndChars( const RString& sTexturePath, const RString& sChars )
+bool BitmapText::LoadFromTextureAndChars( const std::string& sTexturePath, const std::string& sChars )
 {
 	CHECKPOINT_M( ssprintf("BitmapText::LoadFromTextureAndChars(\"%s\",\"%s\")", sTexturePath.c_str(), sChars.c_str()) );
 
@@ -463,11 +473,11 @@ void BitmapText::DrawChars( bool bUseStrokeTexture )
 /* sText is UTF-8. If not all of the characters in sText are available in the
  * font, sAlternateText will be used instead. If there are unavailable characters
  * in sAlternateText, too, just use sText. */
-void BitmapText::SetText( const RString& _sText, const RString& _sAlternateText, int iWrapWidthPixels )
+void BitmapText::SetText( const std::string& _sText, const std::string& _sAlternateText, int iWrapWidthPixels )
 {
 	ASSERT( m_pFont != nullptr );
 
-	RString sNewText = StringWillUseAlternate(_sText,_sAlternateText) ? _sAlternateText : _sText;
+	std::string sNewText = StringWillUseAlternate(_sText,_sAlternateText) ? _sAlternateText : _sText;
 
 	if( m_bUppercase )
 		MakeUpper(sNewText);
@@ -503,20 +513,20 @@ void BitmapText::SetTextInternal()
 		/* "...I can add Japanese wrapping, at least. We could handle hyphens
 		 * and soft hyphens and pretty easily, too." -glenn */
 		// TODO: Move this wrapping logic into Font.
-		std::vector<RString> asLines;
+		std::vector<std::string> asLines;
 		split( m_sText, "\n", asLines, false );
 
 		for( unsigned line = 0; line < asLines.size(); ++line )
 		{
-			std::vector<RString> asWords;
+			std::vector<std::string> asWords;
 			split( asLines[line], " ", asWords );
 
-			RString sCurLine;
+			std::string sCurLine;
 			int iCurLineWidth = 0;
 
 			for( unsigned i=0; i<asWords.size(); i++ )
 			{
-				const RString &sWord = asWords[i];
+				const std::string &sWord = asWords[i];
 				int iWidthWord = m_pFont->GetLineWidthInSourcePixels( RStringToWstring(sWord) );
 
 				if( sCurLine.empty() )
@@ -526,7 +536,7 @@ void BitmapText::SetTextInternal()
 					continue;
 				}
 
-				RString sToAdd = " " + sWord;
+				std::string sToAdd = " " + sWord;
 				int iWidthToAdd = m_pFont->GetLineWidthInSourcePixels(L" ") + iWidthWord;
 				if( iCurLineWidth + iWidthToAdd <= m_iWrapWidthPixels )	// will fit on current line
 				{
@@ -647,7 +657,7 @@ void BitmapText::UpdateBaseZoom()
 	}
 }
 
-bool BitmapText::StringWillUseAlternate( const RString& sText, const RString& sAlternateText ) const
+bool BitmapText::StringWillUseAlternate( const std::string& sText, const std::string& sAlternateText ) const
 {
 	ASSERT( m_pFont != nullptr );
 
@@ -1069,8 +1079,8 @@ public:
 	static int vertspacing( T* p, lua_State *L )		{ p->SetVertSpacing( IArg(1) ); COMMON_RETURN_SELF; }
 	static int settext( T* p, lua_State *L )
 	{
-		RString s = SArg(1);
-		RString sAlt;
+		std::string s = SArg(1);
+		std::string sAlt;
 		/* XXX: Lua strings should simply use "\n" natively. However, some
 		 * settext calls may be made from GetMetric() calls to other strings, and
 		 * it's confusing for :: to work in some strings and not others.

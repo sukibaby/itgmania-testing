@@ -1,20 +1,24 @@
-#include "global.h"
-#include "PrefsManager.h"
 #include "RageSoundReader_Chain.h"
-#include "RageSoundReader_FileReader.h"
-#include "RageSoundReader_Resample_Good.h"
-#include "RageSoundReader_Preload.h"
-#include "RageSoundReader_Pan.h"
-#include "RageLog.h"
-#include "RageUtil.h"
-#include "RageSound.h"
-#include "RageSoundMixBuffer.h"
-#include "RageSoundUtil.h"
-#include "RageSoundConstants.h"
 
-#include <cmath>
+#include <algorithm>
+#include <cstddef>
+#include <cstring>
+#include <map>
+#include <string>
 #include <vector>
 
+#include "RageLog.h"
+#include "RageSound.h"
+#include "RageSoundConstants.h"
+#include "RageSoundMixBuffer.h"
+#include "RageSoundReader.h"
+#include "RageSoundReader_FileReader.h"
+#include "RageSoundReader_Pan.h"
+#include "RageSoundReader_Preload.h"
+#include "RageSoundReader_Resample_Good.h"
+#include "RageUtil.h"
+#include "StdString.h"
+#include "global.h"
 
 /*
  * Keyed sounds should pass this object to SoundReader_Preload, to preprocess it.
@@ -78,11 +82,11 @@ void RageSoundReader_Chain::AddSound( int iIndex, float fOffsetSecs, float fPan 
 	m_aSounds.push_back( s );
 }
 
-int RageSoundReader_Chain::LoadSound( RString sPath )
+int RageSoundReader_Chain::LoadSound( std::string sPath )
 {
 	MakeLower(sPath);
 
-	std::map<RString, RageSoundReader*>::const_iterator it = m_apNamedSounds.find( sPath );
+	std::map<std::string, RageSoundReader*>::const_iterator it = m_apNamedSounds.find( sPath );
 	if( it != m_apNamedSounds.end() )
 	{
 		const RageSoundReader *pReader = it->second;
@@ -93,7 +97,7 @@ int RageSoundReader_Chain::LoadSound( RString sPath )
 		FAIL_M( sPath );
 	}
 
-	RString sError;
+	std::string sError;
 	bool bPrebuffer;
 	RageSoundReader *pReader = RageSoundReader_FileReader::OpenFile( sPath, sError, &bPrebuffer );
 	if( pReader == nullptr )
@@ -274,7 +278,7 @@ void RageSoundReader_Chain::ReleaseSound( Sound *s )
 	m_apActiveSounds.erase( it );
 }
 
-bool RageSoundReader_Chain::SetProperty( const RString &sProperty, float fValue )
+bool RageSoundReader_Chain::SetProperty( const std::string &sProperty, float fValue )
 {
 	bool bRet = false;
 	for( unsigned i = 0; i < m_apActiveSounds.size(); ++i )

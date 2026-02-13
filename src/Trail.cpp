@@ -1,17 +1,23 @@
-#include "global.h"
 #include "Trail.h"
-#include "GameState.h"
-#include "Steps.h"
-#include "Song.h"
-#include "PlayerOptions.h"
-#include "NoteData.h"
-#include "NoteDataUtil.h"
-#include "CommonMetrics.h"
 
+#include <algorithm>
 #include <cmath>
 #include <numeric>
+#include <string>
 #include <vector>
 
+#include "Attack.h"
+#include "CommonMetrics.h"
+#include "GameConstantsAndTypes.h"
+#include "GameState.h"
+#include "LuaManager.h"
+#include "NoteData.h"
+#include "NoteDataUtil.h"
+#include "PlayerNumber.h"
+#include "PlayerOptions.h"
+#include "Song.h"
+#include "Steps.h"
+#include "global.h"
 
 void TrailEntry::GetAttackArray( AttackArray &out ) const
 {
@@ -119,8 +125,8 @@ const RadarValues &Trail::GetRadarValues() const
 				NoteData nd;
 				pSteps->GetNoteData( nd );
 				RadarValues rv_orig;
-				GAMESTATE->SetProcessedTimingData(const_cast<TimingData *>(pSteps->GetTimingData()));
-				NoteDataUtil::CalculateRadarValues( nd, e.pSong->m_fMusicLengthSeconds, rv_orig );
+				TimingData * timing = const_cast<TimingData *>(pSteps->GetTimingData());
+				NoteDataUtil::CalculateRadarValues( nd, e.pSong->m_fMusicLengthSeconds, timing, rv_orig );
 				PlayerOptions po;
 				po.FromString( e.Modifiers );
 				if( po.ContainsTransformOrTurn() )
@@ -129,8 +135,7 @@ const RadarValues &Trail::GetRadarValues() const
 				}
 				NoteDataUtil::TransformNoteData(nd, *(pSteps->GetTimingData()), e.Attacks, pSteps->m_StepsType, e.pSong);
 				RadarValues transformed_rv;
-				NoteDataUtil::CalculateRadarValues( nd, e.pSong->m_fMusicLengthSeconds, transformed_rv );
-				GAMESTATE->SetProcessedTimingData(nullptr);
+				NoteDataUtil::CalculateRadarValues( nd, e.pSong->m_fMusicLengthSeconds, timing, transformed_rv );
 				rv += transformed_rv;
 			}
 			else
@@ -234,7 +239,7 @@ public:
 	}
 	static int GetArtists( T* p, lua_State *L )
 	{
-		std::vector<RString> asArtists, asAltArtists;
+		std::vector<std::string> asArtists, asAltArtists;
 		for (TrailEntry const &e : p->m_vEntries)
 		{
 			if( e.bSecret )

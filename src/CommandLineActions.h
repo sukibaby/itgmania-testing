@@ -1,8 +1,8 @@
 #ifndef CommandLineActions_H
 #define CommandLineActions_H
 
+#include <string>
 #include <vector>
-
 
 class LoadingWindow;
 
@@ -19,7 +19,7 @@ namespace CommandLineActions
 	{
 	public:
 		/** @brief the arguments in question. */
-		std::vector<RString> argv;
+		std::vector<std::string> argv;
 	};
 	/**
 	 * @brief A list of command line arguemnts to process while the game is running.

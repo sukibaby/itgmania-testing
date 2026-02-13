@@ -1,26 +1,27 @@
-#include "global.h"
 #include "LightsDriver.h"
-#include "RageLog.h"
 
-#include "arch/arch_default.h"
+#include "RageLog.h"
+#include "RageUtil.h"
+#include "arch/RageDriver.h"
+#include "global.h"
 
 //We explicitly load these drivers as they should always be available.
-#include "arch/Lights/LightsDriver_SystemMessage.h"
-#include "arch/Lights/LightsDriver_Export.h"
-
+#include <string>
 #include <vector>
 
+#include "arch/Lights/LightsDriver_Export.h"
+#include "arch/Lights/LightsDriver_SystemMessage.h"
 
 DriverList LightsDriver::m_pDriverList;
 
-void LightsDriver::Create( const RString &sDrivers, std::vector<LightsDriver *> &Add )
+void LightsDriver::Create( const std::string &sDrivers, std::vector<LightsDriver *> &Add )
 {
 	LOG->Trace( "Initializing lights drivers: %s", sDrivers.c_str() );
 
-	std::vector<RString> asDriversToTry;
+	std::vector<std::string> asDriversToTry;
 	split( sDrivers, ",", asDriversToTry, true );
 
-	for (RString const &Driver : asDriversToTry)
+	for (std::string const &Driver : asDriversToTry)
 	{
 		RageDriver *pRet = m_pDriverList.Create( Driver );
 		if( pRet == nullptr )

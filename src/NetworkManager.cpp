@@ -1,14 +1,4 @@
-#include "global.h"
 #include "NetworkManager.h"
-#include "LuaManager.h"
-#include "ProductInfo.h"
-#include "RageFile.h"
-#include "RageFileManager.h"
-#include "RageLog.h"
-#include "RageUtil.h"
-#include "SpecialFiles.h"
-#include "StdString.h"
-#include "ver.h"
 
 #include <ixwebsocket/IXHttpClient.h>
 #include <ixwebsocket/IXNetSystem.h>
@@ -19,15 +9,34 @@
 #include <climits>
 #include <cstddef>
 #include <memory>
+#include <mutex>
 #include <sstream>
+#include <string>
+#include <thread>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
+#include "EnumHelper.h"
+#include "LuaManager.h"
+#include "Preference.h"
+#include "ProductInfo.h"
+#include "RageFile.h"
+#include "RageFileManager.h"
+#include "RageLog.h"
+#include "RageUtil.h"
+#include "SpecialFiles.h"
+#include "StdString.h"
+#include "ixwebsocket/IXHttp.h"
+#include "ixwebsocket/IXWebSocketHttpHeaders.h"
+#include "ixwebsocket/IXWebSocketMessage.h"
+#include "ixwebsocket/IXWebSocketMessageType.h"
+#include "ver.h"
 
 NetworkManager*	NETWORK = nullptr;	// global and accessible from anywhere in our program
 
 Preference<bool> NetworkManager::httpEnabled("HttpEnabled", true, nullptr, PreferenceType::Immutable);
-Preference<RString> NetworkManager::httpAllowHosts("HttpAllowHosts", "*.groovestats.com,*.itgmania.com", nullptr, PreferenceType::Immutable);
+Preference<std::string> NetworkManager::httpAllowHosts("HttpAllowHosts", "*.groovestats.com,*.itgmania.com", nullptr, PreferenceType::Immutable);
 
 static const char *HttpErrorCodeNames[] = {
 	"Blocked",
@@ -78,7 +87,7 @@ NetworkManager::NetworkManager() : httpClient(true), downloadClient(true)
 	RageFile f;
 	if(f.Open(SpecialFiles::CA_BUNDLE_PATH))
 	{
-		RString data;
+		std::string data;
 		f.Read(data);
 		f.Close();
 
@@ -109,6 +118,16 @@ NetworkManager::~NetworkManager()
 	ix::uninitNetSystem();
 }
 
+void NetworkManager::Update(float fDelta) {
+	for (std::shared_ptr<WebSocketHandle> handle : webSocketHandles) {
+		std::lock_guard mtxLock(handle->readMutex);
+		while (!handle->readQueue.empty()) {
+			handle->onMessage(&handle->readQueue.front());
+			handle->readQueue.pop();
+		}
+	}
+}
+
 bool NetworkManager::IsUrlAllowed(const std::string& url)
 {
 	if (!this->httpEnabled.Get())
@@ -117,7 +136,7 @@ bool NetworkManager::IsUrlAllowed(const std::string& url)
 	}
 
 	std::string protocol;
-	RString host;
+	std::string host;
 	std::string path;
 	std::string query;
 	int port;
@@ -136,10 +155,10 @@ bool NetworkManager::IsUrlAllowed(const std::string& url)
 
 	MakeLower(host);
 
-	RString allowedHostsStr = this->httpAllowHosts.Get();
+	std::string allowedHostsStr = this->httpAllowHosts.Get();
 	MakeLower(allowedHostsStr);
 
-	std::vector<RString> allowedHosts;
+	std::vector<std::string> allowedHosts;
 	split(allowedHostsStr, ",", allowedHosts);
 
 	for (const auto& allowedHost : allowedHosts)
@@ -208,7 +227,7 @@ HttpRequestFuturePtr NetworkManager::HttpRequest(const HttpRequestArgs& args)
 	client.performRequest(req, [args, downloadFile, downloadFilename](const ix::HttpResponsePtr& response) {
 		if (!args.downloadFile.empty())
 		{
-			RString error = downloadFile->GetError();
+			std::string error = downloadFile->GetError();
 			downloadFile->Close();
 
 			if (!error.empty())
@@ -241,7 +260,19 @@ WebSocketHandlePtr NetworkManager::WebSocket(const WebSocketArgs& args)
 
 	handle->webSocket.setUrl(args.url);
 	handle->webSocket.setTLSOptions(this->tlsOptions);
-	handle->webSocket.setOnMessageCallback(args.onMessage);
+	// handle->webSocket.setOnMessageCallback(args.onMessage);
+	handle->webSocket.setOnMessageCallback(
+		[args, handle](const ix::WebSocketMessagePtr& response) {
+			CopiedWebSocketMessage messageCopy(response);
+
+			if (messageCopy.type == ix::WebSocketMessageType::Message) {
+				std::lock_guard<std::mutex> lock(handle->readMutex);
+				handle->readQueue.push(messageCopy);
+			} else {
+				// Dispatch now
+				args.onMessage(&messageCopy);
+			}
+		});
 
 	ix::WebSocketHttpHeaders headers;
 	headers["User-Agent"] = this->GetUserAgent();
@@ -267,6 +298,7 @@ WebSocketHandlePtr NetworkManager::WebSocket(const WebSocketArgs& args)
 	}
 
 	handle->webSocket.start();
+	handle->sendThread = std::thread(&WebSocketHandle::SendThread, handle);
 
 	webSocketHandles.push_back(handle);
 
@@ -292,7 +324,7 @@ std::string NetworkManager::GetUserAgent()
 
 void NetworkManager::ClearDownloads()
 {
-	std::vector<RString> files;
+	std::vector<std::string> files;
 	FILEMAN->GetDirListing("/Downloads/*", files, false, true);
 
 	for (const auto& file : files)
@@ -325,7 +357,34 @@ int HttpRequestFuture::Cancel(lua_State *L)
 }
 
 WebSocketHandle::~WebSocketHandle() {
+	{// Neatly clonse the send thread
+		{
+			std::lock_guard<std::mutex> lock(sendQueueMutex);
+			stopFlag = true;
+		}
+		sendQueueCV.notify_all();
+		if (sendThread.joinable()) {
+			sendThread.join();
+		}
+	}
 	webSocket.stop();
+}
+
+void WebSocketHandle::SendThread() {
+	while (true) {
+		std::unique_lock<std::mutex> lock(sendQueueMutex);
+		sendQueueCV.wait(lock, [&] { return !sendQueue.empty() || stopFlag; });
+
+		if (stopFlag && sendQueue.empty()) {
+			break;
+		}
+
+		std::string message = std::move(sendQueue.front());
+		sendQueue.pop();
+		lock.unlock();
+
+		webSocket.send(message);
+	}
 }
 
 int WebSocketHandle::Collect(lua_State *L)
@@ -767,7 +826,7 @@ public:
 		}
 		lua_pop(L, 1);
 
-		args.onMessage = [onMessageRef](const ix::WebSocketMessagePtr& msg)
+		args.onMessage = [onMessageRef](const CopiedWebSocketMessage* msg)
 		{
 			Lua *L = LUA->Get();
 
@@ -879,7 +938,7 @@ private:
 		lua_pushfstring(L, "access to %s is not allowed", url.c_str());
 		lua_setfield(L, -2, "errorMessage");
 
-		RString error = "Lua error in HTTP response handler: ";
+		std::string error = "Lua error in HTTP response handler: ";
 		LuaHelpers::RunScriptOnStack(L, error, 1, 0, true);
 	}
 
@@ -896,7 +955,7 @@ private:
 		lua_pushstring(L, errorMessage.c_str());
 		lua_setfield(L, -2, "errorMessage");
 
-		RString error = "Lua error in HTTP response handler: ";
+		std::string error = "Lua error in HTTP response handler: ";
 		LuaHelpers::RunScriptOnStack(L, error, 1, 0, true);
 	}
 
@@ -959,7 +1018,7 @@ private:
 		lua_pushnumber(L, response->downloadSize);
 		lua_setfield(L, -2, "downloadSize");
 
-		RString error = "Lua error in HTTP response handler: ";
+		std::string error = "Lua error in HTTP response handler: ";
 		LuaHelpers::RunScriptOnStack(L, error, 1, 0, true);
 	}
 
@@ -969,7 +1028,7 @@ private:
 		lua_pushinteger(L, current);
 		lua_pushinteger(L, total);
 
-		RString error = "Lua error in HTTP progress handler: ";
+		std::string error = "Lua error in HTTP progress handler: ";
 		LuaHelpers::RunScriptOnStack(L, error, 2, 0, true);
 	}
 
@@ -986,11 +1045,11 @@ private:
 		lua_pushfstring(L, "access to %s is not allowed", url.c_str());
 		lua_setfield(L, -2, "reason");
 
-		RString error = "Lua error in WebSocket message handler: ";
+		std::string error = "Lua error in WebSocket message handler: ";
 		LuaHelpers::RunScriptOnStack(L, error, 1, 0, true);
 	}
 
-	static void handleMessage(Lua *L, const ix::WebSocketMessagePtr& msg, int onMessageRef)
+	static void handleMessage(Lua *L, const CopiedWebSocketMessage* msg, int onMessageRef)
 	{
 		lua_rawgeti(L, LUA_REGISTRYINDEX, onMessageRef);
 
@@ -1070,7 +1129,7 @@ private:
 				return;
 		}
 
-		RString error = "Lua error in WebSocket message handler: ";
+		std::string error = "Lua error in WebSocket message handler: ";
 		LuaHelpers::RunScriptOnStack(L, error, 1, 0, true);
 	}
 

@@ -1,16 +1,23 @@
-#include "global.h"
 #include "NotesLoaderKSF.h"
-#include "RageUtil_CharConversions.h"
-#include "MsdFile.h"
-#include "RageLog.h"
-#include "RageUtil.h"
-#include "NoteData.h"
-#include "NoteTypes.h"
-#include "Song.h"
-#include "Steps.h"
 
+#include <algorithm>
+#include <string>
 #include <vector>
 
+#include "Difficulty.h"
+#include "GameConstantsAndTypes.h"
+#include "MsdFile.h"
+#include "NoteData.h"
+#include "NoteTypes.h"
+#include "RageLog.h"
+#include "RageUtil.h"
+#include "RageUtil_CharConversions.h"
+#include "Song.h"
+#include "StdString.h"
+#include "Steps.h"
+#include "TimingData.h"
+#include "TimingSegments.h"
+#include "global.h"
 
 static void HandleBunki( TimingData &timing, const float fEarlyBPM,
 			const float fCurBPM, const float fGap,
@@ -23,7 +30,7 @@ static void HandleBunki( TimingData &timing, const float fEarlyBPM,
 	timing.AddSegment( BPMSegment(BeatToNoteRow(beat), fCurBPM) );
 }
 
-static bool LoadFromKSFFile( const RString &sPath, Steps &out, Song &song, bool bKIUCompliant )
+static bool LoadFromKSFFile( const std::string &sPath, Steps &out, Song &song, bool bKIUCompliant )
 {
 	LOG->Trace( "Steps::LoadFromKSFFile( '%s' )", sPath.c_str() );
 
@@ -38,7 +45,7 @@ static bool LoadFromKSFFile( const RString &sPath, Steps &out, Song &song, bool 
 	int iTickCount = -1;
 	// used to adapt weird tickcounts
 	//float fScrollRatio = 1.0f; -- uncomment when ready to use.
-	std::vector<RString> vNoteRows;
+	std::vector<std::string> vNoteRows;
 
 	// According to Aldo_MX, there is a default BPM and it's 60. -aj
 	bool bDoublesChart = false;
@@ -49,7 +56,7 @@ static bool LoadFromKSFFile( const RString &sPath, Steps &out, Song &song, bool 
 	for( unsigned i=0; i<msd.GetNumValues(); i++ )
 	{
 		const MsdFile::value_t &sParams = msd.GetValue( i );
-		RString sValueName = sParams[0];
+		std::string sValueName = sParams[0];
 		MakeUpper(sValueName);
 
 		/* handle the data...well, not this data: not related to steps.
@@ -149,7 +156,7 @@ static bool LoadFromKSFFile( const RString &sPath, Steps &out, Song &song, bool 
 		// new cases from Aldo_MX's fork:
 		else if( sValueName=="PLAYER" )
 		{
-			RString sPlayer = sParams[1];
+			std::string sPlayer = sParams[1];
 			MakeLower(sPlayer);
 			if( sPlayer.find( "double" ) != std::string::npos )
 				bDoublesChart = true;
@@ -157,7 +164,7 @@ static bool LoadFromKSFFile( const RString &sPath, Steps &out, Song &song, bool 
 		// This should always be last.
 		else if( sValueName=="STEP" )
 		{
-			RString theSteps = sParams[1];
+			std::string theSteps = sParams[1];
 			TrimLeft( theSteps );
 			split( theSteps, "\n", vNoteRows, true );
 		}
@@ -186,7 +193,7 @@ static bool LoadFromKSFFile( const RString &sPath, Steps &out, Song &song, bool 
 	NoteData notedata;	// read it into here
 
 	{
-		RString sDir, sFName, sExt;
+		std::string sDir, sFName, sExt;
 		splitpath( sPath, sDir, sFName, sExt );
 		MakeLower(sFName);
 
@@ -288,7 +295,7 @@ static bool LoadFromKSFFile( const RString &sPath, Steps &out, Song &song, bool 
 
 	for( unsigned r=0; r<vNoteRows.size(); r++ )
 	{
-		RString& sRowString = vNoteRows[r];
+		std::string& sRowString = vNoteRows[r];
 		StripCrnl( sRowString );
 
 		if( sRowString == "" )
@@ -342,7 +349,7 @@ static bool LoadFromKSFFile( const RString &sPath, Steps &out, Song &song, bool 
 			// I'm making some experiments, please spare me...
 			//continue;
 
-			RString temp = sRowString.substr(2,sRowString.size()-3);
+			std::string temp = sRowString.substr(2,sRowString.size()-3);
 			float numTemp = StringToFloat(temp);
 			if (BeginsWith(sRowString, "|T"))
 			{
@@ -471,11 +478,11 @@ static bool LoadFromKSFFile( const RString &sPath, Steps &out, Song &song, bool 
 	return true;
 }
 
-static void LoadTags( const RString &str, Song &out )
+static void LoadTags( const std::string &str, Song &out )
 {
 	/* str is either a #TITLE or a directory component.  Fill in missing information.
 	 * str is either "title", "artist - title", or "artist - title - difficulty". */
-	std::vector<RString> asBits;
+	std::vector<std::string> asBits;
 	split( str, " - ", asBits, false );
 	// Ignore the difficulty, since we get that elsewhere.
 	if( asBits.size() == 3 && (
@@ -490,7 +497,7 @@ static void LoadTags( const RString &str, Song &out )
 		asBits.erase( asBits.begin()+2, asBits.begin()+3 );
 	}
 
-	RString title, artist;
+	std::string title, artist;
 	if( asBits.size() == 2 )
 	{
 		artist = asBits[0];
@@ -513,13 +520,13 @@ static void LoadTags( const RString &str, Song &out )
 		out.m_sArtist = artist;
 }
 
-static void ProcessTickcounts( const RString & value, int & ticks, TimingData & timing )
+static void ProcessTickcounts( const std::string & value, int & ticks, TimingData & timing )
 {
 	/* TICKCOUNT will be used below if there are DM compliant BPM changes
 	 * and stops. It will be called again in LoadFromKSFFile for the
 	 * actual steps. */
 	ticks = StringToInt( value );
-	CLAMP( ticks, 0, ROWS_PER_BEAT );
+	rage_clamp( ticks, 0, ROWS_PER_BEAT );
 
 	if( ticks == 0 )
 		ticks = TickcountSegment::DEFAULT_TICK_COUNT;
@@ -527,7 +534,7 @@ static void ProcessTickcounts( const RString & value, int & ticks, TimingData & 
 	timing.AddSegment( TickcountSegment(0, ticks) );
 }
 
-static bool LoadGlobalData( const RString &sPath, Song &out, bool &bKIUCompliant )
+static bool LoadGlobalData( const std::string &sPath, Song &out, bool &bKIUCompliant )
 {
 	MsdFile msd;
 	if( !msd.ReadFile( sPath, false ) )  // don't unescape
@@ -538,11 +545,11 @@ static bool LoadGlobalData( const RString &sPath, Song &out, bool &bKIUCompliant
 
 	// changed up there in case of something is found inside the SONGFILE tag in the head ksf -DaisuMaster
 	// search for music with song in the file name
-	std::vector<RString> arrayPossibleMusic;
-	GetDirListing( out.GetSongDir() + RString("song.mp3"), arrayPossibleMusic );
-	GetDirListing( out.GetSongDir() + RString("song.oga"), arrayPossibleMusic );
-	GetDirListing( out.GetSongDir() + RString("song.ogg"), arrayPossibleMusic );
-	GetDirListing( out.GetSongDir() + RString("song.wav"), arrayPossibleMusic );
+	std::vector<std::string> arrayPossibleMusic;
+	GetDirListing( out.GetSongDir() + std::string("song.mp3"), arrayPossibleMusic );
+	GetDirListing( out.GetSongDir() + std::string("song.oga"), arrayPossibleMusic );
+	GetDirListing( out.GetSongDir() + std::string("song.ogg"), arrayPossibleMusic );
+	GetDirListing( out.GetSongDir() + std::string("song.wav"), arrayPossibleMusic );
 
 	if( !arrayPossibleMusic.empty() )		// we found a match
 		out.m_sMusicFile = arrayPossibleMusic[0];
@@ -551,12 +558,12 @@ static bool LoadGlobalData( const RString &sPath, Song &out, bool &bKIUCompliant
 	float SMGap1 = 0, SMGap2 = 0, BPM1 = -1, BPMPos2 = -1, BPM2 = -1, BPMPos3 = -1, BPM3 = -1;
 	int iTickCount = -1;
 	bKIUCompliant = false;
-	std::vector<RString> vNoteRows;
+	std::vector<std::string> vNoteRows;
 
 	for( unsigned i=0; i < msd.GetNumValues(); i++ )
 	{
 		const MsdFile::value_t &sParams = msd.GetValue(i);
-		RString sValueName = sParams[0];
+		std::string sValueName = sParams[0];
 		MakeUpper(sValueName);
 
 		// handle the data
@@ -611,7 +618,7 @@ static bool LoadGlobalData( const RString &sPath, Song &out, bool &bKIUCompliant
 		{
 			/* STEP will always be the last header in a KSF file by design. Due to
 			 * the Direct Move syntax, it is best to get the rows of notes here. */
-			RString theSteps = sParams[1];
+			std::string theSteps = sParams[1];
 			TrimLeft( theSteps );
 			split( theSteps, "\n", vNoteRows, true );
 		}
@@ -676,7 +683,7 @@ static bool LoadGlobalData( const RString &sPath, Song &out, bool &bKIUCompliant
 
 		for( unsigned i=0; i < vNoteRows.size(); ++i )
 		{
-			RString& NoteRowString = vNoteRows[i];
+			std::string& NoteRowString = vNoteRows[i];
 			StripCrnl( NoteRowString );
 
 			if( NoteRowString == "" )
@@ -708,7 +715,7 @@ static bool LoadGlobalData( const RString &sPath, Song &out, bool &bKIUCompliant
 
 	// Try to fill in missing bits of information from the pathname.
 	{
-		std::vector<RString> asBits;
+		std::vector<std::string> asBits;
 		split( sPath, "/", asBits, true);
 
 		ASSERT( asBits.size() > 1 );
@@ -718,12 +725,12 @@ static bool LoadGlobalData( const RString &sPath, Song &out, bool &bKIUCompliant
 	return true;
 }
 
-void KSFLoader::GetApplicableFiles( const RString &sPath, std::vector<RString> &out )
+void KSFLoader::GetApplicableFiles( const std::string &sPath, std::vector<std::string> &out )
 {
-	GetDirListing( sPath + RString("*.ksf"), out );
+	GetDirListing( sPath + std::string("*.ksf"), out );
 }
 
-bool KSFLoader::LoadNoteDataFromSimfile( const RString & cachePath, Steps &out )
+bool KSFLoader::LoadNoteDataFromSimfile( const std::string & cachePath, Steps &out )
 {
 	bool KIUCompliant = false;
 	Song dummy;
@@ -739,12 +746,12 @@ bool KSFLoader::LoadNoteDataFromSimfile( const RString & cachePath, Steps &out )
 	return KIUCompliant;
 }
 
-bool KSFLoader::LoadFromDir( const RString &sDir, Song &out )
+bool KSFLoader::LoadFromDir( const std::string &sDir, Song &out )
 {
 	LOG->Trace( "KSFLoader::LoadFromDir(%s)", sDir.c_str() );
 
-	std::vector<RString> arrayKSFFileNames;
-	GetDirListing( sDir + RString("*.ksf"), arrayKSFFileNames );
+	std::vector<std::string> arrayKSFFileNames;
+	GetDirListing( sDir + std::string("*.ksf"), arrayKSFFileNames );
 
 	// We shouldn't have been called to begin with if there were no KSFs.
 	ASSERT( arrayKSFFileNames.size() != 0 );
@@ -767,7 +774,7 @@ bool KSFLoader::LoadFromDir( const RString &sDir, Song &out )
 	// for directmove though, and we're just gathering basic info anyway, and
 	// most of the time all the KSF files have the same info in the #TITLE:; section
 	unsigned files = arrayKSFFileNames.size();
-	RString dir = out.GetSongDir();
+	std::string dir = out.GetSongDir();
 	if( !LoadGlobalData(dir + arrayKSFFileNames[files - 1], out, bKIUCompliant) )
 		return false;
 

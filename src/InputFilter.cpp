@@ -1,20 +1,25 @@
-#include "global.h"
-#include "LocalizedString.h"
 #include "InputFilter.h"
-#include "RageLog.h"
-#include "RageInput.h"
-#include "RageUtil.h"
-#include "RageThreads.h"
-#include "Preference.h"
+
+#include "EnumHelper.h"
 #include "GameInput.h"
 #include "InputMapper.h"
+#include "LuaManager.h"
+#include "Preference.h"
+#include "RageInput.h"
+#include "RageInputDevice.h"
+#include "RageLog.h"
+#include "RageThreads.h"
+#include "RageTimer.h"
+#include "RageUtil.h"
 // for mouse stuff: -aj
-#include "PrefsManager.h"
-#include "ScreenDimensions.h"
-
+#include <map>
 #include <set>
+#include <string>
+#include <utility>
 #include <vector>
 
+#include "PrefsManager.h"
+#include "ScreenDimensions.h"
 
 static const char *InputEventTypeNames[] = {
 	"FirstPress",
@@ -31,7 +36,7 @@ struct ButtonState
 	ButtonState();
 	bool m_BeingHeld; // actual current state
 	bool m_bLastReportedHeld; // last state reported by Update()
-	RString m_sComment;
+	std::string m_sComment;
 	float m_fSecsHeld;
 	DeviceInput m_DeviceInput;
 
@@ -224,7 +229,7 @@ void InputFilter::ButtonPressed( const DeviceInput &di )
 	CheckButtonChange( bs, di, now );
 }
 
-void InputFilter::SetButtonComment( const DeviceInput &di, const RString &sComment )
+void InputFilter::SetButtonComment( const DeviceInput &di, const std::string &sComment )
 {
 	LockMut(*queuemutex);
 	ButtonState &bs = GetButtonState( di );
@@ -429,7 +434,7 @@ float InputFilter::GetLevel( const DeviceInput &di, const DeviceInputList *pButt
 	return pDI->level;
 }
 
-RString InputFilter::GetButtonComment( const DeviceInput &di ) const
+std::string InputFilter::GetButtonComment( const DeviceInput &di ) const
 {
 	LockMut(*queuemutex);
 	return GetButtonState( di ).m_sComment;

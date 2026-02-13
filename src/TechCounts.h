@@ -1,9 +1,11 @@
 #ifndef TECH_COUNTS_H
 #define TECH_COUNTS_H
 
-#include "GameConstantsAndTypes.h"
-#include "StepParityGenerator.h"
-#include "NoteData.h"
+#include <string>
+#include <vector>
+
+#include "EnumHelper.h"
+#include "StepParityDatastructs.h"
 
 /** @brief Unknown radar values are given a default value. */
 #define TECHCOUNTS_VAL_UNKNOWN -1
@@ -24,13 +26,13 @@ enum TechCountsCategory
 	TechCountsCategory_Invalid
 };
 
-const RString& TechCountsCategoryToString( TechCountsCategory cat );
+const std::string& TechCountsCategoryToString( TechCountsCategory cat );
 /**
  * @brief Turn the radar category into a proper localized string.
  * @param cat the radar category.
  * @return the localized string version of the radar category.
  */
-const RString& TechCountsCategoryToLocalizedString( TechCountsCategory cat );
+const std::string& TechCountsCategoryToLocalizedString( TechCountsCategory cat );
 LuaDeclareType( TechCountsCategory );
 
 struct lua_State;
@@ -76,11 +78,11 @@ public:
 		return !operator==( other );
 	}
 
-	RString ToString( int iMaxValues = -1 ) const; // default = all
-	void FromString( RString sValues );
+	std::string ToString( int iMaxValues = -1 ) const; // default = all
+	void FromString( std::string sValues );
 
 	void PushSelf( lua_State *L );
-	static void CalculateTechCountsFromRows(const std::vector<StepParity::Row> &rows, StepParity::StageLayout & layout, TechCounts &out);
+	static void CalculateTechCountsFromRows(const std::vector<StepParity::Row> &rows, const StepParity::StageLayout * layout, TechCounts &out);
 private:
 	static bool isFootswitch(int c, const StepParity::Row & currentRow, const StepParity::Row & previousRow, float elapsedTime);
 };

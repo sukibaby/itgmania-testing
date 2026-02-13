@@ -1,21 +1,27 @@
-#include "global.h"
 #include "ScoreKeeperRave.h"
-#include "ThemeManager.h"
-#include "RageUtil.h"
-#include "GameState.h"
-#include "Character.h"
-#include "ScreenManager.h"
-#include "PrefsManager.h"
-#include "ThemeMetric.h"
-#include "PlayerState.h"
-#include "NoteTypes.h"
-#include "RageUtil/RandomNumbers.h"
 
 #include <cstddef>
+#include <string>
+
+#include "Attack.h"
+#include "Character.h"
+#include "EnumHelper.h"
+#include "GameConstantsAndTypes.h"
+#include "GameState.h"
+#include "NoteTypes.h"
+#include "PlayerNumber.h"
+#include "PlayerState.h"
+#include "Preference.h"
+#include "PrefsManager.h"
+#include "RageUtil.h"
+#include "RageUtil/RandomNumbers.h"
+#include "ScoreKeeper.h"
+#include "ThemeMetric.h"
+#include "global.h"
 
 ThemeMetric<float> ATTACK_DURATION_SECONDS	("ScoreKeeperRave","AttackDurationSeconds");
 
-static void SuperMeterPercentChangeInit( size_t /*ScoreEvent*/ i, RString &sNameOut, float &defaultValueOut )
+static void SuperMeterPercentChangeInit( size_t /*ScoreEvent*/ i, std::string &sNameOut, float &defaultValueOut )
 {
 	ScoreEvent ci = (ScoreEvent)i;
 	sNameOut = "SuperMeterPercentChange" + ScoreEventToString( ci );
@@ -134,7 +140,7 @@ void ScoreKeeperRave::AddSuperMeterDelta( float fUnscaledPercentChange )
 		default:
 			FAIL_M(ssprintf("Invalid player number: %i", m_pPlayerState->m_PlayerNumber));
 		}
-		CLAMP( fLifePercentage, 0.f, 1.f );
+		rage_clamp( fLifePercentage, 0.f, 1.f );
 		if( fUnscaledPercentChange > 0 )
 			fUnscaledPercentChange *= SCALE( fLifePercentage, 0.f, 1.f, 1.7f, 0.3f);
 		else	// fUnscaledPercentChange <= 0
@@ -149,7 +155,7 @@ void ScoreKeeperRave::AddSuperMeterDelta( float fUnscaledPercentChange )
 
 	float fPercentToMove = fUnscaledPercentChange;
 	m_pPlayerState->m_fSuperMeter += fPercentToMove * m_pPlayerState->m_fSuperMeterGrowthScale;
-	CLAMP( m_pPlayerState->m_fSuperMeter, 0.f, NUM_ATTACK_LEVELS );
+	rage_clamp( m_pPlayerState->m_fSuperMeter, 0.f, NUM_ATTACK_LEVELS );
 
 	AttackLevel newAL = (AttackLevel)(int)m_pPlayerState->m_fSuperMeter;
 
@@ -181,8 +187,8 @@ void ScoreKeeperRave::LaunchAttack( AttackLevel al )
 {
 	PlayerNumber pn = m_pPlayerState->m_PlayerNumber;
 
-	RString* asAttacks = GAMESTATE->m_pCurCharacters[pn]->m_sAttacks[al];	// [NUM_ATTACKS_PER_LEVEL]
-	RString sAttackToGive;
+	std::string* asAttacks = GAMESTATE->m_pCurCharacters[pn]->m_sAttacks[al];	// [NUM_ATTACKS_PER_LEVEL]
+	std::string sAttackToGive;
 
 	if (GAMESTATE->m_pCurCharacters[pn] != nullptr)
 		sAttackToGive = asAttacks[ RandomInt(NUM_ATTACKS_PER_LEVEL) ];
@@ -190,7 +196,7 @@ void ScoreKeeperRave::LaunchAttack( AttackLevel al )
 	{
 		// "If you add any noteskins here, you need to make sure they're cached, too." -?
 		// Noteskins probably won't work here anymore. -aj
-		RString DefaultAttacks[8] = { "1.5x", "2.0x", "0.5x", "reverse", "sudden", "boost", "brake", "wave" };
+		std::string DefaultAttacks[8] = { "1.5x", "2.0x", "0.5x", "reverse", "sudden", "boost", "brake", "wave" };
 		sAttackToGive = DefaultAttacks[ RandomInt(8) ];
 	}
 

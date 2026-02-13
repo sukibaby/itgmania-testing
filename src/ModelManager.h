@@ -1,9 +1,10 @@
 #ifndef MODEL_MANAGER_H
 #define MODEL_MANAGER_H
 
-#include "RageModelGeometry.h"
-
 #include <map>
+#include <string>
+
+#include "RageModelGeometry.h"
 
 struct ModelManagerPrefs
 {
@@ -34,7 +35,7 @@ public:
 	ModelManager();
 	~ModelManager();
 
-	RageModelGeometry* LoadMilkshapeAscii( const RString& sFile, bool bNeedNormals );
+	RageModelGeometry* LoadMilkshapeAscii( const std::string& sFile, bool bNeedNormals );
 	void UnloadModel( RageModelGeometry *m );
 //	void ReloadAll();
 
@@ -47,7 +48,7 @@ public:
 
 protected:
 
-	std::map<RString, RageModelGeometry*> m_mapFileToGeometry;
+	std::map<std::string, RageModelGeometry*> m_mapFileToGeometry;
 
 	ModelManagerPrefs m_Prefs;
 };

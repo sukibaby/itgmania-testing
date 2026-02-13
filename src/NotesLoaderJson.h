@@ -3,18 +3,18 @@
 #ifndef NotesLoaderJson_H
 #define NotesLoaderJson_H
 
-#include "NotesLoader.h"
-
+#include <string>
 #include <vector>
 
+#include "NotesLoader.h"
 
 class Song;
 
 namespace NotesLoaderJson
 {
-	void GetApplicableFiles( const RString &sPath, std::vector<RString> &out );
-	bool LoadFromDir( const RString &sPath, Song &out );
-	bool LoadFromJsonFile( const RString &sPath, Song &out );
+	void GetApplicableFiles( const std::string &sPath, std::vector<std::string> &out );
+	bool LoadFromDir( const std::string &sPath, Song &out );
+	bool LoadFromJsonFile( const std::string &sPath, Song &out );
 };
 
 #endif

@@ -1,7 +1,10 @@
 #ifndef RollingNumbers_H
 #define RollingNumbers_H
 
+#include <string>
+
 #include "BitmapText.h"
+#include "RageTypes.h"
 #include "ThemeMetric.h"
 
 /** @brief Animates from one number to another by scrolling its digits. */
@@ -10,7 +13,7 @@ class RollingNumbers : public BitmapText
 public:
 	RollingNumbers();
 
-	void Load( const RString &sMetricsGroup );
+	void Load( const std::string &sMetricsGroup );
 	virtual RollingNumbers *Copy() const;
 
 	void DrawPart(RageColor const* diffuse, RageColor const& stroke,
@@ -29,7 +32,7 @@ public:
 	virtual void PushSelf( lua_State *L );
 
 private:
-	ThemeMetric<RString> TEXT_FORMAT;
+	ThemeMetric<std::string> TEXT_FORMAT;
 	ThemeMetric<float> APPROACH_SECONDS;
 	ThemeMetric<bool> COMMIFY;
 	ThemeMetric<RageColor> LEADING_ZERO_MULTIPLY_COLOR;

@@ -1,12 +1,15 @@
-#include "global.h"
 #include "CubicSpline.h"
-#include "RageLog.h"
-#include "RageUtil.h"
 
+#include <cmath>
 #include <cstddef>
+#include <cstdlib>
 #include <list>
 #include <vector>
 
+#include "LuaManager.h"
+#include "RageTypes.h"
+#include "RageUtil.h"
+#include "global.h"
 
 // Spline solving optimization:
 // The tridiagonal part of the system of equations for a spline of size n is
@@ -570,7 +573,7 @@ void CubicSplineN::weighted_average(CubicSplineN& out,
 		out_size= to_size + static_cast<size_t>(
 			static_cast<float>(from_size - to_size) * between);
 	}
-	CLAMP(out_size, 0, limit);
+	rage_clamp(out_size, 0, limit);
 	out.resize(out_size);
 
 	for(size_t spli= 0; spli < out.m_splines.size(); ++spli)

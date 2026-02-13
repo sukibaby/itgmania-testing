@@ -3,9 +3,14 @@
 #ifndef SCREEN_PROMPT_H
 #define SCREEN_PROMPT_H
 
-#include "ScreenWithMenuElements.h"
+#include <string>
+
+#include "AutoActor.h"
 #include "BitmapText.h"
+#include "InputQueue.h"
 #include "RageSound.h"
+#include "ScreenMessage.h"
+#include "ScreenWithMenuElements.h"
 
 enum PromptType
 {
@@ -25,8 +30,8 @@ enum PromptAnswer
 class ScreenPrompt : public ScreenWithMenuElements
 {
 public:
-	static void SetPromptSettings( const RString &sText, PromptType type = PROMPT_OK, PromptAnswer defaultAnswer = ANSWER_NO, void(*OnYes)(void*) = nullptr, void(*OnNo)(void*) = nullptr, void* pCallbackData = nullptr );
-	static void Prompt( ScreenMessage smSendOnPop, const RString &sText, PromptType type = PROMPT_OK, PromptAnswer defaultAnswer = ANSWER_NO, void(*OnYes)(void*) = nullptr, void(*OnNo)(void*) = nullptr, void* pCallbackData = nullptr );
+	static void SetPromptSettings( const std::string &sText, PromptType type = PROMPT_OK, PromptAnswer defaultAnswer = ANSWER_NO, void(*OnYes)(void*) = nullptr, void(*OnNo)(void*) = nullptr, void* pCallbackData = nullptr );
+	static void Prompt( ScreenMessage smSendOnPop, const std::string &sText, PromptType type = PROMPT_OK, PromptAnswer defaultAnswer = ANSWER_NO, void(*OnYes)(void*) = nullptr, void(*OnNo)(void*) = nullptr, void* pCallbackData = nullptr );
 
 	virtual void Init();
 	virtual void BeginScreen();

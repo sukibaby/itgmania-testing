@@ -1,11 +1,11 @@
 #ifndef STEPS_UTIL_H
 #define STEPS_UTIL_H
 
-#include "GameConstantsAndTypes.h"
-#include "Difficulty.h"
-
+#include <string>
 #include <vector>
 
+#include "Difficulty.h"
+#include "GameConstantsAndTypes.h"
 
 class Steps;
 class Song;
@@ -169,7 +169,7 @@ class StepsID
 {
 	StepsType st;
 	Difficulty dc;
-	RString sDescription;
+	std::string sDescription;
 	unsigned uHash;
 
 public:
@@ -207,7 +207,7 @@ public:
 
 	XNode* CreateNode() const;
 	void LoadFromNode( const XNode* pNode );
-	RString ToString() const;
+	std::string ToString() const;
 	bool IsValid() const;
 
 	StepsType GetStepsType() const { return st; }

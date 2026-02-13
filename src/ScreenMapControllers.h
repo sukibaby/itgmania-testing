@@ -3,14 +3,24 @@
 #ifndef SCREEN_MAP_CONTROLLERS_H
 #define SCREEN_MAP_CONTROLLERS_H
 
-#include "ScreenWithMenuElements.h"
-#include "BitmapText.h"
-#include "InputMapper.h"
-#include "ActorScroller.h"
-#include "RageSound.h"
-
+#include <set>
+#include <string>
 #include <vector>
 
+#include "Actor.h"
+#include "ActorFrame.h"
+#include "ActorScroller.h"
+#include "AutoActor.h"
+#include "BitmapText.h"
+#include "GameInput.h"
+#include "InputMapper.h"
+#include "InputQueue.h"
+#include "MessageManager.h"
+#include "RageInputDevice.h"
+#include "RageSound.h"
+#include "RageTimer.h"
+#include "ScreenMessage.h"
+#include "ScreenWithMenuElements.h"
 
 class ScreenMapControllers : public ScreenWithMenuElements
 {
@@ -105,10 +115,10 @@ private:
 	typedef void (ScreenMapControllers::* action_fun_t)();
 	struct ActionRow
 	{
-		RString m_name;
+		std::string m_name;
 		AutoActor m_actor;
 		action_fun_t m_action;
-		void Load(RString const& scr_name, RString const& name,
+		void Load(std::string const& scr_name, std::string const& name,
 			ScreenMapControllers::action_fun_t action, ActorFrame* line,
 			ActorScroller* scroller);
 	};

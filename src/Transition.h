@@ -3,17 +3,18 @@
 #ifndef TRANSITION_H
 #define TRANSITION_H
 
+#include <string>
+
 #include "ActorFrame.h"
 #include "AutoActor.h"
 #include "ScreenMessage.h"
-
 
 class Transition : public ActorFrame
 {
 public:
 	Transition();
 
-	void Load( RString sBGAniDir );
+	void Load( std::string sBGAniDir );
 
 	virtual void UpdateInternal( float fDeltaTime );
 

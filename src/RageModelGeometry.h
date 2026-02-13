@@ -3,9 +3,11 @@
 #ifndef RAGE_MODEL_GEOMETRY_H
 #define RAGE_MODEL_GEOMETRY_H
 
-#include "RageTypes.h"
-#include "ModelTypes.h"
+#include <string>
 #include <vector>
+
+#include "ModelTypes.h"
+#include "RageTypes.h"
 
 class RageCompiledGeometry;
 
@@ -15,7 +17,7 @@ public:
 	RageModelGeometry ();
 	virtual ~RageModelGeometry ();
 
-	void LoadMilkshapeAscii( const RString& sMilkshapeAsciiFile, bool bNeedsNormals );
+	void LoadMilkshapeAscii( const std::string& sMilkshapeAsciiFile, bool bNeedsNormals );
 	void OptimizeBones();
 	void MergeMeshes( int iFromIndex, int iToIndex );
 	bool HasAnyPerVertexBones() const;

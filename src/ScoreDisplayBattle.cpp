@@ -1,14 +1,18 @@
-#include "global.h"
 #include "ScoreDisplayBattle.h"
-#include "RageUtil.h"
-#include "RageLog.h"
-#include "RageLog.h"
-#include "GameState.h"
-#include "ThemeManager.h"
-#include "PlayerState.h"
-#include "ActorUtil.h"
 
+#include <string>
 #include <vector>
+
+#include "Actor.h"
+#include "ActorUtil.h"
+#include "Attack.h"
+#include "GameConstantsAndTypes.h"
+#include "GameState.h"
+#include "PlayerState.h"
+#include "RageLog.h"
+#include "RageUtil.h"
+#include "ScoreDisplay.h"
+#include "ThemeManager.h"
 
 #define ITEM_X( i )				THEME->GetMetricF("ScoreDisplayBattle",ssprintf("Item%dX",i+1))
 #define ITEM_Y( i )				THEME->GetMetricF("ScoreDisplayBattle",ssprintf("Item%dY",i+1))
@@ -27,7 +31,7 @@ ScoreDisplayBattle::ScoreDisplayBattle()
 		this->AddChild( &m_ItemIcon[i] );
 	}
 
-	std::vector<RString> asIconPaths;
+	std::vector<std::string> asIconPaths;
 	GetDirListing( THEME->GetCurThemeDir()+"Graphic/ScoreDisplayBattle icon*", asIconPaths );
 	for( unsigned j=0; j<asIconPaths.size(); j++ )
 		m_TexturePreload.Load( asIconPaths[j] );
@@ -45,7 +49,7 @@ void ScoreDisplayBattle::Update( float fDelta )
 	for( int s=0; s<NUM_INVENTORY_SLOTS; s++ )
 	{
 		const Attack& attack = m_pPlayerState->m_Inventory[s];
-		RString sNewModifier = attack.sModifiers;
+		std::string sNewModifier = attack.sModifiers;
 
 		if( sNewModifier != m_iLastSeenInventory[s] )
 		{

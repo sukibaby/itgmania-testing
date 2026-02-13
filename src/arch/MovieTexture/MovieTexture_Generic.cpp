@@ -1,17 +1,27 @@
-#include "global.h"
 #include "MovieTexture_Generic.h"
-#include "PrefsManager.h"
-#include "RageDisplay.h"
-#include "RageLog.h"
-#include "RageSurface.h"
-#include "RageTextureManager.h"
-#include "RageTextureRenderTarget.h"
-#include "RageTimer.h"
-#include "RageUtil.h"
-#include "Sprite.h"
 
 #include <cmath>
 #include <cstdint>
+#include <memory>
+#include <string>
+#include <thread>
+#include <utility>
+
+#include "Actor.h"
+#include "Preference.h"
+#include "RageDisplay.h"
+#include "RageLog.h"
+#include "RageSurface.h"
+#include "RageTextureID.h"
+#include "RageTextureManager.h"
+#include "RageTextureRenderTarget.h"
+#include "RageThreads.h"
+#include "RageTimer.h"
+#include "RageTypes.h"
+#include "RageUtil.h"
+#include "Sprite.h"
+#include "arch/MovieTexture/MovieTexture.h"
+#include "global.h"
 
 #if defined(WIN32)
 #include "archutils/Win32/ErrorStrings.h"
@@ -39,9 +49,9 @@ MovieTexture_Generic::MovieTexture_Generic(RageTextureID ID, std::unique_ptr<Mov
 	sprite_ = std::make_unique<Sprite>();
 }
 
-RString MovieTexture_Generic::Init()
+std::string MovieTexture_Generic::Init()
 {
-	RString err = decoder_->Open(GetID().filename);
+	std::string err = decoder_->Open(GetID().filename);
 	if (err != "") {
 		LOG->Warn("MovieTexture_Generic::Init: failed to open decoder for file: %s, with error:\n%s", GetID().filename.c_str(), err.c_str());
 		return err;
@@ -69,7 +79,7 @@ RString MovieTexture_Generic::Init()
 
 	CHECKPOINT_M("Generic initialization completed. No errors found.");
 
-	return RString();
+	return std::string();
 }
 
 MovieTexture_Generic::~MovieTexture_Generic()

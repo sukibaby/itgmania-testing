@@ -1,15 +1,21 @@
-#include "global.h"
 #include "ScreenTestLights.h"
-#include "ScreenManager.h"
-#include "GameConstantsAndTypes.h"
-#include "RageLog.h"
-#include "GameState.h"
-#include "ThemeManager.h"
-#include "LightsManager.h"
-#include "Game.h"
-#include "ScreenDimensions.h"
+
+#include <string>
+
+#include "ActorUtil.h"
+#include "GameInput.h"
 #include "InputEventPlus.h"
+#include "InputFilter.h"
+#include "InputMapper.h"
+#include "LightsManager.h"
 #include "LocalizedString.h"
+#include "PlayerNumber.h"
+#include "RageUtil.h"
+#include "Screen.h"
+#include "ScreenManager.h"
+#include "ScreenMessage.h"
+#include "ScreenWithMenuElements.h"
+#include "ThemeManager.h"
 
 REGISTER_SCREEN_CLASS( ScreenTestLights );
 
@@ -55,7 +61,7 @@ void ScreenTestLights::Update( float fDeltaTime )
 	CabinetLight cl = LIGHTSMAN->GetFirstLitCabinetLight();
 	GameInput gi = LIGHTSMAN->GetFirstLitGameButtonLight();
 
-	RString s;
+	std::string s;
 
 	switch( LIGHTSMAN->GetLightsMode() )
 	{
@@ -79,7 +85,7 @@ void ScreenTestLights::Update( float fDeltaTime )
 	}
 	else
 	{
-		RString sGameButton = GameButtonToLocalizedString( INPUTMAPPER->GetInputScheme(), gi.button );
+		std::string sGameButton = GameButtonToLocalizedString( INPUTMAPPER->GetInputScheme(), gi.button );
 		PlayerNumber pn = (PlayerNumber)(gi.controller);
 		s += ssprintf( "%s: %s %d %s\n", CONTROLLER_LIGHT.GetValue().c_str(), PlayerNumberToString(pn).c_str(), gi.button, sGameButton.c_str() );
 	}

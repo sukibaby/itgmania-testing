@@ -1,29 +1,33 @@
-#include "global.h"
 #include "DirectXHelpers.h"
-#include "RageUtil.h"
-#include <cstdarg>
-#include <dinput.h>
+
+#include <mmsystem.h>  // dsound.h needs this
 #include <d3d9.h>
-#include <mmsystem.h> // dsound.h needs this
+#include <dinput.h>
 #include <dsound.h>
+
+#include <cstdarg>
 #include <stdexcept>
+#include <string>
 
-RString GetErrorString(HRESULT hr);
+#include "RageUtil.h"
+#include "global.h"
 
-RString hr_ssprintf( int hr, const char *fmt, ... )
+std::string GetErrorString(HRESULT hr);
+
+std::string hr_ssprintf( int hr, const char *fmt, ... )
 {
 	va_list	va;
 	va_start(va, fmt);
-	RString s = vssprintf( fmt, va );
+	std::string s = vssprintf( fmt, va );
 	va_end(va);
 
-	RString szError = GetErrorString(hr);
+	std::string szError = GetErrorString(hr);
 	return s + ssprintf(" (%s)", szError.c_str());
 }
 
 #define DXERRMSG(hrcode, dummy) case hrcode: return #hrcode;
 
-RString GetErrorString(HRESULT hr)
+std::string GetErrorString(HRESULT hr)
 {
 	switch (hr)
 	{

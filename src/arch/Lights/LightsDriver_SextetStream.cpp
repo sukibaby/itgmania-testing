@@ -1,12 +1,16 @@
-#include "global.h"
 #include "LightsDriver_SextetStream.h"
-#include "PrefsManager.h"
-#include "RageLog.h"
-#include "RageUtil.h"
-#include "SextetUtils.h"
 
 #include <cstdint>
 #include <cstring>
+#include <string>
+
+#include "LightsManager.h"
+#include "Preference.h"
+#include "RageFile.h"
+#include "RageLog.h"
+#include "RageUtil.h"
+#include "SextetUtils.h"
+#include "arch/Lights/LightsDriver.h"
 
 // Private members/methods are kept out of the header using an opaque pointer `_impl`.
 // Google "pimpl idiom" for an explanation of what's going on and why it is (or might be) useful.
@@ -118,9 +122,9 @@ REGISTER_LIGHTS_DRIVER_CLASS(SextetStreamToFile);
 #else
 	#define DEFAULT_OUTPUT_FILENAME "Data/StepMania-Lights-SextetStream.out"
 #endif
-static Preference<RString> g_sSextetStreamOutputFilename("SextetStreamOutputFilename", DEFAULT_OUTPUT_FILENAME);
+static Preference<std::string> g_sSextetStreamOutputFilename("SextetStreamOutputFilename", DEFAULT_OUTPUT_FILENAME);
 
-inline RageFile * openOutputStream(const RString& filename)
+inline RageFile * openOutputStream(const std::string& filename)
 {
 	RageFile * file = new RageFile;
 
@@ -150,7 +154,7 @@ LightsDriver_SextetStreamToFile::LightsDriver_SextetStreamToFile(RageFile* file)
 
 
 
-LightsDriver_SextetStreamToFile::LightsDriver_SextetStreamToFile(const RString& filename)
+LightsDriver_SextetStreamToFile::LightsDriver_SextetStreamToFile(const std::string& filename)
 {
 #ifdef WINDOWS
 	_impl = new SextetImpl(CreateFile(

@@ -3,10 +3,13 @@
 #ifndef DIFFICULTY_ICON_H
 #define DIFFICULTY_ICON_H
 
-#include "Sprite.h"
-#include "PlayerNumber.h"
-#include "GameConstantsAndTypes.h"
+#include <string>
+
+#include "Actor.h"
 #include "Difficulty.h"
+#include "PlayerNumber.h"
+#include "RageTextureID.h"
+#include "Sprite.h"
 class Steps;
 class Trail;
 
@@ -17,7 +20,7 @@ public:
 	DifficultyIcon();
 	virtual bool EarlyAbortDraw() const { return m_bBlank || Sprite::EarlyAbortDraw(); }
 
-	bool Load( RString sFilePath );
+	bool Load( std::string sFilePath );
 	virtual void Load( RageTextureID ID ) { Load( ID.filename ); }
 	virtual void LoadFromNode( const XNode* pNode );
 	virtual DifficultyIcon *Copy() const;

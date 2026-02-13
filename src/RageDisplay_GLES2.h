@@ -2,15 +2,19 @@
 #define RAGE_DISPLAY_GLES2_H
 
 #include <cstdint>
+#include <string>
+
+#include "RageDisplay.h"
+#include "RageTypes.h"
 
 class RageDisplay_GLES2: public RageDisplay
 {
 public:
 	RageDisplay_GLES2();
 	virtual ~RageDisplay_GLES2();
-	virtual RString Init( const VideoModeParams &p, bool bAllowUnacceleratedRenderer );
+	virtual std::string Init( const VideoModeParams &p, bool bAllowUnacceleratedRenderer );
 
-	virtual RString GetApiDescription() const;
+	virtual std::string GetApiDescription() const;
 	virtual void GetDisplaySpecs(DisplaySpecs &out) const;
 	const RagePixelFormatDesc *GetPixelFormatDesc(RagePixelFormat pf) const;
 
@@ -79,7 +83,7 @@ protected:
 	void DrawLineStripInternal( const RageSpriteVertex v[], int iNumVerts, float LineWidth );
 	void DrawSymmetricQuadStripInternal( const RageSpriteVertex v[], int iNumVerts );
 
-	RString TryVideoMode( const VideoModeParams &p, bool &bNewDeviceOut );
+	std::string TryVideoMode( const VideoModeParams &p, bool &bNewDeviceOut );
 	RageSurface* CreateScreenshot();
 	RageMatrix GetOrthoMatrix( float l, float r, float b, float t, float zn, float zf );
 	bool SupportsSurfaceFormat( RagePixelFormat pixfmt );

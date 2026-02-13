@@ -1,10 +1,12 @@
 #ifndef DATE_TIME_H
 #define DATE_TIME_H
 
-#include "EnumHelper.h"
 #include <ctime>
+#include <string>
 
-int StringToDayInYear( RString sDayInYear );
+#include "EnumHelper.h"
+
+int StringToDayInYear( std::string sDayInYear );
 
 /** @brief The number of days we check for previously. */
 const int NUM_LAST_DAYS = 7;
@@ -31,17 +33,17 @@ enum Month
 	Month_Invalid /**< There should be no month at this point. */
 };
 
-RString DayInYearToString( int iDayInYearIndex );
-RString LastDayToString( int iLastDayIndex );
-RString LastDayToLocalizedString( int iLastDayIndex );
-RString DayOfWeekToString( int iDayOfWeekIndex );
-RString DayOfWeekToLocalizedString( int iDayOfWeekIndex );
-RString HourInDayToString( int iHourIndex );
-RString HourInDayToLocalizedString( int iHourIndex );
-const RString &MonthToString( Month month );
-const RString &MonthToLocalizedString( Month month );
-RString LastWeekToString( int iLastWeekIndex );
-RString LastWeekToLocalizedString( int iLastWeekIndex );
+std::string DayInYearToString( int iDayInYearIndex );
+std::string LastDayToString( int iLastDayIndex );
+std::string LastDayToLocalizedString( int iLastDayIndex );
+std::string DayOfWeekToString( int iDayOfWeekIndex );
+std::string DayOfWeekToLocalizedString( int iDayOfWeekIndex );
+std::string HourInDayToString( int iHourIndex );
+std::string HourInDayToLocalizedString( int iHourIndex );
+const std::string &MonthToString( Month month );
+const std::string &MonthToLocalizedString( Month month );
+std::string LastWeekToString( int iLastWeekIndex );
+std::string LastWeekToLocalizedString( int iLastWeekIndex );
 LuaDeclareType( Month );
 
 tm AddDays( tm start, int iDaysToMove );
@@ -139,13 +141,13 @@ struct DateTime
 	 *
 	 * This returns a common SQL/XML format: "YYYY-MM-DD HH:MM:SS".
 	 * @return the string representation of the date and time. */
-	RString GetString() const;
+	std::string GetString() const;
 	/**
 	 * @brief Attempt to turn a string into a DateTime.
 	 *
 	 * @param sDateTime the string to attempt to convert.
 	 * @return true if the conversion worked, or false otherwise. */
-	bool FromString( const RString sDateTime );
+	bool FromString( const std::string sDateTime );
 };
 
 #endif

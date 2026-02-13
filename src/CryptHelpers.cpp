@@ -1,5 +1,10 @@
-#include "global.h"
 #include "CryptHelpers.h"
+
+#include <cstring>
+#include <string>
+
+#include "global.h"
+#include "tomcrypt.h"
 
 PRNGWrapper::PRNGWrapper( const struct ltc_prng_descriptor *pPRNGDescriptor )
 {
@@ -57,7 +62,7 @@ void RSAKeyWrapper::Generate( PRNGWrapper &prng, int iKeyLenBits )
 	ASSERT( iRet == CRYPT_OK );
 }
 
-bool RSAKeyWrapper::Load( const RString &sKey, RString &sError )
+bool RSAKeyWrapper::Load( const std::string &sKey, std::string &sError )
 {
 	Unload();
 

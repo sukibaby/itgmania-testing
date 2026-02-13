@@ -1,11 +1,13 @@
-#include "global.h"
 #include "ColumnCues.h"
-#include "GameState.h"
-#include "TimingData.h"
 
-void ColumnCue::CalculateColumnCues(const NoteData &in, std::vector<ColumnCue> &out, float minDuration)
+#include <vector>
+
+#include "GameState.h"
+#include "NoteData.h"
+#include "NoteTypes.h"
+
+void ColumnCue::CalculateColumnCues(const NoteData &in, TimingData * timing, std::vector<ColumnCue> &out, float minDuration)
 {
-	TimingData *timing = GAMESTATE->GetProcessedTimingData();
 	NoteData::all_tracks_const_iterator curr_note = in.GetTapNoteRangeAllTracks(0, MAX_NOTE_ROW);
 	int curr_row = -1;
 

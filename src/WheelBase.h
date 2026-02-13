@@ -1,20 +1,20 @@
 #ifndef WHEELBASE_H
 #define WHEELBASE_H
 
-#include "AutoActor.h"
-#include "ActorFrame.h"
-#include "RageSound.h"
-#include "GameConstantsAndTypes.h"
-#include "ScreenMessage.h"
-#include "ScrollBar.h"
-#include "RageTimer.h"
-#include "WheelItemBase.h"
-#include "ThemeMetric.h"
-#include "LuaExpressionTransform.h"
-
-#include <cmath>
+#include <climits>
+#include <string>
 #include <vector>
 
+#include "ActorFrame.h"
+#include "AutoActor.h"
+#include "EnumHelper.h"
+#include "LuaExpressionTransform.h"
+#include "RageSound.h"
+#include "RageTimer.h"
+#include "RageTypes.h"
+#include "ScrollBar.h"
+#include "ThemeMetric.h"
+#include "WheelItemBase.h"
 
 #define NUM_WHEEL_ITEMS		((int)std::ceil(NUM_WHEEL_ITEMS_TO_DRAW+2))
 
@@ -24,13 +24,12 @@ enum WheelState {
 	STATE_FLYING_ON_AFTER_NEXT_SORT,
 	STATE_ROULETTE_SPINNING,
 	STATE_ROULETTE_SLOWING_DOWN,
-	STATE_RANDOM_SPINNING,
 	STATE_LOCKED,
 	NUM_WheelState,
 	WheelState_Invalid,
 };
-const RString& WheelStateToString( WheelState ws );
-WheelState StringToWheelState( const RString& sDC );
+const std::string& WheelStateToString( WheelState ws );
+WheelState StringToWheelState( const std::string& sDC );
 LuaDeclareType( WheelState );
 
 /** @brief A wheel with data elements. */
@@ -38,7 +37,7 @@ class WheelBase : public ActorFrame
 {
 public:
 	virtual ~WheelBase();
-	virtual void Load( RString sType );
+	virtual void Load( std::string sType );
 	void BeginScreen();
 
 	virtual void Update( float fDeltaTime );
@@ -46,7 +45,7 @@ public:
 	virtual void Move(int n);
 	void ChangeMusicUnlessLocked( int n ); /* +1 or -1 */
 	virtual void ChangeMusic(int dist); /* +1 or -1 */
-	virtual void SetOpenSection( RString group ) { }
+	virtual void SetOpenSection( std::string group ) { }
 
 	// Return true if we're moving fast automatically.
 	int IsMoving() const;
@@ -68,7 +67,7 @@ public:
 	WheelItemBaseData* GetItem(unsigned int index);
 	WheelItemBaseData* LastSelected();
 	WheelItemBase *GetWheelItem( int i ) { if( i < 0 || i >= (int) m_WheelBaseItems.size() ) return nullptr; return m_WheelBaseItems[i]; }
-	RString GetExpandedSectionName() { return m_sExpandedSectionName; }
+	std::string GetExpandedSectionName() { return m_sExpandedSectionName; }
 	int GetCurrentIndex() { return m_iSelection; }
 
 	WheelItemDataType GetSelectedType() { return m_CurWheelItemData[m_iSelection]->m_Type; }
@@ -96,7 +95,7 @@ protected:
 
 	bool		m_bEmpty;
 	int		m_iSelection;		// index into m_CurWheelItemBaseData
-	RString		m_sExpandedSectionName;
+	std::string		m_sExpandedSectionName;
 
 	int			m_iSwitchesLeftInSpinDown;
 	float		m_fLockedWheelVelocity;

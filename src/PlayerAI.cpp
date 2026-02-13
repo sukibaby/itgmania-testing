@@ -1,10 +1,16 @@
-#include "global.h"
 #include "PlayerAI.h"
-#include "RageUtil.h"
-#include "IniFile.h"
+
+#include <string>
+
+#include "GameConstantsAndTypes.h"
 #include "GameState.h"
+#include "IniFile.h"
+#include "LuaManager.h"
 #include "PlayerState.h"
+#include "RageUtil.h"
 #include "RageUtil/RandomNumbers.h"
+#include "XmlFile.h"
+#include "global.h"
 
 #define AI_PATH "Data/AI.ini"
 
@@ -70,7 +76,7 @@ void PlayerAI::InitFromDisk()
 	{
 		for( int i=0; i<NUM_SKILL_LEVELS; i++ )
 		{
-			RString sKey = ssprintf("Skill%d", i);
+			std::string sKey = ssprintf("Skill%d", i);
 			XNode* pNode = ini.GetChild(sKey);
 			TapScoreDistribution& dist = g_Distributions[i];
 			if( pNode == nullptr )
@@ -137,7 +143,7 @@ TapNoteScore PlayerAI::GetTapNoteScore( const PlayerState* pPlayerState )
 		ASSERT_M( pPlayerState->m_PlayerController == PC_CPU, ssprintf("%i", pPlayerState->m_PlayerController) );
 
 		iCpuSkill -= iSumOfAttackLevels*3;
-		CLAMP( iCpuSkill, 0, NUM_SKILL_LEVELS-1 );
+		rage_clamp( iCpuSkill, 0, NUM_SKILL_LEVELS-1 );
 	}
 
 	TapScoreDistribution& distribution = g_Distributions[iCpuSkill];

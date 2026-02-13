@@ -1,6 +1,9 @@
 #ifndef HidDevice_H
 #define HidDevice_H
 
+#include <cstddef>
+#include <string>
+
 #include "hidapi.h"
 #include "vector"
 
@@ -33,7 +36,7 @@ private:
 	HidDeviceInfo foundDeviceInfo{};
 	hid_device* handle{ nullptr };
 
-	static const RString GetPidsString(const std::vector<int> pids);
+	static const std::string GetPidsString(const std::vector<int> pids);
 
 	//Info necessary to search the connected device once a connection attempt is made
 	int vid;

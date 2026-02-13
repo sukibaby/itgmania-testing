@@ -3,8 +3,10 @@
 #ifndef LOW_LEVEL_WINDOW_X11_H
 #define LOW_LEVEL_WINDOW_X11_H
 
-#include "RageDisplay.h" // VideoModeParams
+#include <string>
+
 #include "LowLevelWindow.h"
+#include "RageDisplay.h"  // VideoModeParams
 
 class LowLevelWindow_X11 : public LowLevelWindow
 {
@@ -12,10 +14,10 @@ public:
 	LowLevelWindow_X11();
 	~LowLevelWindow_X11();
 
-	void *GetProcAddress(RString s);
-	RString TryVideoMode(const VideoModeParams &p, bool &bNewDeviceOut);
+	void *GetProcAddress(std::string s);
+	std::string TryVideoMode(const VideoModeParams &p, bool &bNewDeviceOut);
 	void LogDebugInformation() const;
-	bool IsSoftwareRenderer( RString &sError );
+	bool IsSoftwareRenderer( std::string &sError );
 	void SwapBuffers();
 
 	const ActualVideoModeParams GetActualVideoModeParams() const { return CurrentParams; }

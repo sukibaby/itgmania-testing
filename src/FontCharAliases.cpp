@@ -1,15 +1,41 @@
-#include "global.h"
 #include "FontCharAliases.h"
-#include "Font.h"
-#include "RageUtil.h"
-#include "RageLog.h"
 
 #include <map>
+#include <string>
+
+#include "Font.h"
+#include "RageUtil.h"
+#include "StdString.h"
+
+namespace {
+char sstolower(char ch) noexcept {
+  return (ch >= 'A' && ch <= 'Z') ? char(ch + 'a' - 'A') : ch;
+}
+
+int ssicmp(const char* pA1, const char* pA2) {
+  char f;
+  char l;
+
+  do {
+    f = sstolower(*(pA1++));
+    l = sstolower(*(pA2++));
+  } while ((f) && (f == l));
+
+  return (int)(f - l);
+}
+
+struct StdStringLessNoCase {
+  inline bool operator()(
+      const std::string& sLeft, const std::string& sRight) const {
+    return ssicmp(sLeft.c_str(), sRight.c_str()) < 0;
+  }
+};
+}
 
 // Map from "&foo;" to a UTF-8 string.
-typedef std::map<RString, wchar_t, StdString::StdStringLessNoCase> aliasmap;
+typedef std::map<std::string, wchar_t, StdStringLessNoCase> aliasmap;
 static aliasmap CharAliases;
-static std::map<RString,RString> CharAliasRepl;
+static std::map<std::string,std::string> CharAliasRepl;
 
 /* Editing this file in VC6 will be rather ugly, since it contains a lot of UTF-8.
  * Just don't change anything you can't read. :) */
@@ -362,15 +388,15 @@ static void InitCharAliases()
 
 	for(aliasmap::const_iterator i = CharAliases.begin(); i != CharAliases.end(); ++i)
 	{
-		RString from = i->first;
-		RString to = WcharToUTF8(i->second);
+		std::string from = i->first;
+		std::string to = WcharToUTF8(i->second);
 		MakeLower(from);
 		CharAliasRepl[from] = to;
 	}
 }
 
 // Replace all &markers; and &#NNNN;s with UTF-8.
-void FontCharAliases::ReplaceMarkers( RString &sText )
+void FontCharAliases::ReplaceMarkers( std::string &sText )
 {
 	InitCharAliases();
 	ReplaceEntityText( sText, CharAliasRepl );
@@ -378,7 +404,7 @@ void FontCharAliases::ReplaceMarkers( RString &sText )
 }
 
 // Replace all &markers; and &#NNNN;s with UTF-8.
-bool FontCharAliases::GetChar( RString &codepoint, wchar_t &ch )
+bool FontCharAliases::GetChar( std::string &codepoint, wchar_t &ch )
 {
 	InitCharAliases();
 	aliasmap::const_iterator i = CharAliases.find(codepoint);

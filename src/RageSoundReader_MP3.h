@@ -3,8 +3,9 @@
 #ifndef RAGE_SOUND_READER_MP3_H
 #define RAGE_SOUND_READER_MP3_H
 
+#include <string>
+
 #include "RageSoundReader_FileReader.h"
-#include "RageFile.h"
 
 struct madlib_t;
 
@@ -25,7 +26,7 @@ public:
 	unsigned GetNumChannels() const { return Channels; }
 	int GetSampleRate() const { return SampleRate; }
 	int GetNextSourceFrame() const;
-	bool SetProperty( const RString &sProperty, float fValue );
+	bool SetProperty( const std::string &sProperty, float fValue );
 
 	RageSoundReader_MP3();
 	~RageSoundReader_MP3();

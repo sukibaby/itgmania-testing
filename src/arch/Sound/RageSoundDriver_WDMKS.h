@@ -1,12 +1,13 @@
 #ifndef RAGE_SOUND_WAVEOUT_H
 #define RAGE_SOUND_WAVEOUT_H
 
-#include "RageSoundDriver.h"
-#include "RageThreads.h"
+#include <windows.h>
 
 #include <cstdint>
+#include <string>
 
-#include <windows.h>
+#include "RageSoundDriver.h"
+#include "RageThreads.h"
 
 struct WinWdmStream;
 struct WinWdmFilter;
@@ -16,7 +17,7 @@ class RageSoundDriver_WDMKS: public RageSoundDriver
 public:
 	RageSoundDriver_WDMKS();
 	~RageSoundDriver_WDMKS();
-	RString Init();
+	std::string Init();
 
 	int64_t GetPosition() const;
 	float GetPlayLatency() const;
@@ -25,7 +26,7 @@ public:
 private:
 	static int MixerThread_start( void *p );
 	void MixerThread();
-	bool Fill( int iPacket, RString &sError );
+	bool Fill( int iPacket, std::string &sError );
 	void Read( void *pData, int iFrames, int iLastCursorPos, int iCurrentFrame );
 
 	RageThread MixingThread;

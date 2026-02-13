@@ -1,16 +1,16 @@
-#include "global.h"
 #include "MeasureInfo.h"
-#include "NoteData.h"
-#include "RageLog.h"
-#include "LocalizedString.h"
-#include "LuaBinding.h"
-#include "TimingData.h"
+
+#include <string>
+#include <vector>
+
 #include "GameState.h"
+#include "NoteData.h"
+#include "NoteTypes.h"
+#include "RageUtil.h"
 
-
-RString MeasureInfo::ToString() const
+std::string MeasureInfo::ToString() const
 {
-	std::vector<RString> asMeasureInfo;
+	std::vector<std::string> asMeasureInfo;
 	for (unsigned i = 0; i < npsPerMeasure.size(); i++)
 	{
 		asMeasureInfo.push_back(ssprintf("%.3f", npsPerMeasure[i]));
@@ -24,9 +24,9 @@ RString MeasureInfo::ToString() const
 	return join(",", asMeasureInfo);
 }
 
-void MeasureInfo::FromString(const RString& sValues)
+void MeasureInfo::FromString(const std::string& sValues)
 {
-	std::vector<RString> asValues;
+	std::vector<std::string> asValues;
 	split( sValues, ",", asValues, true );
 	int half_size = static_cast<int>(asValues.size()) / 2;
 
@@ -48,13 +48,12 @@ void MeasureInfo::FromString(const RString& sValues)
 	peakNps = peak_nps;
 }
 
-void MeasureInfo::CalculateMeasureInfo(const NoteData &in, MeasureInfo &out)
+void MeasureInfo::CalculateMeasureInfo(const NoteData &in, TimingData * timing, MeasureInfo &out)
 {
 	int lastRow = in.GetLastRow();
 	int lastRowMeasureIndex = 0;
 	int lastRowBeatIndex = 0;
 	int lastRowRemainder = 0;
-	TimingData *timing = GAMESTATE->GetProcessedTimingData();
 	timing->NoteRowToMeasureAndBeat(lastRow, lastRowMeasureIndex, lastRowBeatIndex, lastRowRemainder);
 
 	int totalMeasureCount = lastRowMeasureIndex + 1;

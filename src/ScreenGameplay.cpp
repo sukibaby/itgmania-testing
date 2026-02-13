@@ -1,71 +1,98 @@
-#include "global.h"
 #include "ScreenGameplay.h"
-#include "SongManager.h"
-#include "ScreenManager.h"
-#include "GameConstantsAndTypes.h"
-#include "PrefsManager.h"
-#include "GamePreferences.h"
-#include "GameManager.h"
-#include "RageFileManager.h"
-#include "Steps.h"
-#include "RageLog.h"
-#include "LifeMeter.h"
-#include "LifeMeterBar.h"
-#include "GameState.h"
-#include "ScoreDisplayNormal.h"
-#include "ScoreDisplayPercentage.h"
-#include "ScoreDisplayLifeTime.h"
-#include "ScoreDisplayOni.h"
-#include "ScoreDisplayRave.h"
-#include "ThemeManager.h"
-#include "RageTimer.h"
-#include "ScoreKeeperNormal.h"
-#include "ScoreKeeperRave.h"
-#include "LyricsLoader.h"
-#include "ActorUtil.h"
-#include "ArrowEffects.h"
-#include "RageSoundManager.h"
-#include "RageSoundReader.h"
-#include "RageTextureManager.h"
-#include "GameSoundManager.h"
-#include "CombinedLifeMeterTug.h"
-#include "Inventory.h"
-#include "Course.h"
-#include "NoteDataUtil.h"
-#include "UnlockManager.h"
-#include "LightsManager.h"
-#include "ProfileManager.h"
-#include "StatsManager.h"
-#include "PlayerAI.h" // for NUM_SKILL_LEVELS
-#include "DancingCharacters.h"
-#include "ScreenDimensions.h"
-#include "ThemeMetric.h"
-#include "PlayerState.h"
-#include "Style.h"
-#include "LuaManager.h"
-#include "MemoryCardManager.h"
-#include "CommonMetrics.h"
-#include "InputMapper.h"
-#include "Game.h"
-#include "ActiveAttackList.h"
-#include "Player.h"
-#include "StepsDisplay.h"
-#include "XmlFile.h"
-#include "Background.h"
-#include "Foreground.h"
-#include "ScreenSaveSync.h"
-#include "AdjustSync.h"
-#include "SongUtil.h"
-#include "Song.h"
-#include "XmlFileUtil.h"
-#include "Profile.h" // for replay data stuff
-#include "RageDisplay.h"
-#include "GameplayHelpers.h"
-#include "RageUtil/Regex.h"
 
+#include <algorithm>
 #include <cmath>
 #include <cstddef>
+#include <cstdio>
+#include <string>
 #include <vector>
+
+#include "ActiveAttackList.h"
+#include "Actor.h"
+#include "ActorUtil.h"
+#include "AdjustSync.h"
+#include "ArrowEffects.h"
+#include "Attack.h"
+#include "Background.h"
+#include "BitmapText.h"
+#include "CombinedLifeMeterTug.h"
+#include "CommonMetrics.h"
+#include "Course.h"
+#include "DancingCharacters.h"
+#include "Difficulty.h"
+#include "EnumHelper.h"
+#include "Foreground.h"
+#include "Game.h"
+#include "GameConstantsAndTypes.h"
+#include "GameInput.h"
+#include "GameManager.h"
+#include "GamePreferences.h"
+#include "GameSoundManager.h"
+#include "GameState.h"
+#include "GameplayHelpers.h"
+#include "InputFilter.h"
+#include "InputMapper.h"
+#include "Inventory.h"
+#include "LifeMeter.h"
+#include "LifeMeterBar.h"
+#include "LightsManager.h"
+#include "LuaManager.h"
+#include "LyricsLoader.h"
+#include "MemoryCardManager.h"
+#include "MessageManager.h"
+#include "ModsGroup.h"
+#include "NoteData.h"
+#include "NoteDataUtil.h"
+#include "NoteDataWithScoring.h"
+#include "NoteTypes.h"
+#include "Player.h"
+#include "PlayerAI.h"  // for NUM_SKILL_LEVELS
+#include "PlayerNumber.h"
+#include "PlayerOptions.h"
+#include "PlayerState.h"
+#include "Preference.h"
+#include "PrefsManager.h"
+#include "Profile.h"  // for replay data stuff
+#include "ProfileManager.h"
+#include "RageDisplay.h"
+#include "RageInputDevice.h"
+#include "RageLog.h"
+#include "RageSoundManager.h"
+#include "RageSoundReader.h"
+#include "RageThreads.h"
+#include "RageTimer.h"
+#include "RageTypes.h"
+#include "RageUtil.h"
+#include "RageUtil/Regex.h"
+#include "ScoreDisplayLifeTime.h"
+#include "ScoreDisplayNormal.h"
+#include "ScoreDisplayOni.h"
+#include "ScoreDisplayPercentage.h"
+#include "ScoreDisplayRave.h"
+#include "ScoreKeeperNormal.h"
+#include "ScoreKeeperRave.h"
+#include "ScreenDimensions.h"
+#include "ScreenManager.h"
+#include "ScreenMessage.h"
+#include "ScreenSaveSync.h"
+#include "ScreenWithMenuElements.h"
+#include "Song.h"
+#include "SongManager.h"
+#include "SongOptions.h"
+#include "SongUtil.h"
+#include "StatsManager.h"
+#include "StdString.h"
+#include "Steps.h"
+#include "StepsDisplay.h"
+#include "StepsUtil.h"
+#include "Style.h"
+#include "ThemeManager.h"
+#include "ThemeMetric.h"
+#include "Trail.h"
+#include "UnlockManager.h"
+#include "XmlFile.h"
+#include "XmlFileUtil.h"
+#include "global.h"
 
 // Defines
 #define SHOW_LIFE_METER_FOR_DISABLED_PLAYERS	THEME->GetMetricB(m_sName,"ShowLifeMeterForDisabledPlayers")
@@ -75,7 +102,7 @@
 
 static ThemeMetric<float> INITIAL_BACKGROUND_BRIGHTNESS	("ScreenGameplay","InitialBackgroundBrightness");
 static ThemeMetric<float> SECONDS_BETWEEN_COMMENTS	("ScreenGameplay","SecondsBetweenComments");
-static ThemeMetric<RString> SCORE_KEEPER_CLASS		("ScreenGameplay","ScoreKeeperClass");
+static ThemeMetric<std::string> SCORE_KEEPER_CLASS		("ScreenGameplay","ScoreKeeperClass");
 static ThemeMetric<bool> FORCE_IMMEDIATE_FAIL_FOR_BATTERY("ScreenGameplay", "ForceImmediateFailForBattery");
 
 AutoScreenMessage( SM_PlayGo );
@@ -526,7 +553,7 @@ void ScreenGameplay::Init()
 	float left_edge[NUM_PLAYERS]= {0.0f, SCREEN_WIDTH / 2.0f};
 	FOREACH_EnabledPlayerInfo( m_vPlayerInfo, pi )
 	{
-		RString sName = ssprintf("Player%s", pi->GetName().c_str());
+		std::string sName = ssprintf("Player%s", pi->GetName().c_str());
 		pi->m_pPlayer->SetName( sName );
 
 		Style const* style= GAMESTATE->GetCurrentStyle(pi->m_pn);
@@ -788,7 +815,7 @@ void ScreenGameplay::Init()
 
 	FOREACH_EnabledPlayerInfo( m_vPlayerInfo, pi )
 	{
-		RString sType = PLAYER_TYPE;
+		std::string sType = PLAYER_TYPE;
 		if( pi->m_bIsDummy )
 			sType += "Dummy";
 		pi->m_pPlayer->Init(
@@ -952,11 +979,11 @@ void ScreenGameplay::InitSongQueues()
 				if( iter != vpSteps.end() )
 				{
 					iIndexBase = iter - vpSteps.begin();
-					CLAMP( iIndexBase, 0, vpSteps.size() - GAMESTATE->m_iNumMultiplayerNoteFields );
+					rage_clamp( iIndexBase, 0, vpSteps.size() - GAMESTATE->m_iNumMultiplayerNoteFields );
 				}
 
 				int iIndexToUse = iIndexBase + pi->m_iAddToDifficulty;
-				CLAMP( iIndexToUse, 0, vpSteps.size()-1 );
+				rage_clamp( iIndexToUse, 0, vpSteps.size()-1 );
 
 				Steps *pSteps = vpSteps[iIndexToUse];
 				pi->m_vpStepsQueue[i] = pSteps;
@@ -1067,7 +1094,7 @@ void ScreenGameplay::SetupSong( int iSongIndex )
 		}
 
 		{
-			RString sType;
+			std::string sType;
 			switch( GAMESTATE->m_SongOptions.GetCurrent().m_SoundEffectType )
 			{
 				case SoundEffectType_Off:	sType = "SoundEffectControl_Off";	break;
@@ -1356,8 +1383,8 @@ void ScreenGameplay::LoadLights()
 	}
 
 	// No explicit lights.  Create autogen lights.
-	RString sDifficulty = PREFSMAN->m_sLightsStepsDifficulty;
-	std::vector<RString> asDifficulties;
+	std::string sDifficulty = PREFSMAN->m_sLightsStepsDifficulty;
+	std::vector<std::string> asDifficulties;
 	split( sDifficulty, ",", asDifficulties );
 
 	// Always use the steps from the primary steps type so that lights are consistent over single and double styles.
@@ -1516,7 +1543,7 @@ void ScreenGameplay::PlayTicks()
 }
 
 /* Play announcer "type" if it's been at least fSeconds since the last announcer. */
-void ScreenGameplay::PlayAnnouncer( const RString &type, float fSeconds, float *fDeltaSeconds )
+void ScreenGameplay::PlayAnnouncer( const std::string &type, float fSeconds, float *fDeltaSeconds )
 {
 	if( GAMESTATE->m_fOpponentHealthPercent == 0 )
 		return; // Shut the announcer up
@@ -2019,7 +2046,7 @@ void ScreenGameplay::UpdateHasteRate()
 
 		if( bAnyPlayerHitAllNotes )
 			GAMESTATE->m_fHasteRate += 0.1f;
-		CLAMP( GAMESTATE->m_fHasteRate, -1.0f, +1.0f );
+		rage_clamp( GAMESTATE->m_fHasteRate, -1.0f, +1.0f );
 
 		GAMESTATE->m_fLastHasteUpdateMusicSeconds = GAMESTATE->m_Position.m_fMusicSeconds;
 	}
@@ -2043,7 +2070,7 @@ void ScreenGameplay::UpdateHasteRate()
 	}
 	if( fMaxLife <= m_fHasteLifeSwitchPoint )
 		GAMESTATE->m_fHasteRate = SCALE( fMaxLife, 0.0f, m_fHasteLifeSwitchPoint, -1.0f, 0.0f );
-	CLAMP( GAMESTATE->m_fHasteRate, -1.0f, +1.0f );
+	rage_clamp( GAMESTATE->m_fHasteRate, -1.0f, +1.0f );
 
 	float fSpeed = 1.0f;
 	// If there are no turning points or no add amounts, the bad themer probably thinks that's a way to disable haste.
@@ -2078,7 +2105,7 @@ void ScreenGameplay::UpdateHasteRate()
 	{
 		speed_add= scale_to_high * options_haste;
 	}
-	CLAMP(speed_add, -1.0f, 1.0f);
+	rage_clamp(speed_add, -1.0f, 1.0f);
 
 	// Only adjust speed_add by AccumulatedHasteSeconds when the player is losing seconds.  Otherwise, gaining the first second is interfered with.
 	bool losing_seconds= false;
@@ -2261,7 +2288,7 @@ void ScreenGameplay::SendCrossedMessages()
 						FOREACH_EnabledPlayerNumberInfo(m_vPlayerInfo, pi)
 						{
 							const Style *pStyle = GAMESTATE->GetCurrentStyle(pi->m_pn);
-							RString sButton = pStyle->ColToButtonName( t );
+							std::string sButton = pStyle->ColToButtonName( t );
 							Message msg( i == 0 ? "NoteCrossed" : "NoteWillCross" );
 							msg.SetParam( "ButtonName", sButton );
 							msg.SetParam( "NumMessagesFromCrossed", i );
@@ -2272,7 +2299,7 @@ void ScreenGameplay::SendCrossedMessages()
 					else
 					{
 						const Style *pStyle = GAMESTATE->GetCurrentStyle(PLAYER_INVALID);
-						RString sButton = pStyle->ColToButtonName( t );
+						std::string sButton = pStyle->ColToButtonName( t );
 						Message msg( i == 0 ? "NoteCrossed" : "NoteWillCross" );
 						msg.SetParam( "ButtonName", sButton );
 						msg.SetParam( "NumMessagesFromCrossed", i );
@@ -2284,7 +2311,7 @@ void ScreenGameplay::SendCrossedMessages()
 					MESSAGEMAN->Broadcast( (MessageID)(Message_NoteCrossed + i) );
 				if( i == 0  &&  iNumTracksWithTapOrHoldHead >= 2 )
 				{
-					RString sMessageName = "NoteCrossedJump";
+					std::string sMessageName = "NoteCrossedJump";
 					MESSAGEMAN->Broadcast( sMessageName );
 				}
 			}
@@ -2911,7 +2938,7 @@ void ScreenGameplay::HandleScreenMessage( const ScreenMessage SM )
 	else if( ScreenMessageHelpers::ScreenMessageToString(SM).find("0Combo") != std::string::npos )
 	{
 		int iCombo;
-		RString sCropped = ScreenMessageHelpers::ScreenMessageToString(SM).substr(3);
+		std::string sCropped = ScreenMessageHelpers::ScreenMessageToString(SM).substr(3);
 		sscanf(sCropped.c_str(),"%d%*s",&iCombo);
 		PlayAnnouncer( ssprintf("gameplay %d combo",iCombo), 2 );
 	}
@@ -3134,7 +3161,7 @@ void ScreenGameplay::SaveReplay()
 			p->AppendChild( pi->m_pPlayer->GetNoteData().CreateNode() );
 
 			// Find a file name for the replay
-			std::vector<RString> files;
+			std::vector<std::string> files;
 			GetDirListing( "Save/Replays/replay*", files, false, false );
 			sort( files.begin(), files.end() );
 
@@ -3144,7 +3171,7 @@ void ScreenGameplay::SaveReplay()
 			for( int i = files.size()-1; i >= 0; --i )
 			{
 				static Regex re( "^replay([0-9]{5})\\....$" );
-				std::vector<RString> matches;
+				std::vector<std::string> matches;
 				if( !re.Compare( files[i], matches ) )
 					continue;
 
@@ -3153,7 +3180,7 @@ void ScreenGameplay::SaveReplay()
 				break;
 			}
 
-			RString sFileName = ssprintf( "replay%05d.xml", iIndex );
+			std::string sFileName = ssprintf( "replay%05d.xml", iIndex );
 
 			XmlFileUtil::SaveToFile( p, "Save/Replays/"+sFileName );
 			RageUtil::SafeDelete( p );

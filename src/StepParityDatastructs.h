@@ -1,15 +1,19 @@
 #ifndef STEP_PARITY_DATASTRUCTS_H
 #define STEP_PARITY_DATASTRUCTS_H
 
-#include "GameConstantsAndTypes.h"
-#include "NoteData.h"
-#include <queue>
+#include <cstdint>
+#include <string>
 #include <unordered_map>
+#include <vector>
+
+#include "GameConstantsAndTypes.h"
+#include "NoteTypes.h"
 
 namespace StepParity {
-
+	
 	const int INVALID_COLUMN = -1;
 	const float CLM_SECOND_INVALID = -1;
+	const int MAX_COLUMNS = 16;
 
 	enum Foot
 	{
@@ -21,15 +25,24 @@ namespace StepParity {
 		NUM_Foot
 	};
 
+	/// @brief A vector of Foot values, which represents the player's
+	/// foot placement on the dance stage.
+	typedef std::vector<Foot> FootPlacement;
+
+	const std::vector<uint16_t> FOOT_MASKS = {0,1,2,4,8};
+	
+	const int16_t FOOT_MASK_LEFT = FOOT_MASKS[Foot::LEFT_HEEL] | FOOT_MASKS[Foot::LEFT_TOE];
+	const int16_t FOOT_MASK_RIGHT = FOOT_MASKS[Foot::RIGHT_HEEL] | FOOT_MASKS[Foot::RIGHT_TOE];
+
 	const std::vector<StepParity::Foot> FEET = {LEFT_HEEL, LEFT_TOE, RIGHT_HEEL, RIGHT_TOE};
 	// A map for getting the other part of the foot, when you don't actually care
 	// what part it is.
 	// OTHER_PART_OF_FOOT[LEFT_HEEL] == LEFT_TOE
 	const std::vector<StepParity::Foot> OTHER_PART_OF_FOOT = {NONE, LEFT_TOE, LEFT_HEEL, RIGHT_TOE, RIGHT_HEEL};
 	
-	const RString FEET_LABELS[] = {"N", "L", "l", "R", "r", "5??", "6??"};
-	const RString TapNoteTypeShortNames[] = { "Empty", "Tap",  "Mine",  "Attack", "AutoKeySound", "Fake", "", "" };
-	const RString TapNoteSubTypeShortNames[] = { "Hold", "Roll", "", "" };	
+	const std::string FEET_LABELS[] = {"N", "L", "l", "R", "r", "5??", "6??"};
+	const std::string TapNoteTypeShortNames[] = { "Empty", "Tap",  "Mine",  "Attack", "AutoKeySound", "Fake", "", "" };
+	const std::string TapNoteSubTypeShortNames[] = { "Hold", "Roll", "", "" };
 
 	enum Cost
 	{
@@ -53,7 +66,7 @@ namespace StepParity {
 		COST_TOTAL,
 		NUM_Cost
 	};
-	const RString COST_LABELS[] = {
+	const std::string COST_LABELS[] = {
 		"DOUBLESTEP",
 		"BRACKETJACK",
 		"JACK",
@@ -89,61 +102,60 @@ namespace StepParity {
 		std::vector<int> downArrows;
 		std::vector<int> sideArrows;
 		
+		std::vector<StagePoint> avgPoints;
+		std::vector<float> distances;
+		std::vector<float> facingXPenalties;
+		std::vector<float> facingYPenalties;
+		std::unordered_map < int, std::vector<FootPlacement>> permuteCache;
+		
 		StageLayout(StepsType t,
 					 const std::vector<StagePoint>& c,
 					 const std::vector<int> & u,
 					 const std::vector<int> & d,
 					 const std::vector<int> & s) : type(t), columns(c), upArrows(u), downArrows(d), sideArrows(s) {
 			this->columnCount = static_cast<int>(this->columns.size());
+			this->preCalculateStuff();
+			this->preGeneratePermutations();
+			
 		}
 		
 		
-		bool bracketCheck(int column1, int column2);
-		bool isSideArrow(int column);
-		bool isUpArrow(int column);
-		bool isDownArrow(int column);
-		float getDistanceSq(int c1, int c2);
-		float getDistanceSq(StagePoint p1, StagePoint p2);
-		float getXDifference(int leftIndex, int rightIndex);
-		float getYDifference(int leftIndex, int rightIndex);
-		StagePoint averagePoint(int leftIndex, int rightIndex);
-		float getPlayerAngle(int c1, int c2);
-		float getPlayerAngle(StepParity::StagePoint left, StepParity::StagePoint right);
+		bool bracketCheck(int column1, int column2) const;
+		bool isSideArrow(int column) const;
+		bool isUpArrow(int column) const;
+		bool isDownArrow(int column) const;
+		float getDistanceSq(int c1, int c2) const;
+		float getDistanceSq(StagePoint p1, StagePoint p2) const;
+		float getDistance(int leftIndex, int rightIndex) const;
+		float getXFacingPenalty(int leftIndex, int rightIndex) const;
+		float getYFacingPenalty(int leftIndex, int rightIndex) const;
+		float getXDifference(int leftIndex, int rightIndex) const;
+		float getYDifference(int leftIndex, int rightIndex) const;
+		StagePoint averagePoint(int leftIndex, int rightIndex) const;
+		float getPlayerAngle(int c1, int c2) const;
+		float getPlayerAngle(StepParity::StagePoint left, StepParity::StagePoint right) const;
+		
+		void preCalculateStuff();
+		void preGeneratePermutations();
+		std::vector<StepParity::FootPlacement> PermuteFootPlacements(unsigned int, StepParity::FootPlacement columns, unsigned long column);
+		
 	};
-
-	/// @brief A vector of Foot values, which represents the player's
-	/// foot placement on the dance stage.
-	typedef std::vector<Foot> FootPlacement;
 
 	/// @brief Represents a specific possible state of the player's position
 	/// for a given row of the step chart.
 	struct State {
-		FootPlacement columns;	 // what the feet are hitting on this row
-		FootPlacement combinedColumns; // The resulting position of the player
-		FootPlacement movedFeet; // Any feet that have moved from the previous state to this one
-		FootPlacement holdFeet;  // Any feet that stayed in place due to a hold/roll note.
-
-		int whereTheFeetAre[NUM_Foot]; // the inverse of combinedColumns
-		int whatNoteTheFootIsHitting[NUM_Foot]; // the inverse of columns
-		bool didTheFootMove[NUM_Foot]; // the inverse of movedFeet
-		bool isTheFootHolding[NUM_Foot]; //inverse of holdFeet
+		StepParity::Foot combinedColumns[MAX_COLUMNS] = {}; // The resulting position of the player
 		
-		State(int columnCount)
-		{
-			columns = FootPlacement(columnCount, NONE);
-			combinedColumns = FootPlacement(columnCount, NONE);
-			movedFeet = FootPlacement(columnCount, NONE);
-			holdFeet = FootPlacement(columnCount, NONE);
-			
-			for(int i = 0; i < NUM_Foot; i++)
-			{
-				whatNoteTheFootIsHitting[i] = INVALID_COLUMN;
-				whereTheFeetAre[i] = INVALID_COLUMN;
-				didTheFootMove[i] = false;
-				isTheFootHolding[i] = false;
-			}
-		}
+		// masks that indicate which foot moved/is holding.
+		uint16_t moved_mask = 0;
+		uint16_t holding_mask = 0;
+		// mask equivalent of combinedColumns, 3 bits for each column
+		uint32_t combined_mask = 0;
 		
+		int whereTheFeetAre[NUM_Foot] = {}; // the inverse of combinedColumns
+		int whatNoteTheFootIsHitting[NUM_Foot] = {};
+		bool didTheFootMove[NUM_Foot] = {};
+		bool isTheFootHolding[NUM_Foot] = {};
 		
 		bool operator==(const State& other) const;
 	};
@@ -176,8 +188,7 @@ namespace StepParity {
 		std::vector<IntermediateNoteData> notes;
 		// Any active hold notes, including ones that started before this row
 		std::vector<IntermediateNoteData> holds;
-		// Column index of any holds that end on this row
-		std::set<int> holdTails;
+		
 		// If a mine occurred either on this row, or on a row on its own immediately
 		// preceding this one, the time of when that mine occurred, indexed by column.
 		std::vector<float> mines;
@@ -186,6 +197,12 @@ namespace StepParity {
 
 		FootPlacement columns;
 		std::vector<int> whereTheFeetAre;
+		
+		// bit masks for quick comparisons
+		uint16_t note_mask = 0;
+		uint16_t hold_mask = 0;
+		uint16_t mine_mask = 0;
+		uint16_t fake_mine_mask = 0;
 		
 		float second = 0;
 		float beat = 0;
@@ -199,14 +216,13 @@ namespace StepParity {
 			columnCount = _columnCount;
 			notes = std::vector<IntermediateNoteData>(columnCount);
 			holds = std::vector<IntermediateNoteData>(columnCount);
-			holdTails.clear();
 			mines = std::vector<float>(columnCount, 0);
 			fakeMines = std::vector<float>(columnCount, 0);
 			columns = std::vector<StepParity::Foot>(columnCount, StepParity::NONE);
 			whereTheFeetAre = std::vector<int>(StepParity::NUM_Foot, INVALID_COLUMN);
 		}
 		
-		void setFootPlacement(const std::vector<Foot> & footPlacement);
+		void setFootPlacement(const StepParity::State * state);
 		
 		bool operator==(const Row& other) const;
 		bool operator!=(const Row& other) const;
@@ -262,23 +278,14 @@ namespace StepParity {
 		int rowIndex = 0;
 		float second = 0;
 		
-		// Connections to, and the cost of moving to, the connected nodes
-		std::unordered_map<StepParityNode *, float> neighbors;
+		float totalCost = 0;
+		StepParityNode* previousNode = 0;
 		
-		~StepParityNode()
-		{
-			neighbors.clear();
-		}
 		StepParityNode(State *_state, float _second, int _rowIndex)
 		{
 			state = _state;
 			rowIndex = _rowIndex;
 			second = _second;
-		}
-		
-		int neighborCount()
-		{
-			return static_cast<int>(neighbors.size());
 		}
 	};
 };

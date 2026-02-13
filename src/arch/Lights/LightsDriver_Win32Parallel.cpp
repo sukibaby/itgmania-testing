@@ -1,6 +1,5 @@
 #include "global.h"
 #include "LightsDriver_Win32Parallel.h"
-#define WIN32_LEAN_AND_MEAN
 #include "windows.h"
 #include "RageUtil.h"
 
@@ -30,7 +29,7 @@ int CabinetLightToIndex( CabinetLight cl )
 
 int GameControllerAndGameButtonToIndex( GameController gc, GameButton gb )
 {
-	CLAMP( (int&)gb, 0, 4 );
+	rage_clamp( (int&)gb, 0, 4 );
 	return NUM_CabinetLight + gc*4 + gb;
 }
 

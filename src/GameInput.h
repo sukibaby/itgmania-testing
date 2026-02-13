@@ -1,6 +1,8 @@
 #ifndef GAME_INPUT_H
 #define GAME_INPUT_H
 
+#include <string>
+
 #include "EnumHelper.h"
 
 class InputScheme;
@@ -13,7 +15,7 @@ enum GameController
 	NUM_GameController,	/**< The number of controllers allowed. */
 	GameController_Invalid,
 };
-const RString& GameControllerToString( GameController mp );
+const std::string& GameControllerToString( GameController mp );
 LuaDeclareType( GameController );
 
 /** @brief the list of buttons StepMania recognizes. */
@@ -55,12 +57,15 @@ enum GameButton
 	GameButton_Invalid
 };
 
-RString GameButtonToString( const InputScheme* pInputs, GameButton i );
-RString GameButtonToLocalizedString( const InputScheme* pInputs, GameButton i );
-GameButton StringToGameButton( const InputScheme* pInputs, const RString& s );
+std::string GameButtonToString( const InputScheme* pInputs, GameButton i );
+std::string GameButtonToLocalizedString( const InputScheme* pInputs, GameButton i );
+GameButton StringToGameButton( const InputScheme* pInputs, const std::string& s );
 
 /** @brief A special way to loop through each game button. */
 #define FOREACH_GameButton_Custom( gb ) for( GameButton gb=GAME_BUTTON_CUSTOM_01; gb<NUM_GameButton; enum_add(gb, +1) )
+
+/** @brief A special way to loop through each menu button. */
+#define FOREACH_GameButton_Menu( gb ) for( GameButton gb=GAME_BUTTON_MENULEFT; gb<=GAME_BUTTON_BACK; enum_add(gb, +1) )
 
 #define GAME_BUTTON_NEXT		GAME_BUTTON_CUSTOM_01
 
@@ -214,8 +219,8 @@ struct GameInput
 	inline bool IsValid() const { return controller != GameController_Invalid && button != GameButton_Invalid; };
 	inline void MakeInvalid() { controller = GameController_Invalid; button = GameButton_Invalid; };
 
-	RString ToString( const InputScheme* pInputs ) const;
-	bool FromString( const InputScheme* pInputs, const RString &s );
+	std::string ToString( const InputScheme* pInputs ) const;
+	bool FromString( const InputScheme* pInputs, const std::string &s );
 };
 
 #endif
@@ -225,7 +230,7 @@ struct GameInput
  * @author Chris Danford (c) 2001-2004
  * @section LICENSE
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -235,7 +240,7 @@ struct GameInput
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

@@ -1,15 +1,20 @@
-#include "global.h"
-#include "RageLog.h"
-#include "RageUtil.h"
-#include "RageUtil/Regex.h"
 #include "LyricsLoader.h"
-#include "ThemeManager.h"
-#include "RageFile.h"
-#include "Song.h"
 
-#include <map>
+#include <algorithm>
+#include <cstdio>
+#include <string>
 #include <vector>
 
+#include "LuaManager.h"
+#include "RageFile.h"
+#include "RageLog.h"
+#include "RageTypes.h"
+#include "RageUtil.h"
+#include "RageUtil/Regex.h"
+#include "Song.h"
+#include "StdString.h"
+#include "ThemeManager.h"
+#include "global.h"
 
 // TODO: Use a marker for default color instead of a specific color that may
 // accidentally get written back into a lyrics file.
@@ -20,7 +25,7 @@ static int CompareLyricSegments(const LyricSegment &seg1, const LyricSegment &se
    return seg1.m_fStartTime < seg2.m_fStartTime;
 }
 
-bool LyricsLoader::LoadFromLRCFile(const RString& sPath, Song& out)
+bool LyricsLoader::LoadFromLRCFile(const std::string& sPath, Song& out)
 {
 	LOG->Trace( "LyricsLoader::LoadFromLRCFile(%s)", sPath.c_str() );
 
@@ -37,7 +42,7 @@ bool LyricsLoader::LoadFromLRCFile(const RString& sPath, Song& out)
 
 	for(;;)
 	{
-		RString line;
+		std::string line;
 		int ret = input.GetLine( line );
 		if( ret == 0 )
 		{
@@ -59,15 +64,15 @@ bool LyricsLoader::LoadFromLRCFile(const RString& sPath, Song& out)
 		// "[data1] data2".  Ignore whitespace at the beginning of the line.
 		static Regex x("^ *\\[([^]]+)\\] *(.*)$");
 
-		std::vector<RString> matches;
+		std::vector<std::string> matches;
 		if(!x.Compare(line, matches))
 		{
 			continue;
 		}
 		ASSERT( matches.size() == 2 );
 
-		RString &sValueName = matches[0];
-		RString &sValueData = matches[1];
+		std::string &sValueName = matches[0];
+		std::string &sValueData = matches[1];
 		StripCrnl(sValueData);
 
 		// handle the data
@@ -94,7 +99,7 @@ bool LyricsLoader::LoadFromLRCFile(const RString& sPath, Song& out)
 		//float fLyricOffset = 0.0f;
 
 		// Enforce strict timestamp format to prevent crashing the program.
-		std::vector<RString> dummy;
+		std::vector<std::string> dummy;
 		static Regex timestamp("^([0-9]+:){0,2}[0-9]+(.[0-9]*)?$");
 		if (timestamp.Compare(sValueName, dummy))
 		{

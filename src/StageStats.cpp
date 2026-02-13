@@ -1,17 +1,30 @@
-#include "global.h"
 #include "StageStats.h"
-#include "GameState.h"
-#include "Steps.h"
-#include "Song.h"
-#include "RageLog.h"
-#include "PrefsManager.h"
-#include "PlayerState.h"
-#include "Style.h"
-#include "Profile.h"
-#include "ProfileManager.h"
 
+#include <algorithm>
+#include <climits>
+#include <string>
 #include <vector>
 
+#include "DateTime.h"
+#include "Difficulty.h"
+#include "EnumHelper.h"
+#include "GameConstantsAndTypes.h"
+#include "GameState.h"
+#include "HighScore.h"
+#include "LuaManager.h"
+#include "PlayerNumber.h"
+#include "PlayerStageStats.h"
+#include "PlayerState.h"
+#include "PrefsManager.h"
+#include "Profile.h"
+#include "ProfileManager.h"
+#include "RageLog.h"
+#include "RageThreads.h"
+#include "RageUtil.h"
+#include "Song.h"
+#include "Steps.h"
+#include "Style.h"
+#include "global.h"
 
 /* Arcade:	for the current stage (one song).
  * Nonstop/Oni/Endless:	 for current course (which usually contains multiple songs)
@@ -134,7 +147,7 @@ float StageStats::GetTotalPossibleStepsSeconds() const
 	return fSecs / m_fMusicRate;
 }
 
-static HighScore FillInHighScore( const PlayerStageStats &pss, const PlayerState &ps, RString sRankingToFillInMarker, RString sPlayerGuid )
+static HighScore FillInHighScore( const PlayerStageStats &pss, const PlayerState &ps, std::string sRankingToFillInMarker, std::string sPlayerGuid )
 {
 	HighScore hs;
 	hs.SetName( sRankingToFillInMarker );
@@ -146,12 +159,12 @@ static HighScore FillInHighScore( const PlayerStageStats &pss, const PlayerState
 	hs.SetStageAward( pss.m_StageAward );
 	hs.SetPeakComboAward( pss.m_PeakComboAward );
 
-	std::vector<RString> asModifiers;
+	std::vector<std::string> asModifiers;
 	{
-		RString sPlayerOptions = ps.m_PlayerOptions.GetStage().GetString();
+		std::string sPlayerOptions = ps.m_PlayerOptions.GetStage().GetString();
 		if( !sPlayerOptions.empty() )
 			asModifiers.push_back( sPlayerOptions );
-		RString sSongOptions = GAMESTATE->m_SongOptions.GetStage().GetString();
+		std::string sSongOptions = GAMESTATE->m_SongOptions.GetStage().GetString();
 		if( !sSongOptions.empty() )
 			asModifiers.push_back( sSongOptions );
 	}
@@ -203,12 +216,12 @@ void StageStats::FinalizeScores( bool bSummary )
 	// is a course or not... it's handled below in the switch.
 	FOREACH_HumanPlayer( p )
 	{
-		RString sPlayerGuid = PROFILEMAN->IsPersistentProfile(p) ? PROFILEMAN->GetProfile(p)->m_sGuid : RString("");
+		std::string sPlayerGuid = PROFILEMAN->IsPersistentProfile(p) ? PROFILEMAN->GetProfile(p)->m_sGuid : std::string("");
 		m_player[p].m_HighScore = FillInHighScore( m_player[p], *GAMESTATE->m_pPlayerState[p], RANKING_TO_FILL_IN_MARKER[p], sPlayerGuid );
 	}
 	FOREACH_EnabledMultiPlayer( mp )
 	{
-		RString sPlayerGuid = "00000000-0000-0000-0000-000000000000";	// FIXME
+		std::string sPlayerGuid = "00000000-0000-0000-0000-000000000000";	// FIXME
 		m_multiPlayer[mp].m_HighScore = FillInHighScore( m_multiPlayer[mp], *GAMESTATE->m_pMultiPlayerState[mp], "", sPlayerGuid );
 	}
 

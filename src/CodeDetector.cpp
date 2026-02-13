@@ -1,16 +1,18 @@
-#include "global.h"
 #include "CodeDetector.h"
-#include "PlayerOptions.h"
-#include "GameState.h"
-#include "InputQueue.h"
-#include "ThemeManager.h"
-#include "RageLog.h"
-#include "Game.h"
-#include "RageUtil.h"
-#include "PlayerState.h"
-#include "InputEventPlus.h"
-#include "OptionRowHandler.h"
 
+#include <string>
+
+#include "EnumHelper.h"
+#include "GameInput.h"
+#include "GameState.h"
+#include "InputMapper.h"
+#include "InputQueue.h"
+#include "ModsGroup.h"
+#include "PlayerNumber.h"
+#include "PlayerOptions.h"
+#include "PlayerState.h"
+#include "RageUtil.h"
+#include "ThemeManager.h"
 
 const char *CodeNames[] = {
 	"PrevSteps1",
@@ -67,15 +69,15 @@ bool CodeDetector::EnteredCode( GameController controller, Code code )
 }
 
 
-void CodeDetector::RefreshCacheItems( RString sClass )
+void CodeDetector::RefreshCacheItems( std::string sClass )
 {
 	if( sClass == "" )
 		sClass = "CodeDetector";
 	FOREACH_ENUM( Code, c )
 	{
 		InputQueueCode& item = g_CodeItems[c];
-		const RString sCodeName = CodeToString(c);
-		const RString sButtonsNames = THEME->GetMetric(sClass,sCodeName);
+		const std::string sCodeName = CodeToString(c);
+		const std::string sButtonsNames = THEME->GetMetric(sClass,sCodeName);
 
 		item.Load( sButtonsNames );
 	}
@@ -165,12 +167,12 @@ void CodeDetector::ChangeScrollSpeed( GameController controller, bool bIncrement
 	OptionRowData row;
 	OptionRowHandler hand;
 
-	RString sTitleOut;
+	std::string sTitleOut;
 	ScreenOptionsMaster::SetList( row, hand, "Speed", sTitleOut );
 
 	std::vector<ModeChoice>& entries = hand.ListEntries;
 
-	RString sScrollSpeed = po.GetScrollSpeedAsString();
+	std::string sScrollSpeed = po.GetScrollSpeedAsString();
 	if (sScrollSpeed.empty())
 		sScrollSpeed = "1x";
 

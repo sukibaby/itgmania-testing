@@ -1,6 +1,8 @@
 #ifndef AdjustSync_H
 #define AdjustSync_H
 
+#include <string>
+#include <utility>
 #include <vector>
 
 class TimingData;
@@ -37,8 +39,8 @@ public:
 	static void HandleSongEnd();
 	static void AutosyncOffset();
 	static void AutosyncTempo();
-	static void GetSyncChangeTextGlobal( std::vector<RString> &vsAddTo );
-	static void GetSyncChangeTextSong( std::vector<RString> &vsAddTo );
+	static void GetSyncChangeTextGlobal( std::vector<std::string> &vsAddTo );
+	static void GetSyncChangeTextSong( std::vector<std::string> &vsAddTo );
 
 	/** @brief The minimum number of steps to hit for syncing purposes. */
 	static const int OFFSET_SAMPLE_COUNT = 24;

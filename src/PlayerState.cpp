@@ -1,13 +1,22 @@
-#include "global.h"
 #include "PlayerState.h"
-#include "GameState.h"
-#include "RageLog.h"
-#include "RadarValues.h"
-#include "Steps.h"
-#include "Song.h"
 
+#include <algorithm>
+#include <string>
 #include <vector>
 
+#include "Attack.h"
+#include "EnumHelper.h"
+#include "GameConstantsAndTypes.h"
+#include "GameState.h"
+#include "LuaManager.h"
+#include "ModsGroup.h"
+#include "PlayerNumber.h"
+#include "RageLog.h"
+#include "Song.h"
+#include "SongOptions.h"
+#include "SongPosition.h"
+#include "Steps.h"
+#include "global.h"
 
 PlayerState::PlayerState()
 {
@@ -251,15 +260,15 @@ public:
 	static int GetPlayerOptionsArray( T* p, lua_State *L )
 	{
 		ModsLevel m = Enum::Check<ModsLevel>( L, 1 );
-		std::vector<RString> s;
+		std::vector<std::string> s;
 		p->m_PlayerOptions.Get(m).GetMods(s);
-		LuaHelpers::CreateTableFromArray<RString>( s, L );
+		LuaHelpers::CreateTableFromArray<std::string>( s, L );
 		return 1;
 	}
 	static int GetPlayerOptionsString( T* p, lua_State *L )
 	{
 		ModsLevel m = Enum::Check<ModsLevel>( L, 1 );
-		RString s = p->m_PlayerOptions.Get(m).GetString();
+		std::string s = p->m_PlayerOptions.Get(m).GetString();
 		LuaHelpers::Push( L, s );
 		return 1;
 	}

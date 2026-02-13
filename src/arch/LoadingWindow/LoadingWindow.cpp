@@ -1,11 +1,15 @@
-#include "global.h"
 #include "LoadingWindow.h"
-#include "PrefsManager.h"
-#include "RageLog.h"
-#include "arch/arch_default.h"
 
+#include <string>
 #include <vector>
 
+#include "PrefsManager.h"
+#include "RageLog.h"
+#include "RageUtil.h"
+#include "StdString.h"
+#include "arch/LoadingWindow/LoadingWindow_Null.h"
+#include "arch/arch_default.h"
+#include "global.h"
 
 LoadingWindow *LoadingWindow::Create()
 {
@@ -15,13 +19,13 @@ LoadingWindow *LoadingWindow::Create()
 	return new LoadingWindow_Null;
 #endif
 	// Don't load nullptr by default.
-	const RString drivers = "win32,macosx,gtk";
-	std::vector<RString> DriversToTry;
+	const std::string drivers = "win32,macosx,gtk";
+	std::vector<std::string> DriversToTry;
 	split( drivers, ",", DriversToTry, true );
 
 	ASSERT( DriversToTry.size() != 0 );
 
-	RString Driver;
+	std::string Driver;
 	LoadingWindow *ret = nullptr;
 
 	for( unsigned i = 0; ret == nullptr && i < DriversToTry.size(); ++i )
@@ -42,7 +46,7 @@ LoadingWindow *LoadingWindow::Create()
 		if( ret == nullptr )
 			continue;
 
-		RString sError = ret->Init();
+		std::string sError = ret->Init();
 		if( sError != "" )
 		{
 			LOG->Info( "Couldn't load driver %s: %s", DriversToTry[i].c_str(), sError.c_str() );

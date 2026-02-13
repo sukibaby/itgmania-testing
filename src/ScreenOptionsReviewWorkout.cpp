@@ -1,26 +1,25 @@
-#include "global.h"
-
-#include "ScreenOptionsCourseOverview.h"
-#include "ScreenManager.h"
-#include "RageUtil.h"
-#include "GameState.h"
-#include "OptionRowHandler.h"
-#include "ProfileManager.h"
-#include "ScreenMiniMenu.h"
-#include "LocalizedString.h"
-#include "SongManager.h"
-#include "SongUtil.h"
-#include "ScreenTextEntry.h"
-#include "GameManager.h"
-#include "Profile.h"
-#include "ScreenPrompt.h"
-#include "PlayerState.h"
-#include "Style.h"
-#include "PrefsManager.h"
-#include "RageUtil/RandomNumbers.h"
-
+#include <string>
 #include <vector>
 
+#include "GameManager.h"
+#include "GameState.h"
+#include "LocalizedString.h"
+#include "OptionRowHandler.h"
+#include "PlayerState.h"
+#include "PrefsManager.h"
+#include "Profile.h"
+#include "ProfileManager.h"
+#include "RageUtil.h"
+#include "RageUtil/RandomNumbers.h"
+#include "ScreenManager.h"
+#include "ScreenMiniMenu.h"
+#include "ScreenOptionsCourseOverview.h"
+#include "ScreenPrompt.h"
+#include "ScreenTextEntry.h"
+#include "SongManager.h"
+#include "SongUtil.h"
+#include "Style.h"
+#include "global.h"
 
 enum ReviewWorkoutRow
 {
@@ -87,7 +86,7 @@ void ScreenOptionsCourseOverview::ExportOptions( int iRow, const std::vector<Pla
 {
 	OptionRow &row = *m_pRows[iRow];
 	int iIndex = row.GetOneSharedSelection( true );
-	RString sValue;
+	std::string sValue;
 	if( iIndex >= 0 )
 		sValue = row.GetRowDef().m_vsChoices[ iIndex ];
 }

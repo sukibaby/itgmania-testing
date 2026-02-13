@@ -21,11 +21,14 @@
  * -------------------------- NOTE --------------------------
  */
 
+#include <cstdint>
+#include <string>
 #include <vector>
 
 #include "InputHandler.h"
+#include "LightsManager.h"
+#include "RageInputDevice.h"
 #include "RageThreads.h"
-#include "arch/Lights/LightsDriver_Export.h"
 #include "archutils/Common/HidDevice.h"
 
 #define PUMPHID_PAYLOADSIZE_FROMDEV 16
@@ -232,7 +235,7 @@ class InputHandler_PumpHID : public InputHandler {
   InputHandler_PumpHID();
   ~InputHandler_PumpHID();
 
-  RString GetDeviceSpecificInputString(const DeviceInput& di);
+  std::string GetDeviceSpecificInputString(const DeviceInput& di);
   void GetDevicesAndDescriptions(std::vector<InputDeviceInfo>& vDevicesOut);
 
   bool IsConnected() { return dev != nullptr && dev->IsConnected(); }

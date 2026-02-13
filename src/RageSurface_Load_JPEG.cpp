@@ -1,14 +1,18 @@
-#include "global.h"
 #include "RageSurface_Load_JPEG.h"
-#include "RageUtil.h"
-#include "RageLog.h"
-#include "RageFile.h"
-#include "RageSurface.h"
-#include "RageUtil/Endian.h"
 
+#include <setjmp.h>
+
+#include <algorithm>
 #include <cstddef>
 #include <cstdint>
-#include <setjmp.h>
+#include <cstdio>
+#include <cstring>
+#include <string>
+
+#include "RageFile.h"
+#include "RageSurface.h"
+#include "RageSurface_Load.h"
+#include "RageUtil/Endian.h"
 
 extern "C" {
 #include "jpeglib.h"
@@ -197,7 +201,7 @@ static RageSurface *RageSurface_Load_JPEG( RageFile *f, const char *fn, char err
 }
 
 
-RageSurfaceUtils::OpenResult RageSurface_Load_JPEG( const RString &sPath, RageSurface *&ret, bool bHeaderOnly, RString &error )
+RageSurfaceUtils::OpenResult RageSurface_Load_JPEG( const std::string &sPath, RageSurface *&ret, bool bHeaderOnly, std::string &error )
 {
 	RageFile f;
 	if( !f.Open( sPath ) )

@@ -1,8 +1,15 @@
-#include "global.h"
-#include "RageLog.h"
 #include "LightsDriver_stac.h"
-#include "GameState.h"
+
+#include <cstdint>
+#include <string>
+
 #include "Game.h"
+#include "GameInput.h"
+#include "GameState.h"
+#include "InputMapper.h"
+#include "LightsManager.h"
+#include "StdString.h"
+#include "arch/Lights/LightsDriver.h"
 
 REGISTER_LIGHTS_DRIVER_CLASS(stac);
 
@@ -47,7 +54,7 @@ void LightsDriver_stac::HandleState(const LightsState *ls, GameController ctrlNu
 
 	// check to see which game we are running as it can change during gameplay.
 	const InputScheme *pInput = &GAMESTATE->GetCurrentGame()->m_InputScheme;
-	RString sInputName = pInput->m_szName;
+	std::string sInputName = pInput->m_szName;
 
 	if (EqualsNoCase(sInputName, "dance"))
 	{

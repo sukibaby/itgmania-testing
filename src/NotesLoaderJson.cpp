@@ -1,21 +1,29 @@
-#include "global.h"
 #include "NotesLoaderJson.h"
-#include "json/json.h"
-#include "TimingData.h"
-#include "RageUtil.h"
-#include "JsonUtil.h"
-#include "BackgroundUtil.h"
-#include "NoteData.h"
-#include "Song.h"
-#include "Steps.h"
-#include "GameManager.h"
 
+#include <string>
 #include <vector>
 
+#include "BackgroundUtil.h"
+#include "Difficulty.h"
+#include "EnumHelper.h"
+#include "GameConstantsAndTypes.h"
+#include "GameManager.h"
+#include "JsonUtil.h"
+#include "NoteData.h"
+#include "NoteTypes.h"
+#include "PlayerNumber.h"
+#include "RadarValues.h"
+#include "RageUtil.h"
+#include "Song.h"
+#include "StdString.h"
+#include "Steps.h"
+#include "TimingData.h"
+#include "TimingSegments.h"
+#include "json/json.h"
 
-void NotesLoaderJson::GetApplicableFiles( const RString &sPath, std::vector<RString> &out )
+void NotesLoaderJson::GetApplicableFiles( const std::string &sPath, std::vector<std::string> &out )
 {
-	GetDirListing( sPath + RString("*.json"), out );
+	GetDirListing( sPath + std::string("*.json"), out );
 }
 
 static void Deserialize( TimingSegment *seg, const Json::Value &root )
@@ -172,7 +180,7 @@ static void Deserialize( Song &out, const Json::Value &root )
 	out.m_SongTiming.m_fBeat0OffsetInSeconds = (float)root["Offset"].asDouble();
 	out.m_fMusicSampleStartSeconds = (float)root["SampleStart"].asDouble();
 	out.m_fMusicSampleLengthSeconds = (float)root["SampleLength"].asDouble();
-	RString sSelectable = root["Selectable"].asString();
+	std::string sSelectable = root["Selectable"].asString();
 	if( EqualsNoCase(sSelectable, "YES") )
 		out.m_SelectionDisplay = out.SHOW_ALWAYS;
 	else if( EqualsNoCase(sSelectable, "NO") )
@@ -183,7 +191,7 @@ static void Deserialize( Song &out, const Json::Value &root )
 	out.m_bHasBanner = root["HasBanner"].asBool();
 	out.m_fMusicLengthSeconds = (float)root["MusicLengthSeconds"].asDouble();
 
-	RString sDisplayBPMType = root["DisplayBpmType"].asString();
+	std::string sDisplayBPMType = root["DisplayBpmType"].asString();
 	if( sDisplayBPMType == "*" )
 		out.m_DisplayBPMType = DISPLAY_BPM_RANDOM;
 	else
@@ -223,7 +231,7 @@ static void Deserialize( Song &out, const Json::Value &root )
 	}
 }
 
-bool NotesLoaderJson::LoadFromJsonFile( const RString &sPath, Song &out )
+bool NotesLoaderJson::LoadFromJsonFile( const std::string &sPath, Song &out )
 {
 	Json::Value root;
 	if( !JsonUtil::LoadFromFileShowErrors(root,sPath) )
@@ -234,7 +242,7 @@ bool NotesLoaderJson::LoadFromJsonFile( const RString &sPath, Song &out )
 	return true;
 }
 
-bool NotesLoaderJson::LoadFromDir( const RString &sPath, Song &out )
+bool NotesLoaderJson::LoadFromDir( const std::string &sPath, Song &out )
 {
 	return LoadFromJsonFile(sPath, out);
 }

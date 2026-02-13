@@ -1,21 +1,23 @@
-#include "global.h"
 #include "BPMDisplay.h"
-#include "RageUtil.h"
-#include "GameConstantsAndTypes.h"
-#include "GameState.h"
-#include "Course.h"
-#include "Style.h"
-#include "ActorUtil.h"
-#include "CommonMetrics.h"
-#include "LocalizedString.h"
-#include "Song.h"
-#include "Steps.h"
-#include "RageUtil/RandomNumbers.h"
 
-#include <cmath>
+#include <algorithm>
 #include <climits>
+#include <string>
 #include <vector>
 
+#include "ActorUtil.h"
+#include "BitmapText.h"
+#include "CommonMetrics.h"
+#include "Course.h"
+#include "GameConstantsAndTypes.h"
+#include "GameState.h"
+#include "PlayerNumber.h"
+#include "RageUtil.h"
+#include "RageUtil/RandomNumbers.h"
+#include "Song.h"
+#include "Steps.h"
+#include "Style.h"
+#include "global.h"
 
 REGISTER_ACTOR_CLASS( BPMDisplay );
 
@@ -83,9 +85,9 @@ void BPMDisplay::Update( float fDeltaTime )
 		{
 			m_fBPMFrom = -1;
 			if( (bool)SHOW_QMARKS )
-				SetText( (RandomFloat(0,1)>0.90f) ? (RString)QUESTIONMARKS_TEXT : ssprintf(((RString)BPM_FORMAT_STRING).c_str(),RandomFloat(0,999)) );
+				SetText( (RandomFloat(0,1)>0.90f) ? (std::string)QUESTIONMARKS_TEXT : ssprintf(((std::string)BPM_FORMAT_STRING).c_str(),RandomFloat(0,999)) );
 			else
-				SetText( ssprintf(((RString)BPM_FORMAT_STRING).c_str(), RandomFloat(0,999)) );
+				SetText( ssprintf(((std::string)BPM_FORMAT_STRING).c_str(), RandomFloat(0,999)) );
 		}
 		else if(m_fBPMFrom == -1)
 		{
@@ -96,7 +98,7 @@ void BPMDisplay::Update( float fDeltaTime )
 	if( m_fBPMTo != -1)
 	{
 		const float fActualBPM = GetActiveBPM();
-		SetText( ssprintf(((RString)BPM_FORMAT_STRING).c_str(), fActualBPM) );
+		SetText( ssprintf(((std::string)BPM_FORMAT_STRING).c_str(), fActualBPM) );
 	}
 }
 

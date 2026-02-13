@@ -1,14 +1,15 @@
 #ifndef PlayerStageStats_H
 #define PlayerStageStats_H
 
-#include "Grade.h"
-#include "RadarValues.h"
-#include "HighScore.h"
-#include "PlayerNumber.h"
-
 #include <map>
+#include <string>
 #include <vector>
 
+#include "GameConstantsAndTypes.h"
+#include "Grade.h"
+#include "HighScore.h"
+#include "PlayerNumber.h"
+#include "RadarValues.h"
 
 class Steps;
 class Style;
@@ -30,7 +31,7 @@ public:
 
 	Grade GetGrade() const;
 	static float MakePercentScore( int iActual, int iPossible );
-	static RString FormatPercentScore( float fPercentScore );
+	static std::string FormatPercentScore( float fPercentScore );
 	float GetPercentDancePoints() const;
 	float GetCurMaxPercentDancePoints() const;
 

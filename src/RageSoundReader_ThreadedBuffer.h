@@ -3,10 +3,13 @@
 #ifndef RAGE_SOUND_READER_THREADED_BUFFER
 #define RAGE_SOUND_READER_THREADED_BUFFER
 
-#include "RageSoundReader_Filter.h"
-#include "RageUtil_CircularBuffer.h"
-#include "RageThreads.h"
 #include <list>
+#include <string>
+
+#include "RageSoundReader.h"
+#include "RageSoundReader_Filter.h"
+#include "RageThreads.h"
+#include "RageUtil_CircularBuffer.h"
 
 class RageThread;
 class RageSoundReader_ThreadedBuffer: public RageSoundReader_Filter
@@ -25,7 +28,7 @@ public:
 	virtual int GetLength_Fast() const;
 	virtual int GetSampleRate() const { return m_iSampleRate; }
 	virtual unsigned GetNumChannels() const { return m_iChannels; }
-	virtual bool SetProperty( const RString &sProperty, float fValue );
+	virtual bool SetProperty( const std::string &sProperty, float fValue );
 	virtual float GetStreamToSourceRatio() const;
 	virtual RageSoundReader *GetSource() { return nullptr; }
 

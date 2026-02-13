@@ -1,23 +1,26 @@
-#include "global.h"
 #include "WheelBase.h"
-#include "RageUtil.h"
-#include "GameManager.h"
-#include "PrefsManager.h"
-#include "ScreenManager.h"	// for sending SM_PlayMusicSample
-#include "RageLog.h"
-#include "GameConstantsAndTypes.h"
-#include "GameState.h"
-#include "RageMath.h"
-#include "ThemeManager.h"
-#include "RageTextureManager.h"
-#include "ActorUtil.h"
-#include "Style.h"
-#include "ThemeMetric.h"
-#include "ScreenDimensions.h"
 
+#include <algorithm>
+#include <climits>
 #include <cmath>
+#include <string>
 #include <vector>
 
+#include "ActorFrame.h"
+#include "ActorUtil.h"
+#include "EnumHelper.h"
+#include "GameState.h"
+#include "LuaManager.h"
+#include "PrefsManager.h"
+#include "RageLog.h"
+#include "RageTypes.h"
+#include "RageUtil.h"
+#include "ScreenManager.h"  // for sending SM_PlayMusicSample
+#include "ScreenMessage.h"
+#include "ThemeManager.h"
+#include "ThemeMetric.h"
+#include "WheelItemBase.h"
+#include "global.h"
 
 const int MAX_WHEEL_SOUND_SPEED = 15;
 AutoScreenMessage( SM_SongChanged ); // TODO: Replace this with a Message and MESSAGEMAN
@@ -28,8 +31,7 @@ static const char *WheelStateNames[] = {
 	"FlyingOnAfterNextSort",
 	"RouletteSpinning",
 	"RouletteSlowingDown",
-	"RandomSpinning",
-	"Locked",
+	"Locked"
 };
 XToString( WheelState );
 StringToX( WheelState );
@@ -45,7 +47,7 @@ WheelBase::~WheelBase()
 	m_LastSelection = nullptr;
 }
 
-void WheelBase::Load( RString sType )
+void WheelBase::Load( std::string sType )
 {
 	LOG->Trace( "WheelBase::Load('%s')", sType.c_str() );
 	ASSERT( this->GetNumChildren() == 0 ); // only load once
@@ -287,7 +289,7 @@ bool WheelBase::Select()	// return true if this selection can end the screen
 		return true;
 	case WheelItemDataType_Section:
 		{
-			RString sThisItemSectionName = m_CurWheelItemData[m_iSelection]->m_sText;
+			std::string sThisItemSectionName = m_CurWheelItemData[m_iSelection]->m_sText;
 			// Keep track of the open section so that we can restore it
 			// when navigating back to ScreenSelectMusic.
 			GAMESTATE->sLastOpenSection = sThisItemSectionName;

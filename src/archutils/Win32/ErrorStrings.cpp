@@ -1,10 +1,14 @@
-#include "global.h"
 #include "ErrorStrings.h"
-#include "RageUtil.h"
 
 #include <windows.h>
 
-RString werr_ssprintf( int err, const char *fmt, ... )
+#include <string>
+
+#include "RageUtil.h"
+#include "StdString.h"
+#include "global.h"
+
+std::string werr_ssprintf( int err, const char *fmt, ... )
 {
 	char buf[1024] = "";
 	FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
@@ -12,23 +16,23 @@ RString werr_ssprintf( int err, const char *fmt, ... )
 
 	// Why is FormatMessage returning text ending with \r\n? (who? -aj)
 	// Perhaps it's because you're on Windows, where newlines are \r\n. -aj
-	RString text = buf;
+	std::string text = buf;
 	Replace(text, "\n", "" );
 	Replace(text, "\r", " " ); // foo\r\nbar -> foo bar
 	TrimRight( text ); // "foo\r\n" -> "foo"
 
 	va_list	va;
 	va_start(va, fmt);
-	RString s = vssprintf( fmt, va );
+	std::string s = vssprintf( fmt, va );
 	va_end(va);
 
 	return s += ssprintf( " (%s)", text.c_str() );
 }
 
-RString ConvertWstringToCodepage( std::wstring s, int iCodePage )
+std::string ConvertWstringToCodepage( std::wstring s, int iCodePage )
 {
 	if( s.empty() )
-		return RString();
+		return std::string();
 
 	int iBytes = WideCharToMultiByte( iCodePage, 0, s.data(), s.size(), 
 					nullptr, 0, nullptr, FALSE );
@@ -38,17 +42,17 @@ RString ConvertWstringToCodepage( std::wstring s, int iCodePage )
 	std::fill(buf, buf + iBytes + 1, '\0');
 	WideCharToMultiByte( CP_ACP, 0, s.data(), s.size(), 
 					buf, iBytes, nullptr, FALSE );
-	RString ret( buf );
+	std::string ret( buf );
 	delete[] buf;
 	return ret;
 }
 
-RString ConvertUTF8ToACP( const RString &s )
+std::string ConvertUTF8ToACP( const std::string &s )
 {
 	return ConvertWstringToCodepage( RStringToWstring(s), CP_ACP );
 }
 
-std::wstring ConvertCodepageToWString( RString s, int iCodePage )
+std::wstring ConvertCodepageToWString( std::string s, int iCodePage )
 {
 	if( s.empty() )
 		return std::wstring();
@@ -64,7 +68,7 @@ std::wstring ConvertCodepageToWString( RString s, int iCodePage )
 	return sRet;
 }
 
-RString ConvertACPToUTF8( const RString &s )
+std::string ConvertACPToUTF8( const std::string &s )
 {
 	return WStringToRString( ConvertCodepageToWString(s, CP_ACP) );
 }

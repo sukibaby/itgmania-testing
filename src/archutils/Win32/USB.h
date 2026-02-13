@@ -3,15 +3,17 @@
 #ifndef WIN32_USB_H
 #define WIN32_USB_H
 
-#include <vector>
 #include <windows.h>
+
+#include <string>
+#include <vector>
 
 class WindowsFileIO
 {
 public:
 	WindowsFileIO();
 	~WindowsFileIO();
-	bool Open( RString sPath, int iBlockSize );
+	bool Open( std::string sPath, int iBlockSize );
 	bool IsOpen() const;
 
 	/* Nonblocking read.  size must always be the same.  Returns the number of bytes

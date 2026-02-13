@@ -1,21 +1,31 @@
-#include "global.h"
 #include "ScreenNameEntryTraditional.h"
-#include "PrefsManager.h"
-#include "GameState.h"
-#include "GameManager.h"
-#include "StatsManager.h"
-#include "SongManager.h"
-#include "Song.h"
-#include "Style.h"
-#include "ProfileManager.h"
-#include "Profile.h"
-#include "InputEventPlus.h"
-#include "RageInput.h"
-#include "RageLog.h"
-#include "CommonMetrics.h"
 
+#include <cstdlib>
+#include <string>
 #include <vector>
 
+#include "DateTime.h"
+#include "EnumHelper.h"
+#include "GameConstantsAndTypes.h"
+#include "GameManager.h"
+#include "GameState.h"
+#include "Grade.h"
+#include "InputEventPlus.h"
+#include "LuaManager.h"
+#include "MessageManager.h"
+#include "PlayerNumber.h"
+#include "PrefsManager.h"
+#include "Profile.h"
+#include "ProfileManager.h"
+#include "RageUtil.h"
+#include "Screen.h"
+#include "ScreenMessage.h"
+#include "ScreenWithMenuElements.h"
+#include "Song.h"
+#include "SongManager.h"
+#include "StatsManager.h"
+#include "Style.h"
+#include "global.h"
 
 REGISTER_SCREEN_CLASS( ScreenNameEntryTraditional );
 
@@ -163,7 +173,7 @@ bool ScreenNameEntryTraditional::Finish( PlayerNumber pn )
 	m_bFinalized[pn] = true;
 
 	UpdateSelectionText( pn ); /* hide NAME_ cursor */
-	RString sSelection = WStringToRString( m_sSelection[pn] );
+	std::string sSelection = WStringToRString( m_sSelection[pn] );
 
 	// save last used ranking name
 	Profile* pProfile = PROFILEMAN->GetProfile(pn);
@@ -218,7 +228,7 @@ bool ScreenNameEntryTraditional::EnterKey( PlayerNumber pn, wchar_t sLetter )
 	return true;
 }
 
-void ScreenNameEntryTraditional::SelectChar( PlayerNumber pn, const RString &sKey )
+void ScreenNameEntryTraditional::SelectChar( PlayerNumber pn, const std::string &sKey )
 {
 	Message msg("SelectKey");
 	msg.SetParam( "PlayerNumber", pn );
@@ -249,7 +259,7 @@ public:
 	static int EnterKey( T* p, lua_State *L )
 	{
 		PlayerNumber pn = Enum::Check<PlayerNumber>(L, 1);
-		RString sKey = SArg(2);
+		std::string sKey = SArg(2);
 		bool bRet = p->EnterKey( pn, utf8_get_char(sKey) );
 		LuaHelpers::Push( L, bRet );
 		return 1;

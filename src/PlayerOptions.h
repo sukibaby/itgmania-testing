@@ -1,6 +1,8 @@
 #ifndef PLAYER_OPTIONS_H
 #define PLAYER_OPTIONS_H
 
+#include "EnumHelper.h"
+#include "RageUtil.h"
 class Course;
 class Song;
 class Steps;
@@ -9,13 +11,13 @@ struct lua_State;
 
 #define ONE( arr ) { for( unsigned Z = 0; Z < ARRAYLEN(arr); ++Z ) arr[Z]=1.0f; }
 
+#include <bitset>
+#include <string>
+#include <vector>
+
 #include "GameConstantsAndTypes.h"
 #include "PlayerNumber.h"
 #include "PrefsManager.h"
-
-#include <bitset>
-#include <vector>
-
 
 enum LifeType
 {
@@ -25,8 +27,8 @@ enum LifeType
 	NUM_LifeType,
 	LifeType_Invalid
 };
-const RString& LifeTypeToString( LifeType cat );
-const RString& LifeTypeToLocalizedString( LifeType cat );
+const std::string& LifeTypeToString( LifeType cat );
+const std::string& LifeTypeToLocalizedString( LifeType cat );
 LuaDeclareType( LifeType );
 
 enum DrainType
@@ -37,8 +39,8 @@ enum DrainType
 	NUM_DrainType,
 	DrainType_Invalid
 };
-const RString& DrainTypeToString( DrainType cat );
-const RString& DrainTypeToLocalizedString( DrainType cat );
+const std::string& DrainTypeToString( DrainType cat );
+const std::string& DrainTypeToLocalizedString( DrainType cat );
 LuaDeclareType( DrainType );
 
 enum HideLightType {
@@ -49,8 +51,8 @@ enum HideLightType {
 	NUM_HideLightType,
 	HideLightType_Invalid
 };
-const RString& HideLightTypeToString(HideLightType cat);
-const RString& HideLightTypeToLocalizedString(HideLightType cat);
+const std::string& HideLightTypeToString(HideLightType cat);
+const std::string& HideLightTypeToLocalizedString(HideLightType cat);
 LuaDeclareType(HideLightType);
 
 enum ModTimerType
@@ -62,8 +64,8 @@ enum ModTimerType
 	NUM_ModTimerType,
 	ModTimerType_Invalid
 };
-const RString& ModTimerTypeToString( ModTimerType cat );
-const RString& ModTimerTypeToLocalizedString( ModTimerType cat );
+const std::string& ModTimerTypeToString( ModTimerType cat );
+const std::string& ModTimerTypeToLocalizedString( ModTimerType cat );
 LuaDeclareType( ModTimerType );
 
 /** @brief Per-player options that are not saved between sessions. */
@@ -124,8 +126,8 @@ public:
 	};
 	void Init();
 	void Approach( const PlayerOptions& other, float fDeltaSeconds );
-	RString GetString( bool bForceNoteSkin = false ) const;
-	RString GetSavedPrefsString() const;	// only the basic options that players would want for every song
+	std::string GetString( bool bForceNoteSkin = false ) const;
+	std::string GetSavedPrefsString() const;	// only the basic options that players would want for every song
 	enum ResetPrefsType
 	{
 		saved_prefs,
@@ -134,10 +136,10 @@ public:
 	void ResetPrefs( ResetPrefsType type );
 	void ResetSavedPrefs() { ResetPrefs(saved_prefs); };
 	void ResetSavedPrefsInvalidForCourse() { ResetPrefs(saved_prefs_invalid_for_course); }
-	void GetMods( std::vector<RString> &AddTo, bool bForceNoteSkin = false ) const;
-	void GetLocalizedMods( std::vector<RString> &AddTo ) const;
-	void FromString( const RString &sMultipleMods );
-	bool FromOneModString( const RString &sOneMod, RString &sErrorDetailOut );	// On error, return false and optionally set sErrorDetailOut
+	void GetMods( std::vector<std::string> &AddTo, bool bForceNoteSkin = false ) const;
+	void GetLocalizedMods( std::vector<std::string> &AddTo ) const;
+	void FromString( const std::string &sMultipleMods );
+	bool FromOneModString( const std::string &sOneMod, std::string &sErrorDetailOut );	// On error, return false and optionally set sErrorDetailOut
 	void ChooseRandomModifiers();
 	bool ContainsTransformOrTurn() const;
 
@@ -415,7 +417,7 @@ public:
 	 * @brief The Noteskin to use.
 	 *
 	 * If an empty string, it means to not change from the default. */
-	RString		m_sNoteSkin;
+	std::string		m_sNoteSkin;
 
 	/** @brief The Visual Delay additionally applied on a per-player basis in ms. */
 	float	m_fVisualDelay;

@@ -1,9 +1,11 @@
 #ifndef SpecialDirs_H
 #define SpecialDirs_H
 
+#include <string>
+
 namespace SpecialDirs
 {
-	RString GetDesktopDir();
+	std::string GetDesktopDir();
 }
 
 #endif

@@ -1,14 +1,16 @@
 #ifndef ScreenSelectLanguage_H
 #define ScreenSelectLanguage_H
 
+#include <string>
+
+#include "InputQueue.h"
 #include "ScreenSelectMaster.h"
-#include "FadingBanner.h"
 
 class ScreenSelectLanguage : public ScreenSelectMaster
 {
 public:
 	virtual void Init();
-	virtual RString GetDefaultChoice();
+	virtual std::string GetDefaultChoice();
 	virtual void BeginScreen();
 	virtual bool MenuStart( const InputEventPlus &input );
 	virtual bool MenuBack( const InputEventPlus &input );

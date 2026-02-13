@@ -1,14 +1,17 @@
 #ifndef NOTE_DISPLAY_H
 #define NOTE_DISPLAY_H
 
-#include "ActorFrame.h"
-#include "CubicSpline.h"
-#include "NoteData.h"
-#include "PlayerNumber.h"
-#include "GameInput.h"
-
+#include <string>
 #include <vector>
 
+#include "Actor.h"
+#include "CubicSpline.h"
+#include "EnumHelper.h"
+#include "GameInput.h"
+#include "NoteData.h"
+#include "PlayerNumber.h"
+#include "RageTypes.h"
+#include "Tween.h"
 
 class Sprite;
 class Model;
@@ -43,8 +46,8 @@ enum NoteColorType
 	NUM_NoteColorType,
 	NoteColorType_Invalid
 };
-const RString& NoteColorTypeToString( NoteColorType nct );
-NoteColorType StringToNoteColorType( const RString& s );
+const std::string& NoteColorTypeToString( NoteColorType nct );
+NoteColorType StringToNoteColorType( const std::string& s );
 
 struct NoteResource;
 
@@ -52,7 +55,7 @@ struct NoteColorActor
 {
 	NoteColorActor();
 	~NoteColorActor();
-	void Load( const RString &sButton, const RString &sElement, PlayerNumber, GameController );
+	void Load( const std::string &sButton, const std::string &sElement, PlayerNumber, GameController );
 	Actor *Get();
 private:
 	NoteResource *m_p;
@@ -62,7 +65,7 @@ struct NoteColorSprite
 {
 	NoteColorSprite();
 	~NoteColorSprite();
-	void Load( const RString &sButton, const RString &sElement, PlayerNumber, GameController );
+	void Load( const std::string &sButton, const std::string &sElement, PlayerNumber, GameController );
 	Sprite *Get();
 private:
 	NoteResource *m_p;
@@ -78,7 +81,7 @@ enum HoldType
 };
 /** @brief Loop through each HoldType. */
 #define FOREACH_HoldType( i ) FOREACH_ENUM( HoldType, i )
-const RString &HoldTypeToString( HoldType ht );
+const std::string &HoldTypeToString( HoldType ht );
 
 enum ActiveType
 {
@@ -89,7 +92,7 @@ enum ActiveType
 };
 /** @brief Loop through each ActiveType. */
 #define FOREACH_ActiveType( i ) FOREACH_ENUM( ActiveType, i )
-const RString &ActiveTypeToString( ActiveType at );
+const std::string &ActiveTypeToString( ActiveType at );
 
 enum NoteColumnSplineMode
 {
@@ -100,7 +103,7 @@ enum NoteColumnSplineMode
 	NoteColumnSplineMode_Invalid
 };
 
-const RString& NoteColumnSplineModeToString(NoteColumnSplineMode ncsm);
+const std::string& NoteColumnSplineModeToString(NoteColumnSplineMode ncsm);
 LuaDeclareType(NoteColumnSplineMode);
 
 // A little pod struct to carry the data the NoteField needs to pass to the

@@ -3,10 +3,11 @@
 #ifndef RAGE_SOUND_READER_RESAMPLE_GOOD_H
 #define RAGE_SOUND_READER_RESAMPLE_GOOD_H
 
-#include "RageSoundReader_Filter.h"
-
+#include <string>
 #include <vector>
 
+#include "RageSoundReader.h"
+#include "RageSoundReader_Filter.h"
 
 class RageSoundResampler_Polyphase;
 
@@ -21,7 +22,7 @@ public:
 	int Read( float *pBuf, int iFrames );
 	virtual ~RageSoundReader_Resample_Good();
 	RageSoundReader_Resample_Good *Copy() const;
-	bool SetProperty( const RString &sProperty, float fValue );
+	bool SetProperty( const std::string &sProperty, float fValue );
 	int GetNextSourceFrame() const;
 	float GetStreamToSourceRatio() const;
 

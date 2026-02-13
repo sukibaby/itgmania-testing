@@ -1,11 +1,10 @@
 #ifndef PID_THREAD_HELPERS_H
 #define PID_THREAD_HELPERS_H
 
-#include "global.h"
-
 #include <cstdint>
+#include <string>
 
-RString ThreadsVersion();
+std::string ThreadsVersion();
 
 /* Get the current thread's ThreadID. */
 uint64_t GetCurrentThreadId();

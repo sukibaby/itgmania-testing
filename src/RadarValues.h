@@ -1,6 +1,9 @@
 #ifndef RARAR_VALUES_H
 #define RARAR_VALUES_H
 
+#include <string>
+
+#include "EnumHelper.h"
 #include "GameConstantsAndTypes.h"
 #include "ThemeMetric.h"
 
@@ -66,8 +69,8 @@ public:
 	XNode* CreateNode( bool bIncludeSimpleValues, bool bIncludeComplexValues ) const;
 	void LoadFromNode( const XNode* pNode );
 
-	RString ToString( int iMaxValues = -1 ) const; // default = all
-	void FromString( RString sValues );
+	std::string ToString( int iMaxValues = -1 ) const; // default = all
+	void FromString( std::string sValues );
 
 	static ThemeMetric<bool> WRITE_SIMPLE_VALIES;
 	static ThemeMetric<bool> WRITE_COMPLEX_VALIES;

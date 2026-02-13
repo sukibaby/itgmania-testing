@@ -1,14 +1,15 @@
-#include "global.h"
 #include "RageSoundDriver_DSound_Software.h"
-#include "DSoundHelpers.h"
-
-#include "RageLog.h"
-#include "RageUtil.h"
-#include "RageSoundManager.h"
-#include "PrefsManager.h"
-#include "archutils/Win32/ErrorStrings.h"
 
 #include <cstdint>
+#include <string>
+
+#include "DSoundHelpers.h"
+#include "PrefsManager.h"
+#include "RageLog.h"
+#include "RageSoundManager.h"
+#include "RageUtil.h"
+#include "archutils/Win32/ErrorStrings.h"
+#include "global.h"
 
 REGISTER_SOUND_DRIVER_CLASS2( DirectSound-sw, DSound_Software );
 
@@ -78,9 +79,9 @@ RageSoundDriver_DSound_Software::RageSoundDriver_DSound_Software()
 {
 }
 
-RString RageSoundDriver_DSound_Software::Init()
+std::string RageSoundDriver_DSound_Software::Init()
 {
-	RString sError = ds.Init();
+	std::string sError = ds.Init();
 	if( sError != "" )
 		return sError;
 
@@ -112,7 +113,7 @@ RString RageSoundDriver_DSound_Software::Init()
 	m_MixingThread.SetName("Mixer thread");
 	m_MixingThread.Create( MixerThread_start, this );
 
-	return RString();
+	return std::string();
 }
 
 RageSoundDriver_DSound_Software::~RageSoundDriver_DSound_Software()

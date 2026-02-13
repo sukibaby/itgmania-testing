@@ -1,12 +1,16 @@
-#include "global.h"
 #include "StreamDisplay.h"
-#include "GameState.h"
-#include "RageDisplay.h"
-#include "ThemeManager.h"
-#include "EnumHelper.h"
 
 #include <cfloat>
 #include <cmath>
+#include <string>
+
+#include "ActorFrame.h"
+#include "EnumHelper.h"
+#include "RageTypes.h"
+#include "RageUtil.h"
+#include "Sprite.h"
+#include "ThemeManager.h"
+#include "global.h"
 
 static const char *StreamTypeNames[] = {
 	"Normal",
@@ -27,10 +31,10 @@ StreamDisplay::StreamDisplay()
 	m_bDeleteChildren = true;
 }
 
-void StreamDisplay::Load( const RString & /* unreferenced: _sMetricsGroup  */)
+void StreamDisplay::Load( const std::string & /* unreferenced: _sMetricsGroup  */)
 {
 	// XXX: actually load from the metrics group passed in -aj
-	RString sMetricsGroup = "StreamDisplay";
+	std::string sMetricsGroup = "StreamDisplay";
 
 	m_transformPill.SetFromReference( THEME->GetMetricR(sMetricsGroup,"PillTransformFunction") );
 	VELOCITY_MULTIPLIER.Load(sMetricsGroup, "VelocityMultiplier");
@@ -92,14 +96,14 @@ void StreamDisplay::Update( float fDeltaSecs )
 				m_fVelocity += fViscousForce * fDeltaSecs;
 		}
 
-		CLAMP( m_fVelocity, VELOCITY_MIN, VELOCITY_MAX );
+		rage_clamp( m_fVelocity, VELOCITY_MIN, VELOCITY_MAX );
 
 		m_fTrailingPercent += m_fVelocity * fDeltaSecs;
 	}
 
 	// Don't clamp life percentage a little outside the visible range so
 	// that the clamp doesn't dampen the "jiggle" of the meter.
-	CLAMP( m_fTrailingPercent, -0.1f, 1.1f );
+	rage_clamp( m_fTrailingPercent, -0.1f, 1.1f );
 
 
 	// set crop of pills
@@ -110,7 +114,7 @@ void StreamDisplay::Update( float fDeltaSecs )
 		{
 			Sprite *pSpr = m_vpSprPill[st][i];
 			float fPercentFilledThisPill = SCALE( m_fTrailingPercent, fPillWidthPercent*i, fPillWidthPercent*(i+1), 0.0f, 1.0f );
-			CLAMP( fPercentFilledThisPill, 0.0f, 1.0f );
+			rage_clamp( fPercentFilledThisPill, 0.0f, 1.0f );
 
 			// XXX scale by current song speed
 

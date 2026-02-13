@@ -1,10 +1,15 @@
 #ifndef ActorScroller_H
 #define ActorScroller_H
 
+#include <string>
+
 #include "ActorFrame.h"
-#include "Quad.h"
-class XNode;
 #include "LuaExpressionTransform.h"
+#include "LuaReference.h"
+#include "Quad.h"
+
+class XNode;
+
 /** @brief ActorFrame that moves its children. */
 class ActorScroller : public ActorFrame
 {
@@ -12,7 +17,7 @@ public:
 	ActorScroller();
 
 	void SetTransformFromReference( const LuaReference &ref );
-	void SetTransformFromExpression( const RString &sTransformFunction );
+	void SetTransformFromExpression( const std::string &sTransformFunction );
 	void SetTransformFromWidth( float fItemWidth );
 	void SetTransformFromHeight( float fItemHeight );
 

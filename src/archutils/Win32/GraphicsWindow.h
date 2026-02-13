@@ -2,6 +2,9 @@
 #define GRAPHICS_WINDOW_H
 
 #include <windows.h>
+
+#include <string>
+
 #include "DisplaySpec.h"
 class VideoModeParams;
 class DisplayResolution;
@@ -20,7 +23,7 @@ namespace GraphicsWindow
 	/** @brief Set the display mode.
 	 *
 	 * p will not be second-guessed, except to try disabling the refresh rate setting. */
-	RString SetScreenMode( const VideoModeParams &p );
+	std::string SetScreenMode( const VideoModeParams &p );
 
 	/** @brief Create the window.
 	 *

@@ -1,28 +1,21 @@
-#include "global.h"
 #include "CommandLineActions.h"
-#include "RageFile.h"
+
+#include <cstdlib>
+#include <string>
+#include <vector>
+
+#include "DateTime.h"
+#include "LuaManager.h"
+#include "Preference.h"
+#include "ProductInfo.h"
 #include "RageUtil.h"
-#include "IniFile.h"
 #include "XmlFile.h"
 #include "XmlFileUtil.h"
-#include "LuaManager.h"
-#include "ProductInfo.h"
-#include "DateTime.h"
-
-#include "arch/Dialog/Dialog.h"
-#include "RageFileManager.h"
-#include "SpecialFiles.h"
 #include "arch/LoadingWindow/LoadingWindow.h"
-#include "Preference.h"
-#include "JsonUtil.h"
-#include "ScreenInstallOverlay.h"
 #include "ver.h"
-
-#include <vector>
 
 // only used for Version()
 #if defined(_WIN32)
-#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <conio.h>
 #endif
@@ -53,8 +46,8 @@ static void LuaInformation()
 static void Version()
 {
 	#if defined(_WIN32)
-		RString sProductID = ssprintf("%s", (std::string(PRODUCT_FAMILY) + product_version).c_str() );
-		RString sVersion = ssprintf("build %s\nCompile Date: %s @ %s", ::sm_version_git_hash, version_date, version_time);
+		std::string sProductID = ssprintf("%s", (std::string(PRODUCT_FAMILY) + product_version).c_str() );
+		std::string sVersion = ssprintf("build %s\nCompile Date: %s @ %s", ::sm_version_git_hash, version_date, version_time);
 
 		AllocConsole();
 		freopen("CONOUT$","wb", stdout);

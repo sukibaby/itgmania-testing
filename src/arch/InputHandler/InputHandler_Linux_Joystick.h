@@ -1,17 +1,19 @@
 #ifndef INPUT_HANDLER_LINUX_JOYSTICK_H
 #define INPUT_HANDLER_LINUX_JOYSTICK_H 1
 
-#include "InputHandler.h"
-#include "RageThreads.h"
-
+#include <string>
 #include <vector>
+
+#include "InputHandler.h"
+#include "RageInputDevice.h"
+#include "RageThreads.h"
 
 class InputHandler_Linux_Joystick: public InputHandler
 {
 public:
 	InputHandler_Linux_Joystick();
 	~InputHandler_Linux_Joystick();
-	bool TryDevice(RString dev);
+	bool TryDevice(std::string dev);
 	bool DevicesChanged() { return m_bDevicesChanged; }
 	void GetDevicesAndDescriptions( std::vector<InputDeviceInfo>& vDevicesOut );
 
@@ -23,7 +25,7 @@ private:
 
 	struct FileDescriptor {
 		int fd = -1;
-		RString description = "";
+		std::string description = "";
 	};
 
 	std::vector<FileDescriptor> m_files;

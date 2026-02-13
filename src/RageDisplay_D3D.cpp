@@ -1,22 +1,25 @@
-#include "global.h"
-#include "RageDisplay.h"
 #include "RageDisplay_D3D.h"
-#include "RageUtil.h"
-#include "RageLog.h"
-#include "RageTimer.h"
-#include "RageException.h"
-#include "RageMath.h"
-#include "RageTypes.h"
-#include "RageSurface.h"
-#include "RageSurfaceUtils.h"
-#include "EnumHelper.h"
-#include "DisplaySpec.h"
-#include "LocalizedString.h"
 
 #include <d3d9.h>
 
-#include "archutils/Win32/GraphicsWindow.h"
+#include <algorithm>
+#include <string>
+
+#include "DisplaySpec.h"
+#include "EnumHelper.h"
+#include "LocalizedString.h"
+#include "RageDisplay.h"
+#include "RageException.h"
+#include "RageLog.h"
+#include "RageMath.h"
+#include "RageSurface.h"
+#include "RageSurfaceUtils.h"
+#include "RageTimer.h"
+#include "RageTypes.h"
+#include "RageUtil.h"
 #include "archutils/Win32/DirectXHelpers.h"
+#include "archutils/Win32/GraphicsWindow.h"
+#include "global.h"
 
 // Static libraries
 // load Windows D3D9 dynamically
@@ -182,10 +185,10 @@ RageDisplay_D3D::RageDisplay_D3D()
 }
 
 static LocalizedString D3D_NOT_INSTALLED ( "RageDisplay_D3D", "DirectX 9.0c or greater is not installed.  You can download it from:" );
-const RString D3D_URL = "http://www.microsoft.com/en-us/download/details.aspx?id=8109";
+const std::string D3D_URL = "http://www.microsoft.com/en-us/download/details.aspx?id=8109";
 static LocalizedString HARDWARE_ACCELERATION_NOT_AVAILABLE ( "RageDisplay_D3D",
 	"Your system is reporting that Direct3D hardware acceleration is not available.  Please obtain an updated driver from your video card manufacturer." );
-RString RageDisplay_D3D::Init( const VideoModeParams &p, bool /* bAllowUnacceleratedRenderer */ )
+std::string RageDisplay_D3D::Init( const VideoModeParams &p, bool /* bAllowUnacceleratedRenderer */ )
 {
 	GraphicsWindow::Initialize( true );
 
@@ -359,7 +362,7 @@ D3DFORMAT FindBackBufferType(bool bWindowed, int iBPP)
 	return D3DFMT_UNKNOWN;
 }
 
-RString SetD3DParams( bool &bNewDeviceOut )
+std::string SetD3DParams( bool &bNewDeviceOut )
 {
 	if( g_pd3dDevice == nullptr ) // device is not yet created. We need to create it
 	{
@@ -394,7 +397,7 @@ RString SetD3DParams( bool &bNewDeviceOut )
 	// Palettes were lost by Reset(), so mark them unloaded.
 	g_TexResourceToPaletteIndex.clear();
 
-	return RString();
+	return std::string();
 }
 
 // If the given parameters have failed, try to lower them.
@@ -512,7 +515,7 @@ static void SetPresentParametersFromVideoModeParams( const VideoModeParams &p, D
 }
 
 // Set the video mode.
-RString RageDisplay_D3D::TryVideoMode( const VideoModeParams &_p, bool &bNewDeviceOut )
+std::string RageDisplay_D3D::TryVideoMode( const VideoModeParams &_p, bool &bNewDeviceOut )
 {
 	VideoModeParams p = _p;
 	LOG->Warn( "RageDisplay_D3D::TryVideoMode( %d, %d, %d, %d, %d, %d )", p.windowed, p.width, p.height, p.bpp, p.rate, p.vsync );
@@ -531,7 +534,7 @@ RString RageDisplay_D3D::TryVideoMode( const VideoModeParams &_p, bool &bNewDevi
 	while( 1 )
 	{
 		// Try the video mode.
-		RString sErr = SetD3DParams( bNewDeviceOut );
+		std::string sErr = SetD3DParams( bNewDeviceOut );
 		if( sErr.empty() )
 			break;
 
@@ -556,7 +559,7 @@ RString RageDisplay_D3D::TryVideoMode( const VideoModeParams &_p, bool &bNewDevi
 
 	ResolutionChanged();
 
-	return RString(); // mode change successful
+	return std::string(); // mode change successful
 }
 
 void RageDisplay_D3D::ResolutionChanged()
@@ -582,7 +585,7 @@ bool RageDisplay_D3D::BeginFrame()
 	case D3DERR_DEVICENOTRESET:
 		{
 			bool bIgnore = false;
-			RString sError = SetD3DParams( bIgnore );
+			std::string sError = SetD3DParams( bIgnore );
 			if( !sError.empty() ) {
 				RageException::Throw(sError.c_str());
 			}

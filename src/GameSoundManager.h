@@ -1,6 +1,8 @@
 #ifndef RAGE_SOUNDS_H
 #define RAGE_SOUNDS_H
 
+#include <string>
+
 #include "PlayerNumber.h"
 
 class TimingData;
@@ -31,7 +33,7 @@ public:
 			bApplyMusicRate = false;
 		}
 
-		RString sFile;
+		std::string sFile;
 		const TimingData *pTiming;
 		bool bForceLoop;
 		float fStartSecond;
@@ -43,7 +45,7 @@ public:
 	};
 	void PlayMusic( PlayMusicParams params, PlayMusicParams FallbackMusicParams = PlayMusicParams() );
 	void PlayMusic( 
-		RString sFile, 
+		std::string sFile, 
 		const TimingData *pTiming = nullptr, 
 		bool force_loop = false, 
 		float start_sec = 0, 
@@ -54,12 +56,12 @@ public:
 		bool bApplyMusicRate = false );
 	void StopMusic() { PlayMusic(""); }
 	void DimMusic( float fVolume, float fDurationSeconds );
-	RString GetMusicPath() const;
+	std::string GetMusicPath() const;
 	void Flush();
 
-	void PlayOnce( RString sPath );
-	void PlayOnceFromDir( RString sDir );
-	void PlayOnceFromAnnouncer( RString sFolderName );
+	void PlayOnce( std::string sPath );
+	void PlayOnceFromDir( std::string sDir );
+	void PlayOnceFromAnnouncer( std::string sFolderName );
 
 	void HandleSongTimer( bool on=true );
 	float GetFrameTimingAdjustment( float fDeltaTime );

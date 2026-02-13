@@ -1,11 +1,16 @@
-#include "global.h"
 #include "SoundEffectControl.h"
-#include "RageSoundReader.h"
-#include "InputMapper.h"
+
+#include <string>
+
+#include "GameConstantsAndTypes.h"
+#include "GameInput.h"
 #include "GameState.h"
+#include "InputMapper.h"
 #include "NoteData.h"
+#include "NoteTypes.h"
 #include "PlayerState.h"
 #include "RageSoundReader.h"
+#include "RageUtil.h"
 
 SoundEffectControl::SoundEffectControl()
 {
@@ -16,7 +21,7 @@ SoundEffectControl::SoundEffectControl()
 	m_pNoteData = nullptr;
 }
 
-void SoundEffectControl::Load( const RString &sType, PlayerState *pPlayerState, const NoteData *pNoteData )
+void SoundEffectControl::Load( const std::string &sType, PlayerState *pPlayerState, const NoteData *pNoteData )
 {
 	SOUND_PROPERTY.Load( sType, "SoundProperty" );
 	LOCK_TO_HOLD.Load( sType, "LockToHold" );
@@ -40,7 +45,7 @@ void SoundEffectControl::Update( float fDeltaTime )
 
 	float fLevel = INPUTMAPPER->GetLevel( GAME_BUTTON_EFFECT_UP, m_pPlayerState->m_PlayerNumber );
 	fLevel -= INPUTMAPPER->GetLevel( GAME_BUTTON_EFFECT_DOWN, m_pPlayerState->m_PlayerNumber );
-	CLAMP( fLevel, -1.0f, +1.0f );
+	rage_clamp( fLevel, -1.0f, +1.0f );
 
 	if( LOCK_TO_HOLD )
 	{

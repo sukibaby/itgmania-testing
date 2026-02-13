@@ -3,12 +3,13 @@
 
 #include "ActorFrame.h"
 #include "ActorUtil.h"
-#include "PlayerNumber.h"
-#include "BitmapText.h"
 #include "AutoActor.h"
-#include "GameConstantsAndTypes.h"
+#include "BitmapText.h"
+#include "PlayerNumber.h"
 #include "ThemeMetric.h"
 class XNode;
+#include <string>
+
 #include "LocalizedString.h"
 
 /**
@@ -38,7 +39,7 @@ class PaneDisplay: public ActorFrame
 public:
 	virtual PaneDisplay *Copy() const;
 
-	void Load( const RString &sMetricsGroup, PlayerNumber pn );
+	void Load( const std::string &sMetricsGroup, PlayerNumber pn );
 	void SetFromGameState();
 
 	void LoadFromNode( const XNode *pNode );
@@ -47,7 +48,7 @@ public:
 	void PushSelf( lua_State *L );
 
 private:
-	void GetPaneTextAndLevel( PaneCategory c, RString & sTextOut, float & fLevelOut );
+	void GetPaneTextAndLevel( PaneCategory c, std::string & sTextOut, float & fLevelOut );
 	void SetContent( PaneCategory c );
 
 	BitmapText		m_textContents[NUM_PaneCategory];
@@ -58,8 +59,8 @@ private:
 
 	LocalizedString EMPTY_MACHINE_HIGH_SCORE_NAME;
 	LocalizedString NOT_AVAILABLE;
-	ThemeMetric<RString> COUNT_FORMAT;
-	ThemeMetric<RString> NULL_COUNT_STRING;
+	ThemeMetric<std::string> COUNT_FORMAT;
+	ThemeMetric<std::string> NULL_COUNT_STRING;
 };
 
 #endif

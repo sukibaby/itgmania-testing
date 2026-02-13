@@ -1,24 +1,30 @@
-#include "global.h"
 #include "ScreenSelectLanguage.h"
-#include "PrefsManager.h"
-#include "arch/ArchHooks/ArchHooks.h"
-#include "InputEventPlus.h"
-#include "RageUtil/LanguageInfo.h"
 
+#include <string>
 #include <vector>
 
+#include "GameCommand.h"
+#include "InputEventPlus.h"
+#include "PrefsManager.h"
+#include "RageUtil.h"
+#include "RageUtil/LanguageInfo.h"
+#include "Screen.h"
+#include "ScreenMessage.h"
+#include "ScreenSelectMaster.h"
+#include "ThemeManager.h"
+#include "arch/ArchHooks/ArchHooks.h"
 
 REGISTER_SCREEN_CLASS( ScreenSelectLanguage );
 
 void ScreenSelectLanguage::Init()
 {
 	// fill m_aGameCommands before calling Init()
-	std::vector<RString> vs;
+	std::vector<std::string> vs;
 	THEME->GetLanguages( vs );
 	SortRStringArray( vs, true );
 
 	int index = 0;
-	for (RString const &s : vs)
+	for (std::string const &s : vs)
 	{
 		const LanguageInfo *pLI = GetLanguageInfo( s );
 
@@ -37,7 +43,7 @@ void ScreenSelectLanguage::Init()
 	ScreenSelectMaster::Init();
 }
 
-RString ScreenSelectLanguage::GetDefaultChoice()
+std::string ScreenSelectLanguage::GetDefaultChoice()
 {
 	return HOOKS->GetPreferredLanguage();
 }
@@ -50,7 +56,7 @@ void ScreenSelectLanguage::BeginScreen()
 bool ScreenSelectLanguage::MenuStart( const InputEventPlus &input )
 {
 	int iIndex = this->GetSelectionIndex( input.pn );
-	RString sLangCode = m_aGameCommands[iIndex].m_sName;
+	std::string sLangCode = m_aGameCommands[iIndex].m_sName;
 	PREFSMAN->m_sLanguage.Set( sLangCode );
 	PREFSMAN->SavePrefsToDisk();
 	THEME->SwitchThemeAndLanguage( THEME->GetCurThemeName(), PREFSMAN->m_sLanguage, PREFSMAN->m_bPseudoLocalize );

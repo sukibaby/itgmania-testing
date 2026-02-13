@@ -1,29 +1,28 @@
-#include "global.h"
 #include "Dialog.h"
-#include "DialogDriver.h"
-#if !defined(SMPACKAGE)
-#include "PrefsManager.h"
-#endif
-#include "RageUtil.h"
-#include "RageLog.h"
-#include "RageThreads.h"
 
+#include "DialogDriver.h"
+#include "Preference.h"
+#include "StdString.h"
+#include "global.h"
+#include "PrefsManager.h"
+#include <string>
 #include <vector>
 
+#include "RageLog.h"
+#include "RageThreads.h"
+#include "RageUtil.h"
 
-#if !defined(SMPACKAGE)
-static Preference<RString> g_sIgnoredDialogs( "IgnoredDialogs", "" );
-#endif
+static Preference<std::string> g_sIgnoredDialogs( "IgnoredDialogs", "" );
 
 DialogDriver *MakeDialogDriver()
 {
-	RString sDrivers = "win32,cocoa,null";
-	std::vector<RString> asDriversToTry;
+	std::string sDrivers = "win32,cocoa,null";
+	std::vector<std::string> asDriversToTry;
 	split( sDrivers, ",", asDriversToTry, true );
 
 	ASSERT( asDriversToTry.size() != 0 );
 
-	RString sDriver;
+	std::string sDriver;
 	DialogDriver *pRet = nullptr;
 
 	for( unsigned i = 0; pRet == nullptr && i < asDriversToTry.size(); ++i )
@@ -45,7 +44,7 @@ DialogDriver *MakeDialogDriver()
 			continue;
 		}
 
-		RString sError = pRet->Init();
+		std::string sError = pRet->Init();
 		if( sError != "" )
 		{
 			if( LOG )
@@ -83,22 +82,19 @@ void Dialog::Shutdown()
 	g_pImpl = nullptr;
 }
 
-static bool MessageIsIgnored( RString sID )
+static bool MessageIsIgnored( std::string sID )
 {
-#if !defined(SMPACKAGE)
-	std::vector<RString> asList;
+	std::vector<std::string> asList;
 	split( g_sIgnoredDialogs, ",", asList );
 	for( unsigned i = 0; i < asList.size(); ++i )
 		if( !CompareNoCase(sID, asList[i]) )
 			return true;
-#endif
 	return false;
 }
 
-void Dialog::IgnoreMessage( RString sID )
+void Dialog::IgnoreMessage( std::string sID )
 {
 	// We can't ignore messages before PREFSMAN is around.
-#if !defined(SMPACKAGE)
 	if( PREFSMAN == nullptr )
 	{
 		if( sID != "" && LOG )
@@ -112,15 +108,14 @@ void Dialog::IgnoreMessage( RString sID )
 	if( MessageIsIgnored(sID) )
 		return;
 
-	std::vector<RString> asList;
+	std::vector<std::string> asList;
 	split( g_sIgnoredDialogs, ",", asList );
 	asList.push_back( sID );
 	g_sIgnoredDialogs.Set( join(",",asList) );
 	PREFSMAN->SavePrefsToDisk();
-#endif
 }
 
-void Dialog::Error( RString sMessage, RString sID )
+void Dialog::Error( std::string sMessage, std::string sID )
 {
 	Dialog::Init();
 
@@ -142,7 +137,7 @@ void Dialog::SetWindowed( bool bWindowed )
 	g_bWindowed = bWindowed;
 }
 
-void Dialog::OK( RString sMessage, RString sID )
+void Dialog::OK( std::string sMessage, std::string sID )
 {
 	Dialog::Init();
 
@@ -163,7 +158,7 @@ void Dialog::OK( RString sMessage, RString sID )
 	RageThread::SetIsShowingDialog( false );
 }
 
-Dialog::Result Dialog::OKCancel( RString sMessage, RString sID )
+Dialog::Result Dialog::OKCancel( std::string sMessage, std::string sID )
 {
 	Dialog::Init();
 
@@ -187,7 +182,7 @@ Dialog::Result Dialog::OKCancel( RString sMessage, RString sID )
 	return ret;
 }
 
-Dialog::Result Dialog::AbortRetryIgnore( RString sMessage, RString sID )
+Dialog::Result Dialog::AbortRetryIgnore( std::string sMessage, std::string sID )
 {
 	Dialog::Init();
 
@@ -211,7 +206,7 @@ Dialog::Result Dialog::AbortRetryIgnore( RString sMessage, RString sID )
 	return ret;
 }
 
-Dialog::Result Dialog::AbortRetry( RString sMessage, RString sID )
+Dialog::Result Dialog::AbortRetry( std::string sMessage, std::string sID )
 {
 	Dialog::Init();
 
@@ -235,7 +230,7 @@ Dialog::Result Dialog::AbortRetry( RString sMessage, RString sID )
 	return ret;
 }
 
-Dialog::Result Dialog::YesNo( RString sMessage, RString sID )
+Dialog::Result Dialog::YesNo( std::string sMessage, std::string sID )
 {
 	Dialog::Init();
 

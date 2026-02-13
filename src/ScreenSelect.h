@@ -1,12 +1,17 @@
 #ifndef SCREEN_SELECT_H
 #define SCREEN_SELECT_H
 
-#include "ScreenWithMenuElements.h"
-#include "GameCommand.h"
-#include "ThemeMetric.h"
-
+#include <string>
 #include <vector>
 
+#include "GameCommand.h"
+#include "InputQueue.h"
+#include "MessageManager.h"
+#include "PlayerNumber.h"
+#include "RageTimer.h"
+#include "ScreenMessage.h"
+#include "ScreenWithMenuElements.h"
+#include "ThemeMetric.h"
 
 /** @brief Base class for Style, Difficulty, and Mode selection screens. */
 class ScreenSelect : public ScreenWithMenuElements
@@ -33,7 +38,7 @@ protected:
 	 * Derived classes should look here for the choices. */
 	std::vector<GameCommand>	m_aGameCommands;
 
-	std::vector<RString>		m_asSubscribedMessages;
+	std::vector<std::string>		m_asSubscribedMessages;
 
 	/** @brief Count up to the time between idle comment announcer sounds. */
 	RageTimer		m_timerIdleComment;

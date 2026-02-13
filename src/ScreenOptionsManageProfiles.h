@@ -1,11 +1,13 @@
 #ifndef ScreenOptionsManageProfiles_H
 #define ScreenOptionsManageProfiles_H
 
-#include "ScreenOptions.h"
-#include "ScreenMiniMenu.h"
-
+#include <string>
 #include <vector>
 
+#include "InputEventPlus.h"
+#include "PlayerNumber.h"
+#include "ScreenMessage.h"
+#include "ScreenOptions.h"
 
 class Course;
 
@@ -25,9 +27,9 @@ protected:
 	virtual void ProcessMenuStart( const InputEventPlus &input );
 
 	int GetLocalProfileIndexWithFocus() const;
-	RString GetLocalProfileIDWithFocus() const;
+	std::string GetLocalProfileIDWithFocus() const;
 
-	std::vector<RString> m_vsLocalProfileID;
+	std::vector<std::string> m_vsLocalProfileID;
 };
 
 #endif

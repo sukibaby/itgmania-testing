@@ -1,29 +1,49 @@
-#include "global.h"
 #include "NoteField.h"
-#include "RageUtil.h"
-#include "GameConstantsAndTypes.h"
-#include "ArrowEffects.h"
-#include "GameManager.h"
-#include "GameState.h"
-#include "RageTimer.h"
-#include "RageLog.h"
-#include "ThemeManager.h"
-#include "NoteSkinManager.h"
-#include "Song.h"
-#include "ScreenDimensions.h"
-#include "PlayerState.h"
-#include "Style.h"
-#include "CommonMetrics.h"
-#include "BackgroundUtil.h"
-#include "Course.h"
-#include "NoteData.h"
-#include "RageDisplay.h"
 
+#include <algorithm>
 #include <cfloat>
 #include <cmath>
 #include <cstddef>
+#include <cstdint>
+#include <cstring>
+#include <map>
+#include <set>
+#include <string>
+#include <utility>
 #include <vector>
 
+#include "Actor.h"
+#include "ActorFrame.h"
+#include "ArrowEffects.h"
+#include "Attack.h"
+#include "BackgroundUtil.h"
+#include "Course.h"
+#include "EnumHelper.h"
+#include "GameConstantsAndTypes.h"
+#include "GameManager.h"
+#include "GameState.h"
+#include "LuaManager.h"
+#include "MessageManager.h"
+#include "NoteData.h"
+#include "NoteDisplay.h"
+#include "NoteSkinManager.h"
+#include "NoteTypes.h"
+#include "PlayerNumber.h"
+#include "PlayerState.h"
+#include "RageLog.h"
+#include "RageTimer.h"
+#include "RageTypes.h"
+#include "RageUtil.h"
+#include "ScreenDimensions.h"
+#include "Song.h"
+#include "Sprite.h"
+#include "StdString.h"
+#include "Style.h"
+#include "ThemeManager.h"
+#include "ThemeMetric.h"
+#include "TimingData.h"
+#include "TimingSegments.h"
+#include "global.h"
 
 float FindFirstDisplayedBeat( const PlayerState* pPlayerState, int iDrawDistanceAfterTargetsPixels );
 float FindLastDisplayedBeat( const PlayerState* pPlayerState, int iDrawDistanceBeforeTargetsPixels );
@@ -37,8 +57,8 @@ static ThemeMetric<float> BAR_8TH_ALPHA( "NoteField", "Bar8thAlpha" );
 static ThemeMetric<float> BAR_16TH_ALPHA( "NoteField", "Bar16thAlpha" );
 static ThemeMetric<float> FADE_FAIL_TIME( "NoteField", "FadeFailTime" );
 
-static RString RoutineNoteSkinName( size_t i ) { return ssprintf("RoutineNoteSkinP%i",int(i+1)); }
-static ThemeMetric1D<RString> ROUTINE_NOTESKIN( "NoteField", RoutineNoteSkinName, NUM_PLAYERS );
+static std::string RoutineNoteSkinName( size_t i ) { return ssprintf("RoutineNoteSkinP%i",int(i+1)); }
+static ThemeMetric1D<std::string> ROUTINE_NOTESKIN( "NoteField", RoutineNoteSkinName, NUM_PLAYERS );
 
 NoteField::NoteField()
 {
@@ -92,7 +112,7 @@ NoteField::~NoteField()
 
 void NoteField::Unload()
 {
-	for( std::map<RString, NoteDisplayCols *>::iterator it = m_NoteDisplays.begin();
+	for( std::map<std::string, NoteDisplayCols *>::iterator it = m_NoteDisplays.begin();
 		it != m_NoteDisplays.end(); ++it )
 		delete it->second;
 	m_NoteDisplays.clear();
@@ -118,9 +138,9 @@ void NoteField::SetBeatBarsAlpha(float measure, float fourth, float eighth, floa
 	m_fBar16thAlpha = sixteenth;
 }
 
-void NoteField::CacheNoteSkin( const RString &sNoteSkin_ )
+void NoteField::CacheNoteSkin( const std::string &sNoteSkin_ )
 {
-	RString sNoteSkinLower = sNoteSkin_;
+	std::string sNoteSkinLower = sNoteSkin_;
 	MakeLower(sNoteSkinLower);
 
 	if( m_NoteDisplays.find(sNoteSkinLower) != m_NoteDisplays.end() )
@@ -139,9 +159,9 @@ void NoteField::CacheNoteSkin( const RString &sNoteSkin_ )
 	m_NoteDisplays[ sNoteSkinLower ] = nd;
 }
 
-void NoteField::UncacheNoteSkin( const RString &sNoteSkin_ )
+void NoteField::UncacheNoteSkin( const std::string &sNoteSkin_ )
 {
-	RString sNoteSkinLower = sNoteSkin_;
+	std::string sNoteSkinLower = sNoteSkin_;
 	MakeLower(sNoteSkinLower);
 
 	LOG->Trace("NoteField::CacheNoteSkin: release %s", sNoteSkinLower.c_str() );
@@ -161,10 +181,10 @@ void NoteField::CacheAllUsedNoteSkins()
 
 	/* Cache all note skins that we might need for the whole song, course or battle
 	 * play, so we don't have to load them later (such as between course songs). */
-	std::vector<RString> asSkinsLower;
+	std::vector<std::string> asSkinsLower;
 	GAMESTATE->GetAllUsedNoteSkins( asSkinsLower );
 	asSkinsLower.push_back( m_pPlayerState->m_PlayerOptions.GetStage().m_sNoteSkin );
-	for (RString &s : asSkinsLower)
+	for (std::string &s : asSkinsLower)
 	{
 		NOTESKIN->ValidateNoteSkinName(s);
 		MakeLower(s);
@@ -175,28 +195,28 @@ void NoteField::CacheAllUsedNoteSkins()
 
 	/* If we're changing note skins in the editor, we can have old note skins lying
 	 * around.  Remove them so they don't accumulate. */
-	std::set<RString> setNoteSkinsToUnload;
-	for (std::pair<RString const &, NoteDisplayCols *> d : m_NoteDisplays)
+	std::set<std::string> setNoteSkinsToUnload;
+	for (std::pair<std::string const &, NoteDisplayCols *> d : m_NoteDisplays)
 	{
 		bool unused = find(asSkinsLower.begin(), asSkinsLower.end(), d.first) == asSkinsLower.end();
 		if( unused )
 			setNoteSkinsToUnload.insert( d.first );
 	}
-	for (RString const & skin : setNoteSkinsToUnload)
+	for (std::string const & skin : setNoteSkinsToUnload)
 		UncacheNoteSkin( skin );
 
-	RString sCurrentNoteSkinLower = m_pPlayerState->m_PlayerOptions.GetCurrent().m_sNoteSkin;
+	std::string sCurrentNoteSkinLower = m_pPlayerState->m_PlayerOptions.GetCurrent().m_sNoteSkin;
 	NOTESKIN->ValidateNoteSkinName(sCurrentNoteSkinLower);
 	MakeLower(sCurrentNoteSkinLower);
 
-	std::map<RString, NoteDisplayCols*>::iterator it = m_NoteDisplays.find( sCurrentNoteSkinLower );
+	std::map<std::string, NoteDisplayCols*>::iterator it = m_NoteDisplays.find( sCurrentNoteSkinLower );
 	ASSERT_M( it != m_NoteDisplays.end(), sCurrentNoteSkinLower );
 	m_pCurDisplay = it->second;
 	memset( m_pDisplays, 0, sizeof(m_pDisplays) );
 
 	FOREACH_EnabledPlayer( pn )
 	{
-		RString sNoteSkinLower = GAMESTATE->m_pPlayerState[pn]->m_PlayerOptions.GetCurrent().m_sNoteSkin;
+		std::string sNoteSkinLower = GAMESTATE->m_pPlayerState[pn]->m_PlayerOptions.GetCurrent().m_sNoteSkin;
 		NOTESKIN->ValidateNoteSkinName(sNoteSkinLower);
 		MakeLower(sNoteSkinLower);
 		it = m_NoteDisplays.find( sNoteSkinLower );
@@ -262,7 +282,7 @@ void NoteField::Load(
 void NoteField::ensure_note_displays_have_skin()
 {
 	// The NoteSkin may have changed at the beginning of a new course song.
-	RString sNoteSkinLower = m_pPlayerState->m_PlayerOptions.GetCurrent().m_sNoteSkin;
+	std::string sNoteSkinLower = m_pPlayerState->m_PlayerOptions.GetCurrent().m_sNoteSkin;
 
 	/* XXX: Combination of good idea and bad idea to ensure courses load
 	 * regardless of noteskin content. This may take a while to fix. */
@@ -276,11 +296,11 @@ void NoteField::ensure_note_displays_have_skin()
 		{
 			sNoteSkinLower = "default";
 		}
-		m_NoteDisplays.insert(std::pair<RString, NoteDisplayCols *> (sNoteSkinLower, badIdea));
+		m_NoteDisplays.insert(std::pair<std::string, NoteDisplayCols *> (sNoteSkinLower, badIdea));
 	}
 
 	MakeLower(sNoteSkinLower);
-	std::map<RString, NoteDisplayCols *>::iterator it = m_NoteDisplays.find( sNoteSkinLower );
+	std::map<std::string, NoteDisplayCols *>::iterator it = m_NoteDisplays.find( sNoteSkinLower );
 	ASSERT_M( it != m_NoteDisplays.end(), ssprintf("iterator != m_NoteDisplays.end() [sNoteSkinLower = %s]",sNoteSkinLower.c_str()) );
 	memset( m_pDisplays, 0, sizeof(m_pDisplays) );
 	FOREACH_EnabledPlayer( pn )
@@ -296,7 +316,7 @@ void NoteField::ensure_note_displays_have_skin()
 			{
 				sNoteSkinLower = "default";
 			}
-			m_NoteDisplays.insert(std::pair<RString, NoteDisplayCols *> (sNoteSkinLower, badIdea));
+			m_NoteDisplays.insert(std::pair<std::string, NoteDisplayCols *> (sNoteSkinLower, badIdea));
 		}
 
 		MakeLower(sNoteSkinLower);
@@ -440,7 +460,7 @@ void NoteField::DrawBeatBar( const float fBeat, BeatBarType type, int iMeasureIn
 				iState = 3;
 				break;
 		}
-		CLAMP( fAlpha, 0, 1 );
+		rage_clamp( fAlpha, 0, 1 );
 	}
 
 	float fWidth = GetWidth();
@@ -585,7 +605,7 @@ void NoteField::set_text_measure_number_for_draw(
 	m_textMeasureNumber.SetXY((x_offset + x_base) * side_sign, y_pos);
 }
 
-void NoteField::draw_timing_segment_text(const RString& text,
+void NoteField::draw_timing_segment_text(const std::string& text,
 	const float beat, const float side_sign, float x_offset,
 	const float horiz_align, const RageColor& color, const RageColor& glow)
 {
@@ -604,7 +624,7 @@ void NoteField::DrawAttackText(const float beat, const Attack &attack,
 	m_textMeasureNumber.Draw();
 }
 
-void NoteField::DrawBGChangeText(const float beat, const RString new_bg_name,
+void NoteField::DrawBGChangeText(const float beat, const std::string new_bg_name,
 	const RageColor& glow)
 {
 	set_text_measure_number_for_draw(beat, 1, 0, align_left, RageColor(0,1,0,1),
@@ -1000,12 +1020,12 @@ void NoteField::DrawPrimitives()
 
 							if( IS_ON_SCREEN(fLowestBeat) )
 							{
-								std::vector<RString> vsBGChanges;
+								std::vector<std::string> vsBGChanges;
 								for (BackgroundLayer const &bl : viLowestIndex)
 								{
 									ASSERT( iter[bl] != GAMESTATE->m_pCurSong->GetBackgroundChanges(bl).end() );
 									const BackgroundChange& change = *iter[bl];
-									RString s = change.GetTextDescription();
+									std::string s = change.GetTextDescription();
 									if( bl!=0 )
 									{
 										s = ssprintf("%d: ",bl) + s;
@@ -1031,8 +1051,8 @@ void NoteField::DrawPrimitives()
 		{
 			int iBegin = m_iBeginMarker;
 			int iEnd = m_iEndMarker;
-			CLAMP( iBegin, m_FieldRenderArgs.first_row, m_FieldRenderArgs.last_row );
-			CLAMP( iEnd, m_FieldRenderArgs.first_row, m_FieldRenderArgs.last_row );
+			rage_clamp( iBegin, m_FieldRenderArgs.first_row, m_FieldRenderArgs.last_row );
+			rage_clamp( iEnd, m_FieldRenderArgs.first_row, m_FieldRenderArgs.last_row );
 			DrawAreaHighlight( iBegin, iEnd );
 		}
 		else if( m_iBeginMarker != -1 )
@@ -1102,7 +1122,7 @@ void NoteField::FadeToFail()
 		member_name.PushSelf(L);
 
 #define OPEN_RUN_BLOCK(arg_count) \
-	RString error= "Error running callback: "; \
+	std::string error= "Error running callback: "; \
 	if(LuaHelpers::RunScriptOnStack(L, error, arg_count, arg_count, true)) \
 	{
 

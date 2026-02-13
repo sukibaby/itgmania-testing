@@ -3,11 +3,13 @@
 #ifndef NOTE_TYPES_H
 #define NOTE_TYPES_H
 
+#include <cmath>
+#include <string>
+
+#include "EnumHelper.h"
 #include "GameConstantsAndTypes.h"
 #include "PlayerNumber.h"
 #include "RageLog.h"
-
-#include <cmath>
 
 class XNode;
 
@@ -112,8 +114,8 @@ enum TapNoteType
 	NUM_TapNoteType,
 	TapNoteType_Invalid
 };
-const RString& TapNoteTypeToString( TapNoteType tnt );
-const RString& TapNoteTypeToLocalizedString( TapNoteType tnt );
+const std::string& TapNoteTypeToString( TapNoteType tnt );
+const std::string& TapNoteTypeToLocalizedString( TapNoteType tnt );
 LuaDeclareType( TapNoteType );
 
 /** @brief The list of a TapNote's sub types. */
@@ -125,8 +127,8 @@ enum TapNoteSubType
 	NUM_TapNoteSubType,
 	TapNoteSubType_Invalid
 };
-const RString& TapNoteSubTypeToString( TapNoteSubType tnst );
-const RString& TapNoteSubTypeToLocalizedString( TapNoteSubType tnst );
+const std::string& TapNoteSubTypeToString( TapNoteSubType tnst );
+const std::string& TapNoteSubTypeToLocalizedString( TapNoteSubType tnst );
 LuaDeclareType( TapNoteSubType );
 
 /** @brief The different places a TapNote could come from. */
@@ -137,8 +139,8 @@ enum TapNoteSource
 	NUM_TapNoteSource,
 	TapNoteSource_Invalid
 };
-const RString& TapNoteSourceToString( TapNoteSource tns );
-const RString& TapNoteSourceToLocalizedString( TapNoteSource tns );
+const std::string& TapNoteSourceToString( TapNoteSource tns );
+const std::string& TapNoteSourceToLocalizedString( TapNoteSource tns );
 LuaDeclareType( TapNoteSource );
 
 /** @brief The various properties of a tap note. */
@@ -156,7 +158,7 @@ struct TapNote
 	PlayerNumber	pn;
 
 	// used only if Type == attack:
-	RString		sAttackModifiers;
+	std::string		sAttackModifiers;
 	float		fAttackDurationSeconds;
 
 	// Index into Song's vector of keysound files if nonnegative:
@@ -190,7 +192,7 @@ struct TapNote
 		TapNoteType type_,
 		TapNoteSubType subType_,
 		TapNoteSource source_,
-		RString sAttackModifiers_,
+		std::string sAttackModifiers_,
 		float fAttackDurationSeconds_,
 		int iKeysoundIndex_ ):
 		type(type_), subType(subType_), source(source_), result(),
@@ -275,8 +277,8 @@ enum NoteType
 	NUM_NoteType,
 	NoteType_Invalid
 };
-const RString& NoteTypeToString( NoteType nt );
-const RString& NoteTypeToLocalizedString( NoteType nt );
+const std::string& NoteTypeToString( NoteType nt );
+const std::string& NoteTypeToLocalizedString( NoteType nt );
 LuaDeclareType( NoteType );
 float NoteTypeToBeat( NoteType nt );
 int NoteTypeToRow( NoteType nt );

@@ -1,13 +1,25 @@
-#include "global.h"
 #include "ScreenSetTime.h"
-#include "ScreenManager.h"
-#include "RageLog.h"
-#include "InputMapper.h"
-#include "ThemeManager.h"
+
+#include <ctime>
+#include <string>
+
+#include "BitmapText.h"
 #include "DateTime.h"
 #include "EnumHelper.h"
-#include "arch/ArchHooks/ArchHooks.h"
+#include "GameInput.h"
 #include "InputEventPlus.h"
+#include "InputFilter.h"
+#include "InputMapper.h"
+#include "RageTypes.h"
+#include "RageUtil.h"
+#include "Screen.h"
+#include "ScreenManager.h"
+#include "ScreenMessage.h"
+#include "ScreenWithMenuElements.h"
+#include "ThemeManager.h"
+#include "Tween.h"
+#include "arch/ArchHooks/ArchHooks.h"
+#include "global.h"
 
 static const char *SetTimeSelectionNames[] = {
 	"Year", 
@@ -90,7 +102,7 @@ void ScreenSetTime::Update( float fDelta )
 	int iPrettyHour = now.tm_hour%12;
 	if( iPrettyHour == 0 )
 		iPrettyHour = 12;
-	RString sPrettyHour = ssprintf( "%d %s", iPrettyHour, now.tm_hour>=12 ? "pm" : "am" );
+	std::string sPrettyHour = ssprintf( "%d %s", iPrettyHour, now.tm_hour>=12 ? "pm" : "am" );
 
 	m_textValue[hour]	.SetText( sPrettyHour );
 	m_textValue[minute]	.SetText( ssprintf("%02d",now.tm_min) );
@@ -146,7 +158,7 @@ void ScreenSetTime::ChangeSelection( int iDirection )
 	SetTimeSelection OldSelection = m_Selection;
 	enum_add<SetTimeSelection>( m_Selection, iDirection );
 
-	ENUM_CLAMP( m_Selection, SetTimeSelection(0), SetTimeSelection(NUM_SetTimeSelection-1) );
+	enum_clamp( m_Selection, SetTimeSelection(0), SetTimeSelection(NUM_SetTimeSelection-1) );
 	if( iDirection != 0 && m_Selection == OldSelection )
 		return; // can't move any more
 

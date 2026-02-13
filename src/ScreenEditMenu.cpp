@@ -1,25 +1,34 @@
-#include "global.h"
 #include "ScreenEditMenu.h"
-#include "CommonMetrics.h"
+
+#include <string>
+
+#include "ActorUtil.h"
+#include "Difficulty.h"
+#include "EditMenu.h"
 #include "GameConstantsAndTypes.h"
 #include "GameManager.h"
 #include "GameSoundManager.h"
 #include "GameState.h"
 #include "LocalizedString.h"
+#include "PlayerNumber.h"
 #include "RageFile.h"
 #include "RageFileManager.h"
 #include "RageLog.h"
 #include "RageUtil.h"
+#include "Screen.h"
 #include "ScreenManager.h"
+#include "ScreenMessage.h"
 #include "ScreenPrompt.h"
 #include "ScreenTextEntry.h"
+#include "ScreenWithMenuElements.h"
 #include "Song.h"
 #include "SongManager.h"
 #include "SongUtil.h"
 #include "Steps.h"
 #include "ThemeManager.h"
+#include "global.h"
 
-static const RString TEMP_FILE_NAME = "--temp--";
+static const std::string TEMP_FILE_NAME = "--temp--";
 
 #define EXPLANATION_TEXT( row )	THEME->GetString(m_sName,"Explanation"+EditMenuRowToString(row))
 #define EDIT_MENU_TYPE			THEME->GetMetric(m_sName,"EditMenuType")
@@ -160,13 +169,13 @@ bool ScreenEditMenu::MenuRight( const InputEventPlus & )
 	return true;
 }
 
-static RString GetCopyDescription( const Steps *pSourceSteps )
+static std::string GetCopyDescription( const Steps *pSourceSteps )
 {
-	RString s = pSourceSteps->GetDescription();
+	std::string s = pSourceSteps->GetDescription();
 	return s;
 }
 
-static void SetCurrentStepsDescription( const RString &s )
+static void SetCurrentStepsDescription( const std::string &s )
 {
 	GAMESTATE->m_pCurSteps[0]->SetDescription( s );
 }
@@ -231,8 +240,8 @@ bool ScreenEditMenu::MenuStart( const InputEventPlus & )
 	{
 		case EditMode_Full:
 		{
-			RString sDir = pSong->GetSongDir();
-			RString sTempFile = sDir + TEMP_FILE_NAME;
+			std::string sDir = pSong->GetSongDir();
+			std::string sTempFile = sDir + TEMP_FILE_NAME;
 			RageFile file;
 			if( !file.Open( sTempFile, RageFile::WRITE ) )
 			{
@@ -305,7 +314,7 @@ bool ScreenEditMenu::MenuStart( const InputEventPlus & )
 				FAIL_M("Cannot create steps in EditMode_Practice");
 			}
 
-			RString sEditName;
+			std::string sEditName;
 			if( pSourceSteps )
 			{
 				pSteps->CopyFrom( pSourceSteps, st, pSong->m_fMusicLengthSeconds );
@@ -386,7 +395,7 @@ void ScreenEditMenu::RefreshExplanationText()
 
 void ScreenEditMenu::RefreshNumStepsLoadedFromProfile()
 {
-	RString s = ssprintf( "edits used: %d", SONGMAN->GetNumStepsLoadedFromProfile() );
+	std::string s = ssprintf( "edits used: %d", SONGMAN->GetNumStepsLoadedFromProfile() );
 	m_textNumStepsLoadedFromProfile.SetText( s );
 }
 

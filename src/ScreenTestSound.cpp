@@ -1,14 +1,16 @@
-#include "global.h"
 #include "ScreenTestSound.h"
-#include "RageDisplay.h"
-#include "ScreenManager.h"
-#include "RageSoundManager.h"
-#include "ThemeManager.h"
-#include "RageUtil.h"
-#include "InputEventPlus.h"
 
+#include <string>
 #include <vector>
 
+#include "InputEventPlus.h"
+#include "InputFilter.h"
+#include "RageInputDevice.h"
+#include "RageSoundManager.h"
+#include "RageUtil.h"
+#include "Screen.h"
+#include "ScreenManager.h"
+#include "ThemeManager.h"
 
 REGISTER_SCREEN_CLASS( ScreenTestSound );
 
@@ -80,11 +82,11 @@ ScreenTestSound::~ScreenTestSound()
 
 void ScreenTestSound::UpdateText(int n)
 {
-	RString fn = Basename( s[n].s.GetLoadedFilePath() );
+	std::string fn = Basename( s[n].s.GetLoadedFilePath() );
 
 	std::vector<RageSound *> &snds = m_sSoundCopies[n];
 
-	RString pos;
+	std::string pos;
 	for(unsigned p = 0; p < snds.size(); ++p)
 	{
 		if(p) pos += ", ";
