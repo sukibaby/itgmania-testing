@@ -3,10 +3,12 @@
 #ifndef INPUT_FILTER_H
 #define INPUT_FILTER_H
 
-#include "RageInputDevice.h"
-
+#include <string>
 #include <vector>
 
+#include "EnumHelper.h"
+#include "RageInputDevice.h"
+#include "RageTimer.h"
 
 enum InputEventType
 {
@@ -25,8 +27,8 @@ enum InputEventType
 	InputEventType_Invalid
 };
 
-const RString& InputEventTypeToString(InputEventType cat);
-const RString& InputEventTypeToLocalizedString(InputEventType cat);
+const std::string& InputEventTypeToString(InputEventType cat);
+const std::string& InputEventTypeToLocalizedString(InputEventType cat);
 LuaDeclareType(InputEventType);
 
 struct InputEvent
@@ -53,7 +55,7 @@ class InputFilter
 {
 public:
 	void ButtonPressed( const DeviceInput &di );
-	void SetButtonComment( const DeviceInput &di, const RString &sComment = "" );
+	void SetButtonComment( const DeviceInput &di, const std::string &sComment = "" );
 	void ResetDevice( InputDevice dev );
 
 	InputFilter();
@@ -71,7 +73,7 @@ public:
 	bool IsBeingPressed( const DeviceInput &di, const DeviceInputList *pButtonState = nullptr ) const;
 	float GetSecsHeld( const DeviceInput &di, const DeviceInputList *pButtonState = nullptr ) const;
 	float GetLevel( const DeviceInput &di, const DeviceInputList *pButtonState = nullptr ) const;
-	RString GetButtonComment( const DeviceInput &di ) const;
+	std::string GetButtonComment( const DeviceInput &di ) const;
 
 	void GetInputEvents( std::vector<InputEvent> &aEventOut );
 	void GetPressedButtons( std::vector<DeviceInput> &array ) const;

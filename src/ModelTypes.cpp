@@ -1,16 +1,24 @@
-#include "global.h"
 #include "ModelTypes.h"
+
+#include <algorithm>
+#include <cmath>
+#include <cstdio>
+#include <cstring>
+#include <numeric>
+#include <string>
+
 #include "IniFile.h"
-#include "RageUtil.h"
+#include "RageException.h"
 #include "RageFile.h"
 #include "RageMath.h"
 #include "RageTexture.h"
+#include "RageTextureID.h"
 #include "RageTextureManager.h"
-#include "RageLog.h"
-#include "RageDisplay.h"
-
-#include <cmath>
-#include <numeric>
+#include "RageTypes.h"
+#include "RageUtil.h"
+#include "StdString.h"
+#include "XmlFile.h"
+#include "global.h"
 
 #define MS_MAX_NAME	32
 
@@ -45,11 +53,11 @@ void AnimatedTexture::LoadBlank()
 	vFrames.push_back( state );
 }
 
-void AnimatedTexture::Load( const RString &sTexOrIniPath )
+void AnimatedTexture::Load( const std::string &sTexOrIniPath )
 {
 	ASSERT( vFrames.empty() );	// don't load more than once
 
-	m_bSphereMapped = sTexOrIniPath.find("sphere") != RString::npos;
+	m_bSphereMapped = sTexOrIniPath.find("sphere") != std::string::npos;
 	if( sTexOrIniPath.find("add") != std::string::npos )
 		m_BlendMode = BLEND_ADD;
 	else
@@ -72,16 +80,16 @@ void AnimatedTexture::Load( const RString &sTexOrIniPath )
 
 		for( int i=0; i<1000; i++ )
 		{
-			RString sFileKey = ssprintf( "Frame%04d", i );
-			RString sDelayKey = ssprintf( "Delay%04d", i );
+			std::string sFileKey = ssprintf( "Frame%04d", i );
+			std::string sDelayKey = ssprintf( "Delay%04d", i );
 
-			RString sFileName;
+			std::string sFileName;
 			float fDelay = 0;
 			if( pAnimatedTexture->GetAttrValue( sFileKey, sFileName ) &&
 				pAnimatedTexture->GetAttrValue( sDelayKey, fDelay ) )
 			{
-				RString sTranslateXKey = ssprintf( "TranslateX%04d", i );
-				RString sTranslateYKey = ssprintf( "TranslateY%04d", i );
+				std::string sTranslateXKey = ssprintf( "TranslateX%04d", i );
+				std::string sTranslateYKey = ssprintf( "TranslateY%04d", i );
 
 				RageVector2 vOffset(0,0);
 				pAnimatedTexture->GetAttrValue( sTranslateXKey, vOffset.x );
@@ -150,7 +158,7 @@ int AnimatedTexture::GetNumStates() const
 
 void AnimatedTexture::SetState( int iState )
 {
-	CLAMP( iState, 0, GetNumStates()-1 );
+	rage_clamp( iState, 0, GetNumStates()-1 );
 	m_iCurState = iState;
 }
 
@@ -222,16 +230,16 @@ RageVector2 AnimatedTexture::GetTextureTranslate()
 
 #define THROW RageException::Throw( "Parse error in \"%s\" at line %d: \"%s\".", sPath.c_str(), iLineNum, sLine.c_str() )
 
-bool msAnimation::LoadMilkshapeAsciiBones( RString sAniName, RString sPath )
+bool msAnimation::LoadMilkshapeAsciiBones( std::string sAniName, std::string sPath )
 {
 	FixSlashesInPlace(sPath);
-	const RString sDir = Dirname( sPath );
+	const std::string sDir = Dirname( sPath );
 
 	RageFile f;
 	if ( !f.Open(sPath) )
 		RageException::Throw( "Model:: Could not open \"%s\": %s", sPath.c_str(), f.GetError().c_str() );
 
-	RString sLine;
+	std::string sLine;
 	int iLineNum = 0;
 
 	msAnimation &Animation = *this;

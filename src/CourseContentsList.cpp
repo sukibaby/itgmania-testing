@@ -1,14 +1,20 @@
-#include "global.h"
 #include "CourseContentsList.h"
-#include "GameConstantsAndTypes.h"
-#include "RageLog.h"
-#include "Course.h"
-#include "Trail.h"
-#include "GameState.h"
-#include "XmlFile.h"
+
+#include <string>
+
+#include "Actor.h"
+#include "ActorScroller.h"
 #include "ActorUtil.h"
+#include "Course.h"
+#include "Difficulty.h"
+#include "GameState.h"
+#include "LuaManager.h"
+#include "MessageManager.h"
+#include "PlayerNumber.h"
 #include "RageUtil.h"
 #include "Steps.h"
+#include "Trail.h"
+#include "XmlFile.h"
 
 REGISTER_ACTOR_CLASS( CourseContentsList );
 
@@ -51,7 +57,7 @@ void CourseContentsList::SetFromGameState()
 	if( pMasterTrail == nullptr )
 		return;
 	unsigned uNumEntriesToShow = pMasterTrail->m_vEntries.size(); 
-	CLAMP( uNumEntriesToShow, 0, m_vpDisplay.size() );
+	rage_clamp( uNumEntriesToShow, 0, m_vpDisplay.size() );
 
 	for( int i=0; i<(int)uNumEntriesToShow; i++ )
 	{
@@ -91,7 +97,7 @@ void CourseContentsList::SetItemFromGameState( Actor *pActor, int iCourseEntryIn
 		if( te == nullptr )
 			continue;
 
-		RString s;
+		std::string s;
 		Difficulty dc;
 		if( te->bSecret )
 		{

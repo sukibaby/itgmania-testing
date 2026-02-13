@@ -1,15 +1,16 @@
-#include "global.h"
 #include "MeasureInfo.h"
-#include "NoteData.h"
-#include "RageLog.h"
-#include "LocalizedString.h"
-#include "LuaBinding.h"
+
+#include <string>
+#include <vector>
+
 #include "GameState.h"
+#include "NoteData.h"
+#include "NoteTypes.h"
+#include "RageUtil.h"
 
-
-RString MeasureInfo::ToString() const
+std::string MeasureInfo::ToString() const
 {
-	std::vector<RString> asMeasureInfo;
+	std::vector<std::string> asMeasureInfo;
 	for (unsigned i = 0; i < npsPerMeasure.size(); i++)
 	{
 		asMeasureInfo.push_back(ssprintf("%.3f", npsPerMeasure[i]));
@@ -23,9 +24,9 @@ RString MeasureInfo::ToString() const
 	return join(",", asMeasureInfo);
 }
 
-void MeasureInfo::FromString(const RString& sValues)
+void MeasureInfo::FromString(const std::string& sValues)
 {
-	std::vector<RString> asValues;
+	std::vector<std::string> asValues;
 	split( sValues, ",", asValues, true );
 	int half_size = static_cast<int>(asValues.size()) / 2;
 

@@ -1,11 +1,12 @@
 #ifndef NOTEDATAUTIL_H
 #define NOTEDATAUTIL_H
 
-#include "GameConstantsAndTypes.h"
-#include "NoteTypes.h"
-
+#include <string>
 #include <vector>
 
+#include "GameConstantsAndTypes.h"
+#include "NoteTypes.h"
+#include "PlayerNumber.h"
 
 class PlayerOptions;
 struct RadarValues;
@@ -28,8 +29,8 @@ namespace NoteDataUtil
 {
 	NoteType GetSmallestNoteTypeForMeasure( const NoteData &nd, int iMeasureIndex );
 	NoteType GetSmallestNoteTypeInRange( const NoteData &nd, int iStartIndex, int iEndIndex );
-	void LoadFromSMNoteDataString( NoteData &out, const RString &sSMNoteData, bool bComposite );
-	void GetSMNoteDataString( const NoteData &in, RString &notes_out );
+	void LoadFromSMNoteDataString( NoteData &out, const std::string &sSMNoteData, bool bComposite );
+	void GetSMNoteDataString( const NoteData &in, std::string &notes_out );
 	void SplitCompositeNoteData( const NoteData &in, std::vector<NoteData> &out );
 	void CombineCompositeNoteData( NoteData &out, const std::vector<NoteData> &in );
 	/**

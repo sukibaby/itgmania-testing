@@ -1,27 +1,39 @@
 #ifndef SCREEN_EDIT_H
 #define SCREEN_EDIT_H
 
-#include "EditModePlayerManager.h"
-#include "ScreenWithMenuElements.h"
-#include "BitmapText.h"
-#include "Player.h"
-#include "RageSound.h"
-#include "SnapDisplay.h"
+#include <string>
+#include <vector>
+
+#include "AutoKeysounds.h"
 #include "Background.h"
+#include "BitmapText.h"
+#include "EditModePlayerManager.h"
+#include "EnumHelper.h"
 #include "Foreground.h"
-#include "NoteField.h"
-#include "NoteTypes.h"
-#include "Song.h"
-#include "Steps.h"
-#include "ThemeMetric.h"
-#include "PlayerState.h"
+#include "GameConstantsAndTypes.h"
 #include "GameInput.h"
 #include "GameplayAssist.h"
-#include "AutoKeysounds.h"
-#include "EnumHelper.h"
-
-#include <map>
-#include <vector>
+#include "InputEventPlus.h"
+#include "MessageManager.h"
+#include "ModsGroup.h"
+#include "NoteField.h"
+#include "NoteTypes.h"
+#include "Player.h"
+#include "PlayerNumber.h"
+#include "PlayerOptions.h"
+#include "PlayerState.h"
+#include "RageInputDevice.h"
+#include "RageSound.h"
+#include "Screen.h"
+#include "ScreenMessage.h"
+#include "ScreenWithMenuElements.h"
+#include "SnapDisplay.h"
+#include "Song.h"
+#include "SongPosition.h"
+#include "Steps.h"
+#include "ThemeMetric.h"
+#include "TimingData.h"
+#include "TimingSegments.h"
 
 const int NUM_EDIT_BUTTON_COLUMNS = 10;
 struct MenuDef;
@@ -36,7 +48,7 @@ enum EditState
 	NUM_EditState,
 	EditState_Invalid
 };
-const RString& EditStateToString( EditState es );
+const std::string& EditStateToString( EditState es );
 LuaDeclareType( EditState );
 
 enum EditButton
@@ -225,6 +237,9 @@ public:
 	void PerformSave(bool autosave);
 
 	EditState GetEditState(){ return m_EditState; }
+
+	// For seeking through the song instantly.
+	void SeekSong(float second);
 
 	// Lua
 	virtual void PushSelf( lua_State *L );
@@ -466,7 +481,7 @@ public:
 		modify_keysounds_at_row, /**< Modify the keysounds at this row. */
 		NUM_AREA_MENU_CHOICES
 	};
-	void HandleArbitraryRemapping(RString const& mapstr);
+	void HandleArbitraryRemapping(std::string const& mapstr);
 	void HandleAlterMenuChoice(AlterMenuChoice choice,
 		const std::vector<int> &answers, bool allow_undo= true,
 		bool prompt_clear= true);

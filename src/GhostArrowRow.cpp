@@ -1,18 +1,23 @@
-#include "global.h"
 #include "GhostArrowRow.h"
-#include "RageUtil.h"
-#include "GameConstantsAndTypes.h"
-#include "ArrowEffects.h"
-#include "NoteSkinManager.h"
-#include "GameState.h"
-#include "Game.h"
-#include "PlayerState.h"
-#include "Style.h"
-#include "ActorUtil.h"
 
 #include <cstddef>
+#include <string>
 #include <vector>
 
+#include "ArrowEffects.h"
+#include "Game.h"
+#include "GameConstantsAndTypes.h"
+#include "GameInput.h"
+#include "GameState.h"
+#include "MessageManager.h"
+#include "NoteDisplay.h"
+#include "NoteSkinManager.h"
+#include "NoteTypes.h"
+#include "PlayerNumber.h"
+#include "PlayerState.h"
+#include "RageUtil.h"
+#include "Style.h"
+#include "global.h"
 
 void GhostArrowRow::Load( const PlayerState* pPlayerState, float fYReverseOffset )
 {
@@ -26,7 +31,7 @@ void GhostArrowRow::Load( const PlayerState* pPlayerState, float fYReverseOffset
 	// init arrows
 	for( int c=0; c<pStyle->m_iColsPerPlayer; c++ )
 	{
-		const RString &sButton = GAMESTATE->GetCurrentStyle(pn)->ColToButtonName( c );
+		const std::string &sButton = GAMESTATE->GetCurrentStyle(pn)->ColToButtonName( c );
 
 		std::vector<GameInput> GameI;
 		GAMESTATE->GetCurrentStyle(pn)->StyleInputToGameInput( c, pn, GameI );
@@ -119,7 +124,7 @@ void GhostArrowRow::DidTapNote( int iCol, TapNoteScore tns, bool bBright )
 		m_Ghost[iCol]->PlayCommand( "Bright" );
 	else
 		m_Ghost[iCol]->PlayCommand( "Dim" );
-	RString sJudge = TapNoteScoreToString( tns );
+	std::string sJudge = TapNoteScoreToString( tns );
 	m_Ghost[iCol]->PlayCommand( Capitalize(sJudge) );
 }
 
@@ -138,7 +143,7 @@ void GhostArrowRow::DidHoldNote( int iCol, HoldNoteScore hns, bool bBright )
 		m_Ghost[iCol]->PlayCommand( "Bright" );
 	else
 		m_Ghost[iCol]->PlayCommand( "Dim" );
-	RString sJudge = HoldNoteScoreToString( hns );
+	std::string sJudge = HoldNoteScoreToString( hns );
 	m_Ghost[iCol]->PlayCommand( Capitalize(sJudge) );
 }
 

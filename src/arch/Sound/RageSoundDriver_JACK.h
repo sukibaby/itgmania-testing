@@ -1,11 +1,12 @@
 #ifndef RAGE_SOUND_JACK
 #define RAGE_SOUND_JACK
 
-#include "RageSoundDriver.h"
+#include <jack/jack.h>
 
 #include <cstdint>
+#include <string>
 
-#include <jack/jack.h>
+#include "RageSoundDriver.h"
 
 #define USE_RAGE_SOUND_JACK
 
@@ -15,7 +16,7 @@ public:
 	RageSoundDriver_JACK();
 	~RageSoundDriver_JACK();
 
-	RString Init();
+	std::string Init();
 
 	int GetSampleRate() const;
 	int64_t GetPosition() const;
@@ -28,7 +29,7 @@ private:
 	int sample_rate;
 
 	// Helper for Init()
-	RString ConnectPorts();
+	std::string ConnectPorts();
 
 	// JACK callbacks and trampolines
 	int ProcessCallback(jack_nframes_t nframes);

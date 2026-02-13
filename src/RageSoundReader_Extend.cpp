@@ -1,10 +1,14 @@
-#include "global.h"
 #include "RageSoundReader_Extend.h"
-#include "RageLog.h"
+
+#include <algorithm>
+#include <cstring>
+#include <string>
+
+#include "RageSoundReader.h"
+#include "RageSoundReader_Filter.h"
 #include "RageSoundUtil.h"
 #include "RageUtil.h"
-
-#include <cmath>
+#include "global.h"
 
 /*
  * Add support for negative seeks (adding a delay), extending a sound
@@ -151,7 +155,7 @@ int RageSoundReader_Extend::GetNextSourceFrame() const
 	return m_iPositionFrames;
 }
 
-bool RageSoundReader_Extend::SetProperty( const RString &sProperty, float fValue )
+bool RageSoundReader_Extend::SetProperty( const std::string &sProperty, float fValue )
 {
 	if( sProperty == "StartSecond" )
 	{

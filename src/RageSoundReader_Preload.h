@@ -3,6 +3,8 @@
 #ifndef RAGE_SOUND_READER_PRELOAD
 #define RAGE_SOUND_READER_PRELOAD
 
+#include <string>
+
 #include "RageSoundReader.h"
 #include "RageUtil_AutoPtr.h"
 
@@ -21,7 +23,7 @@ public:
 	unsigned GetNumChannels() const { return m_iChannels; }
 	int GetNextSourceFrame() const;
 	float GetStreamToSourceRatio() const { return m_fRate; }
-	RString GetError() const { return ""; }
+	std::string GetError() const { return ""; }
 
 	/* Return the total number of copies of this sound.  (If 1 is returned,
 	 * this is the last copy.) */
@@ -34,7 +36,7 @@ public:
 	static bool PreloadSound( RageSoundReader *&pSound );
 
 private:
-	AutoPtrCopyOnWrite<RString> m_Buffer;
+	AutoPtrCopyOnWrite<std::string> m_Buffer;
 	bool m_bBufferIs16Bit;
 
 	/* Bytes: */

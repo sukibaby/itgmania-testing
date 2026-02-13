@@ -3,18 +3,20 @@
 #ifndef VIDEO_DRIVER_INFO_H
 #define VIDEO_DRIVER_INFO_H
 
+#include <string>
+
 struct VideoDriverInfo
 {
-	RString sProvider;
-	RString sDescription;
-	RString sVersion;
-	RString sDate;
-	RString sDeviceID;
+	std::string sProvider;
+	std::string sDescription;
+	std::string sVersion;
+	std::string sDate;
+	std::string sDeviceID;
 };
 
-RString GetPrimaryVideoName();
+std::string GetPrimaryVideoName();
 bool GetVideoDriverInfo( int iCardno, VideoDriverInfo &info );
-RString GetPrimaryVideoDriverName();
+std::string GetPrimaryVideoDriverName();
 
 #endif
 

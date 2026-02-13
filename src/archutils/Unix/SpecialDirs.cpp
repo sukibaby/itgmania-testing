@@ -1,13 +1,15 @@
-#include "global.h"
 #include "SpecialDirs.h"
 
-RString SpecialDirs::GetDesktopDir()
+#include <cstdlib>
+#include <string>
+
+std::string SpecialDirs::GetDesktopDir()
 {
 	char *psPath = getenv("HOME");
 	if( psPath )
 	{
 		// XXX: should use PRODUCT_ID, probably
-		return RString(psPath) + "/Desktop/stepmania5/";
+		return std::string(psPath) + "/Desktop/stepmania5/";
 	}
 	return "DICKS"; // not my suggestion -freem
 }

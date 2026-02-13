@@ -1,24 +1,29 @@
-#include "global.h"
 #include "Sprite.h"
-#include "RageTextureManager.h"
-#include "XmlFile.h"
-#include "RageLog.h"
-#include "RageDisplay.h"
-#include "RageTexture.h"
-#include "RageTimer.h"
-#include "RageUtil.h"
-#include "ActorUtil.h"
-#include "LuaBinding.h"
-#include "LuaManager.h"
-#include "ImageCache.h"
-#include "ThemeMetric.h"
-#include <numeric>
 
+#include <algorithm>
 #include <cassert>
 #include <cfloat>
 #include <cmath>
 #include <cstddef>
+#include <cstring>
+#include <string>
 #include <vector>
+
+#include "Actor.h"
+#include "ActorUtil.h"
+#include "EnumHelper.h"
+#include "ImageCache.h"
+#include "LuaBinding.h"
+#include "LuaManager.h"
+#include "RageDisplay.h"
+#include "RageTexture.h"
+#include "RageTextureID.h"
+#include "RageTextureManager.h"
+#include "RageTypes.h"
+#include "RageUtil.h"
+#include "ThemeManager.h"
+#include "XmlFile.h"
+#include "global.h"
 
 REGISTER_ACTOR_CLASS( Sprite );
 
@@ -185,7 +190,7 @@ void Sprite::LoadFromNode( const XNode* pNode )
 {
 	/* Texture may refer to the ID of a render target; if it's already
 	 * registered, use it without trying to resolve it. */
-	RString sPath;
+	std::string sPath;
 	pNode->GetAttrValue( "Texture", sPath );
 	if( !sPath.empty() && !TEXTUREMAN->IsTextureRegistered( RageTextureID(sPath) ) )
 		ActorUtil::GetAttrPath( pNode, "Texture", sPath );
@@ -256,8 +261,8 @@ void Sprite::LoadFromNode( const XNode* pNode )
 		else for( int i=0; true; i++ )
 		{
 			// deprecated
-			RString sFrameKey = ssprintf( "Frame%04d", i );
-			RString sDelayKey = ssprintf( "Delay%04d", i );
+			std::string sFrameKey = ssprintf( "Frame%04d", i );
+			std::string sDelayKey = ssprintf( "Delay%04d", i );
 			State newState;
 
 			int iFrameIndex;
@@ -376,7 +381,7 @@ void Sprite::LoadFromTexture( RageTextureID ID )
 	SetTexture( pTexture );
 }
 
-void Sprite::LoadFromCached( const RString &sDir, const RString &sPath )
+void Sprite::LoadFromCached( const std::string &sDir, const std::string &sPath )
 {
 	if( sPath.empty() )
 	{
@@ -557,10 +562,10 @@ void Sprite::DrawTexture( const TweenState *state )
 	 * of the image area aren't guaranteed to be initialized. */
 	/* HACK: Clamp the crop values. It would be more accurate to clip the
 	 * vertices so that the diffuse value is adjusted. */
-	CLAMP( crop.left, 0, 1 );
-	CLAMP( crop.right, 0, 1 );
-	CLAMP( crop.top, 0, 1 );
-	CLAMP( crop.bottom, 0, 1 );
+	rage_clamp( crop.left, 0, 1 );
+	rage_clamp( crop.right, 0, 1 );
+	rage_clamp( crop.top, 0, 1 );
+	rage_clamp( crop.bottom, 0, 1 );
 
 	RectF croppedQuadVerticies = quadVerticies;
 #define IF_CROP_POS(side,opp_side) \
@@ -830,7 +835,7 @@ void Sprite::SetState( int iNewState )
 		if( !m_pTexture || (m_pTexture->GetID().filename.find("_blank") == std::string::npos &&
 			m_pTexture->GetID().filename.find("_missing") == std::string::npos) )
 		{
-			RString sError;
+			std::string sError;
 			if( m_pTexture )
 				sError = ssprintf("A Sprite '%s' (\"%s\") tried to set state to frame %d, but it has only %u frames.",
 					/*
@@ -846,7 +851,7 @@ void Sprite::SetState( int iNewState )
 		}
 	}
 
-	CLAMP(iNewState, 0, (int)m_States.size()-1);
+	rage_clamp(iNewState, 0, (int)m_States.size()-1);
 	m_iCurState = iNewState;
 	m_fSecsIntoState = 0.0f;
 }
@@ -869,10 +874,10 @@ void Sprite::SetSecondsIntoAnimation( float fSeconds )
 	UpdateAnimationState();
 }
 
-RString	Sprite::GetTexturePath() const
+std::string	Sprite::GetTexturePath() const
 {
 	if( m_pTexture == nullptr )
-		return RString();
+		return std::string();
 
 	return m_pTexture->GetID().filename;
 }
@@ -1138,7 +1143,7 @@ public:
 			RageTextureID ID( SArg(1) );
 			if(lua_isstring(L, 2))
 			{
-				RString additional_hints= SArg(2);
+				std::string additional_hints= SArg(2);
 				ID.AdditionalTextureHints= additional_hints;
 			}
 			p->Load( ID );

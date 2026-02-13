@@ -2,14 +2,13 @@
 #ifndef StreamDisplay_H
 #define StreamDisplay_H
 
-#include "ActorFrame.h"
-#include "Sprite.h"
-#include "Quad.h"
-#include "LuaExpressionTransform.h"
-#include "ThemeMetric.h"
-
+#include <string>
 #include <vector>
 
+#include "ActorFrame.h"
+#include "LuaExpressionTransform.h"
+#include "Sprite.h"
+#include "ThemeMetric.h"
 
 enum StreamType
 {
@@ -26,7 +25,7 @@ public:
 
 	virtual void Update( float fDeltaSecs );
 
-	void Load( const RString &sMetricsGroup );
+	void Load( const std::string &sMetricsGroup );
 
 	void SetPercent( float fPercent );
 	void SetPassingAlpha( float fPassingAlpha ) { m_fPassingAlpha = fPassingAlpha; }

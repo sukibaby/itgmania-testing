@@ -1,17 +1,23 @@
 #ifndef SCREENOPTIONS_H
 #define SCREENOPTIONS_H
 
-#include "ScreenWithMenuElements.h"
-#include "DualScrollBar.h"
-#include "ThemeMetric.h"
-#include "OptionRow.h"
-#include "OptionsCursor.h"
-#include "LuaExpressionTransform.h"
-#include "InputEventPlus.h"
-#include "RageSound.h"
-
+#include <string>
 #include <vector>
 
+#include "Actor.h"
+#include "ActorFrame.h"
+#include "AutoActor.h"
+#include "BitmapText.h"
+#include "DualScrollBar.h"
+#include "InputEventPlus.h"
+#include "LuaExpressionTransform.h"
+#include "OptionRow.h"
+#include "OptionsCursor.h"
+#include "PlayerNumber.h"
+#include "RageSound.h"
+#include "ScreenMessage.h"
+#include "ScreenWithMenuElements.h"
+#include "ThemeMetric.h"
 
 class OptionRowHandler;
 
@@ -25,7 +31,7 @@ enum InputMode
 	NUM_InputMode,			/**< The number of input modes available. */
 	InputMode_Invalid
 };
-InputMode StringToInputMode( const RString& str );
+InputMode StringToInputMode( const std::string& str );
 
 /** @brief A custom foreach loop for the player options for each player. */
 #define FOREACH_OptionsPlayer( pn ) \
@@ -60,7 +66,7 @@ protected:
 	void RestartOptions();
 	void GetWidthXY( PlayerNumber pn, int iRow, int iChoiceOnRow,
 			int &iWidthOut, int &iXOut, int &iYOut ) const;
-	RString GetExplanationText( int iRow ) const;
+	std::string GetExplanationText( int iRow ) const;
 	void RefreshIcons( int iRow, PlayerNumber pn );
 	void PositionCursor( PlayerNumber pn );
 	void PositionRows( bool bTween );
@@ -69,7 +75,7 @@ protected:
 
 	void BeginFadingOut();
 	virtual bool FocusedItemEndsScreen( PlayerNumber pn ) const;
-	RString GetNextScreenForFocusedItem( PlayerNumber pn ) const;
+	std::string GetNextScreenForFocusedItem( PlayerNumber pn ) const;
 
 	void ChangeValueInRowRelative( int iRow, PlayerNumber pn, int iDelta, bool bRepeat );
 	void ChangeValueInRowAbsolute( int iRow, PlayerNumber pn, int iChoiceIndex, bool bRepeat );
@@ -100,7 +106,7 @@ protected:
 	int GetCurrentRow( PlayerNumber pn = PLAYER_1 ) const { return m_iCurrentRow[pn]; }
 	bool AllAreOnLastRow() const;
 	OptionRow* GetRow( int iRow ) const { return m_pRows[iRow]; }
-        //void SetOptionRowFromName( const RString& nombre );
+        //void SetOptionRowFromName( const std::string& nombre );
 	int GetNumRows() const { return static_cast<int>(m_pRows.size()); }
 
 protected:	// derived classes need access to these
@@ -165,8 +171,8 @@ protected:	// derived classes need access to these
 	ThemeMetric<bool>		ALLOW_REPEATING_CHANGE_VALUE_INPUT;
 	ThemeMetric<float>		CURSOR_TWEEN_SECONDS;
 	ThemeMetric<bool>		WRAP_VALUE_IN_ROW;
-	ThemeMetric<RString>	OPTION_ROW_NORMAL_METRICS_GROUP;
-	ThemeMetric<RString>	OPTION_ROW_EXIT_METRICS_GROUP;
+	ThemeMetric<std::string>	OPTION_ROW_NORMAL_METRICS_GROUP;
+	ThemeMetric<std::string>	OPTION_ROW_EXIT_METRICS_GROUP;
 };
 
 #endif

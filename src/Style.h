@@ -3,13 +3,13 @@
 #ifndef STYLE_H
 #define STYLE_H
 
+#include <string>
+#include <vector>
+
+#include "GameConstantsAndTypes.h"
 #include "GameInput.h"
 #include "NoteTypes.h"
 #include "PlayerNumber.h"
-#include "GameConstantsAndTypes.h"
-
-#include <vector>
-
 
 /** @brief Each style can have a maximum amount of columns to work with. */
 const int MAX_COLS_PER_PLAYER = MAX_NOTE_TRACKS;
@@ -90,7 +90,7 @@ public:
 	 * @return the Column number of the style, or Column_Invalid if it's an invalid column.
 	 * Examples of this include getting the upper left hand corner in a traditional four panel mode. */
 	int GameInputToColumn( const GameInput &GameI ) const;
-	RString ColToButtonName( int iCol ) const;
+	std::string ColToButtonName( int iCol ) const;
 
 	bool GetUsesCenteredArrows() const;
 	void GetTransformedNoteDataForStyle( PlayerNumber pn, const NoteData& original, NoteData& noteDataOut ) const;

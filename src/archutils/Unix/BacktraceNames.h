@@ -2,16 +2,17 @@
 #define BACKTRACE_NAMES_H
 
 #include <cstdint>
+#include <string>
 
 struct BacktraceNames
 {
-	RString Symbol, File;
+	std::string Symbol, File;
 	intptr_t Address;
 	int Offset;
 	void FromAddr( void * const p );
-	void FromString( RString str );
+	void FromString( std::string str );
 	void Demangle();
-	RString Format() const;
+	std::string Format() const;
 	BacktraceNames(): Address(0), Offset(0) { }
 };
 

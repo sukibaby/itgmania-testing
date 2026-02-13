@@ -1,12 +1,12 @@
 #ifndef LightsManager_H
 #define LightsManager_H
 
-#include <vector>
 #include <queue>
+#include <string>
+#include <vector>
 
 #include "EnumHelper.h"
 #include "GameInput.h"
-#include "PlayerNumber.h"
 #include "Preference.h"
 #include "RageThreads.h"
 #include "RageTimer.h"
@@ -26,8 +26,8 @@ enum CabinetLight {
 };
 /** @brief Loop through each CabinetLight on the machine. */
 #define FOREACH_CabinetLight(i) FOREACH_ENUM(CabinetLight, i)
-const RString& CabinetLightToString(CabinetLight cl);
-CabinetLight StringToCabinetLight(const RString& s);
+const std::string& CabinetLightToString(CabinetLight cl);
+CabinetLight StringToCabinetLight(const std::string& s);
 
 enum LightsMode {
   LIGHTSMODE_ATTRACT,
@@ -43,7 +43,7 @@ enum LightsMode {
   NUM_LightsMode,
   LightsMode_Invalid
 };
-const RString& LightsModeToString(LightsMode lm);
+const std::string& LightsModeToString(LightsMode lm);
 LuaDeclareType(LightsMode);
 
 struct LightsState {

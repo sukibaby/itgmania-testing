@@ -1,15 +1,20 @@
 /* MAD is available from: http://www.underbit.com/products/mad/ */
 
-#include "global.h"
 #include "RageSoundReader_MP3.h"
-#include "RageLog.h"
-#include "RageUtil.h"
 
+#include <algorithm>
 #include <cerrno>
 #include <cstdint>
-#include <cstdio>
+#include <cstring>
 #include <map>
+#include <string>
 
+#include "RageFileBasic.h"
+#include "RageLog.h"
+#include "RageSoundReader.h"
+#include "RageSoundReader_FileReader.h"
+#include "RageUtil.h"
+#include "global.h"
 #include "mad.h"
 
 // ID3 code from libid3:
@@ -867,7 +872,7 @@ int RageSoundReader_MP3::SetPosition( int iFrame )
 	return SetPosition_estimate(iFrame);
 }
 
-bool RageSoundReader_MP3::SetProperty( const RString &sProperty, float fValue )
+bool RageSoundReader_MP3::SetProperty( const std::string &sProperty, float fValue )
 {
 	if( sProperty == "AccurateSync" )
 	{

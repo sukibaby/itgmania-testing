@@ -1,6 +1,9 @@
 #ifndef GET_SYS_INFO_H
+#define GET_SYS_INFO_H
 
-void GetKernel( RString &sys, int &vers );
+#include <string>
+
+void GetKernel( std::string &sys, int &vers );
 
 #endif
 

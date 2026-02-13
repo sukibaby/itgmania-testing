@@ -1,10 +1,15 @@
 #ifndef RAGE_MOVIE_TEXTURE_GENERIC_H
 #define RAGE_MOVIE_TEXTURE_GENERIC_H
 
-#include "MovieTexture.h"
-
 #include <cstdint>
+#include <memory>
+#include <string>
 #include <thread>
+
+#include "MovieTexture.h"
+#include "RageTexture.h"
+#include "RageTextureID.h"
+#include "RageTypes.h"
 
 class FFMpeg_Helper;
 struct RageSurface;
@@ -25,7 +30,7 @@ class MovieDecoder
 public:
 	virtual ~MovieDecoder() { }
 
-	virtual RString Open(RString file) = 0;
+	virtual std::string Open(std::string file) = 0;
 	virtual void Close() = 0;
 	virtual void Rewind() = 0;
 	virtual void Rollover() = 0;
@@ -88,7 +93,7 @@ class MovieTexture_Generic: public RageMovieTexture
 public:
 	MovieTexture_Generic( RageTextureID ID, std::unique_ptr<MovieDecoder> pDecoder );
 	virtual ~MovieTexture_Generic();
-	RString Init();
+	std::string Init();
 
 	/* only called by RageTextureManager::InvalidateTextures */
 	void Invalidate();

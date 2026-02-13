@@ -1,16 +1,23 @@
-#include "global.h"
 #include "NotesWriterJson.h"
-#include "TimingData.h"
-#include "json/json.h"
-#include "JsonUtil.h"
-#include "Song.h"
-#include "BackgroundUtil.h"
-#include "Steps.h"
-#include "NoteData.h"
-#include "GameManager.h"
 
+#include <string>
 #include <vector>
 
+#include "BackgroundUtil.h"
+#include "Difficulty.h"
+#include "EnumHelper.h"
+#include "GameConstantsAndTypes.h"
+#include "JsonUtil.h"
+#include "NoteData.h"
+#include "NoteTypes.h"
+#include "PlayerNumber.h"
+#include "RadarValues.h"
+#include "RageUtil.h"
+#include "Song.h"
+#include "Steps.h"
+#include "TimingData.h"
+#include "TimingSegments.h"
+#include "json/json.h"
 
 static void Serialize(const TimingSegment &seg, Json::Value &root)
 {
@@ -122,7 +129,7 @@ static void Serialize( const Steps &o, Json::Value &root )
 }
 
 
-bool NotesWriterJson::WriteSong( const RString &sFile, const Song &out, bool bWriteSteps )
+bool NotesWriterJson::WriteSong( const std::string &sFile, const Song &out, bool bWriteSteps )
 {
 	Json::Value root;
 	root["SongDir"] = out.GetSongDir();
@@ -198,7 +205,7 @@ bool NotesWriterJson::WriteSong( const RString &sFile, const Song &out, bool bWr
 	return JsonUtil::WriteFile( root, sFile, false );
 }
 
-bool NotesWriterJson::WriteSteps( const RString &sFile, const Steps &out )
+bool NotesWriterJson::WriteSteps( const std::string &sFile, const Steps &out )
 {
 	Json::Value root;
 	Serialize( out, root );

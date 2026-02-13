@@ -1,15 +1,15 @@
 #ifndef StepsDisplay_H
 #define StepsDisplay_H
 
-#include "BitmapText.h"
-#include "PlayerNumber.h"
-#include "AutoActor.h"
-#include "GameConstantsAndTypes.h"
-#include "ActorUtil.h"
-#include "Difficulty.h"
+#include <string>
+
 #include "ActorFrame.h"
+#include "AutoActor.h"
+#include "BitmapText.h"
+#include "Difficulty.h"
+#include "GameConstantsAndTypes.h"
+#include "PlayerNumber.h"
 #include "ThemeMetric.h"
-#include "Sprite.h"
 
 class Steps;
 class Trail;
@@ -23,7 +23,7 @@ class StepsDisplay : public ActorFrame
 public:
 	StepsDisplay();
 
-	void Load( const RString &sMetricsGroup, const PlayerState *pPlayerState );
+	void Load( const std::string &sMetricsGroup, const PlayerState *pPlayerState );
 
 	virtual StepsDisplay *Copy() const;
 
@@ -48,7 +48,7 @@ private:
 	};
 	void SetInternal( const SetParams &params );
 
-	RString		m_sMetricsGroup;
+	std::string		m_sMetricsGroup;
 
 	AutoActor	m_sprFrame;
 	BitmapText	m_textTicks; // 111100000
@@ -71,8 +71,8 @@ private:
 	ThemeMetric<bool>	m_bShowCredit;
 	ThemeMetric<bool>	m_bShowAutogen;
 	ThemeMetric<bool>	m_bShowStepsType;
-	ThemeMetric<RString>	m_sZeroMeterString;
-	ThemeMetric<RString>	m_sMeterFormatString;
+	ThemeMetric<std::string>	m_sZeroMeterString;
+	ThemeMetric<std::string>	m_sMeterFormatString;
 };
 
 #endif

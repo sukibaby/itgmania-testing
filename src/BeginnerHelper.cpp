@@ -1,16 +1,23 @@
-#include "global.h"
-
-#include "ActorUtil.h"
 #include "BeginnerHelper.h"
+
+#include <string>
+
+#include "ActorFrame.h"
+#include "ActorUtil.h"
+#include "Character.h"
 #include "GameState.h"
+#include "Model.h"
+#include "NoteTypes.h"
+#include "PlayerNumber.h"
 #include "PrefsManager.h"
-#include "RageLog.h"
 #include "RageDisplay.h"
+#include "RageTypes.h"
+#include "RageUtil.h"
 #include "Steps.h"
 #include "Style.h"
-#include "Model.h"
-#include "ScreenDimensions.h"
 #include "ThemeManager.h"
+#include "Tween.h"
+#include "global.h"
 
 // "PLAYER_X" offsets are relative to the pad.
 // ex: Setting this to 10, and the HELPER to 300, will put the dancer at 310.
@@ -51,9 +58,9 @@ static const char *anims[NUM_ANIMATIONS] =
 	"BeginnerHelper_step-jumplr.bones.txt"
 };
 
-static RString GetAnimPath( Animation a )
+static std::string GetAnimPath( Animation a )
 {
-	return RString( "Characters/" ) + anims[a];
+	return std::string( "Characters/" ) + anims[a];
 }
 
 BeginnerHelper::BeginnerHelper()

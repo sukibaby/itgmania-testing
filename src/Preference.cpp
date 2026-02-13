@@ -1,15 +1,18 @@
-#include "global.h"
 #include "Preference.h"
-#include "XmlFile.h"
-#include "RageLog.h"
+
+#include <string>
+
 #include "LuaManager.h"
 #include "MessageManager.h"
+#include "RageLog.h"
+#include "StdString.h"
 #include "SubscriptionManager.h"
-
+#include "XmlFile.h"
+#include "global.h"
 
 static SubscriptionManager<IPreference> m_Subscribers;
 
-IPreference::IPreference( const RString& sName, PreferenceType type ):
+IPreference::IPreference( const std::string& sName, PreferenceType type ):
 	m_sName( sName ),
 	m_bDoNotWrite( type == PreferenceType::Deprecated ),
 	m_bImmutable( type == PreferenceType::Immutable )
@@ -22,7 +25,7 @@ IPreference::~IPreference()
 	m_Subscribers.Unsubscribe( this );
 }
 
-IPreference *IPreference::GetPreferenceByName( const RString &sName )
+IPreference *IPreference::GetPreferenceByName( const std::string &sName )
 {
 	for (IPreference *p : *m_Subscribers.m_pSubscribers)
 	{
@@ -78,7 +81,7 @@ void IPreference::SetFromStack( lua_State *L )
 
 void IPreference::ReadFrom( const XNode* pNode, bool bIsStatic )
 {
-	RString sVal;
+	std::string sVal;
 	if( pNode->GetAttrValue(m_sName, sVal) )
 	{
 		FromString( sVal );
@@ -98,13 +101,13 @@ void IPreference::WriteTo( XNode* pNode ) const
 /* Load our value from the node, and make it the new default. */
 void IPreference::ReadDefaultFrom( const XNode* pNode )
 {
-	RString sVal;
+	std::string sVal;
 	if( !pNode->GetAttrValue(m_sName, sVal) )
 		return;
 	SetDefaultFromString( sVal );
 }
 
-void BroadcastPreferenceChanged( const RString& sPreferenceName )
+void BroadcastPreferenceChanged( const std::string& sPreferenceName )
 {
 	if( MESSAGEMAN )
 		MESSAGEMAN->Broadcast( sPreferenceName+"Changed" );

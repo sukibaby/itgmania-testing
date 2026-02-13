@@ -1,30 +1,29 @@
-#include "global.h"
+#include <limits.h>
+#include <signal.h>
+#include <sys/signal.h>
+#include <unistd.h>
 
+#include <algorithm>
+#include <cerrno>
 #include <csignal>
 #include <cstdarg>
+#include <cstddef>
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#if defined(HAVE_UNISTD_H)
-#include <unistd.h>
-#endif
-#include <cerrno>
-#include <cstddef>
-#include <limits.h>
+#include <string>
 #if defined(HAVE_FCNTL_H)
 #include <fcntl.h>
 #endif
 
-#include "RageLog.h" /* for RageLog::GetAdditionalLog, etc, only */
-#include "RageThreads.h"
-#include "Backtrace.h"
-
-#include <sys/types.h>
 #include <sys/wait.h>
 
+#include "Backtrace.h"
 #include "CrashHandler.h"
 #include "CrashHandlerInternal.h"
+#include "RageLog.h"
+#include "RageThreads.h"
 
 extern uint64_t GetInvalidThreadId();
 extern const char *g_pCrashHandlerArgv0;
@@ -349,7 +348,7 @@ void CrashHandler::ForceCrash( const char *reason )
 	RunCrashHandler( &crash );
 }
 
-void CrashHandler::ForceDeadlock( RString reason, uint64_t iID )
+void CrashHandler::ForceDeadlock( std::string reason, uint64_t iID )
 {
 	CrashData crash;
 	memset( &crash, 0, sizeof(crash) );

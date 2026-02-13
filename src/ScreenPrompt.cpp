@@ -1,11 +1,21 @@
-#include "global.h"
 #include "ScreenPrompt.h"
-#include "ScreenManager.h"
-#include "GameSoundManager.h"
-#include "ThemeManager.h"
-#include "ScreenDimensions.h"
+
+#include <string>
+
 #include "ActorUtil.h"
+#include "BitmapText.h"
+#include "EnumHelper.h"
+#include "GameSoundManager.h"
 #include "InputEventPlus.h"
+#include "InputFilter.h"
+#include "RageInputDevice.h"
+#include "RageUtil.h"
+#include "Screen.h"
+#include "ScreenManager.h"
+#include "ScreenMessage.h"
+#include "ScreenWithMenuElements.h"
+#include "ThemeManager.h"
+#include "global.h"
 
 PromptAnswer ScreenPrompt::s_LastAnswer = ANSWER_YES;
 bool ScreenPrompt::s_bCancelledLast = false;
@@ -22,7 +32,7 @@ XToString( PromptAnswer );
 // Settings:
 namespace
 {
-	RString g_sText;
+	std::string g_sText;
 	PromptType g_PromptType;
 	PromptAnswer g_defaultAnswer;
 	void(*g_pOnYes)(void*);
@@ -30,7 +40,7 @@ namespace
 	void *g_pCallbackData;
 };
 
-void ScreenPrompt::SetPromptSettings( const RString &sText, PromptType type, PromptAnswer defaultAnswer, void(*OnYes)(void*), void(*OnNo)(void*), void* pCallbackData )
+void ScreenPrompt::SetPromptSettings( const std::string &sText, PromptType type, PromptAnswer defaultAnswer, void(*OnYes)(void*), void(*OnNo)(void*), void* pCallbackData )
 {
 	g_sText = sText;
 	g_PromptType = type;
@@ -40,7 +50,7 @@ void ScreenPrompt::SetPromptSettings( const RString &sText, PromptType type, Pro
 	g_pCallbackData = pCallbackData;
 }
 
-void ScreenPrompt::Prompt( ScreenMessage smSendOnPop, const RString &sText, PromptType type, PromptAnswer defaultAnswer, void(*OnYes)(void*), void(*OnNo)(void*), void* pCallbackData )
+void ScreenPrompt::Prompt( ScreenMessage smSendOnPop, const std::string &sText, PromptType type, PromptAnswer defaultAnswer, void(*OnYes)(void*), void(*OnNo)(void*), void* pCallbackData )
 {
 	SetPromptSettings( sText, type, defaultAnswer, OnYes, OnNo, pCallbackData );
 
@@ -83,7 +93,7 @@ void ScreenPrompt::BeginScreen()
 	ScreenWithMenuElements::BeginScreen();
 
 	m_Answer = g_defaultAnswer;
-	ENUM_CLAMP( m_Answer, PromptAnswer(0), PromptAnswer(g_PromptType) );
+	enum_clamp( m_Answer, PromptAnswer(0), PromptAnswer(g_PromptType) );
 
 	m_textQuestion.SetText( g_sText );
 	SET_XY( m_textQuestion );
@@ -93,12 +103,12 @@ void ScreenPrompt::BeginScreen()
 
 	for( int i=0; i<=g_PromptType; i++ )
 	{
-		RString sElem = ssprintf("Answer%dOf%d", i+1, g_PromptType+1);
+		std::string sElem = ssprintf("Answer%dOf%d", i+1, g_PromptType+1);
 		m_textAnswer[i].SetName( sElem );
 		LOAD_ALL_COMMANDS(m_textAnswer[i]);
 		// Side note:  Because LOAD_ALL_COMMANDS occurs here, InitCommand will
 		// not be run for the actors.  People can just use OnCommand instead.
-		RString sAnswer = PromptAnswerToString( (PromptAnswer)i );
+		std::string sAnswer = PromptAnswerToString( (PromptAnswer)i );
 		// FRAGILE
 		if( g_PromptType == PROMPT_OK )
 			sAnswer = "OK";

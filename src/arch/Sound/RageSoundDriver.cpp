@@ -1,21 +1,24 @@
-#include "global.h"
 #include "RageSoundDriver.h"
-#include "RageSoundManager.h"
-#include "RageLog.h"
-#include "RageUtil.h"
 
-#include "arch/arch_default.h"
-
+#include <algorithm>
 #include <cstddef>
+#include <string>
 #include <vector>
+
+#include "RageLog.h"
+#include "RageSoundManager.h"
+#include "RageUtil.h"
+#include "arch/RageDriver.h"
+#include "arch/arch_default.h"
+#include "global.h"
 
 namespace
 {
 	void WarnUserAboutBadSoundDriverEntry()
 	{
-		std::vector<RString> list = GetDefaultSoundDriverList();
-		RString list_string = join( ",", list );
-		RString trace = RString(" - Valid sound drivers for your OS are: ") + list_string;
+		std::vector<std::string> list = GetDefaultSoundDriverList();
+		std::string list_string = join( ",", list );
+		std::string trace = std::string(" - Valid sound drivers for your OS are: ") + list_string;
 		LOG->Trace("%s", trace.c_str());
 		LOG->Trace(" - Make sure the driver entry is spelled correctly, and is supported on your OS.");
 	}
@@ -23,9 +26,9 @@ namespace
 
 DriverList RageSoundDriver::m_pDriverList;
 
-RageSoundDriver *RageSoundDriver::Create( const RString& drivers )
+RageSoundDriver *RageSoundDriver::Create( const std::string& drivers )
 {
-	std::vector<RString> driversToTry;
+	std::vector<std::string> driversToTry;
 	if(drivers.empty())
 	{
 		driversToTry = GetDefaultSoundDriverList();
@@ -35,7 +38,7 @@ RageSoundDriver *RageSoundDriver::Create( const RString& drivers )
 		size_t start = 0;
 		size_t end = drivers.find(',');
 
-		while (end != RString::npos)
+		while (end != std::string::npos)
 		{
 			driversToTry.emplace_back(drivers.substr(start, end - start));
 			start = end + 1;
@@ -65,7 +68,7 @@ RageSoundDriver *RageSoundDriver::Create( const RString& drivers )
 		}
 	}
 
-	for (RString const &Driver : driversToTry)
+	for (std::string const &Driver : driversToTry)
 	{
 		RageDriver *pDriver = m_pDriverList.Create( Driver );
 		char const *driverString = Driver.c_str();
@@ -78,7 +81,7 @@ RageSoundDriver *RageSoundDriver::Create( const RString& drivers )
 		RageSoundDriver *pRet = dynamic_cast<RageSoundDriver *>( pDriver );
 		ASSERT( pRet != nullptr );
 
-		const RString sError = pRet->Init();
+		const std::string sError = pRet->Init();
 		if( sError.empty() )
 		{
 			LOG->Info( "Sound driver: %s", driverString );
@@ -90,7 +93,7 @@ RageSoundDriver *RageSoundDriver::Create( const RString& drivers )
 	return nullptr;
 }
 
-std::vector<RString> RageSoundDriver::GetSoundDriverList()
+std::vector<std::string> RageSoundDriver::GetSoundDriverList()
 {
 	return GetDefaultSoundDriverList();
 }

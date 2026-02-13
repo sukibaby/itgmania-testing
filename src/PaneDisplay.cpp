@@ -1,18 +1,26 @@
-#include "global.h"
 #include "PaneDisplay.h"
-#include "ThemeManager.h"
+
+#include <string>
+
+#include "ActorFrame.h"
+#include "ActorUtil.h"
+#include "Course.h"
+#include "EnumHelper.h"
+#include "GameConstantsAndTypes.h"
 #include "GameState.h"
+#include "HighScore.h"
+#include "LuaManager.h"
+#include "PlayerNumber.h"
+#include "PlayerStageStats.h"
+#include "Profile.h"
+#include "ProfileManager.h"
+#include "RadarValues.h"
+#include "RageThreads.h"
+#include "RageUtil.h"
 #include "Song.h"
 #include "Steps.h"
-#include "RageLog.h"
-#include "ProfileManager.h"
-#include "Profile.h"
-#include "Course.h"
-#include "Style.h"
-#include "ActorUtil.h"
-#include "LuaManager.h"
+#include "ThemeManager.h"
 #include "XmlFile.h"
-#include "PlayerStageStats.h"
 
 #define SHIFT_X(pc)	THEME->GetMetricF(sMetricsGroup, ssprintf("ShiftP%iX", pc+1))
 #define SHIFT_Y(pc)	THEME->GetMetricF(sMetricsGroup, ssprintf("ShiftP%iY", pc+1))
@@ -38,7 +46,7 @@ enum { NEED_NOTES=1, NEED_PROFILE=2 };
 struct Content_t
 {
 	int req;
-	RString sFontType;
+	std::string sFontType;
 };
 
 static const Content_t g_Contents[NUM_PaneCategory] =
@@ -58,7 +66,7 @@ static const Content_t g_Contents[NUM_PaneCategory] =
 
 REGISTER_ACTOR_CLASS( PaneDisplay );
 
-void PaneDisplay::Load( const RString &sMetricsGroup, PlayerNumber pn )
+void PaneDisplay::Load( const std::string &sMetricsGroup, PlayerNumber pn )
 {
 	m_PlayerNumber = pn;
 
@@ -71,7 +79,7 @@ void PaneDisplay::Load( const RString &sMetricsGroup, PlayerNumber pn )
 	{
 		LuaThreadVariable var( "PaneCategory", LuaReference::Create(pc) );
 
-		RString sFontType = g_Contents[pc].sFontType;
+		std::string sFontType = g_Contents[pc].sFontType;
 
 		m_textContents[pc].LoadFromFont( THEME->GetPathF(sMetricsGroup,sFontType) );
 		m_textContents[pc].SetName( PaneCategoryToString(pc) + "Text" );
@@ -96,7 +104,7 @@ void PaneDisplay::LoadFromNode( const XNode *pNode )
 {
 	bool b;
 
-	RString sMetricsGroup;
+	std::string sMetricsGroup;
 	b = pNode->GetAttrValue( "MetricsGroup", sMetricsGroup );
 	if(!b)
 	{
@@ -124,7 +132,7 @@ void PaneDisplay::LoadFromNode( const XNode *pNode )
 	ActorFrame::LoadFromNode( pNode );
 }
 
-void PaneDisplay::GetPaneTextAndLevel( PaneCategory c, RString & sTextOut, float & fLevelOut )
+void PaneDisplay::GetPaneTextAndLevel( PaneCategory c, std::string & sTextOut, float & fLevelOut )
 {
 	const Song *pSong = GAMESTATE->m_pCurSong;
 	const Steps *pSteps = GAMESTATE->m_pCurSteps[m_PlayerNumber];
@@ -306,7 +314,7 @@ void PaneDisplay::GetPaneTextAndLevel( PaneCategory c, RString & sTextOut, float
 void PaneDisplay::SetContent( PaneCategory c )
 {
 	// these get filled in later:
-	RString str;
+	std::string str;
 	float val;
 
 	GetPaneTextAndLevel( c, str, val );

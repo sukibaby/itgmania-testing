@@ -1,15 +1,19 @@
-#include "global.h"
 #include "ActorScroller.h"
 
-#include "RageUtil.h"
-#include "XmlFile.h"
-#include "arch/Dialog/Dialog.h"
-#include "RageLog.h"
+#include <algorithm>
+#include <climits>
+#include <cmath>
+#include <string>
+#include <vector>
+
+#include "Actor.h"
+#include "ActorFrame.h"
 #include "ActorUtil.h"
 #include "LuaBinding.h"
-
-#include <cmath>
-#include <vector>
+#include "LuaManager.h"
+#include "RageTypes.h"
+#include "RageUtil.h"
+#include "XmlFile.h"
 
 /* Tricky: We need ActorFrames created in Lua to auto delete their children.
  * We don't want classes that derive from ActorFrame to auto delete their
@@ -68,7 +72,7 @@ void ActorScroller::SetTransformFromReference( const LuaReference &ref )
 	m_exprTransformFunction.ClearCache();
 }
 
-void ActorScroller::SetTransformFromExpression( const RString &sTransformFunction )
+void ActorScroller::SetTransformFromExpression( const std::string &sTransformFunction )
 {
 	LuaReference ref;
 	ref.SetFromExpression( sTransformFunction );

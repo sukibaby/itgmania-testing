@@ -1,12 +1,21 @@
 #ifndef ScreenHighScores_H
 #define ScreenHighScores_H
 
-#include "ScreenAttract.h"
-#include "Course.h"
-#include "DynamicActorScroller.h"
-
+#include <string>
+#include <utility>
 #include <vector>
 
+#include "Actor.h"
+#include "Attack.h"
+#include "Course.h"
+#include "Difficulty.h"
+#include "DynamicActorScroller.h"
+#include "EnumHelper.h"
+#include "GameConstantsAndTypes.h"
+#include "InputQueue.h"
+#include "ScreenAttract.h"
+#include "ScreenMessage.h"
+#include "ThemeMetric.h"
 
 typedef std::pair<Difficulty, StepsType> DifficultyAndStepsType;
 
@@ -29,7 +38,7 @@ public:
 	ScoreScroller();
 	void LoadSongs( int iNumRecentScores );
 	void LoadCourses( CourseType ct, int iNumRecentScores );
-	void Load( RString sClassName );
+	void Load( std::string sClassName );
 	void SetDisplay( const std::vector<DifficultyAndStepsType> &DifficultiesToShow );
 	bool Scroll( int iDir );
 	void ScrollTop();

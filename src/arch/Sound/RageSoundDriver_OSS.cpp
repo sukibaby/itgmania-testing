@@ -1,13 +1,14 @@
-#include "global.h"
 #include "RageSoundDriver_OSS.h"
-
-#include "RageLog.h"
-#include "RageSound.h"
-#include "RageSoundManager.h"
 
 #include <cerrno>
 #include <cstdint>
 #include <cstring>
+#include <string>
+
+#include "RageLog.h"
+#include "RageSound.h"
+#include "RageSoundManager.h"
+#include "global.h"
 
 #if defined(HAVE_UNISTD_H)
 #include <unistd.h>
@@ -112,7 +113,7 @@ int64_t RageSoundDriver_OSS::GetPosition() const
 	return last_cursor_pos - (delay / bytes_per_frame);
 }
 
-RString RageSoundDriver_OSS::CheckOSSVersion( int fd )
+std::string RageSoundDriver_OSS::CheckOSSVersion( int fd )
 {
 	int version = 0;
 
@@ -171,13 +172,13 @@ RageSoundDriver_OSS::RageSoundDriver_OSS()
 	last_cursor_pos = 0;
 }
 
-RString RageSoundDriver_OSS::Init()
+std::string RageSoundDriver_OSS::Init()
 {
 	fd = open("/dev/dsp", O_WRONLY|O_NONBLOCK);
 	if( fd == -1 )
 		return ssprintf( "RageSoundDriver_OSS: Couldn't open /dev/dsp: %s", strerror(errno) );
 
-	RString sError = CheckOSSVersion( fd );
+	std::string sError = CheckOSSVersion( fd );
 	if( sError != "" )
 		return sError;
 

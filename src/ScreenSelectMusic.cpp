@@ -1,40 +1,64 @@
-#include "global.h"
 #include "ScreenSelectMusic.h"
-#include "ScreenManager.h"
-#include "PrefsManager.h"
-#include "SongManager.h"
-#include "Game.h"
-#include "GameManager.h"
-#include "GameSoundManager.h"
-#include "GameConstantsAndTypes.h"
-#include "RageLog.h"
-#include "InputMapper.h"
-#include "GameState.h"
-#include "CodeDetector.h"
-#include "ThemeManager.h"
-#include "Steps.h"
-#include "ActorUtil.h"
-#include "RageTextureManager.h"
-#include "Course.h"
-#include "ProfileManager.h"
-#include "Profile.h"
-#include "MenuTimer.h"
-#include "StatsManager.h"
-#include "StepsUtil.h"
-#include "Style.h"
-#include "PlayerState.h"
-#include "CommonMetrics.h"
-#include "ImageCache.h"
-#include "ScreenPrompt.h"
-#include "Song.h"
-#include "InputEventPlus.h"
-#include "RageInput.h"
-#include "OptionsList.h"
-#include "RageFileManager.h"
 
+#include <algorithm>
 #include <cmath>
+#include <string>
 #include <vector>
 
+#include "ActorUtil.h"
+#include "Banner.h"
+#include "CodeDetector.h"
+#include "CommonMetrics.h"
+#include "Course.h"
+#include "Difficulty.h"
+#include "EnumHelper.h"
+#include "Game.h"
+#include "GameConstantsAndTypes.h"
+#include "GameInput.h"
+#include "GameManager.h"
+#include "GameSoundManager.h"
+#include "GameState.h"
+#include "ImageCache.h"
+#include "InputEventPlus.h"
+#include "InputFilter.h"
+#include "InputMapper.h"
+#include "LocalizedString.h"
+#include "LuaManager.h"
+#include "MenuTimer.h"
+#include "MessageManager.h"
+#include "ModsGroup.h"
+#include "OptionsList.h"
+#include "PlayerNumber.h"
+#include "PlayerOptions.h"
+#include "PlayerState.h"
+#include "PrefsManager.h"
+#include "Profile.h"
+#include "ProfileManager.h"
+#include "RageFileManager.h"
+#include "RageInput.h"
+#include "RageInputDevice.h"
+#include "RageLog.h"
+#include "RageSound.h"
+#include "RageTextureManager.h"
+#include "RageTimer.h"
+#include "RageUtil.h"
+#include "Screen.h"
+#include "ScreenManager.h"
+#include "ScreenMessage.h"
+#include "ScreenPrompt.h"
+#include "ScreenWithMenuElements.h"
+#include "Song.h"
+#include "SongManager.h"
+#include "SongUtil.h"
+#include "Sprite.h"
+#include "StatsManager.h"
+#include "Steps.h"
+#include "StepsUtil.h"
+#include "Style.h"
+#include "ThemeManager.h"
+#include "ThemeMetric.h"
+#include "WheelItemBase.h"
+#include "global.h"
 
 static const char *SelectionStateNames[] = {
 	"SelectingSong",
@@ -58,10 +82,10 @@ AutoScreenMessage( SM_BackFromPlayerOptions );
 AutoScreenMessage( SM_ConfirmDeleteSong );
 AutoScreenMessage( SM_ConfirmExit );
 
-static RString g_sCDTitlePath;
+static std::string g_sCDTitlePath;
 static bool g_bWantFallbackCdTitle;
 static bool g_bCDTitleWaiting = false;
-static RString g_sBannerPath;
+static std::string g_sBannerPath;
 static bool g_bBannerWaiting = false;
 static bool g_bSampleMusicWaiting = false;
 static RageTimer g_StartedLoadingAt(RageZeroTimer);
@@ -306,16 +330,16 @@ void ScreenSelectMusic::CheckBackgroundRequests( bool bForce )
 	if( g_bCDTitleWaiting )
 	{
 		// The CDTitle is normally very small, so we don't bother waiting to display it.
-		RString sPath;
+		std::string sPath;
 		if( !m_BackgroundLoader.IsCacheFileFinished(g_sCDTitlePath, sPath) )
 			return;
 
 		g_bCDTitleWaiting = false;
 
-		RString sCDTitlePath = sPath;
+		std::string sCDTitlePath = sPath;
 
 		if( sCDTitlePath.empty() || !IsAFile(sCDTitlePath) )
-			sCDTitlePath = g_bWantFallbackCdTitle? m_sFallbackCDTitlePath:RString("");
+			sCDTitlePath = g_bWantFallbackCdTitle? m_sFallbackCDTitlePath:std::string("");
 
 		if( !sCDTitlePath.empty() )
 		{
@@ -341,7 +365,7 @@ void ScreenSelectMusic::CheckBackgroundRequests( bool bForce )
 		if( m_Banner.GetTweenTimeLeft() > 0 )
 			return;
 
-		RString sPath;
+		std::string sPath;
 		bool bFreeCache = false;
 		if( TEXTUREMAN->IsTextureRegistered( Sprite::SongBannerTexture(g_sBannerPath) ) )
 		{
@@ -754,7 +778,7 @@ bool ScreenSelectMusic::Input( const InputEventPlus &input )
 					m_soundLocked.Play(true);
 				else
 				{
-					RString sNewGroup = m_MusicWheel.JumpToPrevGroup();
+					std::string sNewGroup = m_MusicWheel.JumpToPrevGroup();
 					m_MusicWheel.SelectSection(sNewGroup);
 					m_MusicWheel.SetOpenSection(sNewGroup);
 					MESSAGEMAN->Broadcast("PreviousGroup");
@@ -767,7 +791,7 @@ bool ScreenSelectMusic::Input( const InputEventPlus &input )
 					m_soundLocked.Play(true);
 				else
 				{
-					RString sNewGroup = m_MusicWheel.JumpToNextGroup();
+					std::string sNewGroup = m_MusicWheel.JumpToNextGroup();
 					m_MusicWheel.SelectSection(sNewGroup);
 					m_MusicWheel.SetOpenSection(sNewGroup);
 					MESSAGEMAN->Broadcast("NextGroup");
@@ -837,7 +861,7 @@ bool ScreenSelectMusic::Input( const InputEventPlus &input )
 					m_soundLocked.Play(true);
 				else
 				{
-					RString sNewGroup = m_MusicWheel.JumpToPrevGroup();
+					std::string sNewGroup = m_MusicWheel.JumpToPrevGroup();
 					m_MusicWheel.SelectSection(sNewGroup);
 					m_MusicWheel.SetOpenSection(sNewGroup);
 					MESSAGEMAN->Broadcast("TwoPartConfirmCanceled");
@@ -851,7 +875,7 @@ bool ScreenSelectMusic::Input( const InputEventPlus &input )
 					m_soundLocked.Play(true);
 				else
 				{
-					RString sNewGroup = m_MusicWheel.JumpToNextGroup();
+					std::string sNewGroup = m_MusicWheel.JumpToNextGroup();
 					m_MusicWheel.SelectSection(sNewGroup);
 					m_MusicWheel.SetOpenSection(sNewGroup);
 					MESSAGEMAN->Broadcast("TwoPartConfirmCanceled");
@@ -958,7 +982,7 @@ bool ScreenSelectMusic::DetectCodes( const InputEventPlus &input )
 			m_soundLocked.Play(true);
 		else
 		{
-			RString sNewGroup = m_MusicWheel.JumpToNextGroup();
+			std::string sNewGroup = m_MusicWheel.JumpToNextGroup();
 			m_MusicWheel.SelectSection(sNewGroup);
 			m_MusicWheel.SetOpenSection(sNewGroup);
 			MESSAGEMAN->Broadcast("NextGroup");
@@ -971,7 +995,7 @@ bool ScreenSelectMusic::DetectCodes( const InputEventPlus &input )
 			m_soundLocked.Play(true);
 		else
 		{
-			RString sNewGroup = m_MusicWheel.JumpToPrevGroup();
+			std::string sNewGroup = m_MusicWheel.JumpToPrevGroup();
 			m_MusicWheel.SelectSection(sNewGroup);
 			m_MusicWheel.SetOpenSection(sNewGroup);
 			MESSAGEMAN->Broadcast("PreviousGroup");
@@ -984,7 +1008,7 @@ bool ScreenSelectMusic::DetectCodes( const InputEventPlus &input )
 			m_soundLocked.Play(true);
 		else
 		{
-			RString sCurSection = m_MusicWheel.GetSelectedSection();
+			std::string sCurSection = m_MusicWheel.GetSelectedSection();
 			m_MusicWheel.SelectSection(sCurSection);
 			m_MusicWheel.SetOpenSection("");
 			AfterMusicChange();
@@ -1026,7 +1050,7 @@ void ScreenSelectMusic::ChangeSteps( PlayerNumber pn, int dir )
 		}
 		else
 		{
-			if( CLAMP(m_iSelection[pn],0,m_vpSteps.size()-1) )
+			if( rage_clamp(m_iSelection[pn],0,m_vpSteps.size()-1) )
 				return;
 		}
 
@@ -1043,7 +1067,7 @@ void ScreenSelectMusic::ChangeSteps( PlayerNumber pn, int dir )
 		}
 		else
 		{
-			if( CLAMP(m_iSelection[pn],0,m_vpTrails.size()-1) )
+			if( rage_clamp(m_iSelection[pn],0,m_vpTrails.size()-1) )
 				return;
 		}
 
@@ -1606,7 +1630,7 @@ void ScreenSelectMusic::AfterStepsOrTrailChange( const std::vector<PlayerNumber>
 
 		if( GAMESTATE->m_pCurSong )
 		{
-			CLAMP( m_iSelection[pn], 0, m_vpSteps.size()-1 );
+			rage_clamp( m_iSelection[pn], 0, m_vpSteps.size()-1 );
 
 			Song* pSong = GAMESTATE->m_pCurSong;
 			Steps* pSteps = m_vpSteps.empty()? nullptr: m_vpSteps[m_iSelection[pn]];
@@ -1625,7 +1649,7 @@ void ScreenSelectMusic::AfterStepsOrTrailChange( const std::vector<PlayerNumber>
 		}
 		else if( GAMESTATE->m_pCurCourse )
 		{
-			CLAMP( m_iSelection[pn], 0, m_vpTrails.size()-1 );
+			rage_clamp( m_iSelection[pn], 0, m_vpTrails.size()-1 );
 
 			Course* pCourse = GAMESTATE->m_pCurCourse;
 			Trail* pTrail = m_vpTrails.empty()? nullptr: m_vpTrails[m_iSelection[pn]];
@@ -1682,7 +1706,7 @@ void ScreenSelectMusic::SwitchPlayerStepDifficulty(PlayerNumber pn, Difficulty d
 		i += 1;
 	}
 
-	CLAMP(iSelection, 0, m_vpSteps.size() - 1);
+	rage_clamp(iSelection, 0, m_vpSteps.size() - 1);
 }
 
 void ScreenSelectMusic::SwitchPlayerCourseDifficulty(PlayerNumber pn, Difficulty d)
@@ -1715,7 +1739,7 @@ void ScreenSelectMusic::SwitchPlayerCourseDifficulty(PlayerNumber pn, Difficulty
 		i += 1;
 	}
 
-	CLAMP(iSelection, 0, m_vpTrails.size() - 1);
+	rage_clamp(iSelection, 0, m_vpTrails.size() - 1);
 }
 
 void ScreenSelectMusic::SwitchToDifficulty(Difficulty d)
@@ -1768,8 +1792,8 @@ void ScreenSelectMusic::SwitchToPreferredDifficulty()
 
 // NOTE: This could a be a bit more robust than just looking at the extension,
 // but it's good enough for now.
-static bool IsVideoFile(const RString& path) {
-	const RString extension = GetExtension(path);
+static bool IsVideoFile(const std::string& path) {
+	const std::string extension = GetExtension(path);
 	return extension == "mp4" ||
 		extension == "avi" ||
 		extension == "mov" ||
@@ -1797,7 +1821,7 @@ void ScreenSelectMusic::AfterMusicChange()
 
 	m_Banner.SetMovingFast( !!m_MusicWheel.IsMoving() );
 
-	std::vector<RString> m_Artists, m_AltArtists;
+	std::vector<std::string> m_Artists, m_AltArtists;
 
 	if( SAMPLE_MUSIC_PREVIEW_MODE != SampleMusicPreviewMode_LastSong )
 	{
@@ -1886,7 +1910,7 @@ void ScreenSelectMusic::AfterMusicChange()
 			case WheelItemDataType_Custom:
 				{
 					bWantBanner = false; // we load it ourself
-					RString sBannerName = GetMusicWheel()->GetCurWheelItemData( GetMusicWheel()->GetCurrentIndex() )->m_pAction->m_sName.c_str();
+					std::string sBannerName = GetMusicWheel()->GetCurWheelItemData( GetMusicWheel()->GetCurrentIndex() )->m_pAction->m_sName.c_str();
 					m_Banner.LoadCustom(sBannerName);
 					if( SAMPLE_MUSIC_PREVIEW_MODE != SampleMusicPreviewMode_LastSong )
 						m_sSampleMusicToPlay = m_sSectionMusicPath;
@@ -2108,7 +2132,7 @@ void ScreenSelectMusic::OnConfirmSongDeletion()
 		return;
 	}
 
-	RString deleteDir = deletedSong->GetSongDir();
+	std::string deleteDir = deletedSong->GetSongDir();
 	// flush the deleted song from any caches
 	SONGMAN->UnlistSong(deletedSong);
 	// refresh the song list

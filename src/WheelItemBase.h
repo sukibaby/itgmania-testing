@@ -1,11 +1,13 @@
 #ifndef WHEEL_ITEM_BASE_H
 #define WHEEL_ITEM_BASE_H
 
+#include <string>
+
 #include "ActorFrame.h"
-#include "BitmapText.h"
-#include "ThemeMetric.h"
-#include "GameConstantsAndTypes.h"
 #include "AutoActor.h"
+#include "EnumHelper.h"
+#include "RageTypes.h"
+#include "global.h"
 
 struct WheelItemBaseData;
 /** @brief The different types of Wheel Items. */
@@ -28,22 +30,22 @@ LuaDeclareType( WheelItemDataType );
 struct WheelItemBaseData
 {
 	WheelItemBaseData() {}
-	WheelItemBaseData( WheelItemDataType type, RString sText, RageColor color );
+	WheelItemBaseData( WheelItemDataType type, std::string sText, RageColor color );
 	virtual ~WheelItemBaseData() {}
 	WheelItemDataType m_Type;
-	RString		m_sText;
+	std::string		m_sText;
 	RageColor	m_color;	// either text color or section background color
 };
 /** @brief An item on the wheel. */
 class WheelItemBase : public ActorFrame
 {
 public:
-	WheelItemBase( RString sType );
+	WheelItemBase( std::string sType );
 	WheelItemBase( const WheelItemBase &cpy );
 	virtual void DrawPrimitives();
 	virtual WheelItemBase *Copy() const { return new WheelItemBase(*this); }
 
-	void Load( RString sType );
+	void Load( std::string sType );
 	void DrawGrayBar( Actor& bar );
 	void SetExpanded( bool bExpanded ) { m_bExpanded = bExpanded; }
 
@@ -51,7 +53,7 @@ public:
 
 	RageColor m_colorLocked;
 
-	const RString GetText(){ ASSERT(m_pData != nullptr); return m_pData->m_sText; }
+	const std::string GetText(){ ASSERT(m_pData != nullptr); return m_pData->m_sText; }
 	const RageColor GetColor(){ ASSERT(m_pData != nullptr); return m_pData->m_color; }
 	WheelItemDataType GetType(){ ASSERT(m_pData != nullptr); return m_pData->m_Type; }
 	bool IsLoaded(){ return m_pData != nullptr; }

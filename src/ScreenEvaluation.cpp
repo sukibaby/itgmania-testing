@@ -1,39 +1,51 @@
-#include "global.h"
 #include "ScreenEvaluation.h"
-#include "SongManager.h"
-#include "ScreenManager.h"
-#include "GameManager.h"
-#include "RageUtil.h"
-#include "GameConstantsAndTypes.h"
-#include "Steps.h"
-#include "PrefsManager.h"
-#include "RageLog.h"
-#include "AnnouncerManager.h"
-#include "GameState.h"
-#include "ThemeManager.h"
-#include "GameSoundManager.h"
-#include "ActorUtil.h"
-#include "Course.h"
-#include "LightsManager.h"
-#include "ProfileManager.h"
-#include "Profile.h"
-#include "Song.h"
-#include "StatsManager.h"
-#include "Grade.h"
-#include "CodeDetector.h"
-#include "RageDisplay.h"
-#include "StepMania.h"
-#include "CryptManager.h"
-#include "MemoryCardManager.h"
-#include "PlayerState.h"
-#include "CommonMetrics.h"
-#include "ScoreKeeperNormal.h"
-#include "InputEventPlus.h"
-#include "RageUtil/RandomNumbers.h"
 
+#include <algorithm>
 #include <cmath>
 #include <cstddef>
+#include <cstdlib>
+#include <string>
 #include <vector>
+
+#include "ActorUtil.h"
+#include "AnnouncerManager.h"
+#include "CodeDetector.h"
+#include "Course.h"
+#include "CryptManager.h"
+#include "EnumHelper.h"
+#include "GameConstantsAndTypes.h"
+#include "GameInput.h"
+#include "GameManager.h"
+#include "GameSoundManager.h"
+#include "GameState.h"
+#include "Grade.h"
+#include "HighScore.h"
+#include "InputEventPlus.h"
+#include "InputFilter.h"
+#include "LuaManager.h"
+#include "MemoryCardManager.h"
+#include "ModsGroup.h"
+#include "PlayerNumber.h"
+#include "PlayerState.h"
+#include "PrefsManager.h"
+#include "Profile.h"
+#include "ProfileManager.h"
+#include "RageLog.h"
+#include "RageUtil.h"
+#include "RageUtil/RandomNumbers.h"
+#include "ScoreKeeperNormal.h"
+#include "Screen.h"
+#include "ScreenManager.h"
+#include "ScreenMessage.h"
+#include "ScreenWithMenuElements.h"
+#include "Song.h"
+#include "SongManager.h"
+#include "StatsManager.h"
+#include "StepMania.h"
+#include "Steps.h"
+#include "ThemeManager.h"
+#include "ThemeMetric.h"
+#include "global.h"
 
 // metrics that are common to all ScreenEvaluation classes
 #define BANNER_WIDTH			THEME->GetMetricF(m_sName,"BannerWidth")
@@ -316,12 +328,12 @@ void ScreenEvaluation::Init()
 				m_textPlayerOptions[p].SetName( ssprintf("PlayerOptionsP%d",p+1) );
 				ActorUtil::LoadAllCommands( m_textPlayerOptions[p], m_sName );
 				SET_XY( m_textPlayerOptions[p] );
-				std::vector<RString> v;
+				std::vector<std::string> v;
 				PlayerOptions po = GAMESTATE->m_pPlayerState[p]->m_PlayerOptions.GetPreferred();
 				if( PLAYER_OPTIONS_HIDE_FAIL_TYPE )
 					po.m_FailType = (FailType)0;	// blank out the fail type so that it won't show in the mods list
 				po.GetLocalizedMods( v );
-				RString sPO = join( PLAYER_OPTIONS_SEPARATOR, v );
+				std::string sPO = join( PLAYER_OPTIONS_SEPARATOR, v );
 				m_textPlayerOptions[p].SetText( sPO );
 				this->AddChild( &m_textPlayerOptions[p] );
 			}
@@ -687,7 +699,7 @@ void ScreenEvaluation::Init()
 	}
 	else if( (bOneHasFullW1Combo || bOneHasFullW2Combo || bOneHasFullW3Combo) )
 	{
-		RString sComboType = bOneHasFullW1Combo ? "W1" : ( bOneHasFullW2Combo ? "W2" : "W3" );
+		std::string sComboType = bOneHasFullW1Combo ? "W1" : ( bOneHasFullW2Combo ? "W2" : "W3" );
 		SOUND->PlayOnceFromDir( ANNOUNCER->GetPathTo("evaluation full combo "+sComboType) );
 	}
 	else
@@ -703,7 +715,7 @@ void ScreenEvaluation::Init()
 			case PLAY_MODE_BATTLE:
 				{
 					bool bWon = GAMESTATE->GetStageResult(GAMESTATE->GetMasterPlayerNumber()) == RESULT_WIN;
-					RString sResult = bWon ? "win" : "lose";
+					std::string sResult = bWon ? "win" : "lose";
 					SOUND->PlayOnceFromDir( ANNOUNCER->GetPathTo("evaluation "+sResult) );
 				}
 				break;
@@ -750,12 +762,12 @@ bool ScreenEvaluation::Input( const InputEventPlus &input )
 					MEMCARDMAN->MountCard( pn );
 
 				Profile* pProfile = PROFILEMAN->GetProfile(pn);
-				RString sDir = PROFILEMAN->GetProfileDir((ProfileSlot)pn) + "Screenshots/";
-				RString sFileName = StepMania::SaveScreenshot( sDir, true, true, "", "" );
+				std::string sDir = PROFILEMAN->GetProfileDir((ProfileSlot)pn) + "Screenshots/";
+				std::string sFileName = StepMania::SaveScreenshot( sDir, true, true, "", "" );
 
 				if( !sFileName.empty() )
 				{
-					RString sPath = sDir+sFileName;
+					std::string sPath = sDir+sFileName;
 
 					const HighScore &hs = m_pStageStats->m_player[pn].m_HighScore;
 					Screenshot screenshot;

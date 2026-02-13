@@ -1,15 +1,18 @@
-#include "global.h"
 #include "ReceptorArrowRow.h"
-#include "RageUtil.h"
-#include "GameConstantsAndTypes.h"
-#include "ArrowEffects.h"
-#include "GameState.h"
-#include "PlayerState.h"
-#include "Style.h"
 
 #include <cstddef>
 #include <vector>
 
+#include "ActorFrame.h"
+#include "ArrowEffects.h"
+#include "GameConstantsAndTypes.h"
+#include "GameState.h"
+#include "NoteDisplay.h"
+#include "PlayerState.h"
+#include "RageUtil.h"
+#include "ReceptorArrow.h"
+#include "Style.h"
+#include "global.h"
 
 ReceptorArrowRow::ReceptorArrowRow()
 {
@@ -73,7 +76,7 @@ void ReceptorArrowRow::Update( float fDeltaTime )
 		{
 			fBaseAlpha *= (1 - m_fFadeToFailPercent);
 		}
-		CLAMP( fBaseAlpha, 0.0f, 1.0f );
+		rage_clamp( fBaseAlpha, 0.0f, 1.0f );
 		m_ReceptorArrow[c]->SetBaseAlpha( fBaseAlpha );
 
 		if(m_renderers != nullptr)

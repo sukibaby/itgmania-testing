@@ -1,13 +1,17 @@
-#include "global.h"
 #include "X11Helper.h"
-#include "RageLog.h"
-#include "ProductInfo.h"
-#include "Preference.h"
-#include "PrefsManager.h" // XXX: only used for m_bShowMouseCursor -aj
-
-#include <cstdint>
 
 #include <X11/extensions/dpms.h>
+
+#include <algorithm>
+#include <cstdint>
+#include <string>
+
+#include "Preference.h"
+#include "PrefsManager.h"
+#include "ProductInfo.h"
+#include "RageException.h"
+#include "RageLog.h"
+#include "global.h"
 
 Display *X11Helper::Dpy = nullptr;
 Window X11Helper::Win = None;
@@ -16,7 +20,7 @@ bool X11Helper::FatalError = false;
 static int ErrorCallback( Display*, XErrorEvent* );
 static int FatalCallback( Display* );
 
-static Preference<RString>		g_XWMName( "XWMName", PRODUCT_ID );
+static Preference<std::string>		g_XWMName( "XWMName", PRODUCT_ID );
 
 static bool display_supports_dpms_extension= false;
 static bool dpms_state_at_startup= false;

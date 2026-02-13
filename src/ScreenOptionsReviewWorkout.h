@@ -1,10 +1,15 @@
 #ifndef ScreenOptionsCourseOverview_H
 #define ScreenOptionsCourseOverview_H
 
-#include "ScreenOptions.h"
-
+#include <string>
 #include <vector>
 
+#include "InputEventPlus.h"
+#include "PlayerNumber.h"
+#include "RageSound.h"
+#include "ScreenMessage.h"
+#include "ScreenOptions.h"
+#include "ThemeMetric.h"
 
 class ScreenOptionsCourseOverview : public ScreenOptions
 {
@@ -24,8 +29,8 @@ private:
 	virtual void ProcessMenuStart( const InputEventPlus &input );
 
 	RageSound	m_soundSave;
-	ThemeMetric<RString> PLAY_SCREEN;
-	ThemeMetric<RString> EDIT_SCREEN;
+	ThemeMetric<std::string> PLAY_SCREEN;
+	ThemeMetric<std::string> EDIT_SCREEN;
 };
 
 #endif

@@ -3,10 +3,11 @@
 #ifndef RAGE_SOUND_READER_SPEED_CHANGE_H
 #define RAGE_SOUND_READER_SPEED_CHANGE_H
 
-#include "RageSoundReader_Filter.h"
-
+#include <string>
 #include <vector>
 
+#include "RageSoundReader.h"
+#include "RageSoundReader_Filter.h"
 
 class RageSoundReader_SpeedChange: public RageSoundReader_Filter
 {
@@ -16,7 +17,7 @@ public:
 	virtual int SetPosition( int iFrame );
 	virtual int Read( float *pBuf, int iFrames );
 	virtual RageSoundReader_SpeedChange *Copy() const { return new RageSoundReader_SpeedChange(*this); }
-	virtual bool SetProperty( const RString &sProperty, float fValue );
+	virtual bool SetProperty( const std::string &sProperty, float fValue );
 	virtual int GetNextSourceFrame() const;
 	virtual float GetStreamToSourceRatio() const;
 

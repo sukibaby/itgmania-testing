@@ -1,27 +1,34 @@
-#include "global.h"
 #include "ScreenOptionsManageCourses.h"
-#include "ScreenManager.h"
-#include "RageLog.h"
-#include "GameState.h"
-#include "SongManager.h"
-#include "CommonMetrics.h"
-#include "ScreenTextEntry.h"
-#include "ScreenPrompt.h"
-#include "ScreenMiniMenu.h"
-#include "GameManager.h"
-#include "Difficulty.h"
-#include "CourseUtil.h"
-#include "LocalizedString.h"
-#include "OptionRowHandler.h"
-#include "ProfileManager.h"
-#include "Profile.h"
-#include "CourseWriterCRS.h"
-#include "RageFileManager.h"
-#include "PrefsManager.h"
 
+#include <algorithm>
 #include <cstddef>
+#include <string>
 #include <vector>
 
+#include "CommonMetrics.h"
+#include "CourseUtil.h"
+#include "CourseWriterCRS.h"
+#include "Difficulty.h"
+#include "GameConstantsAndTypes.h"
+#include "GameManager.h"
+#include "GameState.h"
+#include "InputFilter.h"
+#include "LocalizedString.h"
+#include "OptionRowHandler.h"
+#include "PlayerNumber.h"
+#include "PrefsManager.h"
+#include "Profile.h"
+#include "ProfileManager.h"
+#include "RageFileManager.h"
+#include "RageUtil.h"
+#include "Screen.h"
+#include "ScreenManager.h"
+#include "ScreenMessage.h"
+#include "ScreenOptions.h"
+#include "ScreenPrompt.h"
+#include "SongManager.h"
+#include "ThemeManager.h"
+#include "global.h"
 
 REGISTER_SCREEN_CLASS( ScreenOptionsManageCourses );
 
@@ -240,7 +247,7 @@ void ScreenOptionsManageCourses::ProcessMenuStart( const InputEventPlus & )
 		EditCourseUtil::GetAllEditCourses( vpCourses );
 		if( vpCourses.size() >= (size_t)EditCourseUtil::MAX_PER_PROFILE )
 		{
-			RString s = ssprintf( (YOU_HAVE_MAX.GetValue()+"\n\n"+YOU_MUST_DELETE.GetValue()).c_str(), EditCourseUtil::MAX_PER_PROFILE );
+			std::string s = ssprintf( (YOU_HAVE_MAX.GetValue()+"\n\n"+YOU_MUST_DELETE.GetValue()).c_str(), EditCourseUtil::MAX_PER_PROFILE );
 			ScreenPrompt::Prompt( SM_None, s );
 			return;
 		}

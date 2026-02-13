@@ -1,13 +1,28 @@
-#include "global.h"
 #include "ScreenGameplayLesson.h"
-#include "RageLog.h"
-#include "GameState.h"
-#include "GamePreferences.h"
-#include "StatsManager.h"
-#include "Song.h"
 
+#include <string>
 #include <vector>
 
+#include "Actor.h"
+#include "AutoActor.h"
+#include "EnumHelper.h"
+#include "GameConstantsAndTypes.h"
+#include "GamePreferences.h"
+#include "GameState.h"
+#include "InputEventPlus.h"
+#include "LuaManager.h"
+#include "LuaReference.h"
+#include "MessageManager.h"
+#include "PlayerNumber.h"
+#include "PlayerStageStats.h"
+#include "RageUtil.h"
+#include "Screen.h"
+#include "ScreenGameplay.h"
+#include "ScreenGameplayNormal.h"
+#include "ScreenMessage.h"
+#include "Song.h"
+#include "StatsManager.h"
+#include "global.h"
 
 REGISTER_SCREEN_CLASS( ScreenGameplayLesson );
 ScreenGameplayLesson::ScreenGameplayLesson()
@@ -32,12 +47,12 @@ void ScreenGameplayLesson::Init()
 
 	// Load pages
 	Song *pSong = GAMESTATE->m_pCurSong;
-	RString sDir = pSong->GetSongDir();
-	std::vector<RString> vs;
+	std::string sDir = pSong->GetSongDir();
+	std::vector<std::string> vs;
 	GetDirListing( sDir+"Page*", vs, true, true );
 	m_vPages.resize( vs.size() );
 	int i = 0;
-	for (RString const &s : vs)
+	for (std::string const &s : vs)
 	{
 		AutoActor &aa = m_vPages[i];
 

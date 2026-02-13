@@ -1,20 +1,25 @@
-#include "global.h"
 #include "Bookkeeper.h"
-#include "RageUtil.h"
-#include "RageLog.h"
-#include "IniFile.h"
-#include "GameConstantsAndTypes.h"
+
+#include <cstring>
+#include <ctime>
+#include <map>
+#include <memory>
+#include <string>
+
+#include "DateTime.h"
 #include "GameState.h"
-#include "SongManager.h"
+#include "IniFile.h"
+#include "PrefsManager.h"
 #include "RageFile.h"
+#include "RageLog.h"
+#include "RageUtil.h"
+#include "SpecialFiles.h"
 #include "XmlFile.h"
 #include "XmlFileUtil.h"
-#include "SpecialFiles.h"
-#include <ctime>
 
 Bookkeeper*	BOOKKEEPER = nullptr;	// global and accessible from anywhere in our program
 
-static const RString COINS_DAT = "Save/Coins.xml";
+static const std::string COINS_DAT = "Save/Coins.xml";
 
 Bookkeeper::Bookkeeper()
 {

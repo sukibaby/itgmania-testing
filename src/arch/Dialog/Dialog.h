@@ -1,7 +1,7 @@
 #ifndef DIALOG_BOX_H
 #define DIALOG_BOX_H
 
-#include "global.h"
+#include <string>
 
 namespace Dialog
 {
@@ -13,15 +13,15 @@ namespace Dialog
 	void SetWindowed( bool bWindowed );
 
 	enum Result { ok, cancel, abort, retry, ignore, yes, no };
-	void Error( RString sError, RString sID = "" );
-	void OK( RString sMessage, RString sID = "" );
-	Result OKCancel( RString sMessage, RString sID = "" );
-	Result AbortRetryIgnore( RString sMessage, RString sID = "" );
-	Result AbortRetry( RString sMessage, RString sID = "" );
-	Result YesNo( RString sMessage, RString sID = "" );
+	void Error( std::string sError, std::string sID = "" );
+	void OK( std::string sMessage, std::string sID = "" );
+	Result OKCancel( std::string sMessage, std::string sID = "" );
+	Result AbortRetryIgnore( std::string sMessage, std::string sID = "" );
+	Result AbortRetry( std::string sMessage, std::string sID = "" );
+	Result YesNo( std::string sMessage, std::string sID = "" );
 
 	/* for DialogDrivers */
-	void IgnoreMessage( RString sID );
+	void IgnoreMessage( std::string sID );
 }
 
 #endif

@@ -1,11 +1,13 @@
-#include "global.h"
 #include "RageSurfaceUtils_Dither.h"
-#include "RageUtil.h"
-#include "RageSurface.h"
-#include "RageSurfaceUtils.h"
 
+#include <algorithm>
 #include <atomic>
 #include <cstdint>
+
+#include "RageSurface.h"
+#include "RageSurfaceUtils.h"
+#include "RageUtil.h"
+#include "global.h"
 
 #define DitherMatDim 4
 
@@ -157,7 +159,7 @@ static uint8_t EDDitherPixel( int x, int y, int intensity, int conv, int32_t &ac
 	accumError = out_intensity - clamped_intensity;
 
 	// Reduce funky streaks in low-bit channels by clamping error.
-	CLAMP( accumError, -128 * 65536, +128 * 65536 );
+	rage_clamp( accumError, -128 * 65536, +128 * 65536 );
 
 	return ret;
 }

@@ -2,14 +2,17 @@
  * This requires root permissions to work! (run as root or suid)
  * This code was written using SystemMessage Driver as template. */
 
-#include "global.h"
-#include <sys/io.h>
 #include "LightsDriver_LinuxParallel.h"
-#include "ScreenManager.h"
-#include "InputMapper.h"
-#include "Game.h"
+
+#include <sys/io.h>
 
 #include <cmath>
+#include <string>
+
+#include "Game.h"
+#include "InputMapper.h"
+#include "ScreenManager.h"
+#include "global.h"
 
 // xxx: don't hardcode the port address. -aj
 static const int PORT_ADDRESS = 0x378;
@@ -34,7 +37,7 @@ LightsDriver_LinuxParallel::~LightsDriver_LinuxParallel()
 void LightsDriver_LinuxParallel::Set( const LightsState *ls )
 {
 	// Set LightState to port
-	RString s;
+	std::string s;
 
 	// Prepare screen output too for debugging
 	s += "LinuxParallel Lights Driver Debug\n";

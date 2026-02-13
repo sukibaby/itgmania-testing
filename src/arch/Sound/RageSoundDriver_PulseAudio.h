@@ -1,14 +1,15 @@
 #ifndef RAGE_SOUND_PULSEAUDIO_H
 #define RAGE_SOUND_PULSEAUDIO_H
 
-#include "RageSound.h"
-#include "RageThreads.h"
-#include "RageSoundDriver.h"
+#include <pulse/pulseaudio.h>
 
 #include <cstddef>
 #include <cstdint>
+#include <string>
 
-#include <pulse/pulseaudio.h>
+#include "RageSound.h"
+#include "RageSoundDriver.h"
+#include "RageThreads.h"
 
 class RageSoundDriver_PulseAudio : public RageSoundDriver
 {
@@ -16,7 +17,7 @@ public:
 	RageSoundDriver_PulseAudio();
 	virtual ~RageSoundDriver_PulseAudio();
 
-	RString Init();
+	std::string Init();
 
 	int64_t GetPosition() const;
 	inline int GetSampleRate() const { return m_ss.rate; };

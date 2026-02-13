@@ -1,6 +1,8 @@
 #ifndef STEP_MANIA_H
 #define STEP_MANIA_H
 
+#include <string>
+
 struct Game;
 class RageTimer;
 class VideoModeParams;
@@ -13,12 +15,12 @@ namespace StepMania
 	void ApplyGraphicOptions();
 	void ResetPreferences();
 	void ResetGame();
-	RString GetInitialScreen();
-	RString GetSelectMusicScreen();
+	std::string GetInitialScreen();
+	std::string GetSelectMusicScreen();
 	void InitializeCurrentGame(const Game* g);
 
 	// If successful, return filename of screenshot in sDir, else return ""
-	RString SaveScreenshot( RString Dir, bool SaveCompressed, bool MakeSignature, RString NamePrefix, RString NameSuffix );
+	std::string SaveScreenshot( std::string Dir, bool SaveCompressed, bool MakeSignature, std::string NamePrefix, std::string NameSuffix );
 
 	void InsertCoin( int iNum = 1, bool bCountInBookkeeping = true );
 	void InsertCredit();

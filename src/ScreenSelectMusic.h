@@ -3,21 +3,32 @@
 #ifndef SCREEN_SELECT_MUSIC_H
 #define SCREEN_SELECT_MUSIC_H
 
-#include "ScreenWithMenuElements.h"
-#include "Sprite.h"
-#include "BitmapText.h"
-#include "GameConstantsAndTypes.h"
-#include "MusicWheel.h"
-#include "FadingBanner.h"
-#include "RageUtil_BackgroundLoader.h"
-#include "ThemeMetric.h"
-#include "RageTexturePreloader.h"
-#include "TimingData.h"
-#include "GameInput.h"
-#include "OptionsList.h"
-
+#include <string>
 #include <vector>
 
+#include "AutoActor.h"
+#include "BitmapText.h"
+#include "Difficulty.h"
+#include "FadingBanner.h"
+#include "GameConstantsAndTypes.h"
+#include "GameInput.h"
+#include "InputEventPlus.h"
+#include "MessageManager.h"
+#include "MusicWheel.h"
+#include "OptionsList.h"
+#include "PlayerNumber.h"
+#include "RageSound.h"
+#include "RageTexturePreloader.h"
+#include "RageTimer.h"
+#include "RageUtil_BackgroundLoader.h"
+#include "ScreenMessage.h"
+#include "ScreenWithMenuElements.h"
+#include "Sprite.h"
+#include "Steps.h"
+#include "ThemeMetric.h"
+#include "TimingData.h"
+#include "Trail.h"
+#include "global.h"
 
 enum SelectionState
 {
@@ -26,7 +37,7 @@ enum SelectionState
 	SelectionState_Finalized,
 	NUM_SelectionState,
 };
-const RString& SelectionStateToString( SelectionState ss );
+const std::string& SelectionStateToString( SelectionState ss );
 
 class ScreenSelectMusic : public ScreenWithMenuElements
 {
@@ -92,15 +103,15 @@ protected:
 	ThemeMetric<bool>		DO_ROULETTE_ON_MENU_TIMER;
 	ThemeMetric<float>		ROULETTE_TIMER_SECONDS;
 	ThemeMetric<bool>		ALIGN_MUSIC_BEATS;
-	ThemeMetric<RString>	CODES;
-	ThemeMetric<RString>	MUSIC_WHEEL_TYPE;
+	ThemeMetric<std::string>	CODES;
+	ThemeMetric<std::string>	MUSIC_WHEEL_TYPE;
 	ThemeMetric<bool>		OPTIONS_MENU_AVAILABLE;
 	ThemeMetric<bool>		SELECT_MENU_AVAILABLE;
 	ThemeMetric<bool>		MODE_MENU_AVAILABLE;
 	ThemeMetric<bool>		USE_OPTIONS_LIST;
 	ThemeMetric<float>		OPTIONS_LIST_TIMEOUT;
 	ThemeMetric<bool>		USE_PLAYER_SELECT_MENU;
-	ThemeMetric<RString>	SELECT_MENU_NAME;
+	ThemeMetric<std::string>	SELECT_MENU_NAME;
 	ThemeMetric<bool>		SELECT_MENU_CHANGES_DIFFICULTY;
 	ThemeMetric<bool>		TWO_PART_SELECTION;
 	ThemeMetric<bool>		TWO_PART_CONFIRMS_ONLY;
@@ -108,7 +119,7 @@ protected:
 	ThemeMetric<bool>		WRAP_CHANGE_STEPS;
 	ThemeMetric<bool>		CHANGE_STEPS_WITH_GAME_BUTTONS;
 	ThemeMetric<bool>		CHANGE_GROUPS_WITH_GAME_BUTTONS;
-	ThemeMetric<RString>	NULL_SCORE_STRING;
+	ThemeMetric<std::string>	NULL_SCORE_STRING;
 	ThemeMetric<bool>		PLAY_SOUND_ON_ENTERING_OPTIONS_MENU;
 	ThemeMetric<bool>		CONFIRM_EXIT;
 
@@ -135,13 +146,13 @@ protected:
 	GameButton m_GameButtonCancelTwoPart1;
 	GameButton m_GameButtonCancelTwoPart2;
 
-	RString m_sSectionMusicPath;
-	RString m_sSortMusicPath;
-	RString m_sRouletteMusicPath;
-	RString m_sRandomMusicPath;
-	RString m_sCourseMusicPath;
-	RString m_sLoopMusicPath;
-	RString m_sFallbackCDTitlePath;
+	std::string m_sSectionMusicPath;
+	std::string m_sSortMusicPath;
+	std::string m_sRouletteMusicPath;
+	std::string m_sRandomMusicPath;
+	std::string m_sCourseMusicPath;
+	std::string m_sLoopMusicPath;
+	std::string m_sFallbackCDTitlePath;
 
 	FadingBanner	m_Banner;
 	Sprite			m_sprCDTitleFront, m_sprCDTitleBack;
@@ -153,7 +164,7 @@ protected:
 	SelectionState	m_SelectionState;
 	bool			m_bStepsChosen[NUM_PLAYERS];	// only used in SelectionState_SelectingSteps
 	bool			m_bGoToOptions;
-	RString			m_sSampleMusicToPlay;
+	std::string			m_sSampleMusicToPlay;
 	TimingData		*m_pSampleMusicTimingData;
 	float			m_fSampleStartSeconds, m_fSampleLengthSeconds;
 	bool			m_bAllowOptionsMenu, m_bAllowOptionsMenuRepeat;

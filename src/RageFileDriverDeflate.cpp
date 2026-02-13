@@ -1,14 +1,20 @@
-#include "global.h"
 #include "RageFileDriverDeflate.h"
-#include "RageFileDriverSlice.h"
-#include "RageFile.h"
-#include "RageLog.h"
-#include "RageUtil.h"
-#include "RageUtil/Endian.h"
 
+#include <algorithm>
 #include <cstddef>
 #include <cstdint>
+#include <cstring>
 #include <memory>
+#include <string>
+
+#include "RageException.h"
+#include "RageFile.h"
+#include "RageFileBasic.h"
+#include "RageFileDriverSlice.h"
+#include "RageUtil.h"
+#include "RageUtil/Endian.h"
+#include "global.h"
+#include "zconf.h"
 
 #if defined(_WIN32)
 #include "zlib.h"
@@ -315,7 +321,7 @@ int RageFileObjDeflate::FlushInternal()
  * Parse a .gz file, check the header CRC16 if present, and return the data
  * CRC32 and a decompressor.  pFile will be deleted.
  */
-RageFileObjInflate *GunzipFile( RageFileBasic *pFile_, RString &sError, uint32_t *iCRC32 )
+RageFileObjInflate *GunzipFile( RageFileBasic *pFile_, std::string &sError, uint32_t *iCRC32 )
 {
 	std::unique_ptr<RageFileBasic> pFile(pFile_);
 
@@ -517,7 +523,7 @@ int RageFileObjGzip::Finish()
 
 #include "RageFileDriverMemory.h"
 
-void GzipString( const RString &sIn, RString &sOut )
+void GzipString( const std::string &sIn, std::string &sOut )
 {
 	/* Gzip it. */
 	RageFileObjMem mem;
@@ -529,7 +535,7 @@ void GzipString( const RString &sIn, RString &sOut )
 	sOut = mem.GetString();
 }
 
-bool GunzipString( const RString &sIn, RString &sOut, RString &sError )
+bool GunzipString( const std::string &sIn, std::string &sOut, std::string &sError )
 {
 	RageFileObjMem *mem = new RageFileObjMem;
 	mem->PutString( sIn );

@@ -3,9 +3,11 @@
 #ifndef LightsDriver_Linux_Leds_H
 #define LightsDriver_Linux_Leds_H
 
-#include "arch/Lights/LightsDriver.h"
-
 #include <cstdint>
+#include <string>
+
+#include "GameInput.h"
+#include "LightsDriver.h"
 
 class LightsDriver_Linux_Leds : public LightsDriver
 {
@@ -15,7 +17,7 @@ private:
 	static const int LINUX_LED_MAX_DIRECTORY_LENGTH = PATH_MAX;
 
 	const InputScheme *pInput;
-	RString sInputName;
+	std::string sInputName;
 
 	bool WriteLight(const char *filename, bool state);
 

@@ -1,15 +1,17 @@
-#include "global.h"
 #include "CodeSet.h"
-#include "ThemeManager.h"
-#include "InputEventPlus.h"
-#include "MessageManager.h"
 
+#include <string>
 #include <vector>
 
+#include "InputEventPlus.h"
+#include "InputQueue.h"
+#include "MessageManager.h"
+#include "RageUtil.h"
+#include "ThemeManager.h"
 
 #define CODE_NAMES		THEME->GetMetric (sType,"CodeNames")
 #define CODE( s )		THEME->GetMetric (sType,ssprintf("Code%s",s.c_str()))
-void InputQueueCodeSet::Load( const RString &sType )
+void InputQueueCodeSet::Load( const std::string &sType )
 {
 	//
 	// Load codes
@@ -18,9 +20,9 @@ void InputQueueCodeSet::Load( const RString &sType )
 
 	for( unsigned c=0; c<m_asCodeNames.size(); c++ )
 	{
-		std::vector<RString> asBits;
+		std::vector<std::string> asBits;
 		split( m_asCodeNames[c], "=", asBits, true );
-		RString sCodeName = asBits[0];
+		std::string sCodeName = asBits[0];
 		if( asBits.size() > 1 )
 			m_asCodeNames[c] = asBits[1];
 
@@ -34,7 +36,7 @@ void InputQueueCodeSet::Load( const RString &sType )
 	}
 }
 
-RString InputQueueCodeSet::Input( const InputEventPlus &input ) const
+std::string InputQueueCodeSet::Input( const InputEventPlus &input ) const
 {
 	for( unsigned i = 0; i < m_aCodes.size(); ++i )
 	{
@@ -48,7 +50,7 @@ RString InputQueueCodeSet::Input( const InputEventPlus &input ) const
 
 bool InputQueueCodeSet::InputMessage( const InputEventPlus &input, Message &msg ) const
 {
-	RString sCodeName = Input( input );
+	std::string sCodeName = Input( input );
 	if( sCodeName.empty() )
 		return false;
 

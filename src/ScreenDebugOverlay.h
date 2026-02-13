@@ -3,12 +3,12 @@
 #ifndef ScreenDebugOverlay_H
 #define ScreenDebugOverlay_H
 
-#include "Screen.h"
-#include "BitmapText.h"
-#include "Quad.h"
-
+#include <string>
 #include <vector>
 
+#include "BitmapText.h"
+#include "Quad.h"
+#include "Screen.h"
 
 void ChangeVolume( float fDelta );
 void ChangeVisualDelay( float fDelta );
@@ -26,8 +26,8 @@ public:
 private:
 	void UpdateText();
 
-	RString GetCurrentPageName() const { return m_asPages[m_iCurrentPage]; }
-	std::vector<RString> m_asPages;
+	std::string GetCurrentPageName() const { return m_asPages[m_iCurrentPage]; }
+	std::vector<std::string> m_asPages;
 	int m_iCurrentPage;
 	bool m_bForcedHidden;
 

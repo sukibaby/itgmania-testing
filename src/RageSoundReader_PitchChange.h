@@ -3,6 +3,9 @@
 #ifndef RAGE_SOUND_READER_PITCH_CHANGE_H
 #define RAGE_SOUND_READER_PITCH_CHANGE_H
 
+#include <string>
+
+#include "RageSoundReader.h"
 #include "RageSoundReader_Filter.h"
 class RageSoundReader_SpeedChange;
 class RageSoundReader_Resample_Good;
@@ -14,7 +17,7 @@ public:
 	RageSoundReader_PitchChange( const RageSoundReader_PitchChange &cpy );
 
 	virtual int Read( float *pBuf, int iFrames );
-	virtual bool SetProperty( const RString &sProperty, float fValue );
+	virtual bool SetProperty( const std::string &sProperty, float fValue );
 
 	void SetSpeedRatio( float fRatio ) { m_fSpeedRatio = fRatio; }
 	void SetPitchRatio( float fRatio ) { m_fPitchRatio = fRatio; }

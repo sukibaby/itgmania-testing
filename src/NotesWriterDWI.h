@@ -1,6 +1,8 @@
 #ifndef NOTES_WRITER_DWI_H
 #define NOTES_WRITER_DWI_H
 
+#include <string>
+
 class Song;
 /** @brief Writes a Song to a .DWI file. */
 namespace NotesWriterDWI
@@ -10,7 +12,7 @@ namespace NotesWriterDWI
 	 * @param sPath the path to write the file.
 	 * @param out the Song to be written out.
 	 * @return its success or failure. */
-	bool Write( RString sPath, const Song &out );
+	bool Write( std::string sPath, const Song &out );
 }
 
 #endif

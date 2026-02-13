@@ -1,12 +1,19 @@
-#include "global.h"
 #include "RageModelGeometry.h"
-#include "RageUtil.h"
-#include "RageFile.h"
-#include "RageMath.h"
-#include "RageDisplay.h"
 
 #include <cstdint>
+#include <cstdio>
+#include <cstring>
+#include <string>
 #include <vector>
+
+#include "ModelTypes.h"
+#include "RageDisplay.h"
+#include "RageException.h"
+#include "RageFile.h"
+#include "RageMath.h"
+#include "RageTypes.h"
+#include "RageUtil.h"
+#include "global.h"
 
 #define MS_MAX_NAME	32
 
@@ -93,17 +100,17 @@ bool RageModelGeometry::HasAnyPerVertexBones() const
 
 #define THROW RageException::Throw( "Parse error in \"%s\" at line %d: \"%s\".", sPath.c_str(), iLineNum, sLine.c_str() )
 
-void RageModelGeometry::LoadMilkshapeAscii( const RString& _sPath, bool bNeedsNormals )
+void RageModelGeometry::LoadMilkshapeAscii( const std::string& _sPath, bool bNeedsNormals )
 {
-	RString sPath = _sPath;
+	std::string sPath = _sPath;
 	FixSlashesInPlace(sPath);
-	const RString sDir = Dirname( sPath );
+	const std::string sDir = Dirname( sPath );
 
 	RageFile f;
 	if( !f.Open( sPath ) )
 		RageException::Throw( "RageModelGeometry::LoadMilkshapeAscii Could not open \"%s\": %s", sPath.c_str(), f.GetError().c_str() );
 
-	RString sLine;
+	std::string sLine;
 	int iLineNum = 0;
 	char szName[MS_MAX_NAME];
 	int nFlags, nIndex;

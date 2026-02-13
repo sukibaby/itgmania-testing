@@ -1,16 +1,28 @@
-#include "global.h"
 #include "ScreenSelect.h"
-#include "ScreenManager.h"
-#include "GameSoundManager.h"
-#include "RageLog.h"
-#include "AnnouncerManager.h"
-#include "GameState.h"
-#include "ThemeManager.h"
-#include "GameCommand.h"
-#include "InputEventPlus.h"
 
+#include <algorithm>
 #include <cstddef>
+#include <string>
 #include <vector>
+
+#include "Command.h"
+#include "GameCommand.h"
+#include "GameInput.h"
+#include "GameSoundManager.h"
+#include "GameState.h"
+#include "InputEventPlus.h"
+#include "InputFilter.h"
+#include "LuaManager.h"
+#include "MessageManager.h"
+#include "PlayerNumber.h"
+#include "RageLog.h"
+#include "RageUtil.h"
+#include "ScreenManager.h"
+#include "ScreenMessage.h"
+#include "ScreenWithMenuElements.h"
+#include "StdString.h"
+#include "ThemeManager.h"
+#include "global.h"
 
 #define CHOICE_NAMES		THEME->GetMetric (m_sName,"ChoiceNames")
 #define CHOICE( s )		THEME->GetMetric (m_sName,ssprintf("Choice%s",s.c_str()))
@@ -35,10 +47,10 @@ void ScreenSelect::Init()
 
 	// Load choices
 	// Allow lua as an alternative to metrics.
-	RString choice_names= CHOICE_NAMES;
+	std::string choice_names= CHOICE_NAMES;
 	if(Left(choice_names, 4) == "lua,")
 	{
-		RString command= Right(choice_names, choice_names.size()-4);
+		std::string command= Right(choice_names, choice_names.size()-4);
 		Lua* L= LUA->Get();
 		if(LuaHelpers::RunExpression(L, command, m_sName + "::ChoiceNames"))
 		{
@@ -58,7 +70,7 @@ void ScreenSelect::Init()
 					}
 					else
 					{
-						RString com= SArg(-1);
+						std::string com= SArg(-1);
 						GameCommand mc;
 						mc.ApplyCommitsScreens(false);
 						mc.m_sName = ssprintf("%zu", i);
@@ -79,12 +91,12 @@ void ScreenSelect::Init()
 		// Each element in the list is a choice name. This level of indirection
 		// makes it easier to add or remove items without having to change a
 		// bunch of indices.
-		std::vector<RString> asChoiceNames;
+		std::vector<std::string> asChoiceNames;
 		split( CHOICE_NAMES, ",", asChoiceNames, true );
 
 		for( unsigned c=0; c<asChoiceNames.size(); c++ )
 		{
-			RString sChoiceName = asChoiceNames[c];
+			std::string sChoiceName = asChoiceNames[c];
 
 			GameCommand mc;
 			mc.ApplyCommitsScreens( false );

@@ -3,10 +3,12 @@
 #define WINDOW_ICON_H
 
 #include <windows.h>
+
+#include <string>
 struct RageSurface;
 
 HICON IconFromSurface( const RageSurface *pImg );
-HICON IconFromFile( const RString &sIconFile );
+HICON IconFromFile( const std::string &sIconFile );
 
 #endif
 

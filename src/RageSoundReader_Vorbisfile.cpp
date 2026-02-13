@@ -1,12 +1,21 @@
-#include "global.h"
-
-#include "RageFile.h"
-#include "RageUtil.h"
 #include "RageSoundReader_Vorbisfile.h"
+
+#include "RageException.h"
+#include "RageFileBasic.h"
 #include "RageLog.h"
+#include "RageSoundReader.h"
+#include "RageSoundReader_FileReader.h"
+#include "RageThreads.h"
+#include "RageUtil.h"
+#include "global.h"
+#include "ogg/os_types.h"
+#include "vorbis/codec.h"
 
 #if defined(INTEGER_VORBIS)
 #include <tremor/ivorbisfile.h>
+
+#include <algorithm>
+#include <string>
 #else
 #include <vorbis/vorbisfile.h>
 #endif
@@ -14,7 +23,6 @@
 #include <cerrno>
 #include <cstdarg>
 #include <cstddef>
-#include <cstdint>
 #include <cstring>
 
 static size_t OggRageFile_read_func( void *ptr, size_t size, size_t nmemb, void *datasource )
@@ -40,14 +48,14 @@ static long OggRageFile_tell_func( void *datasource )
 	return f->Tell();
 }
 
-static RString ov_ssprintf( int err, const char *fmt, ...)
+static std::string ov_ssprintf( int err, const char *fmt, ...)
 {
 	va_list	va;
 	va_start( va, fmt );
-	RString s = vssprintf( fmt, va );
+	std::string s = vssprintf( fmt, va );
 	va_end( va );
 
-	RString errstr;
+	std::string errstr;
 	switch( err )
 	{
 		// OV_FALSE, OV_EOF, and OV_HOLE were added to this switch because

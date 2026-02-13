@@ -1,14 +1,15 @@
 // This input handler is meant to be used with Raw Thrills DDR cabinets, such
 // as the US arcade release of DDR X2.
 
-#include "global.h"
 #include "InputHandler_Win32_RTIO.h"
-#include "RageLog.h"
-#include "RageInputDevice.h"
 
 #include <algorithm>
+#include <string>
 #include <vector>
 
+#include "RageInputDevice.h"
+#include "RageLog.h"
+#include "global.h"
 
 // The coin counter won't accept an increment command immediately after acking
 // an older increment command. This delay is the minimum amount of time to wait
@@ -61,7 +62,7 @@ void InputHandler_Win32_RTIO::GetDevicesAndDescriptions(std::vector<InputDeviceI
 	vDevicesOut.push_back(InputDeviceInfo(InputDevice(DEVICE_JOY1), "Raw Thrills I/O"));
 }
 
-RString InputHandler_Win32_RTIO::GetDeviceSpecificInputString(const DeviceInput &di)
+std::string InputHandler_Win32_RTIO::GetDeviceSpecificInputString(const DeviceInput &di)
 {
 	switch (di.button)
 	{

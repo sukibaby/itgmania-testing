@@ -1,23 +1,36 @@
-#include "global.h"
 #include "ScreenOptions.h"
-#include "RageUtil.h"
-#include "ScreenManager.h"
-#include "PrefsManager.h"
-#include "GameConstantsAndTypes.h"
-#include "RageLog.h"
-#include "GameState.h"
-#include "ThemeManager.h"
-#include "InputMapper.h"
-#include "ActorUtil.h"
-#include "ScreenDimensions.h"
-#include "GameCommand.h"
-#include "OptionRowHandler.h"
-#include "LuaBinding.h"
-#include "InputEventPlus.h"
 
+#include <algorithm>
 #include <cmath>
+#include <string>
 #include <vector>
 
+#include "Actor.h"
+#include "ActorUtil.h"
+#include "BitmapText.h"
+#include "EnumHelper.h"
+#include "GameCommand.h"
+#include "GameInput.h"
+#include "GameState.h"
+#include "InputEventPlus.h"
+#include "InputFilter.h"
+#include "InputMapper.h"
+#include "LuaBinding.h"
+#include "LuaManager.h"
+#include "MessageManager.h"
+#include "OptionRowHandler.h"
+#include "OptionsCursor.h"
+#include "PlayerNumber.h"
+#include "PrefsManager.h"
+#include "RageInputDevice.h"
+#include "RageLog.h"
+#include "RageThreads.h"
+#include "RageUtil.h"
+#include "ScreenManager.h"
+#include "ScreenMessage.h"
+#include "ScreenWithMenuElements.h"
+#include "ThemeManager.h"
+#include "global.h"
 
 /*
  * These navigation types are provided:
@@ -69,7 +82,7 @@
  * in player options menus, but it should in the options menu.
  */
 
-static RString OPTION_EXPLANATION( RString s )
+static std::string OPTION_EXPLANATION( std::string s )
 {
 	return THEME->GetString("OptionExplanations",s);
 }
@@ -361,16 +374,16 @@ ScreenOptions::~ScreenOptions()
 		RageUtil::SafeDelete( m_pRows[i] );
 }
 
-RString ScreenOptions::GetExplanationText( int iRow ) const
+std::string ScreenOptions::GetExplanationText( int iRow ) const
 {
 	const OptionRow &row = *m_pRows[iRow];
 
 	bool bAllowExplanation = row.GetRowDef().m_bAllowExplanation;
 	bool bShowExplanations = bAllowExplanation && SHOW_EXPLANATIONS.GetValue();
 	if( !bShowExplanations )
-		return RString();
+		return std::string();
 
-	RString sExplanationName = row.GetRowDef().m_sExplanationName;
+	std::string sExplanationName = row.GetRowDef().m_sExplanationName;
 	if( sExplanationName.empty() )
 		sExplanationName = row.GetRowDef().m_sName;
 	ASSERT( !sExplanationName.empty() );
@@ -395,7 +408,7 @@ void ScreenOptions::RefreshIcons( int iRow, PlayerNumber pn )
 	int iFirstSelection = row.GetOneSelection( pn, true );
 
 	// set icon name and bullet
-	RString sIcon;
+	std::string sIcon;
 	GameCommand gc;
 
 	if( iFirstSelection == -1 )
@@ -552,7 +565,7 @@ void ScreenOptions::HandleScreenMessage( const ScreenMessage SM )
 			return; // already transitioning
 
 		// If the selected option sets a screen, honor it.
-		RString sThisScreen = GetNextScreenForFocusedItem( GAMESTATE->GetMasterPlayerNumber() );
+		std::string sThisScreen = GetNextScreenForFocusedItem( GAMESTATE->GetMasterPlayerNumber() );
 		if( sThisScreen != "" )
 			m_sNextScreen = sThisScreen;
 
@@ -759,7 +772,7 @@ void ScreenOptions::AfterChangeValueOrRow( PlayerNumber pn )
 		}
 	}
 
-	const RString text = GetExplanationText( iCurRow );
+	const std::string text = GetExplanationText( iCurRow );
 	BitmapText *pText = nullptr;
 	switch( m_InputMode )
 	{
@@ -994,16 +1007,16 @@ void ScreenOptions::StoreFocus( PlayerNumber pn )
 
 bool ScreenOptions::FocusedItemEndsScreen( PlayerNumber pn ) const
 {
-	RString sScreen = GetNextScreenForFocusedItem( pn );
+	std::string sScreen = GetNextScreenForFocusedItem( pn );
 	return !sScreen.empty();
 }
 
-RString ScreenOptions::GetNextScreenForFocusedItem( PlayerNumber pn ) const
+std::string ScreenOptions::GetNextScreenForFocusedItem( PlayerNumber pn ) const
 {
 	int iCurRow = this->GetCurrentRow( pn );
 
 	if( iCurRow == -1 )
-		return RString();
+		return std::string();
 
 	ASSERT( iCurRow >= 0 && iCurRow < (int)m_pRows.size() );
 	const OptionRow *pRow = m_pRows[iCurRow];
@@ -1014,11 +1027,11 @@ RString ScreenOptions::GetNextScreenForFocusedItem( PlayerNumber pn ) const
 
 	// not the "goes down" item
 	if( iChoice == -1 )
-		return RString();
+		return std::string();
 
 	const OptionRowHandler *pHand = pRow->GetHandler();
 	if( pHand == nullptr )
-		return RString();
+		return std::string();
 	return pHand->GetScreen( iChoice );
 }
 
@@ -1088,7 +1101,7 @@ void ScreenOptions::ChangeValueInRowRelative( int iRow, PlayerNumber pn, int iDe
 	if( !bRepeat  &&  WRAP_VALUE_IN_ROW.GetValue() )
 		wrap( iNewChoiceWithFocus, iNumChoices );
 	else
-		CLAMP( iNewChoiceWithFocus, 0, iNumChoices-1 );
+		rage_clamp( iNewChoiceWithFocus, 0, iNumChoices-1 );
 
 	if( iCurrentChoiceWithFocus != iNewChoiceWithFocus )
 		bOneChanged = true;

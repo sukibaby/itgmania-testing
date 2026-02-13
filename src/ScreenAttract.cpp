@@ -1,16 +1,23 @@
-#include "global.h"
 #include "ScreenAttract.h"
-#include "ScreenManager.h"
-#include "RageUtil.h"
-#include "StepMania.h"
+
+#include <string>
+
+#include "GameConstantsAndTypes.h"
+#include "GameInput.h"
+#include "GameSoundManager.h"
+#include "GameState.h"
+#include "InputEventPlus.h"
+#include "InputFilter.h"
+#include "Preference.h"
 #include "PrefsManager.h"
 #include "RageLog.h"
-#include "GameState.h"
-#include "InputMapper.h"
-#include "ThemeManager.h"
-#include "GameSoundManager.h"
-#include "InputEventPlus.h"
 #include "RageSoundManager.h"
+#include "Screen.h"
+#include "ScreenManager.h"
+#include "ScreenMessage.h"
+#include "ScreenWithMenuElements.h"
+#include "ThemeManager.h"
+#include "ThemeMetric.h"
 
 #define START_SCREEN(sScreenName)	THEME->GetMetric (sScreenName,"StartScreen")
 
@@ -153,7 +160,7 @@ void ScreenAttract::HandleScreenMessage( const ScreenMessage SM )
 	ScreenWithMenuElements::HandleScreenMessage( SM );
 }
 
-void ScreenAttract::GoToStartScreen( RString sScreenName )
+void ScreenAttract::GoToStartScreen( std::string sScreenName )
 {
 	SCREENMAN->SetNewScreen( START_SCREEN(sScreenName) );
 }

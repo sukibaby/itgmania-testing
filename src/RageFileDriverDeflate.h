@@ -3,10 +3,11 @@
 #ifndef RAGE_FILE_DRIVER_DEFLATE_H
 #define RAGE_FILE_DRIVER_DEFLATE_H
 
-#include "RageFileBasic.h"
-
 #include <cstddef>
 #include <cstdint>
+#include <string>
+
+#include "RageFileBasic.h"
 
 typedef struct z_stream_s z_stream;
 
@@ -70,11 +71,11 @@ private:
 	int m_iDataStartOffset;
 };
 
-RageFileObjInflate *GunzipFile( RageFileBasic *pFile, RString &sError, uint32_t *iCRC32 );
+RageFileObjInflate *GunzipFile( RageFileBasic *pFile, std::string &sError, uint32_t *iCRC32 );
 
 /* Quick helpers: */
-void GzipString( const RString &sIn, RString &sOut );
-bool GunzipString( const RString &sIn, RString &sOut, RString &sError ); // returns false on CRC, etc. error
+void GzipString( const std::string &sIn, std::string &sOut );
+bool GunzipString( const std::string &sIn, std::string &sOut, std::string &sError ); // returns false on CRC, etc. error
 
 #endif
 

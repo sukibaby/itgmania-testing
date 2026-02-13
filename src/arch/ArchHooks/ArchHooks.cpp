@@ -1,5 +1,8 @@
-#include "global.h"
 #include "ArchHooks.h"
+
+#include <string>
+
+#include "LuaManager.h"
 #include "LuaReference.h"
 #include "RageLog.h"
 #include "RageThreads.h"
@@ -56,7 +59,7 @@ ArchHooks *ArchHooks::Create()
 	return new ARCH_HOOKS;
 }
 
-RString ArchHooks::GetClipboard()
+std::string ArchHooks::GetClipboard()
 {
 	LOG->Warn("ArchHooks: GetClipboard() NOT IMPLEMENTED");
 	return "";

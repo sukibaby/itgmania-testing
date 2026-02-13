@@ -1,10 +1,16 @@
-#include "global.h"
 #include <stdio.h>
+#include <sys/fcntl.h>
+
+#include <cstring>
+#include <string>
+
+#include "GameInput.h"
+#include "LightsManager.h"
+#include "StdString.h"
+#include "arch/Lights/LightsDriver.h"
 #if defined(HAVE_UNISTD_H)
 #include <unistd.h>
 #endif
-#include <sys/types.h>
-#include <sys/stat.h>
 
 #if defined(HAVE_FCNTL_H)
 #include <fcntl.h>
@@ -47,7 +53,7 @@ void LightsDriver_Linux_PIUIO::Set( const LightsState *ls )
 	if (ls->m_bCabinetLights[LIGHT_MARQUEE_LR_RIGHT]) buf[3] |= 0x01;
 	if (ls->m_bCabinetLights[LIGHT_BASS_LEFT] || ls->m_bCabinetLights[LIGHT_BASS_RIGHT]) buf[1] |= 0x04;
 
-	RString sInput = GAMESTATE->GetCurrentGame()->m_InputScheme.m_szName;
+	std::string sInput = GAMESTATE->GetCurrentGame()->m_InputScheme.m_szName;
 	if (EqualsNoCase(sInput, "dance")) {
 		if (ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_UP]) buf[2] |= 0x04;
 		if (ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_DOWN]) buf[2] |= 0x08;

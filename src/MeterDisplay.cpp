@@ -1,12 +1,16 @@
-#include "global.h"
 #include "MeterDisplay.h"
-#include "RageUtil.h"
-#include "GameState.h"
-#include "Song.h"
+
+#include <string>
+
+#include "ActorFrame.h"
 #include "ActorUtil.h"
-#include "XmlFile.h"
-#include "RageLog.h"
+#include "GameState.h"
 #include "LuaManager.h"
+#include "RageLog.h"
+#include "RageUtil.h"
+#include "Song.h"
+#include "XmlFile.h"
+#include "global.h"
 
 REGISTER_ACTOR_CLASS(MeterDisplay);
 REGISTER_ACTOR_CLASS(SongMeterDisplay);
@@ -15,7 +19,7 @@ MeterDisplay::MeterDisplay()
 {
 }
 
-void MeterDisplay::Load( RString sStreamPath, float fStreamWidth, RString sTipPath )
+void MeterDisplay::Load( std::string sStreamPath, float fStreamWidth, std::string sTipPath )
 {
 	m_sprStream.Load( sStreamPath );
 	this->AddChild( m_sprStream );
@@ -83,7 +87,7 @@ void SongMeterDisplay::Update( float fDeltaTime )
 		float fSongStartSeconds = GAMESTATE->m_pCurSong->GetFirstSecond();
 		float fSongEndSeconds = GAMESTATE->m_pCurSong->GetLastSecond();
 		float fPercentPositionSong = SCALE( GAMESTATE->m_Position.m_fMusicSeconds, fSongStartSeconds, fSongEndSeconds, 0.0f, 1.0f );
-		CLAMP( fPercentPositionSong, 0, 1 );
+		rage_clamp( fPercentPositionSong, 0, 1 );
 
 		SetPercent( fPercentPositionSong );
 	}

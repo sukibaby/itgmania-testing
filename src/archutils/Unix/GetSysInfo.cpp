@@ -1,11 +1,11 @@
-#include "global.h"
 #include "GetSysInfo.h"
 
-#if defined(HAVE_SYS_UTSNAME_H)
 #include <sys/utsname.h>
-#endif
 
-void GetKernel( RString &sys, int &iVersion )
+#include <cstdio>
+#include <string>
+
+void GetKernel( std::string &sys, int &iVersion )
 {
 	struct utsname uts;
 	uname( &uts );

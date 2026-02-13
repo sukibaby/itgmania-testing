@@ -1,16 +1,24 @@
-#include "global.h"
 #include "CombinedLifeMeterTug.h"
-#include "ThemeManager.h"
-#include "GameState.h"
-#include "PrefsManager.h"
-#include "ThemeMetric.h"
-#include "ActorUtil.h"
 
+#include <algorithm>
 #include <cstddef>
+#include <string>
+
+#include "ActorFrame.h"
+#include "ActorUtil.h"
+#include "GameConstantsAndTypes.h"
+#include "GameState.h"
+#include "PlayerNumber.h"
+#include "Preference.h"
+#include "PrefsManager.h"
+#include "RageUtil.h"
+#include "ThemeManager.h"
+#include "ThemeMetric.h"
+#include "global.h"
 
 ThemeMetric<float> METER_WIDTH		("CombinedLifeMeterTug","MeterWidth");
 
-static void TugMeterPercentChangeInit( size_t /*ScoreEvent*/ i, RString &sNameOut, float &defaultValueOut )
+static void TugMeterPercentChangeInit( size_t /*ScoreEvent*/ i, std::string &sNameOut, float &defaultValueOut )
 {
 	sNameOut = "TugMeterPercentChange" + ScoreEventToString( (ScoreEvent)i );
 	switch( i )
@@ -38,8 +46,8 @@ CombinedLifeMeterTug::CombinedLifeMeterTug()
 {
 	FOREACH_PlayerNumber( p )
 	{
-		RString sStreamPath = THEME->GetPathG("CombinedLifeMeterTug",ssprintf("stream p%d",p+1));
-		RString sTipPath = THEME->GetPathG("CombinedLifeMeterTug",ssprintf("tip p%d",p+1));
+		std::string sStreamPath = THEME->GetPathG("CombinedLifeMeterTug",ssprintf("stream p%d",p+1));
+		std::string sTipPath = THEME->GetPathG("CombinedLifeMeterTug",ssprintf("tip p%d",p+1));
 		m_Stream[p].Load( sStreamPath, METER_WIDTH, sTipPath );
 		this->AddChild( &m_Stream[p] );
 	}
@@ -59,7 +67,7 @@ CombinedLifeMeterTug::CombinedLifeMeterTug()
 void CombinedLifeMeterTug::Update( float fDelta )
 {
 	float fPercentToShow = GAMESTATE->m_fTugLifePercentP1;
-	CLAMP( fPercentToShow, 0.f, 1.f );
+	rage_clamp( fPercentToShow, 0.f, 1.f );
 
 	m_Stream[PLAYER_1].SetPercent( fPercentToShow );
 	m_Stream[PLAYER_2].SetPercent( 1-fPercentToShow );

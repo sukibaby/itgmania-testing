@@ -18,17 +18,26 @@
  * overrides.
  */
 
-#include "global.h"
 #include "RageTextureManager.h"
-#include "RageBitmapTexture.h"
-#include "arch/MovieTexture/MovieTexture.h"
-#include "RageUtil.h"
-#include "RageLog.h"
-#include "RageDisplay.h"
-#include "ActorUtil.h"
 
+#include <algorithm>
 #include <cstdint>
+#include <iterator>
 #include <map>
+#include <string>
+#include <utility>
+
+#include "ActorUtil.h"
+#include "RageBitmapTexture.h"
+#include "RageDisplay.h"
+#include "RageException.h"
+#include "RageLog.h"
+#include "RageTexture.h"
+#include "RageTextureID.h"
+#include "RageThreads.h"
+#include "RageUtil.h"
+#include "arch/MovieTexture/MovieTexture.h"
+#include "global.h"
 
 RageTextureManager*		TEXTUREMAN		= nullptr; // global and accessible from anywhere in our program
 
@@ -105,13 +114,13 @@ void RageTextureManager::RegisterTextureForUpdating(RageTextureID id, RageTextur
 	m_textures_to_update[id]= tex;
 }
 
-static const RString g_sDefaultTextureName = "__blank__";
+static const std::string g_sDefaultTextureName = "__blank__";
 RageTextureID RageTextureManager::GetDefaultTextureID()
 {
 	return RageTextureID( g_sDefaultTextureName );
 }
 
-static const RString g_ScreenTextureName = "__screen__";
+static const std::string g_ScreenTextureName = "__screen__";
 RageTextureID RageTextureManager::GetScreenTextureID()
 {
 	return RageTextureID(g_ScreenTextureName);
@@ -270,7 +279,7 @@ void RageTextureManager::GarbageCollect( GCType type )
 		std::map<RageTextureID, RageTexture*>::iterator j = i;
 		i++;
 
-		RString sPath = j->first.filename;
+		std::string sPath = j->first.filename;
 		RageTexture* t = j->second;
 
 		if( t->m_iRefCount )
@@ -362,8 +371,8 @@ void RageTextureManager::DiagnosticOutput() const
 		const RageTextureID &ID = i.first;
 		const RageTexture *pTex = i.second;
 
-		RString sDiags = DISPLAY->GetTextureDiagnostics( pTex->GetTexHandle() );
-		RString sStr = ssprintf( "%3ix%3i (%2i)", pTex->GetTextureHeight(), pTex->GetTextureWidth(),
+		std::string sDiags = DISPLAY->GetTextureDiagnostics( pTex->GetTexHandle() );
+		std::string sStr = ssprintf( "%3ix%3i (%2i)", pTex->GetTextureHeight(), pTex->GetTextureWidth(),
 			pTex->m_iRefCount );
 
 		if( sDiags != "" )

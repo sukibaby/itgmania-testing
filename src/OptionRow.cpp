@@ -1,27 +1,39 @@
-#include "global.h"
 #include "OptionRow.h"
-#include "RageUtil.h"
-#include "RageLog.h"
 
-#include "OptionRowHandler.h"
-#include "CommonMetrics.h"
-#include "GameState.h"
-#include "Song.h"
-#include "Course.h"
-#include "Style.h"
-#include "ActorUtil.h"
-
+#include <algorithm>
 #include <cmath>
 #include <cstddef>
+#include <string>
 #include <vector>
 
+#include "Actor.h"
+#include "ActorFrame.h"
+#include "ActorUtil.h"
+#include "BitmapText.h"
+#include "CommonMetrics.h"
+#include "Course.h"
+#include "EnumHelper.h"
+#include "GameConstantsAndTypes.h"
+#include "GameState.h"
+#include "MessageManager.h"
+#include "ModIcon.h"
+#include "OptionRowHandler.h"
+#include "OptionsCursor.h"
+#include "PlayerNumber.h"
+#include "RageTypes.h"
+#include "RageUtil.h"
+#include "Song.h"
+#include "StdString.h"
+#include "Style.h"
+#include "ThemeManager.h"
+#include "global.h"
 
-const RString NEXT_ROW_NAME = "NextRow";
-const RString EXIT_NAME = "Exit";
+const std::string NEXT_ROW_NAME = "NextRow";
+const std::string EXIT_NAME = "Exit";
 
-RString OptionRow::GetThemedItemText( int iChoice ) const
+std::string OptionRow::GetThemedItemText( int iChoice ) const
 {
-	RString s = m_pHand->GetThemedItemText( iChoice );
+	std::string s = m_pHand->GetThemedItemText( iChoice );
 
 	// HACK: Always theme the NEXT_ROW and EXIT items.
 	if( m_bFirstItemGoesDown  &&  iChoice == 0 )
@@ -32,8 +44,8 @@ RString OptionRow::GetThemedItemText( int iChoice ) const
 	return s;
 }
 
-RString ITEMS_LONG_ROW_X_NAME( size_t p )	{ return ssprintf("ItemsLongRowP%dX",int(p+1)); }
-RString MOD_ICON_X_NAME( size_t p )		{ return ssprintf("ModIconP%dX",int(p+1)); }
+std::string ITEMS_LONG_ROW_X_NAME( size_t p )	{ return ssprintf("ItemsLongRowP%dX",int(p+1)); }
+std::string MOD_ICON_X_NAME( size_t p )		{ return ssprintf("ModIconP%dX",int(p+1)); }
 
 OptionRow::OptionRow( const OptionRowType *pSource )
 {
@@ -68,7 +80,7 @@ void OptionRow::Clear()
 
 	if( m_pHand != nullptr )
 	{
-		for (RString const &m : m_pHand->m_vsReloadRowMessages)
+		for (std::string const &m : m_pHand->m_vsReloadRowMessages)
 			MESSAGEMAN->Unsubscribe( this, m );
 	}
 	RageUtil::SafeDelete( m_pHand );
@@ -78,7 +90,7 @@ void OptionRow::Clear()
 	ZERO( m_iChoiceInRowWithFocus );
 }
 
-void OptionRowType::Load( const RString &sMetricsGroup, Actor *pParent )
+void OptionRowType::Load( const std::string &sMetricsGroup, Actor *pParent )
 {
 	m_sMetricsGroup = sMetricsGroup;
 
@@ -133,7 +145,7 @@ void OptionRow::LoadNormal( OptionRowHandler *pHand, bool bFirstItemGoesDown )
 	m_pHand = pHand;
 	m_bFirstItemGoesDown = bFirstItemGoesDown;
 
-	for (RString const &m : m_pHand->m_vsReloadRowMessages)
+	for (std::string const &m : m_pHand->m_vsReloadRowMessages)
 		MESSAGEMAN->Subscribe( this, m );
 
 	ChoicesChanged( RowType_Normal );
@@ -197,9 +209,9 @@ void OptionRow::ChoicesChanged( RowType type, bool reset_focus )
 	m_textTitle->SetText( GetRowTitle() );
 }
 
-RString OptionRow::GetRowTitle() const
+std::string OptionRow::GetRowTitle() const
 {
-	RString sTitle = m_pHand->OptionTitle();
+	std::string sTitle = m_pHand->OptionTitle();
 
 	// HACK: tack the BPM onto the name of the speed line
 	if( CompareNoCase(m_pHand->m_Def.m_sName, "speed")==0 )
@@ -294,7 +306,7 @@ void OptionRow::InitText( RowType type )
 		float fWidth = 0;
 		for( unsigned c=0; c<m_pHand->m_Def.m_vsChoices.size(); c++ )
 		{
-			RString sText = GetThemedItemText( c );
+			std::string sText = GetThemedItemText( c );
 			bt.SetText( sText );
 
 			fWidth += bt.GetZoomedWidth();
@@ -365,7 +377,7 @@ void OptionRow::InitText( RowType type )
 				bt->SetBaseZoomX( fBaseZoom );
 				bt->PlayCommand( "On" );
 				// Set text after running OnCommand so e.g. uppercase,true works -aj
-				RString sText = GetThemedItemText( c );
+				std::string sText = GetThemedItemText( c );
 				bt->SetText( sText );
 
 				// set the X position of each item in the line
@@ -526,7 +538,7 @@ void OptionRow::UpdateText( PlayerNumber p )
 			if( iChoiceWithFocus == -1 )
 				break;
 
-			RString sText = GetThemedItemText( iChoiceWithFocus );
+			std::string sText = GetThemedItemText( iChoiceWithFocus );
 
 			// If player_no is 2 and there is no player 1:
 			int index = std::min(static_cast<int>(pn), static_cast<int>(m_textItems.size()) - 1);
@@ -568,7 +580,7 @@ void OptionRow::UpdateEnabledDisabled()
 	bool bRowEnabled = !m_pHand->m_Def.m_vEnabledForPlayers.empty();
 
 	// Don't tween selection colors at all.
-	RString sCmdName;
+	std::string sCmdName;
 	if( bThisRowHasFocusByAny )	sCmdName = "GainFocus";
 	else if( bRowEnabled )		sCmdName = "LoseFocus";
 	else				sCmdName = "Disabled";
@@ -648,7 +660,7 @@ void OptionRow::UpdateEnabledDisabled()
 	}
 }
 
-void OptionRow::SetModIcon( PlayerNumber pn, const RString &sText, GameCommand &gc )
+void OptionRow::SetModIcon( PlayerNumber pn, const std::string &sText, GameCommand &gc )
 {
 	// update row frame
 	Message msg( "Refresh" );
@@ -722,7 +734,7 @@ void OptionRow::SetOneSharedSelection( int iChoice )
 		SetOneSelection( pn, iChoice );
 }
 
-void OptionRow::SetOneSharedSelectionIfPresent( const RString &sChoice )
+void OptionRow::SetOneSharedSelectionIfPresent( const std::string &sChoice )
 {
 	for( unsigned i=0; i<m_pHand->m_Def.m_vsChoices.size(); i++ )
 	{
@@ -829,7 +841,7 @@ bool OptionRow::GoToFirstOnStart()
 	return m_pHand->GoToFirstOnStart();
 }
 
-void OptionRow::SetExitText( RString sExitText )
+void OptionRow::SetExitText( std::string sExitText )
 {
 	BitmapText *bt = m_textItems.back();
 	bt->SetText( sExitText );
@@ -889,7 +901,7 @@ void OptionRow::Reload()
 void OptionRow::HandleMessage( const Message &msg )
 {
 	bool bReload = false;
-	for (RString const &m : m_pHand->m_vsReloadRowMessages)
+	for (std::string const &m : m_pHand->m_vsReloadRowMessages)
 	{
 		if( m == msg.GetName() )
 		{

@@ -1,11 +1,14 @@
-#include "global.h"
-#include "LightsDriver.h"
 #include "LightsDriver_GenericHID.h"
-#include "Preference.h"
-#include "RageLog.h"
+
+#include <libusb.h>
 
 #include <cstdint>
-#include <libusb.h>
+#include <string>
+
+#include "LightsDriver.h"
+#include "Preference.h"
+#include "RageLog.h"
+#include "global.h"
 
 REGISTER_LIGHTS_DRIVER_CLASS(GenericHID);
 
@@ -30,7 +33,7 @@ REGISTER_LIGHTS_DRIVER_ALIAS(LinuxPacDrive, GenericHID);
 // PacDrives have PIDs 1500 - 1507, but we'll handle that later.
 const unsigned GENERICHID_TIMEOUT = 10000;
 
-static Preference<RString> g_sGenericHIDLightsOrdering("PacDriveLightOrdering", "openitg");
+static Preference<std::string> g_sGenericHIDLightsOrdering("PacDriveLightOrdering", "openitg");
 static Preference<int> g_sGenericHIDLightsVID("GenericHIDLightsVID", 0xD209);
 static Preference<int> g_sGenericHIDLightsPID("GenericHIDLightsPID", 0x1500);
 
@@ -48,7 +51,7 @@ LightsDriver_GenericHID::LightsDriver_GenericHID()
 	// clear all lights
 	WriteDevice( 0 );
 
-	RString lightOrder = g_sGenericHIDLightsOrdering.Get();
+	std::string lightOrder = g_sGenericHIDLightsOrdering.Get();
 	if (CompareNoCase(lightOrder, "lumenar") == 0 || CompareNoCase(lightOrder, "openitg") == 0) {
 		iLightsOrder = 1;
 	}

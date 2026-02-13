@@ -1,10 +1,13 @@
 #ifndef STEP_PARITY_DATASTRUCTS_H
 #define STEP_PARITY_DATASTRUCTS_H
 
-#include "GameConstantsAndTypes.h"
-#include "NoteData.h"
-#include <queue>
+#include <cstdint>
+#include <string>
 #include <unordered_map>
+#include <vector>
+
+#include "GameConstantsAndTypes.h"
+#include "NoteTypes.h"
 
 namespace StepParity {
 	
@@ -37,9 +40,9 @@ namespace StepParity {
 	// OTHER_PART_OF_FOOT[LEFT_HEEL] == LEFT_TOE
 	const std::vector<StepParity::Foot> OTHER_PART_OF_FOOT = {NONE, LEFT_TOE, LEFT_HEEL, RIGHT_TOE, RIGHT_HEEL};
 	
-	const RString FEET_LABELS[] = {"N", "L", "l", "R", "r", "5??", "6??"};
-	const RString TapNoteTypeShortNames[] = { "Empty", "Tap",  "Mine",  "Attack", "AutoKeySound", "Fake", "", "" };
-	const RString TapNoteSubTypeShortNames[] = { "Hold", "Roll", "", "" };
+	const std::string FEET_LABELS[] = {"N", "L", "l", "R", "r", "5??", "6??"};
+	const std::string TapNoteTypeShortNames[] = { "Empty", "Tap",  "Mine",  "Attack", "AutoKeySound", "Fake", "", "" };
+	const std::string TapNoteSubTypeShortNames[] = { "Hold", "Roll", "", "" };
 
 	enum Cost
 	{
@@ -63,7 +66,7 @@ namespace StepParity {
 		COST_TOTAL,
 		NUM_Cost
 	};
-	const RString COST_LABELS[] = {
+	const std::string COST_LABELS[] = {
 		"DOUBLESTEP",
 		"BRACKETJACK",
 		"JACK",

@@ -1,18 +1,28 @@
-#include "global.h"
 #include "LifeMeterTime.h"
-#include "ThemeManager.h"
-#include "Song.h"
-#include "Steps.h"
-#include "ActorUtil.h"
-#include "Course.h"
-#include "Preference.h"
-#include "StreamDisplay.h"
-#include "GameState.h"
-#include "StatsManager.h"
-#include "PlayerState.h"
-#include "MessageManager.h"
 
+#include <algorithm>
 #include <cstddef>
+#include <string>
+
+#include "Actor.h"
+#include "Course.h"
+#include "GameConstantsAndTypes.h"
+#include "GameState.h"
+#include "LifeMeter.h"
+#include "MessageManager.h"
+#include "PlayerStageStats.h"
+#include "PlayerState.h"
+#include "Preference.h"
+#include "RadarValues.h"
+#include "RageTypes.h"
+#include "RageUtil.h"
+#include "Song.h"
+#include "StatsManager.h"
+#include "Steps.h"
+#include "StreamDisplay.h"
+#include "ThemeManager.h"
+#include "ThemeMetric.h"
+#include "global.h"
 
 const float FULL_LIFE_SECONDS = 1.5f*60;
 
@@ -39,7 +49,7 @@ static const float g_fTimeMeterSecondsChangeInit[] =
 };
 static_assert( ARRAYLEN(g_fTimeMeterSecondsChangeInit) == NUM_ScoreEvent );
 
-static void TimeMeterSecondsChangeInit( size_t /*ScoreEvent*/ i, RString &sNameOut, float &defaultValueOut )
+static void TimeMeterSecondsChangeInit( size_t /*ScoreEvent*/ i, std::string &sNameOut, float &defaultValueOut )
 {
 	sNameOut = "TimeMeterSecondsChange" + ScoreEventToString( (ScoreEvent)i );
 	defaultValueOut = g_fTimeMeterSecondsChangeInit[i];
@@ -64,7 +74,7 @@ void LifeMeterTime::Load( const PlayerState *pPlayerState, PlayerStageStats *pPl
 {
 	LifeMeter::Load( pPlayerState, pPlayerStageStats );
 
-	const RString sType = "LifeMeterTime";
+	const std::string sType = "LifeMeterTime";
 
 	m_sprBackground.Load( THEME->GetPathG(sType,"background") );
 	m_sprBackground->SetName( "Background" );
@@ -84,7 +94,7 @@ void LifeMeterTime::Load( const PlayerState *pPlayerState, PlayerStageStats *pPl
 	m_pStream->Load( bExtra ? "StreamDisplayExtra" : "StreamDisplay" );
 	this->AddChild( m_pStream );
 
-	RString sExtra = bExtra ? "extra " : "";
+	std::string sExtra = bExtra ? "extra " : "";
 	m_sprFrame.Load( THEME->GetPathG(sType,sExtra+"frame") );
 	m_sprFrame->SetName( "Frame" );
 	this->AddChild( m_sprFrame );
@@ -248,7 +258,7 @@ void LifeMeterTime::Update( float fDeltaTime )
 float LifeMeterTime::GetLife() const
 {
 	float fPercent = GetLifeSeconds() / FULL_LIFE_SECONDS;
-	CLAMP( fPercent, 0, 1 );
+	rage_clamp( fPercent, 0, 1 );
 	return fPercent;
 }
 

@@ -1,8 +1,14 @@
-#include "global.h"
 #include "LightsDriver_SystemMessage.h"
-#include "ScreenManager.h"
-#include "InputMapper.h"
+
+#include <string>
+
+#include "EnumHelper.h"
+#include "GameInput.h"
+#include "LightsManager.h"
 #include "PrefsManager.h"
+#include "RageUtil.h"
+#include "ScreenManager.h"
+#include "arch/Lights/LightsDriver.h"
 
 REGISTER_LIGHTS_DRIVER_CLASS(SystemMessage);
 
@@ -24,7 +30,7 @@ void LightsDriver_SystemMessage::Set( const LightsState *ls )
 	if( !PREFSMAN->m_bDebugLights )
 		return;
 
-	RString s;
+	std::string s;
 
 	s += LightsModeToString(LIGHTSMAN->GetLightsMode()) + "\n";
 

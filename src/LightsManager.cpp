@@ -1,35 +1,44 @@
-#include "global.h"
 #include "LightsManager.h"
-#include "GameState.h"
-#include "RageTimer.h"
-#include "arch/Lights/LightsDriver.h"
-#include "RageUtil.h"
-#include "RageUtil/ConvertValue.h"
-#include "GameInput.h"	// for GameController
-#include "InputMapper.h"
-#include "Game.h"
-#include "PrefsManager.h"
-#include "Actor.h"
-#include "Preference.h"
-#include "GameManager.h"
-#include "PlayerState.h"
-#include "GameState.h"
-#include "CommonMetrics.h"
-#include "Style.h"
 
+#include <algorithm>
 #include <cmath>
 #include <cstddef>
+#include <set>
+#include <string>
+#include <utility>
 #include <vector>
 
-const RString DEFAULT_LIGHTS_DRIVER = "SystemMessage,Export";
-static Preference<RString> g_sLightsDriver(
+#include "Actor.h"
+#include "CommonMetrics.h"
+#include "EnumHelper.h"
+#include "Game.h"
+#include "GameInput.h"  // for GameController
+#include "GameManager.h"
+#include "GameState.h"
+#include "InputMapper.h"
+#include "PlayerNumber.h"
+#include "PlayerOptions.h"
+#include "PlayerState.h"
+#include "Preference.h"
+#include "PrefsManager.h"
+#include "RageThreads.h"
+#include "RageTimer.h"
+#include "RageUtil.h"
+#include "RageUtil/ConvertValue.h"
+#include "Style.h"
+#include "ThemeMetric.h"
+#include "arch/Lights/LightsDriver.h"
+#include "global.h"
+
+const std::string DEFAULT_LIGHTS_DRIVER = "SystemMessage,Export";
+static Preference<std::string> g_sLightsDriver(
     "LightsDriver", "");  // "" == DEFAULT_LIGHTS_DRIVER
 Preference<float> g_fLightsFalloffSeconds("LightsFalloffSeconds", 0.1f);
 Preference<float> g_fLightsAheadSeconds("LightsAheadSeconds", 0.05f);
 static Preference<bool> g_bBlinkGameplayButtonLightsOnNote(
     "BlinkGameplayButtonLightsOnNote", false);
 
-static ThemeMetric<RString> GAME_BUTTONS_TO_SHOW(
+static ThemeMetric<std::string> GAME_BUTTONS_TO_SHOW(
     "LightsManager", "GameButtonsToShow");
 
 static const char* CabinetLightNames[] = {
@@ -52,10 +61,10 @@ LuaXType(LightsMode);
 static void GetUsedGameInputs(std::vector<GameInput>& vGameInputsOut) {
   vGameInputsOut.clear();
 
-  std::vector<RString> asGameButtons;
+  std::vector<std::string> asGameButtons;
   split(GAME_BUTTONS_TO_SHOW.GetValue(), ",", asGameButtons);
   FOREACH_ENUM(GameController, gc) {
-    for (const RString& button : asGameButtons) {
+    for (const std::string& button : asGameButtons) {
       GameButton gb = StringToGameButton(INPUTMAPPER->GetInputScheme(), button);
       if (gb != GameButton_Invalid) {
         GameInput gi = GameInput(gc, gb);
@@ -104,7 +113,7 @@ LightsManager::LightsManager() {
   m_CoinCounterTimer.SetZero();
 
   m_LightsMode = LIGHTSMODE_JOINING;
-  RString sDriver = g_sLightsDriver.Get();
+  std::string sDriver = g_sLightsDriver.Get();
   if (sDriver.empty()) {
     sDriver = DEFAULT_LIGHTS_DRIVER;
   }

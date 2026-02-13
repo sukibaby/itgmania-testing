@@ -1,20 +1,19 @@
 #ifndef GRADE_DISPLAY_H
 #define GRADE_DISPLAY_H
 
-#include "ActorFrame.h"
-#include "Grade.h"
-#include "PlayerNumber.h"
-#include "AutoActor.h"
-
+#include <string>
 #include <vector>
 
+#include "ActorFrame.h"
+#include "AutoActor.h"
+#include "Grade.h"
 
 struct lua_State;
 /** @brief Grade shown on ScreenEvaluation. */
 class GradeDisplay : public ActorFrame
 {
 public:
-	virtual void Load( RString sMetricsGroup );
+	virtual void Load( std::string sMetricsGroup );
 	void SetGrade( Grade g );
 
 	virtual GradeDisplay *Copy() const;

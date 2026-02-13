@@ -1,14 +1,17 @@
-#include "global.h"
 #include "RageException.h"
-#include "RageUtil.h"
-#include "RageLog.h"
-#include "RageThreads.h"
 
 #include <cstdarg>
 #include <cstdint>
+#include <cstdio>
+#include <cstdlib>
+#include <string>
+
+#include "RageLog.h"
+#include "RageThreads.h"
+#include "RageUtil.h"
+#include "global.h"
 
 #if defined(_WIN32) && defined(DEBUG)
-#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #elif defined(MACOSX)
 #include "archutils/Darwin/Crash.h"
@@ -17,8 +20,8 @@ using CrashHandler::DebugBreak;
 #endif
 
 static uint64_t g_HandlerThreadID = RageThread::GetInvalidThreadID();
-static void (*g_CleanupHandler)( const RString &sError ) = nullptr;
-void RageException::SetCleanupHandler( void (*pHandler)(const RString &sError) )
+static void (*g_CleanupHandler)( const std::string &sError ) = nullptr;
+void RageException::SetCleanupHandler( void (*pHandler)(const std::string &sError) )
 {
 	g_HandlerThreadID = RageThread::GetCurrentThreadID();
 	g_CleanupHandler = pHandler;
@@ -30,10 +33,10 @@ void RageException::Throw( const char *sFmt, ... )
 {
 	va_list	va;
 	va_start( va, sFmt );
-	RString error = vssprintf( sFmt, va );
+	std::string error = vssprintf( sFmt, va );
 	va_end( va );
 
-	RString msg = ssprintf(
+	std::string msg = ssprintf(
 		"\n"
 		"//////////////////////////////////////////////////////\n"
 		"Exception: %s\n"

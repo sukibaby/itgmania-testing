@@ -2,6 +2,8 @@
 
 #include <alsa/asoundlib.h>
 
+#include <string>
+
 /* typedef int (*foo_f)(char c) */
 #define FUNC(ret, name, proto) typedef ret (*name##_f) proto
 #include "ALSA9Functions.h"
@@ -18,7 +20,7 @@
 #define dsnd_ctl_card_info_alloca(ptr) { *ptr = (snd_ctl_card_info_t *) alloca(dsnd_ctl_card_info_sizeof()); memset(*ptr, 0, dsnd_ctl_card_info_sizeof()); }
 #define dsnd_pcm_status_alloca(ptr) do { ptr = (snd_pcm_status_t *) alloca(dsnd_pcm_status_sizeof()); memset(*ptr, 0, dsnd_pcm_status_sizeof()); } while (0)
 
-RString LoadALSA();
+std::string LoadALSA();
 void UnloadALSA();
 
 #endif

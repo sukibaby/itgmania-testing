@@ -1,13 +1,16 @@
-#include "global.h"
 #include "InputHandler_Linux_Event.h"
-#include "RageLog.h"
-#include "RageUtil.h"
-#include "LinuxInputManager.h"
-#include "GamePreferences.h" //needed for Axis Fix
 
+#include <algorithm>
 #include <cerrno>
 #include <cstdint>
+#include <string>
 #include <vector>
+
+#include "GamePreferences.h"  //needed for Axis Fix
+#include "LinuxInputManager.h"
+#include "RageLog.h"
+#include "RageUtil.h"
+#include "global.h"
 
 #if defined(HAVE_UNISTD_H)
 #include <unistd.h>
@@ -24,7 +27,7 @@
 
 REGISTER_INPUT_HANDLER_CLASS2( LinuxEvent, Linux_Event );
 
-static RString BustypeToString( int iBus )
+static std::string BustypeToString( int iBus )
 {
 	switch( iBus )
 	{
@@ -51,7 +54,7 @@ struct EventDevice
 {
 	EventDevice();
 	~EventDevice();
-	bool Open( RString sFile, InputDevice dev );
+	bool Open( std::string sFile, InputDevice dev );
 	bool IsOpen() const { return m_iFD != -1; }
 	void Close()
 	{
@@ -61,8 +64,8 @@ struct EventDevice
 	}
 
 	int m_iFD;
-	RString m_sPath;
-	RString m_sName;
+	std::string m_sPath;
+	std::string m_sName;
 	InputDevice m_Dev;
 
 	int aiAbsMin[ABS_MAX];
@@ -83,7 +86,7 @@ EventDevice::EventDevice()
 	m_iFD = -1;
 }
 
-bool EventDevice::Open( RString sFile, InputDevice dev )
+bool EventDevice::Open( std::string sFile, InputDevice dev )
 {
 	m_sPath = sFile;
 	m_Dev = dev;
@@ -176,7 +179,7 @@ bool EventDevice::Open( RString sFile, InputDevice dev )
 		LOG->Warn( "ioctl(EV_MAX): %s", strerror(errno) );
 
 	{
-		std::vector<RString> setEventTypes;
+		std::vector<std::string> setEventTypes;
 
 		if( BitIsSet(iEventTypes, EV_SYN) )		setEventTypes.push_back( "syn" );
 		if( BitIsSet(iEventTypes, EV_KEY) )		setEventTypes.push_back( "key" );
@@ -342,7 +345,7 @@ void InputHandler_Linux_Event::StopThread()
 	LOG->Trace( "Joystick thread shut down." );
 }
 
-bool InputHandler_Linux_Event::TryDevice(RString devfile)
+bool InputHandler_Linux_Event::TryDevice(std::string devfile)
 {
 	EventDevice* pDev = new EventDevice;
 	if( pDev->Open(devfile, m_NextDevice) )

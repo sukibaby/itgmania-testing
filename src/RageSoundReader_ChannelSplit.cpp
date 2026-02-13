@@ -32,17 +32,17 @@
  *   pStereo->AddSourceChannelToSound( 0, 1 );
  */
 
-#include "global.h"
 #include "RageSoundReader_ChannelSplit.h"
-#include "RageLog.h"
-#include "RageUtil.h"
-#include "RageSoundMixBuffer.h"
-#include "RageSoundUtil.h"
 
+#include <algorithm>
 #include <climits>
+#include <cstddef>
 #include <set>
+#include <string>
 #include <vector>
 
+#include "RageSoundMixBuffer.h"
+#include "RageSoundReader.h"
 
 class RageSoundReader_Split;
 
@@ -89,7 +89,7 @@ int RageSoundReader_Split::GetSampleRate() const { return m_pImpl->m_pSource->Ge
 unsigned RageSoundReader_Split::GetNumChannels() const { return m_iNumOutputChannels; }
 int RageSoundReader_Split::GetNextSourceFrame() const { return m_iPositionFrame; }
 float RageSoundReader_Split::GetStreamToSourceRatio() const { return 1.0f; }
-RString RageSoundReader_Split::GetError() const { return m_pImpl->m_pSource->GetError(); }
+std::string RageSoundReader_Split::GetError() const { return m_pImpl->m_pSource->GetError(); }
 
 RageSoundReader_Split::RageSoundReader_Split( RageSoundSplitterImpl *pImpl )
 {
@@ -130,7 +130,7 @@ int RageSoundReader_Split::SetPosition( int iFrame )
 	return 1;
 }
 
-bool RageSoundReader_Split::SetProperty( const RString &sProperty, float fValue )
+bool RageSoundReader_Split::SetProperty( const std::string &sProperty, float fValue )
 {
 	return m_pImpl->m_pSource->SetProperty( sProperty, fValue );
 }

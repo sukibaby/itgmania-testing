@@ -1,14 +1,18 @@
-#include "global.h"
 #include "ScrollBar.h"
-#include "ThemeManager.h"
-#include "RageUtil.h"
 
 #include <cmath>
+#include <string>
 
+#include "Actor.h"
+#include "RageThreads.h"
+#include "RageTypes.h"
+#include "RageUtil.h"
+#include "ThemeManager.h"
+#include "global.h"
 
 ScrollBar::ScrollBar()
 {
-	RString sMetricsGroup = "ScrollBar";
+	std::string sMetricsGroup = "ScrollBar";
 
 	m_sprMiddle.Load( THEME->GetPathG(sMetricsGroup,"middle") );
 	this->AddChild( m_sprMiddle );

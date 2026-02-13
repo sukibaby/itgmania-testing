@@ -1,12 +1,15 @@
-#include "global.h"
 #include "HelpDisplay.h"
-#include "RageUtil.h"
-#include "RageLog.h"
-#include "ThemeManager.h"
-#include "ActorUtil.h"
 
+#include <algorithm>
+#include <string>
 #include <vector>
 
+#include "ActorUtil.h"
+#include "BitmapText.h"
+#include "LuaManager.h"
+#include "RageUtil.h"
+#include "ThemeManager.h"
+#include "global.h"
 
 REGISTER_ACTOR_CLASS( HelpDisplay );
 
@@ -17,14 +20,14 @@ HelpDisplay::HelpDisplay()
 	m_fSecsBetweenSwitches = 1;
 }
 
-void HelpDisplay::Load( const RString &sType )
+void HelpDisplay::Load( const std::string &sType )
 {
 	RunCommands( THEME->GetMetricA(sType,"TipOnCommand") );
 	m_fSecsUntilSwitch = THEME->GetMetricF(sType,"TipShowTime");
 	m_fSecsBetweenSwitches = THEME->GetMetricF(sType,"TipSwitchTime");
 }
 
-void HelpDisplay::SetTips( const std::vector<RString> &arrayTips, const std::vector<RString> &arrayTipsAlt )
+void HelpDisplay::SetTips( const std::vector<std::string> &arrayTips, const std::vector<std::string> &arrayTipsAlt )
 {
 	ASSERT( arrayTips.size() == arrayTipsAlt.size() );
 
@@ -74,14 +77,14 @@ public:
 	{
 		luaL_checktype( L, 1, LUA_TTABLE );
 		lua_pushvalue( L, 1 );
-		std::vector<RString> arrayTips;
+		std::vector<std::string> arrayTips;
 		LuaHelpers::ReadArrayFromTable( arrayTips, L );
 		lua_pop( L, 1 );
 		for( unsigned i = 0; i < arrayTips.size(); ++i )
 			FontCharAliases::ReplaceMarkers( arrayTips[i] );
 		if( lua_gettop(L) > 1 && !lua_isnil( L, 2 ) )
 		{
-			std::vector<RString> arrayTipsAlt;
+			std::vector<std::string> arrayTipsAlt;
 			luaL_checktype( L, 2, LUA_TTABLE );
 			lua_pushvalue( L, 2 );
 			LuaHelpers::ReadArrayFromTable( arrayTipsAlt, L );
@@ -98,7 +101,7 @@ public:
 	}
 	static int SetTipsColonSeparated( T* p, lua_State *L )
 	{
-		std::vector<RString> vs;
+		std::vector<std::string> vs;
 		split( SArg(1), "::", vs );
 		p->SetTips( vs );
 		COMMON_RETURN_SELF;
@@ -106,7 +109,7 @@ public:
 
 	static int gettips( T* p, lua_State *L )
 	{
-		std::vector<RString> arrayTips, arrayTipsAlt;
+		std::vector<std::string> arrayTips, arrayTipsAlt;
 		p->GetTips( arrayTips, arrayTipsAlt );
 
 		LuaHelpers::CreateTableFromArray( arrayTips, L );

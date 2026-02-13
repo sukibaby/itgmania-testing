@@ -1,6 +1,9 @@
 #include "global.h"
 
 #include <cstdlib>
+#include <string>
+
+#include "config.hpp"
 
 #if defined(HAVE_UNISTD_H)
     #include <unistd.h>
@@ -8,7 +11,6 @@
 
 #if defined(_WIN32)
     #if defined(CRASH_HANDLER)
-        #define WIN32_LEAN_AND_MEAN
         #include "windows.h"
         #include "archutils/Win32/Crash.h"
     #endif
@@ -25,7 +27,7 @@
     #include "archutils/Unix/CrashHandler.h"
 #endif
 
-void sm_crash(const RString& s)
+void sm_crash(const std::string& s)
 {
     sm_crash(s.c_str());
 }

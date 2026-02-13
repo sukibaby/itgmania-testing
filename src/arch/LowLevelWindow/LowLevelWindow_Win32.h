@@ -1,6 +1,8 @@
 #ifndef LOW_LEVEL_WINDOW_WIN32_H
 #define LOW_LEVEL_WINDOW_WIN32_H
 
+#include <string>
+
 #include "LowLevelWindow.h"
 
 class LowLevelWindow_Win32: public LowLevelWindow
@@ -8,10 +10,10 @@ class LowLevelWindow_Win32: public LowLevelWindow
 public:
 	LowLevelWindow_Win32();
 	~LowLevelWindow_Win32();
-	void *GetProcAddress( RString s );
-	RString TryVideoMode( const VideoModeParams &p, bool &bNewDeviceOut );
+	void *GetProcAddress( std::string s );
+	std::string TryVideoMode( const VideoModeParams &p, bool &bNewDeviceOut );
 	void GetDisplaySpecs( DisplaySpecs &out ) const;
-	bool IsSoftwareRenderer( RString &sError );
+	bool IsSoftwareRenderer( std::string &sError );
 	void SwapBuffers();
 	void Update();
 	bool SupportsThreadedRendering();

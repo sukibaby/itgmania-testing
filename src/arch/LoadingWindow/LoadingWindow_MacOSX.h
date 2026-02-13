@@ -1,15 +1,16 @@
 #ifndef LOADING_WINDOW_MACOSX_H
 #define LOADING_WINDOW_MACOSX_H
 
+#include <string>
+
 #include "LoadingWindow.h"
-#include "global.h"
 /** @brief Loading window for macOS. */
 class LoadingWindow_MacOSX : public LoadingWindow
 {
 public:
 	LoadingWindow_MacOSX();
 	~LoadingWindow_MacOSX();
-	void SetText( RString str );
+	void SetText( std::string str );
 	void SetSplash( const RageSurface *pSplash );
 	void SetProgress( const int progress );
 	void SetTotalWork( const int totalWork );

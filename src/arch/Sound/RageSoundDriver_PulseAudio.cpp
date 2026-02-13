@@ -1,21 +1,24 @@
-#include "global.h"
-#include "ProductInfo.h"
 #include "RageSoundDriver_PulseAudio.h"
-#include "RageLog.h"
-#include "RageSound.h"
-#include "RageSoundManager.h"
-#include "RageUtil.h"
-#include "RageTimer.h"
-#include "PrefsManager.h"
-#include "ver.h"
+
 #include <pulse/error.h>
-#include <sys/time.h>
 #include <sys/resource.h>
+#include <sys/time.h>
 
 #include <cstddef>
 #include <cstdint>
+#include <string>
 #include <vector>
 
+#include "PrefsManager.h"
+#include "ProductInfo.h"
+#include "RageException.h"
+#include "RageLog.h"
+#include "RageSound.h"
+#include "RageSoundManager.h"
+#include "RageTimer.h"
+#include "RageUtil.h"
+#include "global.h"
+#include "ver.h"
 
 /* Register the RageSoundDriver_Pulseaudio class as sound driver "Pulse" */
 REGISTER_SOUND_DRIVER_CLASS2( Pulse, PulseAudio );
@@ -48,7 +51,7 @@ RageSoundDriver_PulseAudio::~RageSoundDriver_PulseAudio()
 }
 
 /* Initialization */
-RString RageSoundDriver_PulseAudio::Init()
+std::string RageSoundDriver_PulseAudio::Init()
 {
 	int error = 0;
 

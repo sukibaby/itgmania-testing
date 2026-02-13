@@ -1,19 +1,24 @@
-#include "global.h"
 #include "Inventory.h"
-#include "ThemeManager.h"
-#include "RageUtil.h"
-#include "GameState.h"
-#include "RageTimer.h"
-#include "PrefsManager.h"
-#include "Song.h"
-#include "ScreenManager.h"
-#include "StatsManager.h"
-#include "ThemeMetric.h"
-#include "PlayerState.h"
-#include "RageUtil/RandomNumbers.h"
 
+#include <string>
 #include <vector>
 
+#include "Attack.h"
+#include "GameConstantsAndTypes.h"
+#include "GameState.h"
+#include "PlayerNumber.h"
+#include "PlayerState.h"
+#include "PrefsManager.h"
+#include "RageSound.h"
+#include "RageTimer.h"
+#include "RageUtil.h"
+#include "RageUtil/RandomNumbers.h"
+#include "ScreenManager.h"
+#include "Song.h"
+#include "StatsManager.h"
+#include "ThemeManager.h"
+#include "ThemeMetric.h"
+#include "global.h"
 
 void ReloadItems();
 
@@ -30,7 +35,7 @@ struct Item
 {
 	AttackLevel level;
 	unsigned int iCombo;
-	RString sModifier;
+	std::string sModifier;
 };
 static std::vector<Item>	g_Items;
 
@@ -214,7 +219,7 @@ void Inventory::UseItem( int iSlot )
 	float fPercentHealthToDrain = (a.level+1) / 10.f;
 	ASSERT( fPercentHealthToDrain > 0 );
 	GAMESTATE->m_fOpponentHealthPercent -= fPercentHealthToDrain;
-	CLAMP( GAMESTATE->m_fOpponentHealthPercent, 0.f, 1.f );
+	rage_clamp( GAMESTATE->m_fOpponentHealthPercent, 0.f, 1.f );
 
 	// play announcer sound
 	SCREENMAN->SendMessageToTopScreen( ssprintf("SM_BattleDamageLevel%d",a.level+1) );

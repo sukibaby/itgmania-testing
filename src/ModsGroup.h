@@ -1,10 +1,13 @@
 #ifndef MODS_GROUP_H
 #define MODS_GROUP_H
 
+#include <cstddef>
+#include <string>
+
 #include "EnumHelper.h"
 #include "RageTimer.h"
-
-#include <cstddef>
+#include "RageUtil.h"
+#include "global.h"
 
 enum ModsLevel
 {
@@ -83,7 +86,7 @@ public:
 			(m_[level].*fun)();
 	}
 
-	void FromString( ModsLevel level, const RString &str )
+	void FromString( ModsLevel level, const std::string &str )
 	{
 		if( level != ModsLevel_Song )
 			m_[ModsLevel_Current].FromString( str );

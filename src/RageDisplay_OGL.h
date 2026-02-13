@@ -7,11 +7,13 @@
 #define GL_SILENCE_DEPRECATION 1
 #endif
 
+#include <cstdint>
+#include <string>
+
 #include "RageDisplay.h"
 #include "RageTextureRenderTarget.h"
-#include "Sprite.h"
-
-#include <cstdint>
+#include "RageTypes.h"
+#include "global.h"
 
 /* Making an OpenGL call doesn't also flush the error state; if we happen
  * to have an error from a previous call, then the assert below will fail.
@@ -36,9 +38,9 @@ class RageDisplay_Legacy: public RageDisplay
 public:
 	RageDisplay_Legacy();
 	virtual ~RageDisplay_Legacy();
-	virtual RString Init( const VideoModeParams &p, bool bAllowUnacceleratedRenderer );
+	virtual std::string Init( const VideoModeParams &p, bool bAllowUnacceleratedRenderer );
 
-	virtual RString GetApiDescription() const { return "OpenGL"; }
+	virtual std::string GetApiDescription() const { return "OpenGL"; }
 	virtual void GetDisplaySpecs(DisplaySpecs &out) const;
 	void ResolutionChanged();
 	const RagePixelFormatDesc *GetPixelFormatDesc(RagePixelFormat pf) const;
@@ -117,7 +119,7 @@ public:
 	virtual void SetPolygonMode( PolygonMode pm );
 	virtual void SetLineWidth( float fWidth );
 
-	RString GetTextureDiagnostics( uintptr_t id ) const;
+	std::string GetTextureDiagnostics( uintptr_t id ) const;
 
 protected:
 	void DrawQuadsInternal( const RageSpriteVertex v[], int iNumVerts );
@@ -129,7 +131,7 @@ protected:
 	void DrawLineStripInternal( const RageSpriteVertex v[], int iNumVerts, float LineWidth );
 	void DrawSymmetricQuadStripInternal( const RageSpriteVertex v[], int iNumVerts );
 
-	RString TryVideoMode( const VideoModeParams &p, bool &bNewDeviceOut );
+	std::string TryVideoMode( const VideoModeParams &p, bool &bNewDeviceOut );
 	RageSurface* CreateScreenshot();
 	RagePixelFormat GetImgPixelFormat( RageSurface* &img, bool &FreeImg, int width, int height, bool bPalettedTexture );
 	bool SupportsSurfaceFormat( RagePixelFormat pixfmt );

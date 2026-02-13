@@ -1,3 +1,8 @@
+#include "EnumHelper.h"
+#include "GameConstantsAndTypes.h"
+#include "GameInput.h"
+#include "LuaManager.h"
+#include "PlayerNumber.h"
 #include "global.h"
 
 /*
@@ -13,16 +18,16 @@
  * because two players place from the same set of 4 tracks.
  */
 
-#include "Style.h"
-#include "GameState.h"
-#include "RageLog.h"
-#include "RageUtil.h"
-#include "InputMapper.h"
-#include "NoteData.h"
-
+#include <algorithm>
 #include <cfloat>
+#include <string>
 #include <vector>
 
+#include "GameState.h"
+#include "InputMapper.h"
+#include "NoteData.h"
+#include "RageUtil.h"
+#include "Style.h"
 
 bool Style::GetUsesCenteredArrows() const
 {
@@ -127,7 +132,7 @@ float Style::GetWidth(PlayerNumber pn) const
 	return width + (width / static_cast<float>(m_iColsPerPlayer-1));
 }
 
-RString Style::ColToButtonName( int iCol ) const
+std::string Style::ColToButtonName( int iCol ) const
 {
 	const char *pzColumnName = m_ColumnInfo[PLAYER_1][iCol].pzName;
 	if( pzColumnName != nullptr )
@@ -145,7 +150,7 @@ RString Style::ColToButtonName( int iCol ) const
 class LunaStyle: public Luna<Style>
 {
 public:
-	static int GetName( T* p, lua_State *L )		{ LuaHelpers::Push( L, (RString) p->m_szName ); return 1; }
+	static int GetName( T* p, lua_State *L )		{ LuaHelpers::Push( L, (std::string) p->m_szName ); return 1; }
 	DEFINE_METHOD( GetStyleType,		m_StyleType )
 	DEFINE_METHOD( GetStepsType,		m_StepsType )
 	DEFINE_METHOD( ColumnsPerPlayer,	m_iColsPerPlayer )

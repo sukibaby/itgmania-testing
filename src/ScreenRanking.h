@@ -1,14 +1,22 @@
 #ifndef ScreenRanking_H
 #define ScreenRanking_H
 
-#include "ScreenAttract.h"
-#include "BitmapText.h"
-#include "Banner.h"
-#include "Difficulty.h"
-#include "CommonMetrics.h"
-
+#include <string>
+#include <utility>
 #include <vector>
 
+#include "AutoActor.h"
+#include "Banner.h"
+#include "BitmapText.h"
+#include "CommonMetrics.h"
+#include "Difficulty.h"
+#include "EnumHelper.h"
+#include "GameConstantsAndTypes.h"
+#include "LocalizedString.h"
+#include "RageTypes.h"
+#include "ScreenAttract.h"
+#include "ScreenMessage.h"
+#include "ThemeMetric.h"
 
 class Course;
 class Trail;
@@ -67,7 +75,7 @@ protected:
 
 
 	ThemeMetric<RankingType>	RANKING_TYPE;
-	ThemeMetric<RString>	COURSES_TO_SHOW;
+	ThemeMetric<std::string>	COURSES_TO_SHOW;
 	ThemeMetric<float>	SECONDS_PER_PAGE;
 
 	Banner m_Banner;	// for course

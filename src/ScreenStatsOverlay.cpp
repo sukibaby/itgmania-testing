@@ -1,10 +1,16 @@
-#include "global.h"
 #include "ScreenStatsOverlay.h"
+
+#include <string>
+
 #include "ActorUtil.h"
 #include "PrefsManager.h"
 #include "RageDisplay.h"
 #include "RageLog.h"
-#include "ScreenDimensions.h"
+#include "RageTimer.h"
+#include "RageTypes.h"
+#include "RageUtil.h"
+#include "Screen.h"
+#include "ThemeManager.h"
 
 REGISTER_SCREEN_CLASS( ScreenStatsOverlay );
 
@@ -83,7 +89,7 @@ void ScreenStatsOverlay::Update( float fDeltaTime )
 	}
 }
 
-void ScreenStatsOverlay::AddTimestampLine( const RString &txt, const RageColor &color )
+void ScreenStatsOverlay::AddTimestampLine( const std::string &txt, const RageColor &color )
 {
 	m_textSkips[m_LastSkip].SetText( txt );
 	m_textSkips[m_LastSkip].StopTweening();
@@ -125,7 +131,7 @@ void ScreenStatsOverlay::UpdateSkips()
 
 	if( skip )
 	{
-		RString sTime( MicrosecondsToMMSSMsMs(RageTimer::GetTimeSinceStartMicroseconds()) );
+		std::string sTime( MicrosecondsToMMSSMsMs(RageTimer::GetTimeSinceStartMicroseconds()) );
 
 		static const RageColor colors[] =
 		{

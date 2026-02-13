@@ -1,13 +1,16 @@
-#include "global.h"
 #include "ActorSound.h"
+
+#include <string>
+
+#include "Actor.h"
 #include "ActorUtil.h"
 #include "LuaManager.h"
+#include "RageSound.h"
 #include "XmlFile.h"
-#include "RageUtil.h"
 
 REGISTER_ACTOR_CLASS_WITH_NAME( ActorSound, Sound );
 
-void ActorSound::Load( const RString &sPath )
+void ActorSound::Load( const std::string &sPath )
 {
 	m_Sound.Load( sPath, true );
 }
@@ -39,7 +42,7 @@ void ActorSound::LoadFromNode( const XNode* pNode )
 
 	Actor::LoadFromNode( pNode );
 
-	RString sFile;
+	std::string sFile;
 	if( ActorUtil::GetAttrPath(pNode, "File", sFile) )
 		m_Sound.Load( sFile, bPrecache, &params );
 }

@@ -1,10 +1,16 @@
-#include "global.h"
 #include "MemoryCardDisplay.h"
-#include "ThemeManager.h"
-#include "MemoryCardManager.h"
-#include "RageUtil.h"
-#include "XmlFile.h"
+
+#include <string>
+
+#include "ActorFrame.h"
 #include "ActorUtil.h"
+#include "GameConstantsAndTypes.h"
+#include "LuaManager.h"
+#include "MemoryCardManager.h"
+#include "PlayerNumber.h"
+#include "RageUtil.h"
+#include "ThemeManager.h"
+#include "XmlFile.h"
 
 REGISTER_ACTOR_CLASS( MemoryCardDisplay );
 
@@ -21,7 +27,7 @@ void MemoryCardDisplay::Load( PlayerNumber pn )
 	for( int i=0; i<NUM_MemoryCardState; i++ )
 	{
 		MemoryCardState mcs = (MemoryCardState)i;
-		RString sState = MemoryCardStateToString(mcs);
+		std::string sState = MemoryCardStateToString(mcs);
 		m_spr[i].Load( THEME->GetPathG("MemoryCardDisplay",ssprintf("%s p%d",sState.c_str(),pn+1)) );
 		m_spr[i].SetVisible( false );
 		this->AddChild( &m_spr[i] );

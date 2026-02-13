@@ -69,22 +69,6 @@ if(APPLE)
                  ${SMDATA_ALL_FILES_SRC}
                  ${SMDATA_ALL_FILES_HPP})
 else()
-  if(MSVC)
-    foreach(sm_src_file ${SMDATA_ALL_FILES_SRC})
-      get_filename_component(sm_src_raw "${sm_src_file}" NAME_WE)
-      if(${sm_src_raw} MATCHES "global")
-        set_source_files_properties("${sm_src_raw}.cpp"
-                                    PROPERTIES
-                                    COMPILE_FLAGS
-                                    "/Ycglobal.h")
-      elseif(NOT (${sm_src_raw} MATCHES "verstub"))
-        set_source_files_properties("${sm_src_raw}.cpp"
-                                    PROPERTIES
-                                    COMPILE_FLAGS
-                                    "/Yuglobal.h")
-      endif()
-    endforeach()
-  endif()
   add_executable("${SM_EXE_NAME}" ${SMDATA_ALL_FILES_SRC}
                  ${SMDATA_ALL_FILES_HPP})
 endif()
@@ -174,6 +158,9 @@ if(WIN32)
   target_compile_definitions("${SM_EXE_NAME}" PRIVATE _WINDOWS) # TODO: Remove this potential duplicate.
   target_compile_definitions("${SM_EXE_NAME}" PRIVATE _CRT_SECURE_NO_WARNINGS)
   target_compile_definitions("${SM_EXE_NAME}" PRIVATE _WINSOCK_DEPRECATED_NO_WARNINGS)
+  target_compile_definitions("${SM_EXE_NAME}" PRIVATE NOMINMAX)
+  target_compile_definitions("${SM_EXE_NAME}" PRIVATE WIN32_LEAN_AND_MEAN)
+  target_compile_definitions("${SM_EXE_NAME}" PRIVATE VC_EXTRALEAN)
 
   set_target_properties("${SM_EXE_NAME}"
                         PROPERTIES RUNTIME_OUTPUT_DIRECTORY

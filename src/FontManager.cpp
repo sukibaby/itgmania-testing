@@ -1,14 +1,19 @@
-#include "global.h"
 #include "FontManager.h"
-#include "Font.h"
-#include "RageUtil.h"
-#include "RageLog.h"
+
 #include <map>
+#include <string>
+#include <utility>
+
+#include "Font.h"
+#include "RageLog.h"
+#include "RageThreads.h"
+#include "RageUtil.h"
+#include "global.h"
 
 FontManager*	FONT	= nullptr;	// global and accessible from anywhere in our program
 
 // map from file name to a texture holder
-typedef std::pair<RString,RString> FontName;
+typedef std::pair<std::string,std::string> FontName;
 static std::map<FontName, Font*> g_mapPathToFont;
 
 FontManager::FontManager()
@@ -29,7 +34,7 @@ FontManager::~FontManager()
 	}
 }
 
-Font* FontManager::LoadFont( const RString &sFontOrTextureFilePath, RString sChars )
+Font* FontManager::LoadFont( const std::string &sFontOrTextureFilePath, std::string sChars )
 {
 	Font *pFont;
 	/* Convert the path to lowercase so that we don't load duplicates. Really,

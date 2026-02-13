@@ -1,12 +1,13 @@
 #ifndef AttackDisplay_H
 #define AttackDisplay_H
 
-#include "ActorFrame.h"
-#include "Sprite.h"
-#include "GameConstantsAndTypes.h"	// for TapNoteScore
-#include "RageTexturePreloader.h"
+#include <string>
 
-RString GetAttackPieceName( const RString &sAttack );
+#include "ActorFrame.h"
+#include "RageTexturePreloader.h"
+#include "Sprite.h"
+
+std::string GetAttackPieceName( const std::string &sAttack );
 
 class PlayerState;
 /** @brief A graphical display for attacks. */
@@ -16,7 +17,7 @@ public:
 	AttackDisplay();
 
 	void Init( const PlayerState* pPlayerState );
-	void SetAttack( const RString &mod );
+	void SetAttack( const std::string &mod );
 
 	virtual void Update( float fDelta );
 

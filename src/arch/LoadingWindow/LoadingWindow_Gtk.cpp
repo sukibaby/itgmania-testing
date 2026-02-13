@@ -1,13 +1,15 @@
-#include "global.h"
-#include "RageUtil.h"
+#include "LoadingWindow_Gtk.h"
+
+#include <gtk/gtk.h>
+
+#include <cstdint>
+#include <string>
+
 #include "RageSurface.h"
 #include "RageSurfaceUtils.h"
 #include "RageSurface_Load.h"
-#include "LoadingWindow_Gtk.h"
-
-#include <cstdint>
-
-#include <gtk/gtk.h>
+#include "RageUtil.h"
+#include "global.h"
 
 static GtkWidget *label;
 static GtkWidget *window;
@@ -18,7 +20,7 @@ LoadingWindow_Gtk::LoadingWindow_Gtk()
 {
 }
 
-RString LoadingWindow_Gtk::Init()
+std::string LoadingWindow_Gtk::Init()
 {
 	// Need to use external library to load this image. Native loader seems broken :/
 	const gchar *splash_image_path = "Data/splash.png";
@@ -68,7 +70,7 @@ LoadingWindow_Gtk::~LoadingWindow_Gtk()
 		gtk_main_iteration_do(FALSE);
 }
 
-void LoadingWindow_Gtk::SetText( RString s )
+void LoadingWindow_Gtk::SetText( std::string s )
 {
 	gtk_label_set_text(GTK_LABEL(label), s.c_str());
 	gtk_widget_show(label);

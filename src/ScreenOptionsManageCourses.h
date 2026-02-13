@@ -1,12 +1,16 @@
 #ifndef ScreenOptionsManageCourses_H
 #define ScreenOptionsManageCourses_H
 
-#include "ScreenOptions.h"
-#include "GameConstantsAndTypes.h"
-#include "RageSound.h"
-
+#include <string>
 #include <vector>
 
+#include "GameConstantsAndTypes.h"
+#include "InputEventPlus.h"
+#include "PlayerNumber.h"
+#include "RageSound.h"
+#include "ScreenMessage.h"
+#include "ScreenOptions.h"
+#include "ThemeMetric.h"
 
 class Course;
 
@@ -31,7 +35,7 @@ private:
 	RageSound m_soundDifficultyChanged;
 	std::vector<Course*> m_vpCourses;
 	ThemeMetric<EditMode> EDIT_MODE;
-	ThemeMetric<RString> CREATE_NEW_SCREEN;
+	ThemeMetric<std::string> CREATE_NEW_SCREEN;
 };
 
 #endif

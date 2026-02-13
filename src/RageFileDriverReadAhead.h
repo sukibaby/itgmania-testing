@@ -3,9 +3,10 @@
 #ifndef RAGE_FILE_DRIVER_READ_AHEAD_H
 #define RAGE_FILE_DRIVER_READ_AHEAD_H
 
-#include "RageFileBasic.h"
-
 #include <cstddef>
+#include <string>
+
+#include "RageFileBasic.h"
 
 class RageFileDriverReadAhead: public RageFileObj
 {
@@ -21,7 +22,7 @@ public:
 
 	void DeleteFileWhenFinished() { m_bFileOwned = true; }
 
-	virtual RString GetError() const { return m_pFile->GetError(); }
+	virtual std::string GetError() const { return m_pFile->GetError(); }
 	virtual void ClearError()  { return m_pFile->ClearError(); }
 
 	int ReadInternal( void *pBuffer, size_t iBytes );
@@ -37,7 +38,7 @@ private:
 	RageFileBasic *m_pFile;
 	int m_iFilePos;
 	bool m_bFileOwned;
-	RString m_sBuffer;
+	std::string m_sBuffer;
 	int m_iPostBufferReadAhead;
 	bool m_bReadAheadNeeded;
 };

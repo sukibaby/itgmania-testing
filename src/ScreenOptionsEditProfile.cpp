@@ -1,18 +1,20 @@
-#include "global.h"
-
 #include "ScreenOptionsEditProfile.h"
-#include "ScreenManager.h"
-#include "ProfileManager.h"
-#include "ScreenPrompt.h"
-#include "RageUtil.h"
-#include "GameState.h"
-#include "Profile.h"
-#include "Character.h"
-#include "CharacterManager.h"
-#include "OptionRowHandler.h"
 
+#include <string>
 #include <vector>
 
+#include "Character.h"
+#include "CharacterManager.h"
+#include "GameState.h"
+#include "OptionRowHandler.h"
+#include "PlayerNumber.h"
+#include "Profile.h"
+#include "ProfileManager.h"
+#include "Screen.h"
+#include "ScreenManager.h"
+#include "ScreenMessage.h"
+#include "ScreenOptions.h"
+#include "global.h"
 
 enum EditProfileRow
 {
@@ -51,7 +53,7 @@ void ScreenOptionsEditProfile::BeginScreen()
 		for (Character const *c : vpCharacters)
 			def.m_vsChoices.push_back( c->GetDisplayName() );
 		if( def.m_vsChoices.empty() )
-			def.m_vsChoices.push_back( RString() );
+			def.m_vsChoices.push_back( std::string() );
 	}
 
 	InitMenu( vHands );
@@ -84,7 +86,7 @@ void ScreenOptionsEditProfile::ExportOptions( int iRow, const std::vector<Player
 	ASSERT( pProfile != nullptr );
 	OptionRow &row = *m_pRows[iRow];
 	int iIndex = row.GetOneSharedSelection( true );
-	RString sValue;
+	std::string sValue;
 	if( iIndex >= 0 )
 		sValue = row.GetRowDef().m_vsChoices[ iIndex ];
 

@@ -3,15 +3,16 @@
 #ifndef METER_DISPLAY_H
 #define METER_DISPLAY_H
 
+#include <string>
+
 #include "ActorFrame.h"
 #include "AutoActor.h"
-
 
 class MeterDisplay : public ActorFrame
 {
 public:
 	MeterDisplay();
-	void Load( RString sStreamPath, float fStreamWidth, RString sTipPath );
+	void Load( std::string sStreamPath, float fStreamWidth, std::string sTipPath );
 	virtual void LoadFromNode( const XNode* pNode );
 	virtual MeterDisplay *Copy() const;
 

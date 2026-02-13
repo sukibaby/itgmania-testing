@@ -1,19 +1,19 @@
-#include "global.h"
 #include "ScreenMiniMenu.h"
-#include "ScreenManager.h"
-#include "GameConstantsAndTypes.h"
-#include "ThemeManager.h"
 
-#include "ScreenDimensions.h"
-#include "GameState.h"
-#include "FontCharAliases.h"
-#include "OptionRowHandler.h"
-#include "PrefsManager.h"
-
+#include <string>
 #include <vector>
 
+#include "GameState.h"
+#include "OptionRowHandler.h"
+#include "PlayerNumber.h"
+#include "PrefsManager.h"
+#include "Screen.h"
+#include "ScreenManager.h"
+#include "ScreenMessage.h"
+#include "ScreenOptions.h"
+#include "global.h"
 
-void PrepareToLoadScreen( const RString &sScreenName );
+void PrepareToLoadScreen( const std::string &sScreenName );
 void FinishedLoadingScreen();
 
 AutoScreenMessage( SM_GoToOK );
@@ -24,7 +24,7 @@ int	ScreenMiniMenu::s_iLastRowCode = -1;
 std::vector<int>	ScreenMiniMenu::s_viLastAnswers;
 
 // Hooks for profiling
-void PrepareToLoadScreen( const RString &sScreenName ) {}
+void PrepareToLoadScreen( const std::string &sScreenName ) {}
 void FinishedLoadingScreen() {}
 
 // Settings:

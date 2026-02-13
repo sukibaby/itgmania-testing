@@ -2,8 +2,10 @@
 #ifndef COMBO_GRAPH_H
 #define COMBO_GRAPH_H
 
+#include <string>
+
+#include "Actor.h"
 #include "ActorFrame.h"
-#include "PlayerNumber.h"
 #include "ThemeMetric.h"
 
 class StageStats;
@@ -14,7 +16,7 @@ class ComboGraph: public ActorFrame
 {
 public:
 	ComboGraph();
-	void Load( RString sMetricsGroup );
+	void Load( std::string sMetricsGroup );
 	void Set( const StageStats &s, const PlayerStageStats &pss );
 	virtual ComboGraph *Copy() const;
 	virtual bool AutoLoadChildren() const { return true; }

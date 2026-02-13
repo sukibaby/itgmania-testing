@@ -3,6 +3,8 @@
 #ifndef RAGE_SOUND_READER_VORBISFILE_H
 #define RAGE_SOUND_READER_VORBISFILE_H
 
+#include <string>
+
 #include "RageSoundReader_FileReader.h"
 
 typedef struct OggVorbis_File OggVorbis_File;
@@ -27,7 +29,7 @@ private:
 	OggVorbis_File *vf;
 	bool eof;
 	bool FillBuf();
-	RString filename;
+	std::string filename;
 	int read_offset;
 	unsigned channels;
 };

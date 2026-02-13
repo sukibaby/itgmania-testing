@@ -1,10 +1,10 @@
 #ifndef MemoryCardDriverThreaded_Folder_H
 #define MemoryCardDriverThreaded_Folder_H 1
 
-#include "MemoryCardDriver.h"
-
+#include <string>
 #include <vector>
 
+#include "MemoryCardDriver.h"
 
 class MemoryCardDriverThreaded_Folder : public MemoryCardDriver
 {
@@ -19,7 +19,7 @@ protected:
 	void GetUSBStorageDevices( std::vector<UsbStorageDevice>& vDevicesOut );
 	bool USBStorageDevicesChanged();
 	bool TestWrite( UsbStorageDevice* pDevice );
-	bool FolderExists(RString path);
+	bool FolderExists(std::string path);
 
 	int GetActivePlayerMask();
 	int m_LastDevices;

@@ -1,6 +1,8 @@
 #ifndef ACTOR_SOUND_H
 #define ACTOR_SOUND_H
 
+#include <string>
+
 #include "Actor.h"
 #include "RageSound.h"
 /** @brief RageSound Actor interface. */
@@ -13,7 +15,7 @@ public:
 	virtual ~ActorSound() { }
 	virtual ActorSound *Copy() const;
 
-	void Load( const RString &sPath );
+	void Load( const std::string &sPath );
 	void Play();
 	void Pause( bool bPause );
 	void Stop();

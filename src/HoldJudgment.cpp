@@ -1,11 +1,18 @@
-#include "global.h"
 #include "HoldJudgment.h"
-#include "RageUtil.h"
-#include "GameConstantsAndTypes.h"
-#include "ThemeManager.h"
-#include "ThemeMetric.h"
+
+#include <string>
+
+#include "ActorFrame.h"
 #include "ActorUtil.h"
+#include "EnumHelper.h"
+#include "GameConstantsAndTypes.h"
+#include "LuaManager.h"
+#include "MessageManager.h"
+#include "PlayerNumber.h"
+#include "RageTypes.h"
+#include "RageUtil.h"
 #include "XmlFile.h"
+#include "global.h"
 
 REGISTER_ACTOR_CLASS( HoldJudgment );
 
@@ -14,7 +21,7 @@ HoldJudgment::HoldJudgment()
 	m_mpToTrack = MultiPlayer_Invalid;
 }
 
-void HoldJudgment::Load( const RString &sPath )
+void HoldJudgment::Load( const std::string &sPath )
 {
 	m_sprJudgment.Load( sPath );
 	m_sprJudgment->StopAnimating();
@@ -26,7 +33,7 @@ void HoldJudgment::Load( const RString &sPath )
 
 void HoldJudgment::LoadFromNode( const XNode* pNode )
 {
-	RString sFile;
+	std::string sFile;
 	if(!ActorUtil::GetAttrPath(pNode, "File", sFile))
 	{
 		LuaHelpers::ReportScriptErrorFmt("%s: HoldJudgment: missing the attribute \"File\"", ActorUtil::GetWhere(pNode).c_str());

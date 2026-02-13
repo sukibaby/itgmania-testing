@@ -1,31 +1,45 @@
-#include "global.h"
 #include "GameCommand.h"
-#include "RageUtil.h"
-#include "RageLog.h"
-#include "GameManager.h"
-#include "GameState.h"
-#include "AnnouncerManager.h"
-#include "Bookkeeper.h"
-#include "PlayerOptions.h"
-#include "ProfileManager.h"
-#include "Profile.h"
-#include "StepMania.h"
-#include "ScreenManager.h"
-#include "PrefsManager.h"
-#include "Game.h"
-#include "Style.h"
-#include "GameSoundManager.h"
-#include "PlayerState.h"
-#include "SongManager.h"
-#include "Song.h"
-#include "UnlockManager.h"
-#include "LocalizedString.h"
-#include "arch/ArchHooks/ArchHooks.h"
-#include "ScreenPrompt.h"
 
+#include <algorithm>
 #include <cstddef>
+#include <cstdlib>
+#include <map>
+#include <string>
 #include <vector>
 
+#include "AnnouncerManager.h"
+#include "Bookkeeper.h"
+#include "Command.h"
+#include "Difficulty.h"
+#include "Game.h"
+#include "GameConstantsAndTypes.h"
+#include "GameManager.h"
+#include "GameSoundManager.h"
+#include "GameState.h"
+#include "LocalizedString.h"
+#include "LuaManager.h"
+#include "ModsGroup.h"
+#include "PlayerNumber.h"
+#include "PlayerOptions.h"
+#include "PlayerState.h"
+#include "Preference.h"
+#include "PrefsManager.h"
+#include "Profile.h"
+#include "ProfileManager.h"
+#include "RageLog.h"
+#include "RageUtil.h"
+#include "RageUtil_AutoPtr.h"
+#include "ScreenManager.h"
+#include "Song.h"
+#include "SongManager.h"
+#include "SongUtil.h"
+#include "StdString.h"
+#include "StepMania.h"
+#include "Style.h"
+#include "ThemeManager.h"
+#include "UnlockManager.h"
+#include "arch/ArchHooks/ArchHooks.h"
+#include "global.h"
 
 static LocalizedString COULD_NOT_LAUNCH_BROWSER( "GameCommand", "Could not launch web browser." );
 
@@ -166,11 +180,11 @@ void GameCommand::Load( int iIndex, const Commands& cmds )
 
 void GameCommand::LoadOne( const Command& cmd )
 {
-	RString sName = cmd.GetName();
+	std::string sName = cmd.GetName();
 	if( sName.empty() )
 		return;
 
-	RString sValue;
+	std::string sValue;
 	for( unsigned i = 1; i < cmd.m_vsArgs.size(); ++i )
 	{
 		if( i > 1 )
@@ -286,7 +300,7 @@ void GameCommand::LoadOne( const Command& cmd )
 
 	else if( sName == "steps" )
 	{
-		RString sSteps = sValue;
+		std::string sSteps = sValue;
 
 		// This must be processed after "song" and "style" commands.
 		if( !m_bInvalid )
@@ -324,7 +338,7 @@ void GameCommand::LoadOne( const Command& cmd )
 
 	else if( sName == "trail" )
 	{
-		RString sTrail = sValue;
+		std::string sTrail = sValue;
 
 		// This must be processed after "course" and "style" commands.
 		if( !m_bInvalid )
@@ -537,7 +551,7 @@ static bool AreStyleAndPlayModeCompatible( const Style *style, PlayMode pm )
 			// This is correct for dance (ie, no rave for solo and doubles),
 			// and should be okay for pump.. not sure about other game types.
 			// Techno Motion scales down versus arrows, though, so allow this.
-			if( style->m_iColsPerPlayer >= 6 && RString(GAMESTATE->m_pCurGame->m_szName) != "techno" )
+			if( style->m_iColsPerPlayer >= 6 && std::string(GAMESTATE->m_pCurGame->m_szName) != "techno" )
 				return false;
 
 			// Don't allow battle modes if the style takes both sides.
@@ -550,7 +564,7 @@ static bool AreStyleAndPlayModeCompatible( const Style *style, PlayMode pm )
 	return true;
 }
 
-bool GameCommand::IsPlayable( RString *why ) const
+bool GameCommand::IsPlayable( std::string *why ) const
 {
 	if( m_bInvalid )
 	{
@@ -764,7 +778,7 @@ void GameCommand::ApplySelf( const std::vector<PlayerNumber> &vpns ) const
 			ASSERT( !lua_isnil(L, -1) );
 
 			lua_pushnumber( L, pn ); // 1st parameter
-			RString error= "Lua GameCommand error: ";
+			std::string error= "Lua GameCommand error: ";
 			LuaHelpers::RunScriptOnStack(L, error, 1, 0, true);
 		}
 		LUA->Release(L);
@@ -793,7 +807,7 @@ void GameCommand::ApplySelf( const std::vector<PlayerNumber> &vpns ) const
 	if( m_pCharacter )
 		for (PlayerNumber const &pn : vpns)
 			GAMESTATE->m_pCurCharacters[pn] = m_pCharacter;
-	for( std::map<RString, RString>::const_iterator i = m_SetEnv.begin(); i != m_SetEnv.end(); i++ )
+	for( std::map<std::string, std::string>::const_iterator i = m_SetEnv.begin(); i != m_SetEnv.end(); i++ )
 	{
 		Lua *L = LUA->Get();
 		GAMESTATE->m_Environment->PushSelf(L);
@@ -803,7 +817,7 @@ void GameCommand::ApplySelf( const std::vector<PlayerNumber> &vpns ) const
 		lua_pop( L, 1 );
 		LUA->Release(L);
 	}
-	for(std::map<RString, RString>::const_iterator setting= m_SetPref.begin(); setting != m_SetPref.end(); ++setting)
+	for(std::map<std::string, std::string>::const_iterator setting= m_SetPref.begin(); setting != m_SetPref.end(); ++setting)
 	{
 		IPreference* pref= IPreference::GetPreferenceByName(setting->first);
 		if(pref != nullptr)
@@ -837,7 +851,7 @@ void GameCommand::ApplySelf( const std::vector<PlayerNumber> &vpns ) const
 	if( m_bFadeMusic )
 		SOUND->DimMusic(m_fMusicFadeOutVolume, m_fMusicFadeOutSeconds);
 
-	for (RString const &s : m_vsScreensToPrepare)
+	for (std::string const &s : m_vsScreensToPrepare)
 		SCREENMAN->PrepareScreen( s );
 
 	if( m_bInsertCredit )

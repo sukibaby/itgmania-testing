@@ -1,19 +1,21 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
-#include "ActorFrame.h"
-#include "HoldJudgment.h"
-#include "NoteDataWithScoring.h"
-#include "RageSound.h"
-#include "AttackDisplay.h"
-#include "NoteData.h"
-#include "ScreenMessage.h"
-#include "ThemeMetric.h"
-#include "InputEventPlus.h"
-#include "TimingData.h"
-
+#include <string>
 #include <vector>
 
+#include "Actor.h"
+#include "ActorFrame.h"
+#include "AttackDisplay.h"
+#include "AutoActor.h"
+#include "GameConstantsAndTypes.h"
+#include "HoldJudgment.h"
+#include "NoteData.h"
+#include "NoteDataWithScoring.h"
+#include "RageSound.h"
+#include "ScreenMessage.h"
+#include "ThemeMetric.h"
+#include "TimingData.h"
 
 class ScoreDisplay;
 class LifeMeter;
@@ -82,7 +84,7 @@ public:
 	void UpdateHoldNotes( int iSongRow, float fDeltaTime, std::vector<TrackRowTapNote> &vTN );
 
 	void Init(
-		const RString &sType,
+		const std::string &sType,
 		PlayerState* pPlayerState,
 		PlayerStageStats* pPlayerStageStats,
 		LifeMeter* pLM,
@@ -171,7 +173,7 @@ protected:
 	int GetClosestNonEmptyRowDirectional( int iStartRow, int iMaxRowsAhead, bool bAllowGraded, bool bForward ) const;
 	int GetClosestNonEmptyRow( int iNoteRow, int iMaxRowsAhead, int iMaxRowsBehind, bool bAllowGraded ) const;
 
-	RString ApplyRandomAttack();
+	std::string ApplyRandomAttack();
 
 	inline void HideNote( int col, int row )
 	{

@@ -4,7 +4,6 @@
 #include "InputHandler.h"
 #include "RageThreads.h"
 
-#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <string>
 #include <vector>
@@ -85,7 +84,7 @@ public:
 	InputHandler_Win32_RTIO();
 	~InputHandler_Win32_RTIO();
 	void GetDevicesAndDescriptions(std::vector<InputDeviceInfo>& vDevicesOut);
-	RString GetDeviceSpecificInputString(const DeviceInput &di);
+	std::string GetDeviceSpecificInputString(const DeviceInput &di);
 	static int InputThread_Start(void *this_ptr);
 
 private:

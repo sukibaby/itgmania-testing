@@ -1,10 +1,14 @@
-#include "global.h"
 #include "MessageWindow.h"
-#include "RageUtil.h"
-#include "AppInstance.h"
-#include "archutils/Win32/ErrorStrings.h"
 
-MessageWindow::MessageWindow( const RString &sClassName )
+#include <string>
+
+#include "AppInstance.h"
+#include "RageException.h"
+#include "RageUtil.h"
+#include "archutils/Win32/ErrorStrings.h"
+#include "global.h"
+
+MessageWindow::MessageWindow( const std::string &sClassName )
 {
 	AppInstance inst;
 	WNDCLASS WindowClass =

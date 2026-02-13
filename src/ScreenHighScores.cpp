@@ -1,17 +1,34 @@
-#include "global.h"
 #include "ScreenHighScores.h"
-#include "ScreenManager.h"
-#include "SongManager.h"
-#include "Song.h"
-#include "RageLog.h"
-#include "UnlockManager.h"
 
+#include <climits>
 #include <cstddef>
+#include <string>
 #include <vector>
 
+#include "ActorUtil.h"
+#include "CourseUtil.h"
+#include "Difficulty.h"
+#include "DynamicActorScroller.h"
+#include "EnumHelper.h"
+#include "GameConstantsAndTypes.h"
+#include "LuaManager.h"
+#include "MessageManager.h"
+#include "RageLog.h"
+#include "RageUtil.h"
+#include "Screen.h"
+#include "ScreenAttract.h"
+#include "ScreenManager.h"
+#include "ScreenMessage.h"
+#include "Song.h"
+#include "SongManager.h"
+#include "SongUtil.h"
+#include "ThemeManager.h"
+#include "Trail.h"
+#include "UnlockManager.h"
+#include "global.h"
 
-RString COLUMN_DIFFICULTY_NAME( size_t i );
-RString COLUMN_STEPS_TYPE_NAME( size_t i );
+std::string COLUMN_DIFFICULTY_NAME( size_t i );
+std::string COLUMN_STEPS_TYPE_NAME( size_t i );
 
 static const char *HighScoresTypeNames[] = {
 	"AllSteps",
@@ -95,7 +112,7 @@ bool ScoreScroller::Scroll( int iDir )
 	fDest += iDir;
 	float fLowClamp = (SCROLLER_ITEMS_TO_DRAW-1)/2.0f;
 	float fHighClamp = m_vScoreRowItemData.size()-(SCROLLER_ITEMS_TO_DRAW-1)/2.0f-1;
-	CLAMP( fDest, fLowClamp, fHighClamp );
+	rage_clamp( fDest, fLowClamp, fHighClamp );
 	if( fOldDest != fDest )
 	{
 		SetDestinationItem( fDest );
@@ -181,7 +198,7 @@ void ScoreScroller::LoadCourses( CourseType ct, int iNumRecentScores )
 		m_vScoreRowItemData[i].m_pCourse = vpCourses[i];
 }
 
-void ScoreScroller::Load( RString sMetricsGroup )
+void ScoreScroller::Load( std::string sMetricsGroup )
 {
 	SCROLLER_ITEMS_TO_DRAW.Load(sMetricsGroup, "ScrollerItemsToDraw");
 	SCROLLER_SECONDS_PER_ITEM.Load(sMetricsGroup, "ScrollerSecondsPerItem");
@@ -205,8 +222,8 @@ void ScoreScroller::Load( RString sMetricsGroup )
 
 /////////////////////////////////////////////
 
-RString COLUMN_DIFFICULTY_NAME( size_t i ) { return ssprintf("ColumnDifficulty%d",int(i+1)); }
-RString COLUMN_STEPS_TYPE_NAME( size_t i ) { return ssprintf("ColumnStepsType%d",int(i+1)); }
+std::string COLUMN_DIFFICULTY_NAME( size_t i ) { return ssprintf("ColumnDifficulty%d",int(i+1)); }
+std::string COLUMN_STEPS_TYPE_NAME( size_t i ) { return ssprintf("ColumnStepsType%d",int(i+1)); }
 
 void ScreenHighScores::Init()
 {

@@ -1,24 +1,30 @@
 #ifndef NETWORK_MANAGER_H
 #define NETWORK_MANAGER_H
 
-#include "Preference.h"
-#include "RageThreads.h"
-#include "StdString.h"
-
-#include <atomic>
-#include <functional>
-#include <memory>
-#include <mutex>
-#include <string>
-#include <unordered_map>
-
 #include <ixwebsocket/IXHttp.h>
 #include <ixwebsocket/IXHttpClient.h>
 #include <ixwebsocket/IXSocketTLSOptions.h>
 #include <ixwebsocket/IXWebSocket.h>
 
+#include <atomic>
+#include <condition_variable>
+#include <cstddef>
+#include <functional>
+#include <memory>
+#include <mutex>
+#include <queue>
+#include <string>
+#include <thread>
+#include <unordered_map>
+#include <vector>
+
 #include "EnumHelper.h"
-#include "LuaManager.h"
+#include "Preference.h"
+#include "ixwebsocket/IXWebSocketCloseInfo.h"
+#include "ixwebsocket/IXWebSocketErrorInfo.h"
+#include "ixwebsocket/IXWebSocketMessage.h"
+#include "ixwebsocket/IXWebSocketMessageType.h"
+#include "ixwebsocket/IXWebSocketOpenInfo.h"
 
 struct lua_State;
 
@@ -48,8 +54,8 @@ enum HttpErrorCode
 	NUM_HttpErrorCode,
 	HttpErrorCode_Invalid,
 };
-const RString& HttpErrorCodeToString(HttpErrorCode dc);
-HttpErrorCode StringToHttpErrorCode(const RString& sDC);
+const std::string& HttpErrorCodeToString(HttpErrorCode dc);
+HttpErrorCode StringToHttpErrorCode(const std::string& sDC);
 LuaDeclareType(HttpErrorCode);
 
 enum WebSocketMessageType
@@ -63,8 +69,8 @@ enum WebSocketMessageType
 	NUM_WebSocketMessageType,
 	WebSocketMessageType_Invalid,
 };
-const RString& WebSocketMessageTypeToString(WebSocketMessageType dc);
-WebSocketMessageType StringToWebSocketMessageType(const RString& sDC);
+const std::string& WebSocketMessageTypeToString(WebSocketMessageType dc);
+WebSocketMessageType StringToWebSocketMessageType(const std::string& sDC);
 LuaDeclareType(WebSocketMessageType);
 
 struct HttpRequestArgs
@@ -181,7 +187,7 @@ private:
 	ix::SocketTLSOptions tlsOptions;
 
 	static Preference<bool> httpEnabled;
-	static Preference<RString> httpAllowHosts;
+	static Preference<std::string> httpAllowHosts;
 
 	std::vector<std::shared_ptr<WebSocketHandle>> webSocketHandles;
 

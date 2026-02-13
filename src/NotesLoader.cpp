@@ -1,17 +1,20 @@
-#include "global.h"
 #include "NotesLoader.h"
+
+#include <cstddef>
+#include <set>
+#include <string>
+#include <string_view>
+#include <vector>
+
+#include "NotesLoaderBMS.h"
+#include "NotesLoaderDWI.h"
+#include "NotesLoaderKSF.h"
 #include "NotesLoaderSM.h"
 #include "NotesLoaderSMA.h"
 #include "NotesLoaderSSC.h"
-#include "NotesLoaderDWI.h"
-#include "NotesLoaderBMS.h"
-#include "NotesLoaderKSF.h"
-#include "RageUtil.h"
+#include "StdString.h"
 
-#include <cstddef>
-#include <vector>
-
-void NotesLoader::GetMainAndSubTitlesFromFullTitle( const RString &sFullTitle, RString &sMainTitleOut, RString &sSubTitleOut )
+void NotesLoader::GetMainAndSubTitlesFromFullTitle( const std::string &sFullTitle, std::string &sMainTitleOut, std::string &sSubTitleOut )
 {
 	static const std::string_view sLeftSeps[] = { "\t", " -", " ~", " (", " [" };
 	size_t fullTitleSize = sFullTitle.size();
@@ -30,9 +33,9 @@ void NotesLoader::GetMainAndSubTitlesFromFullTitle( const RString &sFullTitle, R
 	sSubTitleOut = "";
 }
 
-bool NotesLoader::LoadFromDir( const RString &sPath, Song &out, std::set<RString> &BlacklistedImages, bool load_autosave )
+bool NotesLoader::LoadFromDir( const std::string &sPath, Song &out, std::set<std::string> &BlacklistedImages, bool load_autosave )
 {
-	std::vector<RString> list;
+	std::vector<std::string> list;
 
 	BlacklistedImages.clear();
 	SSCLoader loaderSSC;

@@ -1,13 +1,15 @@
-#include "global.h"
 #include "RollingNumbers.h"
-#include "RageUtil.h"
-#include "GameState.h"
-#include "XmlFile.h"
-#include "ActorUtil.h"
-#include "LuaManager.h"
-#include "ThemeManager.h"
 
+#include <algorithm>
 #include <cmath>
+#include <string>
+
+#include "Actor.h"
+#include "ActorUtil.h"
+#include "BitmapText.h"
+#include "LuaManager.h"
+#include "RageTypes.h"
+#include "RageUtil.h"
 
 REGISTER_ACTOR_CLASS( RollingNumbers );
 
@@ -19,7 +21,7 @@ RollingNumbers::RollingNumbers()
 	m_metrics_loaded= false;
 }
 
-void RollingNumbers::Load( const RString &sMetricsGroup )
+void RollingNumbers::Load( const std::string &sMetricsGroup )
 {
 	m_metrics_loaded= true;
 	TEXT_FORMAT.Load(sMetricsGroup, "TextFormat");
@@ -61,7 +63,7 @@ void RollingNumbers::DrawPrimitives() noexcept
 	float original_crop_left= m_pTempState->crop.left;
 	float original_crop_right= m_pTempState->crop.right;
 
-	RString s = this->GetText();
+	std::string s = this->GetText();
 	int i;
 	// find the first non-zero non-comma character, or the last character
 	for( i=0; i<(int)(s.length()-1); i++ )
@@ -127,7 +129,7 @@ void RollingNumbers::UpdateText()
 	{
 		return;
 	}
-	RString s = ssprintf( TEXT_FORMAT.GetValue().c_str(), m_fCurrentNumber );
+	std::string s = ssprintf( TEXT_FORMAT.GetValue().c_str(), m_fCurrentNumber );
 	if(COMMIFY)
 	{
 		s = Commify( s );

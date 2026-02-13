@@ -1,9 +1,12 @@
-#include "global.h"
 #include "RageSurface_Load_GIF.h"
+
+#include <cstring>
+#include <string>
+
 #include "RageFile.h"
-#include "RageUtil.h"
-#include "RageLog.h"
 #include "RageSurface.h"
+#include "RageSurface_Load.h"
+#include "RageUtil.h"
 
 #define	MAXCOLORMAPSIZE		256
 
@@ -58,7 +61,7 @@ static int GetDataBlock( RageFile &f, unsigned char *buf )
 }
 
 
-RageSurfaceUtils::OpenResult RageSurface_Load_GIF( const RString &sPath, RageSurface *&ret, bool bHeaderOnly, RString &error )
+RageSurfaceUtils::OpenResult RageSurface_Load_GIF( const std::string &sPath, RageSurface *&ret, bool bHeaderOnly, std::string &error )
 {
 	unsigned char buf[256];
 	int imageCount = 0;

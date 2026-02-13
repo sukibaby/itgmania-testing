@@ -1,13 +1,17 @@
-#include "global.h"
 #include "Transition.h"
+
+#include <string>
+
+#include "ActorFrame.h"
 #include "ScreenManager.h"
+#include "ScreenMessage.h"
 
 Transition::Transition()
 {
 	m_State = waiting;
 }
 
-void Transition::Load( RString sBGAniDir )
+void Transition::Load( std::string sBGAniDir )
 {
 	this->RemoveAllChildren();
 

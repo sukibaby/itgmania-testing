@@ -1,24 +1,30 @@
-#include "global.h"
 #include "LifeMeterBar.h"
-#include "PrefsManager.h"
-#include "RageLog.h"
-#include "RageTimer.h"
-#include "GameState.h"
-#include "RageMath.h"
-#include "ThemeManager.h"
-#include "Song.h"
-#include "StatsManager.h"
-#include "ThemeMetric.h"
-#include "PlayerState.h"
-#include "Quad.h"
-#include "ActorUtil.h"
-#include "StreamDisplay.h"
-#include "Steps.h"
-#include "Course.h"
 
+#include <algorithm>
 #include <cstddef>
+#include <string>
 
-static RString LIFE_PERCENT_CHANGE_NAME( size_t i )   { return "LifePercentChange" + ScoreEventToString( (ScoreEvent)i ); }
+#include "ActorUtil.h"
+#include "Course.h"
+#include "Difficulty.h"
+#include "GameConstantsAndTypes.h"
+#include "GameState.h"
+#include "LifeMeter.h"
+#include "LuaReference.h"
+#include "MessageManager.h"
+#include "PlayerNumber.h"
+#include "PlayerOptions.h"
+#include "PlayerStageStats.h"
+#include "PlayerState.h"
+#include "PrefsManager.h"
+#include "RageUtil.h"
+#include "Steps.h"
+#include "StreamDisplay.h"
+#include "ThemeManager.h"
+#include "ThemeMetric.h"
+#include "global.h"
+
+static std::string LIFE_PERCENT_CHANGE_NAME( size_t i )   { return "LifePercentChange" + ScoreEventToString( (ScoreEvent)i ); }
 
 LifeMeterBar::LifeMeterBar()
 {
@@ -33,7 +39,7 @@ LifeMeterBar::LifeMeterBar()
 
 	m_pPlayerState = nullptr;
 
-	const RString sType = "LifeMeterBar";
+	const std::string sType = "LifeMeterBar";
 
 	m_fPassingAlpha = 0;
 	m_fHotAlpha = 0;
@@ -49,7 +55,7 @@ LifeMeterBar::LifeMeterBar()
 	m_iComboToRegainLife = 0;
 
 	bool bExtra = GAMESTATE->IsAnExtraStage();
-	RString sExtra = bExtra ? "extra " : "";
+	std::string sExtra = bExtra ? "extra " : "";
 
 	m_sprUnder.Load( THEME->GetPathG(sType,sExtra+"Under") );
 	m_sprUnder->SetName( "Under" );
@@ -247,14 +253,14 @@ void LifeMeterBar::ChangeLife( float fDeltaLife )
 	}
 
 	m_fLifePercentage += fDeltaLife;
-	CLAMP( m_fLifePercentage, 0, LIFE_MULTIPLIER );
+	rage_clamp( m_fLifePercentage, 0, LIFE_MULTIPLIER );
 	AfterLifeChanged();
 }
 
 void LifeMeterBar::SetLife(float value)
 {
 	m_fLifePercentage= value;
-	CLAMP( m_fLifePercentage, 0, LIFE_MULTIPLIER );
+	rage_clamp( m_fLifePercentage, 0, LIFE_MULTIPLIER );
 	AfterLifeChanged();
 }
 
@@ -296,10 +302,10 @@ void LifeMeterBar::Update( float fDeltaTime )
 	LifeMeter::Update( fDeltaTime );
 
 	m_fPassingAlpha += !IsFailing() ? +fDeltaTime*2 : -fDeltaTime*2;
-	CLAMP( m_fPassingAlpha, 0, 1 );
+	rage_clamp( m_fPassingAlpha, 0, 1 );
 
 	m_fHotAlpha  += IsHot() ? + fDeltaTime*2 : -fDeltaTime*2;
-	CLAMP( m_fHotAlpha, 0, 1 );
+	rage_clamp( m_fHotAlpha, 0, 1 );
 
 	m_pStream->SetPassingAlpha( m_fPassingAlpha );
 	m_pStream->SetHotAlpha( m_fHotAlpha );
@@ -408,7 +414,7 @@ void LifeMeterBar::FillForHowToPlay( int NumW2s, int NumMisses )
 	float AmountForMiss	= NumMisses / m_fLifeDifficulty * 0.08f;
 
 	m_fLifePercentage = AmountForMiss - AmountForW2;
-	CLAMP( m_fLifePercentage, 0.0f, 1.0f );
+	rage_clamp( m_fLifePercentage, 0.0f, 1.0f );
 	AfterLifeChanged();
 }
 

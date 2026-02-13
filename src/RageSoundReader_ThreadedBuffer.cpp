@@ -1,12 +1,15 @@
-#include "global.h"
 #include "RageSoundReader_ThreadedBuffer.h"
-#include "RageUtil.h"
-#include "RageTimer.h"
-#include "RageLog.h"
 
-#include <cmath>
-#include <thread>
+#include <algorithm>
 #include <chrono>
+#include <list>
+#include <string>
+#include <thread>
+
+#include "RageSoundReader.h"
+#include "RageSoundReader_Filter.h"
+#include "RageTimer.h"
+#include "global.h"
 
 /* Implement threaded read-ahead buffering.
  *
@@ -186,7 +189,7 @@ int RageSoundReader_ThreadedBuffer::GetLength_Fast() const
 	return iRet;
 }
 
-bool RageSoundReader_ThreadedBuffer::SetProperty( const RString &sProperty, float fValue )
+bool RageSoundReader_ThreadedBuffer::SetProperty( const std::string &sProperty, float fValue )
 {
 	return m_pSource->SetProperty( sProperty, fValue );
 }

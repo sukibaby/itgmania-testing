@@ -1,15 +1,19 @@
-#include "global.h"
 #include "RageSoundReader_Merge.h"
-#include "RageSoundReader_Resample_Good.h"
-#include "RageSoundReader_Pan.h"
-#include "RageLog.h"
-#include "RageUtil.h"
-#include "RageSoundMixBuffer.h"
-#include "RageSoundUtil.h"
 
+#include <algorithm>
 #include <cmath>
+#include <cstddef>
+#include <iterator>
+#include <string>
 #include <vector>
 
+#include "RageLog.h"
+#include "RageSoundMixBuffer.h"
+#include "RageSoundReader.h"
+#include "RageSoundReader_Pan.h"
+#include "RageSoundReader_Resample_Good.h"
+#include "RageUtil.h"
+#include "global.h"
 
 RageSoundReader_Merge::RageSoundReader_Merge()
 {
@@ -131,7 +135,7 @@ int RageSoundReader_Merge::SetPosition( int iFrame )
 	return iRet;
 }
 
-bool RageSoundReader_Merge::SetProperty( const RString &sProperty, float fValue )
+bool RageSoundReader_Merge::SetProperty( const std::string &sProperty, float fValue )
 {
 	bool bRet = false;
 	for( unsigned i = 0; i < m_aSounds.size(); ++i )
