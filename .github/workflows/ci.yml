@@ -5,6 +5,10 @@ on:
     paths:
       - '.github/workflows/ci.yml'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 name: Continuous integration
 
 jobs:
