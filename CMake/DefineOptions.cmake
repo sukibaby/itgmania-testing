@@ -12,6 +12,9 @@ option(WITH_LTO
 # This option handles if we use SSE2 processing.
 option(WITH_SSE2 "Build with SSE2 Optimizations." ON)
 
+# This option handles if we use AVX processing.
+option(WITH_AVX "Build with AVX Optimizations." OFF)
+
 # Turn this on to set this to a specific release mode.
 option(WITH_FULL_RELEASE "Build as a proper, full release." OFF)
 
