@@ -22,6 +22,10 @@
 #include "RageUtil.h"
 #include "global.h"
 
+#ifdef __AVX__
+#include <immintrin.h>
+#endif
+
 constexpr int FILTER_LENGTH = 8;  // This must be a power of 2.
 
 namespace {
@@ -307,10 +311,28 @@ int PolyphaseFilter::RunPolyphaseFilter(
       const float* pCurPoly = &m_pPolyphase[iPolyIndex * FILTER_LENGTH];
       const float* pInData = &State.m_fBuf[State.m_iBufNext];
 
+#ifdef __AVX__
+      // AVX dot product: 8 floats * 8 floats = scalar result
+      __m256 vIn = _mm256_loadu_ps(pInData);
+      __m256 vPoly = _mm256_loadu_ps(pCurPoly);
+      __m256 vMul = _mm256_mul_ps(vIn, vPoly);
+
+      // Horizontal sum: add all 8 elements
+      __m256 vShuf = _mm256_permute_ps(vMul, _MM_SHUFFLE(2, 3, 0, 1));
+      __m256 vSum = _mm256_add_ps(vMul, vShuf);
+      vShuf = _mm256_permute_ps(vSum, _MM_SHUFFLE(1, 0, 3, 2));
+      vSum = _mm256_add_ps(vSum, vShuf);
+      __m128 vLow = _mm256_castps256_ps128(vSum);
+      __m128 vHigh = _mm256_extractf128_ps(vSum, 1);
+      vLow = _mm_add_ps(vLow, vHigh);
+      float fTot = _mm_cvtss_f32(vLow);
+#else
       float fTot = 0;
       for (int j = 0; j < FILTER_LENGTH; ++j) {
         fTot += pInData[j] * pCurPoly[j];
       }
+#endif
+
       *pOut = fTot;
       pOut += iSampleStride;
 
