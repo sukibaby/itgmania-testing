@@ -12,6 +12,10 @@
 #include <cstring>
 #include <vector>
 
+#if defined(__AVX__) && (defined(__i386__) || defined(__x86_64__) || defined(_M_IX86) || defined(_M_X64))
+#include <immintrin.h>
+#endif
+
 #include "LuaManager.h"
 #include "RageTypes.h"
 #include "RageUtil.h"
@@ -95,11 +99,27 @@ void RageVec4TransformCoord(
     RageVector4* pOut, const RageVector4* pV, const RageMatrix* pM) {
   const RageMatrix& a = *pM;
   const RageVector4& v = *pV;
+
+#if defined(__AVX__) && (defined(__i386__) || defined(__x86_64__) || defined(_M_IX86) || defined(_M_X64))
+  // D3DX-style row-vector transform: out = v * M.
+  const __m128 row0 = _mm_loadu_ps(&a.m00);
+  const __m128 row1 = _mm_loadu_ps(&a.m10);
+  const __m128 row2 = _mm_loadu_ps(&a.m20);
+  const __m128 row3 = _mm_loadu_ps(&a.m30);
+
+  __m128 out = _mm_mul_ps(row0, _mm_set1_ps(v.x));
+  out = _mm_add_ps(out, _mm_mul_ps(row1, _mm_set1_ps(v.y)));
+  out = _mm_add_ps(out, _mm_mul_ps(row2, _mm_set1_ps(v.z)));
+  out = _mm_add_ps(out, _mm_mul_ps(row3, _mm_set1_ps(v.w)));
+
+  _mm_storeu_ps(&pOut->x, out);
+#else
   *pOut = RageVector4(
       a.m00 * v.x + a.m10 * v.y + a.m20 * v.z + a.m30 * v.w,
       a.m01 * v.x + a.m11 * v.y + a.m21 * v.z + a.m31 * v.w,
       a.m02 * v.x + a.m12 * v.y + a.m22 * v.z + a.m32 * v.w,
       a.m03 * v.x + a.m13 * v.y + a.m23 * v.z + a.m33 * v.w);
+#endif
 }
 
 RageMatrix::RageMatrix(
@@ -150,6 +170,32 @@ void RageMatrixMultiply(
   const RageMatrix& a = *pA;
   const RageMatrix& b = *pB;
 
+#if defined(__AVX__) && (defined(__i386__) || defined(__x86_64__) || defined(_M_IX86) || defined(_M_X64))
+  // Row-major 4x4 multiply: out = B * A.
+  // Each output row is a linear combination of A's rows, weighted by B's row.
+  const __m128 aRow0 = _mm_loadu_ps(&a.m00);
+  const __m128 aRow1 = _mm_loadu_ps(&a.m10);
+  const __m128 aRow2 = _mm_loadu_ps(&a.m20);
+  const __m128 aRow3 = _mm_loadu_ps(&a.m30);
+
+  auto compute_row = [&](float b0, float b1, float b2, float b3) -> __m128 {
+    __m128 out = _mm_mul_ps(aRow0, _mm_set1_ps(b0));
+    out = _mm_add_ps(out, _mm_mul_ps(aRow1, _mm_set1_ps(b1)));
+    out = _mm_add_ps(out, _mm_mul_ps(aRow2, _mm_set1_ps(b2)));
+    out = _mm_add_ps(out, _mm_mul_ps(aRow3, _mm_set1_ps(b3)));
+    return out;
+  };
+
+  const __m128 outRow0 = compute_row(b.m00, b.m01, b.m02, b.m03);
+  const __m128 outRow1 = compute_row(b.m10, b.m11, b.m12, b.m13);
+  const __m128 outRow2 = compute_row(b.m20, b.m21, b.m22, b.m23);
+  const __m128 outRow3 = compute_row(b.m30, b.m31, b.m32, b.m33);
+
+  _mm_storeu_ps(&pOut->m00, outRow0);
+  _mm_storeu_ps(&pOut->m10, outRow1);
+  _mm_storeu_ps(&pOut->m20, outRow2);
+  _mm_storeu_ps(&pOut->m30, outRow3);
+#else
   *pOut = RageMatrix(
       b.m00 * a.m00 + b.m01 * a.m10 + b.m02 * a.m20 + b.m03 * a.m30,
       b.m00 * a.m01 + b.m01 * a.m11 + b.m02 * a.m21 + b.m03 * a.m31,
@@ -167,6 +213,7 @@ void RageMatrixMultiply(
       b.m30 * a.m01 + b.m31 * a.m11 + b.m32 * a.m21 + b.m33 * a.m31,
       b.m30 * a.m02 + b.m31 * a.m12 + b.m32 * a.m22 + b.m33 * a.m32,
       b.m30 * a.m03 + b.m31 * a.m13 + b.m32 * a.m23 + b.m33 * a.m33);
+#endif
   // phew!
   // #endif
 }
