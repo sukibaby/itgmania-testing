@@ -331,8 +331,8 @@ static DWORD WINAPI MainExceptionHandler(LPVOID lpParameter) {
         nullptr,
         InHere == 1 ? "The error reporting interface has crashed.\n"
                     : "The error reporting interface has crashed. However, "
-                      "crashinfo.txt was"
-                      "written successfully to the program directory.\n",
+                      "crashinfo.txt was written successfully to the program "
+                      "directory.\n",
         "Fatal Error", MB_OK);
 #ifdef DEBUG
     DebugBreak();
