@@ -8,6 +8,10 @@
 #include <cstring>
 #include <string>
 
+#if defined(__AVX__)
+#include <immintrin.h>
+#endif
+
 #include "RageFile.h"
 #include "RageLog.h"
 #include "RageSurface.h"
@@ -523,6 +527,112 @@ static bool blit_rgba_to_rgba(
 
   const uint8_t* src = src_surf->pixels;
   uint8_t* dst = dst_surf->pixels;
+
+  // Path for 32bpp copies that only need R/B swapping (RGBA<->BGRA)
+  // and/or alpha-fill (RGBX->RGBA/BGRA). This is used to update movies in D3D,
+  // so avoid per-pixel decode/encode and lookup tables when possible.
+  if (src_surf->format->BytesPerPixel == 4 &&
+      dst_surf->format->BytesPerPixel == 4) {
+    const uint32_t srcR = static_cast<uint32_t>(src_surf->format->Rmask);
+    const uint32_t srcG = static_cast<uint32_t>(src_surf->format->Gmask);
+    const uint32_t srcB = static_cast<uint32_t>(src_surf->format->Bmask);
+    const uint32_t srcA = static_cast<uint32_t>(src_surf->format->Amask);
+    const uint32_t dstR = static_cast<uint32_t>(dst_surf->format->Rmask);
+    const uint32_t dstG = static_cast<uint32_t>(dst_surf->format->Gmask);
+    const uint32_t dstB = static_cast<uint32_t>(dst_surf->format->Bmask);
+    const uint32_t dstA = static_cast<uint32_t>(dst_surf->format->Amask);
+
+    const bool srcRGBA =
+        (srcR == 0x000000FFu && srcG == 0x0000FF00u && srcB == 0x00FF0000u &&
+         (srcA == 0xFF000000u || srcA == 0u));
+    const bool srcBGRA =
+        (srcR == 0x00FF0000u && srcG == 0x0000FF00u && srcB == 0x000000FFu &&
+         (srcA == 0xFF000000u || srcA == 0u));
+    const bool dstRGBA =
+        (dstR == 0x000000FFu && dstG == 0x0000FF00u && dstB == 0x00FF0000u &&
+         (dstA == 0xFF000000u || dstA == 0u));
+    const bool dstBGRA =
+        (dstR == 0x00FF0000u && dstG == 0x0000FF00u && dstB == 0x000000FFu &&
+         (dstA == 0xFF000000u || dstA == 0u));
+
+    const bool swapRB = (srcRGBA && dstBGRA) || (srcBGRA && dstRGBA);
+    const bool dstWantsAlpha = (dstA == 0xFF000000u);
+    const bool srcHasAlpha = (srcA == 0xFF000000u);
+    const bool fillAlpha = (dstWantsAlpha && !srcHasAlpha) &&
+                           (srcRGBA || srcBGRA) && (dstRGBA || dstBGRA);
+
+    if (swapRB || fillAlpha) {
+      // Bytes to skip at the end of a line.
+      const int srcskip = src_surf->pitch - width * 4;
+      const int dstskip = dst_surf->pitch - width * 4;
+
+      while (height--) {
+        int x = 0;
+
+#if defined(__AVX__)
+        {
+          const __m128i mask_ag = _mm_set1_epi32(static_cast<int>(0xFF00FF00u));
+          const __m128i mask_r = _mm_set1_epi32(static_cast<int>(0x00FF0000u));
+          const __m128i mask_b = _mm_set1_epi32(static_cast<int>(0x000000FFu));
+          const __m128i alpha_mask128 =
+              _mm_set1_epi32(static_cast<int>(0xFF000000u));
+
+          auto swap_rb_4px = [&](const __m128i& v) -> __m128i {
+            const __m128i ag = _mm_and_si128(v, mask_ag);
+            __m128i r = _mm_and_si128(v, mask_r);
+            __m128i b = _mm_and_si128(v, mask_b);
+            r = _mm_srli_epi32(r, 16);
+            b = _mm_slli_epi32(b, 16);
+            return _mm_or_si128(ag, _mm_or_si128(r, b));
+          };
+
+          for (; x + 8 <= width; x += 8) {
+            __m256i v =
+                _mm256_loadu_si256(reinterpret_cast<const __m256i*>(src));
+            __m128i lo = _mm256_castsi256_si128(v);
+            __m128i hi = _mm256_extractf128_si256(v, 1);
+
+            if (swapRB) {
+              lo = swap_rb_4px(lo);
+              hi = swap_rb_4px(hi);
+            }
+            if (fillAlpha) {
+              lo = _mm_or_si128(lo, alpha_mask128);
+              hi = _mm_or_si128(hi, alpha_mask128);
+            }
+
+            __m256i out = _mm256_castsi128_si256(lo);
+            out = _mm256_insertf128_si256(out, hi, 1);
+            _mm256_storeu_si256(reinterpret_cast<__m256i*>(dst), out);
+
+            src += 8 * 4;
+            dst += 8 * 4;
+          }
+        }
+#endif
+
+        for (; x < width; ++x) {
+          uint32_t pix;
+          memcpy(&pix, src, sizeof(pix));
+          if (swapRB) {
+            pix = (pix & 0xFF00FF00u) | ((pix & 0x00FF0000u) >> 16) |
+                  ((pix & 0x000000FFu) << 16);
+          }
+          if (fillAlpha) {
+            pix |= 0xFF000000u;
+          }
+          memcpy(dst, &pix, sizeof(pix));
+          src += 4;
+          dst += 4;
+        }
+
+        src += srcskip;
+        dst += dstskip;
+      }
+
+      return true;
+    }
+  }
 
   // Bytes to skip at the end of a line.
   const int srcskip = src_surf->pitch - width * src_surf->format->BytesPerPixel;
