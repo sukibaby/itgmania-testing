@@ -42,12 +42,12 @@ std::mutex g_mainThreadTaskMutex;
 std::queue<std::function<void()>> g_mainThreadTasks;
 }  // namespace
 
-void NetworkManager::EnqueueMainThreadTask(std::function<void()> task) {
+void NetworkManager::Enqueue(std::function<void()> task) {
   std::lock_guard<std::mutex> lock(g_mainThreadTaskMutex);
   g_mainThreadTasks.push(std::move(task));
 }
 
-void NetworkManager::RunMainThreadTasks() {
+void NetworkManager::ProcessNetworkQueue() {
   std::queue<std::function<void()>> tasks;
   {
     std::lock_guard<std::mutex> lock(g_mainThreadTaskMutex);
@@ -559,9 +559,10 @@ class LunaNetworkManager : public Luna<NetworkManager> {
         lua_pushvalue(L, -1);
         onProgressRef = luaL_ref(L, LUA_REGISTRYINDEX);
 
+        // Run LUA->Get on the main thread.
         args.onProgress = [onProgressRef](int current, int total) {
           if (onProgressRef != LUA_NOREF) {
-            NetworkManager::EnqueueMainThreadTask(
+            NetworkManager::Enqueue(
                 [onProgressRef, current, total]() {
                   Lua* L = LUA->Get();
                   handleProgress(L, current, total, onProgressRef);
@@ -588,9 +589,10 @@ class LunaNetworkManager : public Luna<NetworkManager> {
     }
     lua_pop(L, 1);
 
+    // Run LUA->Get on the main thread.
     args.onFileError = [onProgressRef,
                         onResponseRef](const std::string& errorMessage) {
-      NetworkManager::EnqueueMainThreadTask(
+      NetworkManager::Enqueue(
           [onProgressRef, onResponseRef, errorMessage]() {
             Lua* L = LUA->Get();
             luaL_unref(L, LUA_REGISTRYINDEX, onProgressRef);
@@ -601,9 +603,10 @@ class LunaNetworkManager : public Luna<NetworkManager> {
           });
     };
 
+    // Run LUA->Get on the main thread.
     args.onResponse = [onProgressRef,
                        onResponseRef](const ix::HttpResponsePtr& response) {
-      NetworkManager::EnqueueMainThreadTask(
+      NetworkManager::Enqueue(
           [onProgressRef, onResponseRef, response]() {
             Lua* L = LUA->Get();
             luaL_unref(L, LUA_REGISTRYINDEX, onProgressRef);

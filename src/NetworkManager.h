@@ -148,9 +148,9 @@ class NetworkManager {
   ~NetworkManager();
 
   /** @brief Schedule work to run on the main thread (typically drained once per frame). */
-  static void EnqueueMainThreadTask(std::function<void()> task);
+  static void Enqueue(std::function<void()> task);
   /** @brief Run all queued main-thread tasks. Call from the game loop. */
-  static void RunMainThreadTasks();
+  static void ProcessNetworkQueue();
 
   bool IsUrlAllowed(const std::string& url);
   HttpRequestFuturePtr HttpRequest(const HttpRequestArgs& args);

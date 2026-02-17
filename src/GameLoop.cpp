@@ -280,7 +280,7 @@ void GameLoop::UpdateAllButDraw(bool bRunningFromVBLANK) {
   GAMESTATE->Update(fDeltaTime);
 
   // Drain network callbacks on the main thread.
-  NetworkManager::RunMainThreadTasks();
+  NetworkManager::ProcessNetworkQueue();
 
   SCREENMAN->Update(fDeltaTime);
   MEMCARDMAN->Update();
