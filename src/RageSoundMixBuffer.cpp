@@ -44,14 +44,14 @@ void RageSoundMixBuffer::write(
   if (iSourceStride == 1 && iDestStride == 1 && iSize >= 8) {
     unsigned iProcessed = 0;
     unsigned iVectorSize = (iSize / 8) * 8;
-    
+
     for (unsigned i = 0; i < iVectorSize; i += 8) {
       __m256 vSrc = _mm256_loadu_ps(pBuf + i);
       __m256 vDest = _mm256_loadu_ps(pDestBuf + i);
       __m256 vResult = _mm256_add_ps(vDest, vSrc);
       _mm256_storeu_ps(pDestBuf + i, vResult);
     }
-    
+
     pBuf += iVectorSize;
     pDestBuf += iVectorSize;
     iSize -= iVectorSize;
@@ -73,10 +73,10 @@ void RageSoundMixBuffer::read(int16_t* pBuf) {
   const __m256 vMin = _mm256_set1_ps(-1.0f);
   const __m256 vMax = _mm256_set1_ps(1.0f);
   const __m256 vScale = _mm256_set1_ps(INT16_MAX);
-  
+
   unsigned iSize = m_pMixbuf.size();
   unsigned iVectorSize = (iSize / 8) * 8;
-  
+
   for (unsigned iPos = 0; iPos < iVectorSize; iPos += 8) {
     __m256 vIn = _mm256_loadu_ps(&m_pMixbuf[iPos]);
     // Clamp to [-1.0, 1.0]
@@ -91,7 +91,7 @@ void RageSoundMixBuffer::read(int16_t* pBuf) {
     __m128i vPacked = _mm_packs_epi32(vLower, vUpper);
     _mm_storeu_si128((__m128i*)&pBuf[iPos], vPacked);
   }
-  
+
   // Scalar fallback for remaining samples
   for (unsigned iPos = iVectorSize; iPos < iSize; ++iPos) {
     float iOut = m_pMixbuf[iPos];
@@ -100,8 +100,11 @@ void RageSoundMixBuffer::read(int16_t* pBuf) {
   }
 #else
   for (unsigned iPos = 0; iPos < m_pMixbuf.size(); ++iPos) {
+    // do the read
     float iOut = m_pMixbuf[iPos];
+    // ensure volume is within expected levels to prevent clipping
     iOut = std::clamp(iOut, -1.0f, +1.0f);
+    // round rather than truncate to minimize distortion
     pBuf[iPos] = static_cast<int16_t>(std::round(iOut * INT16_MAX));
   }
 #endif
@@ -113,10 +116,10 @@ void RageSoundMixBuffer::read(float* pBuf) {
   // AVX fast path for bulk clamping
   const __m256 vMin = _mm256_set1_ps(-1.0f);
   const __m256 vMax = _mm256_set1_ps(1.0f);
-  
+
   unsigned iSize = m_pMixbuf.size();
   unsigned iVectorSize = (iSize / 8) * 8;
-  
+
   for (unsigned iPos = 0; iPos < iVectorSize; iPos += 8) {
     __m256 vIn = _mm256_loadu_ps(&m_pMixbuf[iPos]);
     // Clamp to [-1.0, 1.0]
@@ -124,7 +127,7 @@ void RageSoundMixBuffer::read(float* pBuf) {
     vIn = _mm256_min_ps(vIn, vMax);
     _mm256_storeu_ps(&pBuf[iPos], vIn);
   }
-  
+
   // Scalar fallback for remaining samples
   for (unsigned iPos = iVectorSize; iPos < iSize; ++iPos) {
     pBuf[iPos] = std::clamp(m_pMixbuf[iPos], -1.0f, +1.0f);

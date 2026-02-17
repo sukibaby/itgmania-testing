@@ -528,10 +528,11 @@ static bool blit_rgba_to_rgba(
   const uint8_t* src = src_surf->pixels;
   uint8_t* dst = dst_surf->pixels;
 
-  // Very common fast path: 32bpp copies that only need R/B swapping (RGBA<->BGRA)
+  // Path for 32bpp copies that only need R/B swapping (RGBA<->BGRA)
   // and/or alpha-fill (RGBX->RGBA/BGRA). This is used to update movies in D3D,
   // so avoid per-pixel decode/encode and lookup tables when possible.
-  if (src_surf->format->BytesPerPixel == 4 && dst_surf->format->BytesPerPixel == 4) {
+  if (src_surf->format->BytesPerPixel == 4 &&
+      dst_surf->format->BytesPerPixel == 4) {
     const uint32_t srcR = static_cast<uint32_t>(src_surf->format->Rmask);
     const uint32_t srcG = static_cast<uint32_t>(src_surf->format->Gmask);
     const uint32_t srcB = static_cast<uint32_t>(src_surf->format->Bmask);
@@ -541,19 +542,24 @@ static bool blit_rgba_to_rgba(
     const uint32_t dstB = static_cast<uint32_t>(dst_surf->format->Bmask);
     const uint32_t dstA = static_cast<uint32_t>(dst_surf->format->Amask);
 
-    const bool srcRGBA = (srcR == 0x000000FFu && srcG == 0x0000FF00u &&
-                          srcB == 0x00FF0000u && (srcA == 0xFF000000u || srcA == 0u));
-    const bool srcBGRA = (srcR == 0x00FF0000u && srcG == 0x0000FF00u &&
-                          srcB == 0x000000FFu && (srcA == 0xFF000000u || srcA == 0u));
-    const bool dstRGBA = (dstR == 0x000000FFu && dstG == 0x0000FF00u &&
-                          dstB == 0x00FF0000u && (dstA == 0xFF000000u || dstA == 0u));
-    const bool dstBGRA = (dstR == 0x00FF0000u && dstG == 0x0000FF00u &&
-                          dstB == 0x000000FFu && (dstA == 0xFF000000u || dstA == 0u));
+    const bool srcRGBA =
+        (srcR == 0x000000FFu && srcG == 0x0000FF00u && srcB == 0x00FF0000u &&
+         (srcA == 0xFF000000u || srcA == 0u));
+    const bool srcBGRA =
+        (srcR == 0x00FF0000u && srcG == 0x0000FF00u && srcB == 0x000000FFu &&
+         (srcA == 0xFF000000u || srcA == 0u));
+    const bool dstRGBA =
+        (dstR == 0x000000FFu && dstG == 0x0000FF00u && dstB == 0x00FF0000u &&
+         (dstA == 0xFF000000u || dstA == 0u));
+    const bool dstBGRA =
+        (dstR == 0x00FF0000u && dstG == 0x0000FF00u && dstB == 0x000000FFu &&
+         (dstA == 0xFF000000u || dstA == 0u));
 
     const bool swapRB = (srcRGBA && dstBGRA) || (srcBGRA && dstRGBA);
     const bool dstWantsAlpha = (dstA == 0xFF000000u);
     const bool srcHasAlpha = (srcA == 0xFF000000u);
-    const bool fillAlpha = (dstWantsAlpha && !srcHasAlpha) && (srcRGBA || srcBGRA) && (dstRGBA || dstBGRA);
+    const bool fillAlpha = (dstWantsAlpha && !srcHasAlpha) &&
+                           (srcRGBA || srcBGRA) && (dstRGBA || dstBGRA);
 
     if (swapRB || fillAlpha) {
       // Bytes to skip at the end of a line.
@@ -568,7 +574,8 @@ static bool blit_rgba_to_rgba(
           const __m128i mask_ag = _mm_set1_epi32(static_cast<int>(0xFF00FF00u));
           const __m128i mask_r = _mm_set1_epi32(static_cast<int>(0x00FF0000u));
           const __m128i mask_b = _mm_set1_epi32(static_cast<int>(0x000000FFu));
-          const __m128i alpha_mask128 = _mm_set1_epi32(static_cast<int>(0xFF000000u));
+          const __m128i alpha_mask128 =
+              _mm_set1_epi32(static_cast<int>(0xFF000000u));
 
           auto swap_rb_4px = [&](const __m128i& v) -> __m128i {
             const __m128i ag = _mm_and_si128(v, mask_ag);
@@ -580,7 +587,8 @@ static bool blit_rgba_to_rgba(
           };
 
           for (; x + 8 <= width; x += 8) {
-            __m256i v = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(src));
+            __m256i v =
+                _mm256_loadu_si256(reinterpret_cast<const __m256i*>(src));
             __m128i lo = _mm256_castsi256_si128(v);
             __m128i hi = _mm256_extractf128_si256(v, 1);
 
@@ -607,7 +615,8 @@ static bool blit_rgba_to_rgba(
           uint32_t pix;
           memcpy(&pix, src, sizeof(pix));
           if (swapRB) {
-            pix = (pix & 0xFF00FF00u) | ((pix & 0x00FF0000u) >> 16) | ((pix & 0x000000FFu) << 16);
+            pix = (pix & 0xFF00FF00u) | ((pix & 0x00FF0000u) >> 16) |
+                  ((pix & 0x000000FFu) << 16);
           }
           if (fillAlpha) {
             pix |= 0xFF000000u;

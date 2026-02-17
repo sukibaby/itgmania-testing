@@ -316,7 +316,7 @@ int PolyphaseFilter::RunPolyphaseFilter(
       __m256 vIn = _mm256_loadu_ps(pInData);
       __m256 vPoly = _mm256_loadu_ps(pCurPoly);
       __m256 vMul = _mm256_mul_ps(vIn, vPoly);
-      
+
       // Horizontal sum: add all 8 elements
       __m256 vShuf = _mm256_permute_ps(vMul, _MM_SHUFFLE(2, 3, 0, 1));
       __m256 vSum = _mm256_add_ps(vMul, vShuf);
@@ -332,7 +332,7 @@ int PolyphaseFilter::RunPolyphaseFilter(
         fTot += pInData[j] * pCurPoly[j];
       }
 #endif
-      
+
       *pOut = fTot;
       pOut += iSampleStride;
 

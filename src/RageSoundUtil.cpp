@@ -15,18 +15,18 @@ void RageSoundUtil::Attenuate(float* pBuf, int iSamples, float fVolume) {
   if (iSamples >= 8) {
     __m256 vVolume = _mm256_set1_ps(fVolume);
     int iVectorSize = (iSamples / 8) * 8;
-    
+
     for (int i = 0; i < iVectorSize; i += 8) {
       __m256 vSamples = _mm256_loadu_ps(&pBuf[i]);
       __m256 vResult = _mm256_mul_ps(vSamples, vVolume);
       _mm256_storeu_ps(&pBuf[i], vResult);
     }
-    
+
     pBuf += iVectorSize;
     iSamples -= iVectorSize;
   }
 #endif
-  
+
   // Scalar fallback
   while (iSamples--) {
     *pBuf *= fVolume;
@@ -70,7 +70,7 @@ void RageSoundUtil::Pan(float* buffer, int frames, float fPos) {
     __m256 vLeftR = _mm256_setr_ps(
         fLeftFactors[0], fLeftFactors[1], fLeftFactors[0], fLeftFactors[1],
         fLeftFactors[0], fLeftFactors[1], fLeftFactors[0], fLeftFactors[1]);
-    
+
     int iVectorFrames = (frames / 4) * 4;
     for (int samp = 0; samp < iVectorFrames; samp += 4) {
       __m256 vIn = _mm256_loadu_ps(&buffer[samp * 2]);
@@ -83,7 +83,7 @@ void RageSoundUtil::Pan(float* buffer, int frames, float fPos) {
       __m256 vOut = _mm256_add_ps(vOutL, vOutR);
       _mm256_storeu_ps(&buffer[samp * 2], vOut);
     }
-    
+
     buffer += iVectorFrames * 2;
     frames -= iVectorFrames;
   }
