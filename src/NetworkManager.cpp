@@ -6,10 +6,12 @@
 #include <ixwebsocket/IXWebSocket.h>
 
 #include <algorithm>
+#include <atomic>
 #include <climits>
 #include <cstddef>
 #include <memory>
 #include <mutex>
+#include <queue>
 #include <sstream>
 #include <string>
 #include <thread>
@@ -35,6 +37,34 @@
 
 NetworkManager* NETWORK =
     nullptr;  // global and accessible from anywhere in our program
+
+namespace {
+std::mutex networkThreadSyncMutex;
+std::queue<std::function<void()>> networkTaskQueue;
+}  // namespace
+
+// Lua handlers never execute on the same thread that enqueued them.
+void NetworkManager::Enqueue(std::function<void()> task) {
+  std::lock_guard<std::mutex> lock(networkThreadSyncMutex);
+  networkTaskQueue.push(std::move(task));
+}
+
+// Runs in the game loop on every frame.
+void NetworkManager::ProcessQueuedNetworkTasks() {
+  std::queue<std::function<void()>> tasks;
+  {
+    std::lock_guard<std::mutex> lock(networkThreadSyncMutex);
+    std::swap(tasks, networkTaskQueue);
+  }
+
+  while (!tasks.empty()) {
+    auto task = std::move(tasks.front());
+    tasks.pop();
+    if (task) {
+      task();
+    }
+  }
+}
 
 Preference<bool> NetworkManager::httpEnabled(
     "HttpEnabled", true, nullptr, PreferenceType::Immutable);
