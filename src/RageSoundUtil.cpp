@@ -5,7 +5,29 @@
 
 #include "RageUtil.h"
 
+#ifdef __AVX__
+#include <immintrin.h>
+#endif
+
 void RageSoundUtil::Attenuate(float* pBuf, int iSamples, float fVolume) {
+#ifdef __AVX__
+  // AVX fast path for volume multiplication
+  if (iSamples >= 8) {
+    __m256 vVolume = _mm256_set1_ps(fVolume);
+    int iVectorSize = (iSamples / 8) * 8;
+    
+    for (int i = 0; i < iVectorSize; i += 8) {
+      __m256 vSamples = _mm256_loadu_ps(&pBuf[i]);
+      __m256 vResult = _mm256_mul_ps(vSamples, vVolume);
+      _mm256_storeu_ps(&pBuf[i], vResult);
+    }
+    
+    pBuf += iVectorSize;
+    iSamples -= iVectorSize;
+  }
+#endif
+  
+  // Scalar fallback
   while (iSamples--) {
     *pBuf *= fVolume;
     ++pBuf;
@@ -33,6 +55,41 @@ void RageSoundUtil::Pan(float* buffer, int frames, float fPos) {
     std::swap(fLeftFactors[1], fRightFactors[1]);
   }
 
+#ifdef __AVX__
+  // AVX fast path: process 4 stereo frames (8 samples) at a time
+  if (frames >= 4) {
+    __m256 vLeftL = _mm256_setr_ps(
+        fLeftFactors[0], fLeftFactors[1], fLeftFactors[0], fLeftFactors[1],
+        fLeftFactors[0], fLeftFactors[1], fLeftFactors[0], fLeftFactors[1]);
+    __m256 vRightL = _mm256_setr_ps(
+        fRightFactors[0], fRightFactors[1], fRightFactors[0], fRightFactors[1],
+        fRightFactors[0], fRightFactors[1], fRightFactors[0], fRightFactors[1]);
+    __m256 vRightR = _mm256_setr_ps(
+        fRightFactors[0], fRightFactors[1], fRightFactors[0], fRightFactors[1],
+        fRightFactors[0], fRightFactors[1], fRightFactors[0], fRightFactors[1]);
+    __m256 vLeftR = _mm256_setr_ps(
+        fLeftFactors[0], fLeftFactors[1], fLeftFactors[0], fLeftFactors[1],
+        fLeftFactors[0], fLeftFactors[1], fLeftFactors[0], fLeftFactors[1]);
+    
+    int iVectorFrames = (frames / 4) * 4;
+    for (int samp = 0; samp < iVectorFrames; samp += 4) {
+      __m256 vIn = _mm256_loadu_ps(&buffer[samp * 2]);
+      // Shuffle to separate L and R: [L0,R0,L1,R1,L2,R2,L3,R3]
+      __m256 vL = _mm256_shuffle_ps(vIn, vIn, _MM_SHUFFLE(2, 0, 2, 0));
+      __m256 vR = _mm256_shuffle_ps(vIn, vIn, _MM_SHUFFLE(3, 1, 3, 1));
+      // Apply factors
+      __m256 vOutL = _mm256_mul_ps(vL, vLeftL);
+      __m256 vOutR = _mm256_mul_ps(vR, vRightL);
+      __m256 vOut = _mm256_add_ps(vOutL, vOutR);
+      _mm256_storeu_ps(&buffer[samp * 2], vOut);
+    }
+    
+    buffer += iVectorFrames * 2;
+    frames -= iVectorFrames;
+  }
+#endif
+
+  // Scalar fallback
   for (int samp = 0; samp < frames; ++samp) {
     float l = buffer[0] * fLeftFactors[0] + buffer[1] * fLeftFactors[1];
     float r = buffer[0] * fRightFactors[0] + buffer[1] * fRightFactors[1];

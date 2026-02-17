@@ -140,6 +140,19 @@ if(WITH_SSE2)
   endif()
 endif()
 
+if(WITH_AVX)
+  message(STATUS "AVX optimizations enabled")
+  if(MSVC)
+    if(SM_WIN32_ARCH MATCHES "x64" OR SM_WIN32_ARCH MATCHES "x86")
+      set(SM_COMPILE_FLAGS "${SM_COMPILE_FLAGS} /arch:AVX")
+    endif()
+  elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64" OR CMAKE_SYSTEM_PROCESSOR MATCHES "x86")
+    set(SM_COMPILE_FLAGS "${SM_COMPILE_FLAGS} -mavx")
+  else()
+    message("AVX requested but processor type may not support it")
+  endif()
+endif()
+
 if(MSVC)
   # TODO: Find a way to do this cleanly for non MSVC users.
   set(SM_COMPILE_FLAGS "${SM_COMPILE_FLAGS} /MP /permissive- /utf-8")
@@ -430,7 +443,6 @@ else() # Unix / Linux TODO: Remember to find and locate the zip archive files.
     # No mention of OSS libraries.
     target_compile_definitions("${SM_EXE_NAME}" PRIVATE "HAVE_OSS_VERSION=1")
   endif()
-
   if(HAS_PULSE)
     list(APPEND SMDATA_LINK_LIB ${PULSEAUDIO_LIBRARY})
   endif()
@@ -442,7 +454,6 @@ else() # Unix / Linux TODO: Remember to find and locate the zip archive files.
   if(LIBXTST_FOUND)
     list(APPEND SMDATA_LINK_LIB ${LIBXTST_LIBRARY})
   endif()
-
   list(APPEND SMDATA_LINK_LIB ${LIBUSB_LIBRARY})
 
   list(APPEND SMDATA_LINK_LIB ${XRANDR_LIBRARIES} ${XINERAMA_LIBRARIES})

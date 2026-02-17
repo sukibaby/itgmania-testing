@@ -103,7 +103,6 @@ static void ZoomSurface(const RageSurface* src, RageSurface* dst) {
       const uint8_t* c01 = csp + esx1[x] * 4;
       const uint8_t* c10 = ncsp + esx0[x] * 4;
       const uint8_t* c11 = ncsp + esx1[x] * 4;
-
       for (int c = 0; c < 4; ++c) {
         uint32_t x0 = uint32_t(c00[c]) * ex0[x];
         x0 += uint32_t(c01[c]) * (16777216 - ex0[x]);
