@@ -561,14 +561,6 @@ class LunaNetworkManager : public Luna<NetworkManager> {
       if (lua_isfunction(L, -1)) {
         lua_pushvalue(L, -1);
         onProgressRef = luaL_ref(L, LUA_REGISTRYINDEX);
-
-        args.onProgress = [onProgressRef](int current, int total) {
-          Lua* L = LUA->Get();
-          handleProgress(L, current, total, onProgressRef);
-          LUA->Release(L);
-
-          return true;
-        };
       } else {
         luaL_error(L, "onProgress must be a function");
       }
@@ -587,31 +579,15 @@ class LunaNetworkManager : public Luna<NetworkManager> {
     }
     lua_pop(L, 1);
 
-    args.onFileError = [onProgressRef,
-                        onResponseRef](const std::string& errorMessage) {
-      Lua* L = LUA->Get();
+    std::shared_ptr<HttpLuaCallbackState> callbackState =
+        std::make_shared<HttpLuaCallbackState>(onProgressRef, onResponseRef);
 
-      luaL_unref(L, LUA_REGISTRYINDEX, onProgressRef);
+    if (onProgressRef != LUA_NOREF) {
+      args.onProgress = EnqueueHttpProgressCallback{callbackState};
+    }
 
-      if (onResponseRef != LUA_NOREF) {
-        handleFileError(L, errorMessage, onResponseRef);
-      }
-
-      LUA->Release(L);
-    };
-
-    args.onResponse = [onProgressRef,
-                       onResponseRef](const ix::HttpResponsePtr& response) {
-      Lua* L = LUA->Get();
-
-      luaL_unref(L, LUA_REGISTRYINDEX, onProgressRef);
-
-      if (onResponseRef != LUA_NOREF) {
-        handleHttpResponse(L, response, onResponseRef);
-      }
-
-      LUA->Release(L);
-    };
+    args.onFileError = EnqueueHttpFileErrorCallback{callbackState};
+    args.onResponse = EnqueueHttpResponseCallback{callbackState};
 
     if (p->IsUrlAllowed(args.url)) {
       auto fut = p->HttpRequest(args);
