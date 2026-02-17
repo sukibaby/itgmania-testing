@@ -774,6 +774,7 @@ class LunaNetworkManager : public Luna<NetworkManager> {
   }
 
  private:
+    // Shared state created in Lua HttpRequest() and consumed by queued main-thread tasks.
   struct HttpLuaCallbackState {
     std::atomic<bool> done;
     int onProgressRef;
@@ -785,6 +786,7 @@ class LunaNetworkManager : public Luna<NetworkManager> {
           onResponseRef(onResponseRef_) {}
   };
 
+  // Main-thread task: runs the Lua progress callback for a single progress update.
   struct HttpLuaProgressTask {
     std::shared_ptr<HttpLuaCallbackState> state;
     int current;
@@ -804,6 +806,7 @@ class LunaNetworkManager : public Luna<NetworkManager> {
     }
   };
 
+  // Main-thread task: handles download/write failure, unrefs callbacks, and calls Lua error response.
   struct HttpLuaFileErrorTask {
     std::shared_ptr<HttpLuaCallbackState> state;
     std::string errorMessage;
@@ -832,6 +835,7 @@ class LunaNetworkManager : public Luna<NetworkManager> {
     }
   };
 
+  // Main-thread task: finalizes the request, unrefs callbacks, and calls the Lua response handler.
   struct HttpLuaResponseTask {
     std::shared_ptr<HttpLuaCallbackState> state;
     ix::HttpResponsePtr response;
@@ -860,6 +864,7 @@ class LunaNetworkManager : public Luna<NetworkManager> {
     }
   };
 
+  // HTTP thread callback: enqueues a progress task to be executed on the main thread.
   struct EnqueueHttpProgressCallback {
     std::shared_ptr<HttpLuaCallbackState> state;
 
@@ -876,6 +881,7 @@ class LunaNetworkManager : public Luna<NetworkManager> {
     }
   };
 
+  // HTTP thread callback: enqueues a file-error task to be executed on the main thread.
   struct EnqueueHttpFileErrorCallback {
     std::shared_ptr<HttpLuaCallbackState> state;
 
@@ -887,6 +893,7 @@ class LunaNetworkManager : public Luna<NetworkManager> {
     }
   };
 
+  // HTTP thread callback: enqueues the final response task to be executed on the main thread.
   struct EnqueueHttpResponseCallback {
     std::shared_ptr<HttpLuaCallbackState> state;
 
