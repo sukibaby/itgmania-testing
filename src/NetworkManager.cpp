@@ -48,7 +48,7 @@ void NetworkManager::Enqueue(std::function<void()> task) {
   g_mainThreadTasks.push(std::move(task));
 }
 
-void NetworkManager::ProcessNetworkQueue() {
+void NetworkManager::PumpNetworkCallbacks() {
   std::queue<std::function<void()>> tasks;
   {
     std::lock_guard<std::mutex> lock(g_mainThreadTaskMutex);
