@@ -6,32 +6,44 @@ if [ "$(id -u)" -ne 0 ]; then
     exit 1
 fi
 
+# Installation prefix and paths
+PREFIX="${PREFIX:-/opt}"
+INSTALL_DIR="${PREFIX}/itgmania"
+THEMES_DIR="${INSTALL_DIR}/Themes"
+THEME_DIR="${THEMES_DIR}/Simply Love"
+THEME_OLD_DIR="${THEMES_DIR}/Simply Love.old"
+DESKTOP_FILE="${INSTALL_DIR}/itgmania.desktop"
+APPS_DIR="/usr/share/applications"
+
 copy_sl_config() {
-	if [ -d "/opt/itgmania/Themes/Simply Love.old/$1" ]; then
+	local src_file="${THEME_OLD_DIR}/$1"
+	local dst_file="${THEME_DIR}/$1"
+	
+	if [ -d "$src_file" ]; then
 		# Don't overwrite any existing files.
 		# This lets us retain the updated readmes and other files that come with the new release.
-		cp -r -n "/opt/itgmania/Themes/Simply Love.old/$1" "/opt/itgmania/Themes/Simply Love/$1"
+		cp -r -n "$src_file" "$dst_file"
 		return
-	elif [ -f "/opt/itgmania/Themes/Simply Love.old/$1" ]; then
-		cp "/opt/itgmania/Themes/Simply Love.old/$1" "/opt/itgmania/Themes/Simply Love/$1"
+	elif [ -f "$src_file" ]; then
+		cp "$src_file" "$dst_file"
 	fi
 }
 
 cd "$(dirname "$0")"
 
 # Move the old SL release out of the way
-[ -d /opt/itgmania/Themes/Simply\ Love ] && mv /opt/itgmania/Themes/Simply\ Love{,.old}
+[ -d "$THEME_DIR" ] && mv "$THEME_DIR" "$THEME_OLD_DIR"
 
 # Install ITGm
-[ -d /opt ] || install -d -m 755 -o root -g root /opt
-cp -R --preserve=mode,timestamps itgmania /opt
-ln -sf /opt/itgmania/itgmania.desktop /usr/share/applications
+[ -d "$PREFIX" ] || install -d -m 755 -o root -g root "$PREFIX"
+cp -R --preserve=mode,timestamps itgmania "$PREFIX"
+ln -sf "$DESKTOP_FILE" "$APPS_DIR"
 
 # Copy persistent files over from the old SL folder
-if [ -d /opt/itgmania/Themes/Simply\ Love.old ]; then
-	copy_sl_config Other/SongManager\ PreferredCourses.txt
-	copy_sl_config Other/SongManager\ PreferredSongs.txt
-	copy_sl_config Modules
+if [ -d "$THEME_OLD_DIR" ]; then
+	copy_sl_config "Other/SongManager PreferredCourses.txt"
+	copy_sl_config "Other/SongManager PreferredSongs.txt"
+	copy_sl_config "Modules"
 
-	rm -rf /opt/itgmania/Themes/Simply\ Love.old
+	rm -rf "$THEME_OLD_DIR"
 fi
