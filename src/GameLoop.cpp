@@ -10,6 +10,7 @@
 #include "LightsManager.h"
 #include "LuaManager.h"
 #include "MemoryCardManager.h"
+#include "NetworkManager.h"
 #include "PeriodicCaller.h"
 #include "Preference.h"
 #include "PrefsManager.h"
@@ -277,6 +278,10 @@ void GameLoop::UpdateAllButDraw(bool bRunningFromVBLANK) {
   SOUND->Update(fDeltaTime);
   TEXTUREMAN->Update(fDeltaTime);
   GAMESTATE->Update(fDeltaTime);
+
+  // Drain network callbacks on the main thread.
+  NetworkManager::RunMainThreadTasks();
+
   SCREENMAN->Update(fDeltaTime);
   MEMCARDMAN->Update();
 

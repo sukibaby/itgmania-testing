@@ -10,6 +10,7 @@
 #include <cstddef>
 #include <memory>
 #include <mutex>
+#include <queue>
 #include <sstream>
 #include <string>
 #include <thread>
@@ -35,6 +36,32 @@
 
 NetworkManager* NETWORK =
     nullptr;  // global and accessible from anywhere in our program
+
+namespace {
+std::mutex g_mainThreadTaskMutex;
+std::queue<std::function<void()>> g_mainThreadTasks;
+}  // namespace
+
+void NetworkManager::EnqueueMainThreadTask(std::function<void()> task) {
+  std::lock_guard<std::mutex> lock(g_mainThreadTaskMutex);
+  g_mainThreadTasks.push(std::move(task));
+}
+
+void NetworkManager::RunMainThreadTasks() {
+  std::queue<std::function<void()>> tasks;
+  {
+    std::lock_guard<std::mutex> lock(g_mainThreadTaskMutex);
+    std::swap(tasks, g_mainThreadTasks);
+  }
+
+  while (!tasks.empty()) {
+    auto task = std::move(tasks.front());
+    tasks.pop();
+    if (task) {
+      task();
+    }
+  }
+}
 
 Preference<bool> NetworkManager::httpEnabled(
     "HttpEnabled", true, nullptr, PreferenceType::Immutable);
@@ -533,10 +560,14 @@ class LunaNetworkManager : public Luna<NetworkManager> {
         onProgressRef = luaL_ref(L, LUA_REGISTRYINDEX);
 
         args.onProgress = [onProgressRef](int current, int total) {
-          Lua* L = LUA->Get();
-          handleProgress(L, current, total, onProgressRef);
-          LUA->Release(L);
-
+          if (onProgressRef != LUA_NOREF) {
+            NetworkManager::EnqueueMainThreadTask(
+                [onProgressRef, current, total]() {
+                  Lua* L = LUA->Get();
+                  handleProgress(L, current, total, onProgressRef);
+                  LUA->Release(L);
+                });
+          }
           return true;
         };
       } else {
@@ -559,28 +590,28 @@ class LunaNetworkManager : public Luna<NetworkManager> {
 
     args.onFileError = [onProgressRef,
                         onResponseRef](const std::string& errorMessage) {
-      Lua* L = LUA->Get();
-
-      luaL_unref(L, LUA_REGISTRYINDEX, onProgressRef);
-
-      if (onResponseRef != LUA_NOREF) {
-        handleFileError(L, errorMessage, onResponseRef);
-      }
-
-      LUA->Release(L);
+      NetworkManager::EnqueueMainThreadTask(
+          [onProgressRef, onResponseRef, errorMessage]() {
+            Lua* L = LUA->Get();
+            luaL_unref(L, LUA_REGISTRYINDEX, onProgressRef);
+            if (onResponseRef != LUA_NOREF) {
+              handleFileError(L, errorMessage, onResponseRef);
+            }
+            LUA->Release(L);
+          });
     };
 
     args.onResponse = [onProgressRef,
                        onResponseRef](const ix::HttpResponsePtr& response) {
-      Lua* L = LUA->Get();
-
-      luaL_unref(L, LUA_REGISTRYINDEX, onProgressRef);
-
-      if (onResponseRef != LUA_NOREF) {
-        handleHttpResponse(L, response, onResponseRef);
-      }
-
-      LUA->Release(L);
+      NetworkManager::EnqueueMainThreadTask(
+          [onProgressRef, onResponseRef, response]() {
+            Lua* L = LUA->Get();
+            luaL_unref(L, LUA_REGISTRYINDEX, onProgressRef);
+            if (onResponseRef != LUA_NOREF) {
+              handleHttpResponse(L, response, onResponseRef);
+            }
+            LUA->Release(L);
+          });
     };
 
     if (p->IsUrlAllowed(args.url)) {
