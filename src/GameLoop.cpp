@@ -10,6 +10,7 @@
 #include "LightsManager.h"
 #include "LuaManager.h"
 #include "MemoryCardManager.h"
+#include "NetworkManager.h"
 #include "PeriodicCaller.h"
 #include "Preference.h"
 #include "PrefsManager.h"
@@ -284,8 +285,9 @@ void GameLoop::UpdateAllButDraw(bool bRunningFromVBLANK) {
    * acting on song beat from last frame */
   HandleInputEvents(fDeltaTime);
 
-  // Update the lights
+  // Update the lights, and process any queued network tasks.
   LIGHTSMAN->Update(fDeltaTime);
+  NetworkManager::ProcessQueuedNetworkTasks();
 }
 
 void GameLoop::RunGameLoop() {
