@@ -45,6 +45,17 @@ jobs:
         id: package
         run: |
           ${{ matrix.package }}
+      - name: Show WiX error log (if packaging failed)
+        if: failure()
+        shell: pwsh
+        run: |
+          $wixLog = "Build\_CPack_Packages\Windows\WIX\wix.log"
+          if (Test-Path $wixLog) {
+            Write-Host "=== WiX Error Log ===" -ForegroundColor Red
+            Get-Content $wixLog
+          } else {
+            Write-Host "WiX log not found at $wixLog" -ForegroundColor Yellow
+          }
       - name: Upload artifacts
         id: upload
         uses: actions/upload-artifact@v6
