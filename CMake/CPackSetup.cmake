@@ -16,7 +16,6 @@ set(CPACK_RESOURCE_FILE_LICENSE "${SM_CMAKE_DIR}/license_install.txt")
 if(WIN32)
   # WiX Toolset can be provided by the Visual Studio Installer, chocolatey, etc
   # https://cmake.org/cmake/help/latest/cpack_gen/wix.html
-  # GUID should remain unchanged. (helps detect old version installs, etc)
   # This config uses the default WiX UI settings with only needed flags set.
   set(CPACK_GENERATOR WIX)
   set(CPACK_SYSTEM_NAME "Windows")
