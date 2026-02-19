@@ -14,21 +14,15 @@ set(CPACK_RESOURCE_FILE_README "${SM_ROOT_DIR}/README.md")
 set(CPACK_RESOURCE_FILE_LICENSE "${SM_CMAKE_DIR}/license_install.txt")
 
 if(WIN32)
-
-  # WiX Toolset is used to build a MSI installer.
-  # This is typically provided by the Visual Studio Installer,
-  # but is also available via chocolatey, etc.
+  # WiX Toolset can be provided by the Visual Studio Installer, chocolatey, etc
   # https://cmake.org/cmake/help/latest/cpack_gen/wix.html
+  # GUID should remain unchanged. (helps detect old version installs, etc)
+  # This config uses the default WiX UI settings with only needed flags set.
   set(CPACK_GENERATOR WIX)
   set(CPACK_SYSTEM_NAME "Windows")
-
-  # GUID should remain unchanged. (helps detect old version installs, etc)
   set(CPACK_WIX_UPGRADE_GUID "a1dcf4ac-e756-4625-8b53-2584e8b7a69a")
-
   set(CPACK_WIX_SKIP_PROGRAM_FOLDER ON)
   set(CPACK_PACKAGE_INSTALL_DIRECTORY "C:/Games/ITGmania")
-
-  # Default WiX UI with install directory selection
   set(CPACK_WIX_UI_REF "WixUI_InstallDir")
   set(CPACK_WIX_PRODUCT_ICON "${SM_INSTALLER_DIR}/install.ico")
   set(CPACK_WIX_UI_BANNER "${SM_INSTALLER_DIR}/header.bmp")
@@ -37,7 +31,6 @@ if(WIN32)
   set(CPACK_WIX_PRODUCT_NAME "${SM_EXE_NAME} ${CPACK_PACKAGE_VERSION}")
   set(CPACK_WIX_URL_INFO_ABOUT "https://www.itgmania.com/")
   set(CPACK_WIX_PROPERTY_ARPURLINFOABOUT "https://www.itgmania.com/")
-  
 elseif(MACOSX)
   set(CPACK_GENERATOR DragNDrop)
   set(CPACK_DMG_VOLUME_NAME "${CPACK_PACKAGE_NAME} ${CPACK_PACKAGE_VERSION}")
