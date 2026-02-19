@@ -19,6 +19,10 @@ if(WIN32)
   # This config uses the default WiX UI settings with only needed flags set.
   set(CPACK_GENERATOR WIX)
   set(CPACK_SYSTEM_NAME "Windows")
+  # WiX requires Product/@Version to be numeric x.x.x.x (0-65534 per field).
+  # Override the package version on Windows to a sanitized 4-part number.
+  set(CPACK_PACKAGE_VERSION
+      "${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}.0")
   set(CPACK_WIX_UPGRADE_GUID "a1dcf4ac-e756-4625-8b53-2584e8b7a69a")
   set(CPACK_WIX_SKIP_PROGRAM_FOLDER ON)
   set(INSTALL_ROOT "C:/Games/ITGmania")
