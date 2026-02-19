@@ -26,7 +26,10 @@ if(WIN32)
   set(CPACK_WIX_UPGRADE_GUID "a1dcf4ac-e756-4625-8b53-2584e8b7a69a")
 
   set(CPACK_WIX_SKIP_PROGRAM_FOLDER ON)
-  set(CPACK_PACKAGE_INSTALL_DIRECTORY "C:\\Games\\ITGmania")
+  set(CPACK_PACKAGE_INSTALL_DIRECTORY "C:/Games/ITGmania")
+
+  # Default WiX UI with install directory selection
+  set(CPACK_WIX_UI_REF "WixUI_InstallDir")
   set(CPACK_WIX_PRODUCT_ICON "${SM_INSTALLER_DIR}/install.ico")
   set(CPACK_WIX_UI_BANNER "${SM_INSTALLER_DIR}/header.bmp")
   set(CPACK_WIX_PROGRAM_MENU_FOLDER "ITGmania")
