@@ -9,6 +9,7 @@
 #include "Difficulty.h"
 #include "EnumHelper.h"
 #include "GameConstantsAndTypes.h"
+#include "NoteAnnotation.h"
 #include "PlayerNumber.h"
 #include "RadarValues.h"
 #include "RageUtil.h"
@@ -174,6 +175,8 @@ class Steps {
   void SetMeter(int meter);
   void SetCachedRadarValues(const RadarValues v[NUM_PLAYERS]);
   void SetCachedTechCounts(const TechCounts ts[NUM_PLAYERS]);
+  void SetCachedNoteAnnotations(
+      std::vector<NoteAnnotationCache>& noteAnnotations);
   void SetCachedNpsPerMeasure(std::vector<std::vector<float>>& npsPerMeasure);
   void SetCachedNotesPerMeasure(std::vector<std::vector<int>>& notesPerMeasure);
   void SetPeakNps(std::vector<float>& peakNps);
@@ -213,6 +216,9 @@ class Steps {
     return Real()->m_CachedTechCounts[pn];
   }
 
+  const std::vector<NoteAnnotation>& GetNoteAnnotations(PlayerNumber pn) const;
+  const std::vector<NoteAnnotationCache>& GetNoteAnnotationCaches() const;
+  std::vector<std::vector<NoteAnnotation>> GetAllNoteAnnotations() const;
   void CalculateMeasureInfo();
 
   const std::vector<std::vector<float>>& GetAllNpsPerMeasures() const {
@@ -337,6 +343,8 @@ class Steps {
   std::vector<std::vector<int>> m_CachedNotesPerMeasure;
   bool m_AreCachedNotesPerMeasureJustLoaded;
 
+  std::vector<NoteAnnotationCache> m_CachedNoteAnnotations;
+  bool m_AreCachedNoteAnnotationsJustLoaded;
   std::vector<float> m_PeakNps;
 
   bool m_bIsCachedGrooveStatsHashJustLoaded;

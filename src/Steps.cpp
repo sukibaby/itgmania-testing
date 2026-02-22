@@ -412,6 +412,7 @@ void Steps::CalculateTechCounts() {
   this->GetNoteData(tempNoteData);
 
   FOREACH_PlayerNumber(pn) m_CachedTechCounts[pn].Zero();
+  m_CachedNoteAnnotations.clear();
 
   const std::optional<StepParity::StageLayout> layout =
       getLayout(this->m_StepsType);
@@ -424,9 +425,16 @@ void Steps::CalculateTechCounts() {
   StepParity::StepParityGenerator gen =
       StepParity::StepParityGenerator(&*layout, timing);
   gen.analyzeNoteData(tempNoteData);
+
+  std::vector<NoteAnnotation> tempNoteAnnotations;
+
   TechCounts::CalculateTechCountsFromRows(
-      gen.rows, &*layout, m_CachedTechCounts[0]);
+      gen.rows, &*layout, m_CachedTechCounts[0], tempNoteAnnotations);
   std::fill_n(m_CachedTechCounts + 1, NUM_PLAYERS - 1, m_CachedTechCounts[0]);
+  NoteAnnotationCache cachedAnnotations;
+  cachedAnnotations.decompressed = tempNoteAnnotations;
+  cachedAnnotations.Compress();
+  m_CachedNoteAnnotations.push_back(cachedAnnotations);
 }
 
 void Steps::CalculateMeasureInfo() {
@@ -575,6 +583,10 @@ void Steps::Compress() const {
   // Don't compress data in the editor: it's still in use.
   if (GAMESTATE->m_bInStepEditor) {
     return;
+  }
+
+  for (NoteAnnotationCache annotationCache : m_CachedNoteAnnotations) {
+    annotationCache.Compress();
   }
 
   if (!m_sFilename.empty() && m_LoadedFromProfile == ProfileSlot_Invalid) {
@@ -756,6 +768,14 @@ void Steps::SetCachedTechCounts(const TechCounts ts[NUM_PLAYERS]) {
   DeAutogen();
   std::copy(ts, ts + NUM_PLAYERS, m_CachedTechCounts);
   m_bAreCachedTechCountsValuesJustLoaded = true;
+}
+
+void Steps::SetCachedNoteAnnotations(
+    std::vector<NoteAnnotationCache>& noteAnnotations) {
+  DeAutogen();
+  m_CachedNoteAnnotations.assign(
+      noteAnnotations.begin(), noteAnnotations.end());
+  m_AreCachedNoteAnnotationsJustLoaded = true;
 }
 
 void Steps::SetCachedNpsPerMeasure(
@@ -1028,6 +1048,33 @@ const std::vector<int>& Steps::GetNotesPerMeasure(PlayerNumber pn) const {
   }
 }
 
+const std::vector<NoteAnnotation>& Steps::GetNoteAnnotations(
+    PlayerNumber pn) const {
+  // m_CachedNoteAnnotations doesn't actually support couples/routine charts
+  // yet, but in the event we ever get around to implementing that, this
+  // functions the same as GetNotesPerMeasure and GetNpsPerMeasure
+
+  static const std::vector<NoteAnnotation> EMPTY_VECTOR;
+  if (Real()->m_CachedNoteAnnotations.size() == 0) {
+    return EMPTY_VECTOR;
+  } else if (Real()->m_CachedNoteAnnotations.size() <= pn) {
+    return Real()->m_CachedNoteAnnotations[PLAYER_1].GetNoteAnnotations();
+  } else {
+    return Real()->m_CachedNoteAnnotations[pn].GetNoteAnnotations();
+  }
+}
+
+const std::vector<NoteAnnotationCache>& Steps::GetNoteAnnotationCaches() const {
+  return m_CachedNoteAnnotations;
+}
+std::vector<std::vector<NoteAnnotation>> Steps::GetAllNoteAnnotations() const {
+  std::vector<std::vector<NoteAnnotation>> annotations;
+  for (NoteAnnotationCache c : m_CachedNoteAnnotations) {
+    annotations.push_back(c.GetNoteAnnotations());
+  }
+  return annotations;
+}
+
 float Steps::GetPeakNps(PlayerNumber pn) const {
   if (Real()->m_PeakNps.size() == 0) {
     return 0;
@@ -1231,6 +1278,45 @@ class LunaSteps : public Luna<Steps> {
     return 1;
   }
 
+  static int GetNoteAnnotations(T* p, lua_State* L) {
+    const std::vector<NoteAnnotation> rows = p->GetNoteAnnotations(PLAYER_1);
+
+    lua_createtable(L, static_cast<int>(rows.size()), 0);
+
+    for (unsigned i = 0; i < rows.size(); i++) {
+      lua_createtable(L, 0, 4);
+      lua_pushstring(L, "beat");
+      lua_pushnumber(L, rows[i].beat);
+      lua_settable(L, -3);
+
+      // add columns
+      lua_pushstring(L, "footPlacement");
+      lua_createtable(L, 0, 0);
+      int colIndex = 1;
+      for (StepParity::Foot f : StepParity::FEET) {
+        if (rows[i].whereTheFeetAre[f] != StepParity::INVALID_COLUMN) {
+          lua_pushnumber(L, rows[i].whereTheFeetAre[f] + 1);
+          Enum::Push(L, f);
+          lua_settable(L, -3);
+        }
+      }
+      lua_settable(L, -3);
+
+      // add tech
+      lua_pushstring(L, "tech");
+      lua_createtable(L, 0, 0);
+      int techIndex = 1;
+      for (const TechCountsCategory techVal : rows[i].tech) {
+        Enum::Push(L, techVal);
+        lua_rawseti(L, -2, techIndex++);
+      }
+      lua_settable(L, -3);
+
+      lua_rawseti(L, -2, i + 1);
+    }
+    return 1;
+  }
+
   LunaSteps() {
     ADD_METHOD(GetAuthorCredit);
     ADD_METHOD(GetChartStyle);
@@ -1266,6 +1352,7 @@ class LunaSteps : public Luna<Steps> {
     ADD_METHOD(GetPeakNps);
     ADD_METHOD(GetGrooveStatsHash);
     ADD_METHOD(GetGrooveStatsHashVersion);
+    ADD_METHOD(GetNoteAnnotations);
   }
 };
 
