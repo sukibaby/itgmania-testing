@@ -21,6 +21,10 @@ option(WITH_NIGHTLY_RELEASE "Build as a nightly release." OFF)
 # Turn this on to include Club Fantastic songs
 option(WITH_CLUB_FANTASTIC "Include Club Fantastic songs." OFF)
 
+# Turn this on to install Portable.ini with release artifacts so portable mode
+# is enabled by default.
+option(WITH_PORTABLE_INI "Install Portable.ini in the install output." OFF)
+
 # Turn this on to compile tomcrypt with no assembly data. This is a portable
 # mode.
 option(WITH_PORTABLE_TOMCRYPT

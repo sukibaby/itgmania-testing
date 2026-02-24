@@ -507,11 +507,25 @@ if(WIN32)
           DESTINATION "${SM_FULL_INSTALLATION_PATH}")
   install(FILES "${SM_PROGRAM_DIR}/ITGmania.vdi"
           DESTINATION "${SM_FULL_INSTALLATION_PATH}")
+
+  if(WITH_PORTABLE_INI)
+    install(FILES "${SM_ROOT_DIR}/Portable.ini"
+            DESTINATION "${SM_FULL_INSTALLATION_PATH}")
+  endif()
 elseif(APPLE)
   # On macOS, just install the .app bundle - resources are already inside it
   install(TARGETS "${SM_EXE_NAME}" BUNDLE DESTINATION ".")
+
+  if(WITH_PORTABLE_INI)
+    install(FILES "${SM_ROOT_DIR}/Portable.ini"
+            DESTINATION "${SM_EXE_NAME}.app/Contents/MacOS")
+  endif()
 else()
   install(TARGETS "${SM_EXE_NAME}" DESTINATION "${SM_INSTALL_DESTINATION}")
+  if(WITH_PORTABLE_INI)
+    install(FILES "${SM_ROOT_DIR}/Portable.ini"
+            DESTINATION "${SM_INSTALL_DESTINATION}")
+  endif()
   if(LINUX)
     install(FILES "${SM_ROOT_DIR}/itgmania.desktop"
             DESTINATION "${SM_INSTALL_DESTINATION}")
