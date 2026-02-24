@@ -1,5 +1,6 @@
 #include "RageSoundPosMap.h"
 
+#include <cmath>
 #include <cinttypes>
 #include <cstdint>
 #include <cstdlib>
@@ -10,12 +11,10 @@
 #include "RageLog.h"
 #include "RageTimer.h"
 
-// NOTE(sukibaby): The number of frames we should keep pos_map data for.
-// File bitrate, metadata, etc will factor in here. 80k is a safe value
-// to provide a good balance of stability and low latency. It is stable
-// up to 200k, but increased latency is the main reason not to increase
-// this to a very large number.
-static int pos_map_backlog_frames = 80000;
+// Number of frames to retain in the mapping queue.  A larger history makes
+// frame conversion resilient to scheduler jitter and delayed position polling,
+// reducing extrapolation/clamping artifacts in sync-sensitive play.
+static constexpr int64_t pos_map_backlog_frames = 441000;  // ~10s at 44.1kHz
 
 struct pos_map_t {
   int64_t m_iSourceFrame;
@@ -35,6 +34,28 @@ struct pos_map_impl {
   std::deque<pos_map_t> m_Queue;
   void Cleanup();
 };
+
+namespace {
+int64_t ScaleFramesWithRatio(int64_t sourceFrames, double sourceToDestRatio) {
+  const long double scaled =
+      static_cast<long double>(sourceFrames) * sourceToDestRatio;
+  const long double rounded = std::llround(scaled);
+
+  const long double minValue =
+      static_cast<long double>(std::numeric_limits<int64_t>::min());
+  const long double maxValue =
+      static_cast<long double>(std::numeric_limits<int64_t>::max());
+
+  if (rounded < minValue) {
+    return std::numeric_limits<int64_t>::min();
+  }
+  if (rounded > maxValue) {
+    return std::numeric_limits<int64_t>::max();
+  }
+
+  return static_cast<int64_t>(rounded);
+}
+}  // namespace
 
 pos_map_queue::pos_map_queue() { m_pImpl = new pos_map_impl; }
 
@@ -61,16 +82,15 @@ void pos_map_queue::Insert(
   if (!m_pImpl->m_Queue.empty()) {
     // Check if the last entry can be merged with the new entry
     pos_map_t& last = m_pImpl->m_Queue.back();
+    const int64_t expectedNextDestFrame =
+      last.m_iDestFrame +
+      ScaleFramesWithRatio(last.m_iFrames, last.m_fSourceToDestRatio);
     if (last.m_iSourceFrame + last.m_iFrames == iSourceFrame &&
         last.m_fSourceToDestRatio == fSourceToDestRatio &&
 
         // llabs() is used instead of abs() because abs() would be susceptible
         // to an integer overflow.
-        llabs(
-            last.m_iDestFrame +
-            static_cast<int64_t>(
-                (last.m_iFrames * last.m_fSourceToDestRatio) + 0.5) -
-            iDestFrame) <= 1)
+      llabs(expectedNextDestFrame - iDestFrame) <= 1)
 
     {
       // Merge the frames and set the merged flag to true.
@@ -111,57 +131,48 @@ int64_t pos_map_queue::Search(int64_t iSourceFrame) const {
     return 0;
   }
 
+  const pos_map_t& first = m_pImpl->m_Queue.front();
+  const pos_map_t& last = m_pImpl->m_Queue.back();
+
+  const int64_t firstStart = first.m_iSourceFrame;
+  const int64_t lastEnd = last.m_iSourceFrame + last.m_iFrames;
+
+  if (iSourceFrame < firstStart) {
+    const int64_t sourceOffset = iSourceFrame - firstStart;
+    return first.m_iDestFrame +
+           ScaleFramesWithRatio(sourceOffset, first.m_fSourceToDestRatio);
+  }
+
+  if (iSourceFrame >= lastEnd) {
+    const int64_t lastDestEnd =
+        last.m_iDestFrame +
+        ScaleFramesWithRatio(last.m_iFrames, last.m_fSourceToDestRatio);
+    const int64_t sourceOffset = iSourceFrame - lastEnd;
+    return lastDestEnd +
+           ScaleFramesWithRatio(sourceOffset, last.m_fSourceToDestRatio);
+  }
+
   // iSourceFrame is probably in pos_map.  Search to figure out what position it
   // maps to.
-  int64_t iClosestPosition = 0,
-          iClosestPositionDist = std::numeric_limits<int64_t>::max();
   for (const pos_map_t& pm : m_pImpl->m_Queue) {
     // Loop over the queue until we know generally where iSourceFrame is
     if (iSourceFrame >= pm.m_iSourceFrame &&
         iSourceFrame < pm.m_iSourceFrame + pm.m_iFrames) {
       // If we are in the correct block, calculate its current position
       int64_t iDiff = static_cast<int64_t>(iSourceFrame - pm.m_iSourceFrame);
-      iDiff = static_cast<int64_t>((iDiff * pm.m_fSourceToDestRatio) + 0.5);
+      iDiff = ScaleFramesWithRatio(iDiff, pm.m_fSourceToDestRatio);
       return pm.m_iDestFrame + iDiff;
     }
-
-    // See if the current position is close to the beginning of this block.
-    int64_t dist = llabs(pm.m_iSourceFrame - iSourceFrame);
-    if (dist < iClosestPositionDist) {
-      iClosestPositionDist = dist;
-      iClosestPosition = pm.m_iDestFrame;
-    }
-
-    // See if the current position is close to the end of this block.
-    dist = llabs(pm.m_iSourceFrame + pm.m_iFrames - iSourceFrame);
-    if (dist < iClosestPositionDist) {
-      iClosestPositionDist = dist;
-      iClosestPosition =
-          pm.m_iDestFrame +
-          static_cast<int64_t>((pm.m_iFrames * pm.m_fSourceToDestRatio) + 0.5);
-    }
   }
 
-  /*
-   * The frame is out of the range of data we've actually sent.
-   * Return the closest position.
-   *
-   * There are three cases when this happens:
-   * 1. Before the first CommitPlayingPosition call.
-   * 2. After GetDataToPlay returns EOF and the sound has flushed, but before
-   *    SoundStopped has been called.
-   * 3. Underflow; we'll be given a larger frame number than we know about.
-   */
-  static RageTimer last;
-  if (last.Ago() >= 1.0f) {
-    last.Touch();
-    LOG->Trace(
-        "Audio position mismatch: frame %" PRId64
-        " outside buffered range (normal during start/stop)",
-        iSourceFrame);
+  // Should not be reachable due to range checks above.
+  static RageTimer lastLog;
+  if (lastLog.Ago() >= 1.0f) {
+    lastLog.Touch();
+    LOG->Trace("Audio position search fell through unexpectedly at frame %" PRId64,
+               iSourceFrame);
   }
-
-  return iClosestPosition;
+  return first.m_iDestFrame;
 }
 
 void pos_map_queue::Clear() { m_pImpl->m_Queue.clear(); }
