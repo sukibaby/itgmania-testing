@@ -149,6 +149,21 @@ class RageSound : public RageSoundBase {
   virtual void PushSelf(lua_State* L);
 
  private:
+  struct affine_map_t {
+    bool m_bValid;
+    int64_t m_iSourceFrame;
+    int64_t m_iDestFrame;
+    int64_t m_iFrames;
+    double m_fSourceToDestRatio;
+
+    affine_map_t()
+        : m_bValid(false),
+          m_iSourceFrame(0),
+          m_iDestFrame(0),
+          m_iFrames(0),
+          m_fSourceToDestRatio(1.0) {}
+  };
+
   mutable RageMutex m_Mutex;
 
   RageSoundReader* m_pSource;
@@ -157,6 +172,8 @@ class RageSound : public RageSoundBase {
   // GetDataToPlay.
   pos_map_queue m_HardwareToStreamMap;
   pos_map_queue m_StreamToSourceMap;
+  affine_map_t m_LatestHardwareToStream;
+  affine_map_t m_LatestStreamToSource;
 
   std::string m_sFilePath;
 
@@ -180,6 +197,7 @@ class RageSound : public RageSoundBase {
 
   std::string m_sError;
 
+  static int64_t MapFrameByAffine(const affine_map_t& map, int64_t iSourceFrame);
   int GetSourceFrameFromHardwareFrame(int64_t iHardwareFrame) const;
 
   bool SetPositionFrames(int frames = -1);
