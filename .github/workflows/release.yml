@@ -55,7 +55,7 @@ jobs:
         with:
           msbuild-architecture: x64
       - name: Create nightly release
-        if: github.ref_name == 'beta'
+        if: github.ref_name == 'e'
         run: ${{ matrix.release-nightly }}
       - name: Create full release
         if: github.ref_name == 'release'
