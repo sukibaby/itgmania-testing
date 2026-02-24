@@ -70,6 +70,10 @@ RageSound::RageSound()
       m_iStoppedSourceFrame(0),
       m_bPlaying(false),
       m_bDeleteWhenFinished(false),
+      m_iFastPathHits(0),
+      m_iFallbackHits(0),
+      m_iNoMapHits(0),
+      m_PositionMapStatsLastLog(RageZeroTimer),
       m_sError("") {
   ASSERT(SOUNDMAN != nullptr);
 }
@@ -97,6 +101,10 @@ RageSound& RageSound::operator=(const RageSound& cpy) {
   m_LatestStreamToSource = cpy.m_LatestStreamToSource;
   m_bPlaying = false;
   m_bDeleteWhenFinished = false;
+  m_iFastPathHits = 0;
+  m_iFallbackHits = 0;
+  m_iNoMapHits = 0;
+  m_PositionMapStatsLastLog = RageZeroTimer;
 
   if (m_pSource != nullptr) {
     delete m_pSource;
@@ -129,6 +137,10 @@ void RageSound::Unload() {
   m_StreamToSourceMap.Clear();
   m_LatestHardwareToStream.m_bValid = false;
   m_LatestStreamToSource.m_bValid = false;
+  m_iFastPathHits = 0;
+  m_iFallbackHits = 0;
+  m_iNoMapHits = 0;
+  m_PositionMapStatsLastLog = RageZeroTimer;
 }
 
 /* The sound will self-delete itself when it stops playing. If the sound is not
@@ -359,6 +371,10 @@ void RageSound::StartPlaying() {
     m_StreamToSourceMap.Clear();
     m_LatestHardwareToStream.m_bValid = false;
     m_LatestStreamToSource.m_bValid = false;
+    m_iFastPathHits = 0;
+    m_iFallbackHits = 0;
+    m_iNoMapHits = 0;
+    m_PositionMapStatsLastLog = RageZeroTimer;
   }
 
   // Move to the start position.
@@ -441,6 +457,10 @@ void RageSound::SoundIsFinishedPlaying() {
       m_StreamToSourceMap.Clear();
       m_LatestHardwareToStream.m_bValid = false;
       m_LatestStreamToSource.m_bValid = false;
+      m_iFastPathHits = 0;
+      m_iFallbackHits = 0;
+      m_iNoMapHits = 0;
+      m_PositionMapStatsLastLog = RageZeroTimer;
     }
   }
 
@@ -552,17 +572,46 @@ int64_t RageSound::MapFrameByAffine(
   return map.m_iDestFrame + iOffset;
 }
 
+void RageSound::MaybeLogPositionMapStats() const {
+  if (m_PositionMapStatsLastLog.IsZero()) {
+    m_PositionMapStatsLastLog.Touch();
+    return;
+  }
+
+  constexpr float kStatsLogIntervalSeconds = 5.0f;
+  if (m_PositionMapStatsLastLog.Ago() < kStatsLogIntervalSeconds) {
+    return;
+  }
+
+  const uint64_t total = m_iFastPathHits + m_iFallbackHits + m_iNoMapHits;
+  if (total > 0) {
+    LOG->Trace(
+        "RageSound map path stats [%s]: fast=%llu fallback=%llu no_map=%llu",
+        m_sFilePath.c_str(), static_cast<unsigned long long>(m_iFastPathHits),
+        static_cast<unsigned long long>(m_iFallbackHits),
+        static_cast<unsigned long long>(m_iNoMapHits));
+  }
+
+  m_PositionMapStatsLastLog.Touch();
+}
+
 int RageSound::GetSourceFrameFromHardwareFrame(int64_t iHardwareFrame) const {
   if (m_LatestHardwareToStream.m_bValid && m_LatestStreamToSource.m_bValid) {
+    ++m_iFastPathHits;
+    MaybeLogPositionMapStats();
     const int64_t iStreamFrame =
         MapFrameByAffine(m_LatestHardwareToStream, iHardwareFrame);
     return static_cast<int>(MapFrameByAffine(m_LatestStreamToSource, iStreamFrame));
   }
 
   if (m_HardwareToStreamMap.IsEmpty() || m_StreamToSourceMap.IsEmpty()) {
+    ++m_iNoMapHits;
+    MaybeLogPositionMapStats();
     return 0;
   }
 
+  ++m_iFallbackHits;
+  MaybeLogPositionMapStats();
   int64_t iStreamFrame = m_HardwareToStreamMap.Search(iHardwareFrame);
   return static_cast<int>(m_StreamToSourceMap.Search(iStreamFrame));
 }
@@ -626,6 +675,10 @@ bool RageSound::SetPositionFrames(int iFrames) {
     m_StreamToSourceMap.Clear();
     m_LatestHardwareToStream.m_bValid = false;
     m_LatestStreamToSource.m_bValid = false;
+    m_iFastPathHits = 0;
+    m_iFallbackHits = 0;
+    m_iNoMapHits = 0;
+    m_PositionMapStatsLastLog = RageZeroTimer;
   }
 
   return iRet == 1;

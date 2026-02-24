@@ -195,9 +195,16 @@ class RageSound : public RageSoundBase {
   bool m_bPlaying;
   bool m_bDeleteWhenFinished;
 
+  // Lightweight observability for position mapping path usage.
+  mutable uint64_t m_iFastPathHits;
+  mutable uint64_t m_iFallbackHits;
+  mutable uint64_t m_iNoMapHits;
+  mutable RageTimer m_PositionMapStatsLastLog;
+
   std::string m_sError;
 
   static int64_t MapFrameByAffine(const affine_map_t& map, int64_t iSourceFrame);
+  void MaybeLogPositionMapStats() const;
   int GetSourceFrameFromHardwareFrame(int64_t iHardwareFrame) const;
 
   bool SetPositionFrames(int frames = -1);
