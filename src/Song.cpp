@@ -79,6 +79,40 @@ static Preference<float> g_fMarathonVerSongSeconds(
     "MarathonVerSongSeconds", 60 * 5.f);
 static Preference<bool> g_BackUpAllSongSaves("BackUpAllSongSaves", false);
 
+namespace {
+
+bool GetFileCRC32(const std::string& path, uint32_t& out_crc) {
+  RageFile file;
+  if (!file.Open(path, RageFile::READ)) {
+    return false;
+  }
+
+  file.EnableCRC32(true);
+  char read_buf[16 * 1024];
+  while (true) {
+    const int got = file.Read(read_buf, sizeof(read_buf));
+    if (got < 0) {
+      return false;
+    }
+    if (got == 0) {
+      break;
+    }
+  }
+
+  return file.GetCRC32(&out_crc);
+}
+
+bool GetSongCRC32ForCache(
+    const std::string& song_dir, bool load_autosave, uint32_t& out_crc) {
+  std::string simfile_path;
+  if (!GetPrimarySimfilePath(song_dir, load_autosave, simfile_path)) {
+    return false;
+  }
+  return GetFileCRC32(simfile_path, out_crc);
+}
+
+}  // namespace
+
 static const char* InstrumentTrackNames[] = {
     "Guitar",
     "Rhythm",
