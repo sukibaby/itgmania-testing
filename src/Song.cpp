@@ -378,9 +378,11 @@ bool Song::LoadFromSongDir(
   }
 
   std::string cache_file_path;
+  unsigned uCacheHash = 0;
+  uint32_t song_crc32 = 0;
   if (m_LoadedFromProfile == ProfileSlot_Invalid) {
     // First, look in the cache for this song (without loading NoteData)
-    unsigned uCacheHash = SONGINDEX->GetCacheHash(m_sSongDir);
+    uCacheHash = SONGINDEX->GetCacheHash(m_sSongDir);
     cache_file_path = GetCacheFilePath();
 
     LOG->Trace("Checking cache file '%s' for song '%s'.", cache_file_path.c_str(), m_sSongDir.c_str());
@@ -390,7 +392,6 @@ bool Song::LoadFromSongDir(
       use_cache = false;
       LOG->Trace("Cache file does not exist for '%s'.", m_sSongDir.c_str());
     } else if (!PREFSMAN->m_bFastLoad) {
-      uint32_t song_crc32 = 0;
       if (!GetSongCRC32ForCache(m_sSongDir, load_autosave, song_crc32) ||
           song_crc32 != uCacheHash) {
         use_cache = false;
@@ -409,7 +410,12 @@ bool Song::LoadFromSongDir(
                        m_sSongDir.c_str(),
                        GetCacheFilePath().c_str());
     */
-   LOG->Trace("Cached hash: %u last known hash, %u new hash", song_crc32,   uCacheHash);
+    if (!PREFSMAN->m_bFastLoad && m_LoadedFromProfile == ProfileSlot_Invalid) {
+      LOG->Trace(
+          "Cached hash: %u last known hash, %u new hash",
+          song_crc32,
+          uCacheHash);
+    }
     SSCLoader loaderSSC;
     bool bLoadedFromSSC =
         loaderSSC.LoadFromSimfile(cache_file_path, *this, true);
