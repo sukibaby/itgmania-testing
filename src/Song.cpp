@@ -28,7 +28,11 @@
 #include "NoteData.h"
 #include "NoteDataUtil.h"
 #include "NotesLoader.h"
+#include "NotesLoaderBMS.h"
+#include "NotesLoaderDWI.h"
+#include "NotesLoaderKSF.h"
 #include "NotesLoaderSM.h"
+#include "NotesLoaderSMA.h"
 #include "NotesLoaderSSC.h"
 #include "NotesWriterDWI.h"
 #include "NotesWriterJson.h"
@@ -74,6 +78,92 @@ static Preference<float> g_fLongVerSongSeconds("LongVerSongSeconds", 60 * 2.5f);
 static Preference<float> g_fMarathonVerSongSeconds(
     "MarathonVerSongSeconds", 60 * 5.f);
 static Preference<bool> g_BackUpAllSongSaves("BackUpAllSongSaves", false);
+
+namespace {
+
+bool GetFileCRC32(const std::string& path, uint32_t& out_crc) {
+  RageFile file;
+  if (!file.Open(path, RageFile::READ)) {
+    return false;
+  }
+
+  file.EnableCRC32(true);
+  char read_buf[16 * 1024];
+  while (true) {
+    const int got = file.Read(read_buf, sizeof(read_buf));
+    if (got < 0) {
+      return false;
+    }
+    if (got == 0) {
+      break;
+    }
+  }
+
+  return file.GetCRC32(&out_crc);
+}
+
+bool GetPrimarySimfilePath(
+    const std::string& song_dir, bool load_autosave, std::string& out_path) {
+  std::vector<std::string> list;
+
+  SSCLoader loaderSSC;
+  list.clear();
+  loaderSSC.GetApplicableFiles(song_dir, list, load_autosave);
+  if (!list.empty()) {
+    out_path = song_dir + list.front();
+    return true;
+  }
+
+  SMALoader loaderSMA;
+  list.clear();
+  loaderSMA.GetApplicableFiles(song_dir, list);
+  if (!list.empty()) {
+    out_path = song_dir + list.front();
+    return true;
+  }
+
+  SMLoader loaderSM;
+  list.clear();
+  loaderSM.GetApplicableFiles(song_dir, list);
+  if (!list.empty()) {
+    out_path = song_dir + list.front();
+    return true;
+  }
+
+  list.clear();
+  DWILoader::GetApplicableFiles(song_dir, list);
+  if (!list.empty()) {
+    out_path = song_dir + list.front();
+    return true;
+  }
+
+  list.clear();
+  BMSLoader::GetApplicableFiles(song_dir, list);
+  if (!list.empty()) {
+    out_path = song_dir + list.front();
+    return true;
+  }
+
+  list.clear();
+  KSFLoader::GetApplicableFiles(song_dir, list);
+  if (!list.empty()) {
+    out_path = song_dir + list.front();
+    return true;
+  }
+
+  return false;
+}
+
+bool GetSongCRC32ForCache(
+    const std::string& song_dir, bool load_autosave, uint32_t& out_crc) {
+  std::string simfile_path;
+  if (!GetPrimarySimfilePath(song_dir, load_autosave, simfile_path)) {
+    return false;
+  }
+  return GetFileCRC32(simfile_path, out_crc);
+}
+
+}  // namespace
 
 static const char* InstrumentTrackNames[] = {
     "Guitar",
@@ -295,10 +385,12 @@ bool Song::LoadFromSongDir(
 
     if (!DoesFileExist(cache_file_path)) {
       use_cache = false;
-    } else if (
-        !PREFSMAN->m_bFastLoad &&
-        GetHashForDirectory(m_sSongDir) != uCacheHash) {
-      use_cache = false;
+    } else if (!PREFSMAN->m_bFastLoad) {
+      uint32_t song_crc32 = 0;
+      if (!GetSongCRC32ForCache(m_sSongDir, load_autosave, song_crc32) ||
+          song_crc32 != uCacheHash) {
+        use_cache = false;
+      }
     }  // this cache is out of date
     else if (load_autosave) {
       use_cache = false;
@@ -447,9 +539,13 @@ bool Song::LoadFromSongDir(
  * they don't break elsewhere.  Maybe it could be rewritten to politely ask the
  * Song/Steps objects to reload themselves. -- djpohly */
 bool Song::ReloadFromSongDir(std::string sDir) {
-  // Remove the cache file to force the song to reload from its dir instead
-  // of loading from the cache. -Kyz
-  FILEMAN->Remove(GetCacheFilePath());
+  // Remove the cache only if the source file changed, otherwise allow
+  // LoadFromSongDir to reuse the cached song data.
+  uint32_t song_crc32 = 0;
+  const unsigned uCacheHash = SONGINDEX->GetCacheHash(m_sSongDir);
+  if (!GetSongCRC32ForCache(sDir, false, song_crc32) || song_crc32 != uCacheHash) {
+    FILEMAN->Remove(GetCacheFilePath());
+  }
 
   RemoveAutoGenNotes();
   std::vector<Steps*> vOldSteps = m_vpSteps;
@@ -1360,7 +1456,14 @@ bool Song::SaveToCacheFile() {
   if (SONGMAN->IsGroupNeverCached(m_sGroupName)) {
     return true;
   }
-  SONGINDEX->AddCacheIndex(m_sSongDir, GetHashForDirectory(m_sSongDir));
+
+  unsigned cache_hash = GetHashForDirectory(m_sSongDir);
+  uint32_t song_crc32 = 0;
+  if (!m_sSongFileName.empty() && GetFileCRC32(GetSongFilePath(), song_crc32)) {
+    cache_hash = song_crc32;
+  }
+
+  SONGINDEX->AddCacheIndex(m_sSongDir, cache_hash);
   const std::string sPath = GetCacheFilePath();
   return SaveToSSCFile(sPath, true);
 }

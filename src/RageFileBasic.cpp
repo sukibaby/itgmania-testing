@@ -24,7 +24,7 @@ RageFileObj::RageFileObj() {
   m_iWriteBufferUsed = 0;
   m_bEOF = false;
   m_iFilePos = 0;
-  m_bCRC32Enabled = false;
+  m_bCRC32Enabled = true;
   m_iCRC32 = 0;
 }
 
