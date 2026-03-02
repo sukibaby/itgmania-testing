@@ -56,7 +56,13 @@
     <key>NSPrincipalClass</key>
     <string>SMApplication</string>
     <key>NSHighResolutionCapable</key>
+    <true />
+    <key>NSAppearanceAllowsVariants</key>
+    <true />
+    <key>NSRequiresIPhoneOSAppearance</key>
     <false />
+    <key>NSAppearanceNamed</key>
+    <string>NSAppearanceNameAqua</string>
   </dict>
 </plist>
 
