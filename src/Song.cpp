@@ -102,6 +102,58 @@ bool GetFileCRC32(const std::string& path, uint32_t& out_crc) {
   return file.GetCRC32(&out_crc);
 }
 
+bool GetPrimarySimfilePath(
+    const std::string& song_dir, bool load_autosave, std::string& out_path) {
+  std::vector<std::string> list;
+
+  SSCLoader loaderSSC;
+  list.clear();
+  loaderSSC.GetApplicableFiles(song_dir, list, load_autosave);
+  if (!list.empty()) {
+    out_path = song_dir + list.front();
+    return true;
+  }
+
+  SMLoader loaderSM;
+  list.clear();
+  loaderSM.GetApplicableFiles(song_dir, list);
+  if (!list.empty()) {
+    out_path = song_dir + list.front();
+    return true;
+  }
+
+  SMALoader loaderSMA;
+  list.clear();
+  loaderSMA.GetApplicableFiles(song_dir, list);
+  if (!list.empty()) {
+    out_path = song_dir + list.front();
+    return true;
+  }
+
+  list.clear();
+  DWILoader::GetApplicableFiles(song_dir, list);
+  if (!list.empty()) {
+    out_path = song_dir + list.front();
+    return true;
+  }
+
+  list.clear();
+  BMSLoader::GetApplicableFiles(song_dir, list);
+  if (!list.empty()) {
+    out_path = song_dir + list.front();
+    return true;
+  }
+
+  list.clear();
+  KSFLoader::GetApplicableFiles(song_dir, list);
+  if (!list.empty()) {
+    out_path = song_dir + list.front();
+    return true;
+  }
+
+  return false;
+}
+
 bool GetSongCRC32ForCache(
     const std::string& song_dir, bool load_autosave, uint32_t& out_crc) {
   std::string simfile_path;
