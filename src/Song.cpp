@@ -378,17 +378,20 @@ bool Song::LoadFromSongDir(
   }
 
   std::string cache_file_path;
+  unsigned uCacheHash = 0;
+  uint32_t song_crc32 = 0;
   if (m_LoadedFromProfile == ProfileSlot_Invalid) {
     // First, look in the cache for this song (without loading NoteData)
-    unsigned uCacheHash = SONGINDEX->GetCacheHash(m_sSongDir);
+    uCacheHash = SONGINDEX->GetCacheHash(m_sSongDir);
     cache_file_path = GetCacheFilePath();
 
     if (!DoesFileExist(cache_file_path)) {
       use_cache = false;
-    } else if (
-        !PREFSMAN->m_bFastLoad &&
-        GetHashForDirectory(m_sSongDir) != uCacheHash) {
-      use_cache = false;
+    } else if (!PREFSMAN->m_bFastLoad) {
+      if (!GetSongCRC32ForCache(m_sSongDir, load_autosave, song_crc32) ||
+          song_crc32 != uCacheHash) {
+        use_cache = false;
+      }
     }  // this cache is out of date
     else if (load_autosave) {
       use_cache = false;
@@ -537,9 +540,14 @@ bool Song::LoadFromSongDir(
  * they don't break elsewhere.  Maybe it could be rewritten to politely ask the
  * Song/Steps objects to reload themselves. -- djpohly */
 bool Song::ReloadFromSongDir(std::string sDir) {
-  // Remove the cache file to force the song to reload from its dir instead
-  // of loading from the cache. -Kyz
-  FILEMAN->Remove(GetCacheFilePath());
+  // Remove the cache only if the source file changed, otherwise allow
+  // LoadFromSongDir to reuse the cached song data.
+  uint32_t song_crc32 = 0;
+  const unsigned uCacheHash = SONGINDEX->GetCacheHash(m_sSongDir);
+  if (!GetSongCRC32ForCache(sDir, false, song_crc32) ||
+      song_crc32 != uCacheHash) {
+    FILEMAN->Remove(GetCacheFilePath());
+  }
 
   RemoveAutoGenNotes();
   std::vector<Steps*> vOldSteps = m_vpSteps;
@@ -1450,7 +1458,14 @@ bool Song::SaveToCacheFile() {
   if (SONGMAN->IsGroupNeverCached(m_sGroupName)) {
     return true;
   }
-  SONGINDEX->AddCacheIndex(m_sSongDir, GetHashForDirectory(m_sSongDir));
+
+  unsigned cache_hash = GetHashForDirectory(m_sSongDir);
+  uint32_t song_crc32 = 0;
+  if (!m_sSongFileName.empty() && GetFileCRC32(GetSongFilePath(), song_crc32)) {
+    cache_hash = song_crc32;
+  }
+
+  SONGINDEX->AddCacheIndex(m_sSongDir, cache_hash);
   const std::string sPath = GetCacheFilePath();
   return SaveToSSCFile(sPath, true);
 }
