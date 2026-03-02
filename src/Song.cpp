@@ -122,7 +122,7 @@ bool GetPrimarySimfilePath(
     out_path = song_dir + list.front();
     return true;
   }
-  
+
   SMLoader loaderSM;
   list.clear();
   loaderSM.GetApplicableFiles(song_dir, list);
