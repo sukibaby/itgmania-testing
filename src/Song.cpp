@@ -399,11 +399,13 @@ bool Song::LoadFromSongDir(
   }
 
   if (use_cache) {
-    /*
-    LOG->Trace("Loading '%s' from cache file '%s'.",
-                       m_sSongDir.c_str(),
-                       GetCacheFilePath().c_str());
-    */
+    // if (!PREFSMAN->m_bFastLoad && m_LoadedFromProfile == ProfileSlot_Invalid)
+    // {
+    //   LOG->Trace(
+    //       "Cached hash: %u last known hash, %u new hash",
+    //       song_crc32,
+    //       uCacheHash);
+    // }
     SSCLoader loaderSSC;
     bool bLoadedFromSSC =
         loaderSSC.LoadFromSimfile(cache_file_path, *this, true);
