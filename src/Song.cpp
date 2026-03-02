@@ -82,8 +82,10 @@ static Preference<bool> g_BackUpAllSongSaves("BackUpAllSongSaves", false);
 namespace {
 
 bool GetFileCRC32(const std::string& path, uint32_t& out_crc) {
+  LOG->Trace("GetFileCRC32: Starting CRC32 calculation for '%s'", path.c_str());
   RageFile file;
   if (!file.Open(path, RageFile::READ)) {
+    LOG->Trace("GetFileCRC32: Failed to open file '%s'", path.c_str());
     return false;
   }
 
@@ -92,6 +94,7 @@ bool GetFileCRC32(const std::string& path, uint32_t& out_crc) {
   while (true) {
     const int got = file.Read(read_buf, sizeof(read_buf));
     if (got < 0) {
+      LOG->Trace("GetFileCRC32: Read error while computing CRC32 for '%s'", path.c_str());
       return false;
     }
     if (got == 0) {
@@ -99,7 +102,12 @@ bool GetFileCRC32(const std::string& path, uint32_t& out_crc) {
     }
   }
 
-  return file.GetCRC32(&out_crc);
+  if (file.GetCRC32(&out_crc)) {
+    LOG->Trace("GetFileCRC32: Successfully computed CRC32 for '%s': 0x%08x", path.c_str(), out_crc);
+    return true;
+  }
+  LOG->Trace("GetFileCRC32: Failed to retrieve CRC32 for '%s'", path.c_str());
+  return false;
 }
 
 bool GetPrimarySimfilePath(
@@ -159,8 +167,12 @@ bool GetSongCRC32ForCache(
     const std::string& song_dir, bool load_autosave, uint32_t& out_crc) {
   std::string simfile_path;
   if (!GetPrimarySimfilePath(song_dir, load_autosave, simfile_path)) {
+    LOG->Trace("GetSongCRC32ForCache: No primary simfile found in '%s' (load_autosave=%s)", 
+               song_dir.c_str(), load_autosave ? "true" : "false");
     return false;
   }
+  LOG->Trace("GetSongCRC32ForCache: Found primary simfile '%s' for directory '%s'", 
+             simfile_path.c_str(), song_dir.c_str());
   return GetFileCRC32(simfile_path, out_crc);
 }
 
@@ -385,28 +397,39 @@ bool Song::LoadFromSongDir(
     // First, look in the cache for this song (without loading NoteData)
     uCacheHash = SONGINDEX->GetCacheHash(m_sSongDir);
     cache_file_path = GetCacheFilePath();
+    LOG->Trace("Song::LoadFromSongDir: Cache hash from index for '%s': 0x%08x", 
+               m_sSongDir.c_str(), uCacheHash);
+    LOG->Trace("Song::LoadFromSongDir: Cache file path: '%s'", cache_file_path.c_str());
 
     if (!DoesFileExist(cache_file_path)) {
       use_cache = false;
+      LOG->Trace("Song::LoadFromSongDir: Cache file does not exist, WILL RELOAD from simfile");
     } else if (!PREFSMAN->m_bFastLoad) {
+      LOG->Trace("Song::LoadFromSongDir: Cache file exists and m_bFastLoad is false, computing CRC32...");
       if (!GetSongCRC32ForCache(m_sSongDir, load_autosave, song_crc32) ||
           song_crc32 != uCacheHash) {
         use_cache = false;
+        if (song_crc32 != uCacheHash) {
+          LOG->Trace("Song::LoadFromSongDir: CRC32 MISMATCH - computed: 0x%08x, cached: 0x%08x, WILL RELOAD from simfile", 
+                     song_crc32, uCacheHash);
+        } else {
+          LOG->Trace("Song::LoadFromSongDir: Failed to compute CRC32, WILL RELOAD from simfile");
+        }
+      } else {
+        LOG->Trace("Song::LoadFromSongDir: CRC32 MATCH - computed: 0x%08x, cached: 0x%08x, WILL REUSE cache", 
+                   song_crc32, uCacheHash);
       }
     }  // this cache is out of date
     else if (load_autosave) {
       use_cache = false;
+      LOG->Trace("Song::LoadFromSongDir: m_bFastLoad is true and load_autosave is true, WILL RELOAD from simfile");
+    } else {
+      LOG->Trace("Song::LoadFromSongDir: m_bFastLoad is true and load_autosave is false, WILL REUSE cache");
     }
   }
-
+ 
   if (use_cache) {
-    // if (!PREFSMAN->m_bFastLoad && m_LoadedFromProfile == ProfileSlot_Invalid)
-    // {
-    //   LOG->Trace(
-    //       "Cached hash: %u last known hash, %u new hash",
-    //       song_crc32,
-    //       uCacheHash);
-    // }
+    LOG->Trace("Song::LoadFromSongDir: REUSING CACHE for '%s'", m_sSongDir.c_str());
     SSCLoader loaderSSC;
     bool bLoadedFromSSC =
         loaderSSC.LoadFromSimfile(cache_file_path, *this, true);
@@ -428,6 +451,7 @@ bool Song::LoadFromSongDir(
       TidyUpData(false, false);
     }
   } else {
+    LOG->Trace("Song::LoadFromSongDir: RELOADING from simfile for '%s' (cache was not used)", m_sSongDir.c_str());
     std::set<std::string> blacklistedImages;
 
     // There was no entry in the cache for this song, or it was out of date.
@@ -469,9 +493,17 @@ bool Song::LoadFromSongDir(
     // entries. -Kyz
     if (!load_autosave && m_LoadedFromProfile == ProfileSlot_Invalid) {
       // save a cache file so we don't have to parse it all over again next time
+      LOG->Trace("Song::LoadFromSongDir: Saving cache file for '%s'", m_sSongDir.c_str());
       if (!SaveToCacheFile()) {
+        LOG->Trace("Song::LoadFromSongDir: Failed to save cache file for '%s'", m_sSongDir.c_str());
         cache_file_path = std::string();
+      } else {
+        LOG->Trace("Song::LoadFromSongDir: Successfully saved cache file for '%s'", m_sSongDir.c_str());
       }
+    } else if (load_autosave) {
+      LOG->Trace("Song::LoadFromSongDir: Skipping cache save for '%s' (autosave is being loaded)", m_sSongDir.c_str());
+    } else if (m_LoadedFromProfile != ProfileSlot_Invalid) {
+      LOG->Trace("Song::LoadFromSongDir: Skipping cache save for '%s' (loaded from profile)", m_sSongDir.c_str());
     }
   }
 
