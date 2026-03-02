@@ -17,7 +17,7 @@ endif()
 
 get_filename_component(SM_FFMPEG_CACHE_PARENT "${SM_BUILD_DIR}" DIRECTORY)
 set(SM_FFMPEG_CACHE_ROOT
-  "${SM_FFMPEG_CACHE_PARENT}/ffmpeg-cache"
+  "${SM_FFMPEG_BUILD_DIR}"
     CACHE PATH
           "Persistent directory used to cache bundled ffmpeg builds by version.")
 
