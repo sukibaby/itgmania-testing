@@ -21,7 +21,9 @@
 
 #include "RageSound.h"
 
+#include <cmath>
 #include <cstdint>
+#include <limits>
 #include <string>
 
 #include "LuaManager.h"
@@ -68,6 +70,10 @@ RageSound::RageSound()
       m_iStoppedSourceFrame(0),
       m_bPlaying(false),
       m_bDeleteWhenFinished(false),
+      m_iFastPathHits(0),
+      m_iFallbackHits(0),
+      m_iNoMapHits(0),
+      m_PositionMapStatsLastLog(RageZeroTimer),
       m_sError("") {
   ASSERT(SOUNDMAN != nullptr);
 }
@@ -91,8 +97,14 @@ RageSound& RageSound::operator=(const RageSound& cpy) {
   m_Param = cpy.m_Param;
   m_iStreamFrame = cpy.m_iStreamFrame;
   m_iStoppedSourceFrame = cpy.m_iStoppedSourceFrame;
+  m_LatestHardwareToStream = cpy.m_LatestHardwareToStream;
+  m_LatestStreamToSource = cpy.m_LatestStreamToSource;
   m_bPlaying = false;
   m_bDeleteWhenFinished = false;
+  m_iFastPathHits = 0;
+  m_iFallbackHits = 0;
+  m_iNoMapHits = 0;
+  m_PositionMapStatsLastLog = RageZeroTimer;
 
   if (m_pSource != nullptr) {
     delete m_pSource;
@@ -121,6 +133,14 @@ void RageSound::Unload() {
   m_pSource = nullptr;
 
   m_sFilePath = "";
+  m_HardwareToStreamMap.Clear();
+  m_StreamToSourceMap.Clear();
+  m_LatestHardwareToStream.m_bValid = false;
+  m_LatestStreamToSource.m_bValid = false;
+  m_iFastPathHits = 0;
+  m_iFallbackHits = 0;
+  m_iNoMapHits = 0;
+  m_PositionMapStatsLastLog = RageZeroTimer;
 }
 
 /* The sound will self-delete itself when it stops playing. If the sound is not
@@ -310,6 +330,11 @@ int RageSound::GetDataToPlay(
       LockMut(m_Mutex);
       m_StreamToSourceMap.Insert(
           m_iStreamFrame, iGotFrames, iSourceFrame, fRate);
+      m_LatestStreamToSource.m_bValid = true;
+      m_LatestStreamToSource.m_iSourceFrame = m_iStreamFrame;
+      m_LatestStreamToSource.m_iDestFrame = iSourceFrame;
+      m_LatestStreamToSource.m_iFrames = iGotFrames;
+      m_LatestStreamToSource.m_fSourceToDestRatio = fRate;
       m_iStreamFrame += iGotFrames;
     }
 
@@ -328,12 +353,29 @@ void RageSound::CommitPlayingPosition(
     int64_t iHardwareFrame, int64_t iStreamFrame, int iGotFrames) {
   m_Mutex.Lock();
   m_HardwareToStreamMap.Insert(iHardwareFrame, iGotFrames, iStreamFrame);
+  m_LatestHardwareToStream.m_bValid = true;
+  m_LatestHardwareToStream.m_iSourceFrame = iHardwareFrame;
+  m_LatestHardwareToStream.m_iDestFrame = iStreamFrame;
+  m_LatestHardwareToStream.m_iFrames = iGotFrames;
+  m_LatestHardwareToStream.m_fSourceToDestRatio = 1.0;
   m_Mutex.Unlock();
 }
 
 /* Start playing from the current position. */
 void RageSound::StartPlaying() {
   ASSERT(!m_bPlaying);
+
+  {
+    LockMut(m_Mutex);
+    m_HardwareToStreamMap.Clear();
+    m_StreamToSourceMap.Clear();
+    m_LatestHardwareToStream.m_bValid = false;
+    m_LatestStreamToSource.m_bValid = false;
+    m_iFastPathHits = 0;
+    m_iFallbackHits = 0;
+    m_iNoMapHits = 0;
+    m_PositionMapStatsLastLog = RageZeroTimer;
+  }
 
   // Move to the start position.
   SetPositionFrames(
@@ -413,6 +455,12 @@ void RageSound::SoundIsFinishedPlaying() {
       m_bPlaying = false;
       m_HardwareToStreamMap.Clear();
       m_StreamToSourceMap.Clear();
+      m_LatestHardwareToStream.m_bValid = false;
+      m_LatestStreamToSource.m_bValid = false;
+      m_iFastPathHits = 0;
+      m_iFallbackHits = 0;
+      m_iNoMapHits = 0;
+      m_PositionMapStatsLastLog = RageZeroTimer;
     }
   }
 
@@ -486,11 +534,84 @@ float RageSound::GetLengthSeconds() {
   return iLength / 1000.f;  // ms -> secs
 }
 
-int RageSound::GetSourceFrameFromHardwareFrame(int64_t iHardwareFrame) const {
-  if (m_HardwareToStreamMap.IsEmpty() || m_StreamToSourceMap.IsEmpty()) {
+int64_t RageSound::MapFrameByAffine(
+    const affine_map_t& map, int64_t iSourceFrame) {
+  if (!map.m_bValid) {
     return 0;
   }
 
+  const long double scaled =
+      static_cast<long double>(iSourceFrame - map.m_iSourceFrame) *
+      map.m_fSourceToDestRatio;
+  const long double rounded = std::llround(scaled);
+
+  const long double minValue =
+      static_cast<long double>(std::numeric_limits<int64_t>::min());
+  const long double maxValue =
+      static_cast<long double>(std::numeric_limits<int64_t>::max());
+
+  int64_t iOffset;
+  if (rounded < minValue) {
+    iOffset = std::numeric_limits<int64_t>::min();
+  } else if (rounded > maxValue) {
+    iOffset = std::numeric_limits<int64_t>::max();
+  } else {
+    iOffset = static_cast<int64_t>(rounded);
+  }
+
+  if (iOffset > 0 &&
+      map.m_iDestFrame > std::numeric_limits<int64_t>::max() - iOffset) {
+    return std::numeric_limits<int64_t>::max();
+  }
+
+  if (iOffset < 0 &&
+      map.m_iDestFrame < std::numeric_limits<int64_t>::min() - iOffset) {
+    return std::numeric_limits<int64_t>::min();
+  }
+
+  return map.m_iDestFrame + iOffset;
+}
+
+void RageSound::MaybeLogPositionMapStats() const {
+  if (m_PositionMapStatsLastLog.IsZero()) {
+    m_PositionMapStatsLastLog.Touch();
+    return;
+  }
+
+  constexpr float kStatsLogIntervalSeconds = 5.0f;
+  if (m_PositionMapStatsLastLog.Ago() < kStatsLogIntervalSeconds) {
+    return;
+  }
+
+  const uint64_t total = m_iFastPathHits + m_iFallbackHits + m_iNoMapHits;
+  if (total > 0) {
+    LOG->Trace(
+        "RageSound map path stats [%s]: fast=%llu fallback=%llu no_map=%llu",
+        m_sFilePath.c_str(), static_cast<unsigned long long>(m_iFastPathHits),
+        static_cast<unsigned long long>(m_iFallbackHits),
+        static_cast<unsigned long long>(m_iNoMapHits));
+  }
+
+  m_PositionMapStatsLastLog.Touch();
+}
+
+int RageSound::GetSourceFrameFromHardwareFrame(int64_t iHardwareFrame) const {
+  if (m_LatestHardwareToStream.m_bValid && m_LatestStreamToSource.m_bValid) {
+    ++m_iFastPathHits;
+    MaybeLogPositionMapStats();
+    const int64_t iStreamFrame =
+        MapFrameByAffine(m_LatestHardwareToStream, iHardwareFrame);
+    return static_cast<int>(MapFrameByAffine(m_LatestStreamToSource, iStreamFrame));
+  }
+
+  if (m_HardwareToStreamMap.IsEmpty() || m_StreamToSourceMap.IsEmpty()) {
+    ++m_iNoMapHits;
+    MaybeLogPositionMapStats();
+    return 0;
+  }
+
+  ++m_iFallbackHits;
+  MaybeLogPositionMapStats();
   int64_t iStreamFrame = m_HardwareToStreamMap.Search(iHardwareFrame);
   return static_cast<int>(m_StreamToSourceMap.Search(iStreamFrame));
 }
@@ -550,6 +671,14 @@ bool RageSound::SetPositionFrames(int iFrames) {
         filePath.c_str());
   } else {
     m_iStoppedSourceFrame = iFrames;
+    m_HardwareToStreamMap.Clear();
+    m_StreamToSourceMap.Clear();
+    m_LatestHardwareToStream.m_bValid = false;
+    m_LatestStreamToSource.m_bValid = false;
+    m_iFastPathHits = 0;
+    m_iFallbackHits = 0;
+    m_iNoMapHits = 0;
+    m_PositionMapStatsLastLog = RageZeroTimer;
   }
 
   return iRet == 1;
