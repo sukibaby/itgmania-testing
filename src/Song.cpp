@@ -399,7 +399,8 @@ bool Song::LoadFromSongDir(
   }
 
   if (use_cache) {
-    // if (!PREFSMAN->m_bFastLoad && m_LoadedFromProfile == ProfileSlot_Invalid) {
+    // if (!PREFSMAN->m_bFastLoad && m_LoadedFromProfile == ProfileSlot_Invalid)
+    // {
     //   LOG->Trace(
     //       "Cached hash: %u last known hash, %u new hash",
     //       song_crc32,
@@ -545,7 +546,8 @@ bool Song::ReloadFromSongDir(std::string sDir) {
   // LoadFromSongDir to reuse the cached song data.
   uint32_t song_crc32 = 0;
   const unsigned uCacheHash = SONGINDEX->GetCacheHash(m_sSongDir);
-  if (!GetSongCRC32ForCache(sDir, false, song_crc32) || song_crc32 != uCacheHash) {
+  if (!GetSongCRC32ForCache(sDir, false, song_crc32) ||
+      song_crc32 != uCacheHash) {
     FILEMAN->Remove(GetCacheFilePath());
   }
 
