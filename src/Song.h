@@ -99,6 +99,11 @@ class Song {
   bool ReloadFromSongDir() { return ReloadFromSongDir(GetSongDir()); }
   void LoadEditsFromSongDir(std::string dir);
 
+  // This one explicitly does not reuse any Steps pointers, it is a full reload
+  // of simfile and assets.
+  bool ForceReloadFromSongDir(std::string sDir);
+  bool ForceReloadFromSongDir() { return ForceReloadFromSongDir(GetSongDir()); }
+
   bool HasAutosaveFile();
   bool LoadAutosaveFile();
 

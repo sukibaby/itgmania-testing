@@ -559,6 +559,68 @@ bool Song::ReloadFromSongDir(std::string sDir) {
   return true;
 }
 
+bool Song::ForceReloadFromSongDir(std::string sDir) {
+  FILEMAN->Remove(GetCacheFilePath());
+
+  // Clear all existing steps and AutoGen notes since we're doing a full reload
+  RemoveAutoGenNotes();
+  m_vpSteps.clear();
+  FOREACH_ENUM(StepsType, i)
+  m_vpStepsByType[i].clear();
+
+  // Load everything fresh from the song directory (follows LoadFromSongDir's
+  // structure but without any pointer reuse logic)
+  if (!LoadFromSongDir(sDir)) {
+    return false;
+  }
+
+  // Reload all images associated with the song code from ReloadFromSongDir.
+  // Would be good to consolidate this into a helper function.
+  std::vector<std::string> to_reload;
+  to_reload.reserve(7);
+  to_reload.push_back(m_sBannerFile);
+  to_reload.push_back(m_sJacketFile);
+  to_reload.push_back(m_sCDFile);
+  to_reload.push_back(m_sDiscFile);
+  to_reload.push_back(m_sBackgroundFile);
+  to_reload.push_back(m_sCDTitleFile);
+  to_reload.push_back(m_sPreviewVidFile);
+  for (std::vector<std::string>::iterator file = to_reload.begin();
+       file != to_reload.end(); ++file) {
+    RageTextureID id(*file);
+    if (TEXTUREMAN->IsTextureRegistered(id)) {
+      RageTexture* tex = TEXTUREMAN->LoadTexture(id);
+      if (tex) {
+        tex->Reload();
+      }
+    }
+  }
+
+  // Regenerate cached images from disk for low-res preload.
+  // We remove the cached image first to get the desired behavior from
+  // CacheImage(). Otherwise FastLoad will prevent this reload.
+  // If we don't do this, the old lowres preload will persist until
+  // cache is manually cleared.
+  // The changes don't show until the existing textures have been
+  // invalidated, which requires moving on the song wheel a bit.
+  // Not sure it's possible yet with the current state of the code to
+  // signal an immediate texture reload for just the banner and cdtitle
+  // art and guarantee it was updated instantaneously.
+  if (PREFSMAN->m_ImageCache == IMGCACHE_LOW_RES_PRELOAD) {
+    for (std::string Image : ImageDir) {
+      const std::string source_image_path = GetCacheFile(Image);
+      if (source_image_path.empty()) {
+        continue;
+      }
+      FILEMAN->Remove(
+          SongCacheIndex::GetCacheFilePath(Image, source_image_path));
+      IMAGECACHE->CacheImage(Image, source_image_path);
+    }
+  }
+
+  return true;
+}
+
 void Song::LoadEditsFromSongDir(std::string dir) {
   // Load any .edit files in the song folder.
   // Doing this BEFORE setting up AutoGen just in case.
