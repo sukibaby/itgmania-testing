@@ -383,13 +383,19 @@ bool Song::LoadFromSongDir(
     unsigned uCacheHash = SONGINDEX->GetCacheHash(m_sSongDir);
     cache_file_path = GetCacheFilePath();
 
+    LOG->Trace("Checking cache file '%s' for song '%s'.", cache_file_path.c_str(), m_sSongDir.c_str());
+    LOG->Trace("Cache hash: %u", uCacheHash);
+
     if (!DoesFileExist(cache_file_path)) {
       use_cache = false;
+      LOG->Trace("Cache file does not exist for '%s'.", m_sSongDir.c_str());
     } else if (!PREFSMAN->m_bFastLoad) {
       uint32_t song_crc32 = 0;
       if (!GetSongCRC32ForCache(m_sSongDir, load_autosave, song_crc32) ||
           song_crc32 != uCacheHash) {
         use_cache = false;
+        LOG->Trace("Cache file is out of date for '%s'.", m_sSongDir.c_str());
+        LOG->Trace("Old hash: %u, New hash: %u", song_crc32, uCacheHash);
       }
     }  // this cache is out of date
     else if (load_autosave) {
@@ -403,6 +409,7 @@ bool Song::LoadFromSongDir(
                        m_sSongDir.c_str(),
                        GetCacheFilePath().c_str());
     */
+   LOG->Trace("Cached hash: %u last known hash, %u new hash", song_crc32,   uCacheHash);
     SSCLoader loaderSSC;
     bool bLoadedFromSSC =
         loaderSSC.LoadFromSimfile(cache_file_path, *this, true);
