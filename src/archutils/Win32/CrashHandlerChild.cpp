@@ -273,6 +273,21 @@ bool ReadFromParent(int fd, void* p, int size) {
   return true;
 }
 
+static bool ReadStringFromParent(int fd, std::string& outString) {
+  int iSize;
+  if (!ReadFromParent(fd, &iSize, sizeof(iSize)) || iSize < 0) {
+    return false;
+  }
+
+  std::string tmp(static_cast<size_t>(iSize), '\0');
+  if (!ReadFromParent(fd, tmp.data(), iSize)) {
+    return false;
+  }
+
+  outString = std::move(tmp);
+  return true;
+}
+
 // General symbol lookup; uses VDDebugInfo for detailed information within the
 // process, and DbgHelp for simpler information about loaded DLLs.
 namespace SymbolLookup {
@@ -515,54 +530,35 @@ static void DoSave(const std::string& sReport) {
 bool ReadCrashDataFromParent(int iFD, CompleteCrashData& Data) {
   _setmode(_fileno(stdin), O_BINARY);
 
-  auto ReadData = [&](void* buffer, int size) -> bool {
-    return ReadFromParent(iFD, buffer, size);
-  };
-
-  // Read a length-prefixed string from the parent into outString.
-  auto ReadStringFromParent = [&](std::string& outString) -> bool {
-    int iSize;
-    if (!ReadData(&iSize, sizeof(iSize)) || iSize < 0) {
-      return false;
-    }
-
-    std::string tmp(static_cast<size_t>(iSize), '\0');
-    if (!ReadFromParent(iFD, tmp.data(), iSize)) {
-      return false;
-    }
-
-    outString = std::move(tmp);
-    return true;
-  };
-
   // 0. Read the parent handle.
-  if (!ReadData(&SymbolLookup::g_hParent, sizeof(SymbolLookup::g_hParent))) {
+  if (!ReadFromParent(
+          iFD, &SymbolLookup::g_hParent, sizeof(SymbolLookup::g_hParent))) {
     return false;
   }
 
   // 1. Read the CrashData.
-  if (!ReadData(&Data.m_CrashInfo, sizeof(Data.m_CrashInfo))) {
+  if (!ReadFromParent(iFD, &Data.m_CrashInfo, sizeof(Data.m_CrashInfo))) {
     return false;
   }
 
   // 2. Read info.
-  if (!ReadStringFromParent(Data.m_sInfo)) {
+  if (!ReadStringFromParent(iFD, Data.m_sInfo)) {
     return false;
   }
 
   // 3. Read AdditionalLog.
-  if (!ReadStringFromParent(Data.m_sAdditionalLog)) {
+  if (!ReadStringFromParent(iFD, Data.m_sAdditionalLog)) {
     return false;
   }
 
   // 4. Read RecentLogs.
   int iCnt = 0;
-  if (!ReadData(&iCnt, sizeof(iCnt))) {
+  if (!ReadFromParent(iFD, &iCnt, sizeof(iCnt))) {
     return false;
   }
   for (int i = 0; i < iCnt; ++i) {
     std::string recentLog;
-    if (!ReadStringFromParent(recentLog)) {
+    if (!ReadStringFromParent(iFD, recentLog)) {
       return false;
     }
     Data.m_asRecent.push_back(recentLog);
@@ -570,13 +566,13 @@ bool ReadCrashDataFromParent(int iFD, CompleteCrashData& Data) {
 
   // 5. Read CHECKPOINTs.
   std::string checkpoints;
-  if (!ReadStringFromParent(checkpoints)) {
+  if (!ReadStringFromParent(iFD, checkpoints)) {
     return false;
   }
   split(checkpoints, "$$", Data.m_asCheckpoints);
 
   // 6. Read the crashed thread's name.
-  if (!ReadStringFromParent(Data.m_sCrashedThread)) {
+  if (!ReadStringFromParent(iFD, Data.m_sCrashedThread)) {
     return false;
   }
 
