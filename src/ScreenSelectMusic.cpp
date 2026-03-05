@@ -496,7 +496,7 @@ bool ScreenSelectMusic::Input(const InputEventPlus& input) {
       // Reload the currently selected song. -Kyz
       Song* to_reload = m_MusicWheel.GetSelectedSong();
       if (to_reload) {
-        to_reload->ReloadFromSongDir();
+        to_reload->ForceReloadFromSongDir();
         AfterMusicChange();
         return true;
       }
