@@ -1853,6 +1853,7 @@
 			<Function name='MusicLengthSeconds'/>
 			<Function name='NormallyDisplayed'/>
 			<Function name='ReloadFromSongDir'/>
+			<Function name='ForceReloadFromSongDir'/>
 			<Function name='ShowInDemonstrationAndRanking'/>
 		</Class>
 		<Class name='SongManager'>
