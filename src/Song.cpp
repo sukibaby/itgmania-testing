@@ -446,6 +446,8 @@ bool Song::LoadFromSongDir(
 /* This function feels EXTREMELY hacky - copying things on top of pointers so
  * they don't break elsewhere.  Maybe it could be rewritten to politely ask the
  * Song/Steps objects to reload themselves. -- djpohly */
+// This is now only used by Edit Mode now to preserve its existing reload
+// behavior - song wheel now uses ForceReloadFromSongDir. -sukibaby
 bool Song::ReloadFromSongDir(std::string sDir) {
   // Remove the cache file to force the song to reload from its dir instead
   // of loading from the cache. -Kyz
