@@ -306,6 +306,12 @@ bool Song::LoadFromSongDir(
   }
 
   if (use_cache) {
+    // Ensure these strings are cleared before reading from the cache so we
+    // don't accidentally re-use stale data.
+    m_sMainTitle.clear();
+    m_sMusicFile.clear();
+    m_vsKeysoundFile.clear();
+
     bool bLoadedFromSSC = false;
     bool bLoadedFromSM = false;
 
