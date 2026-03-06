@@ -42,14 +42,14 @@ std::string SongCacheIndex::GetCacheFilePath(
     const std::string& sGroup, const std::string& sPath) {
   /* Don't use GetHashForFile, since we don't want to spend time
    * checking the file size and date. */
-  std::string s;
+  std::string normalized_path;
 
   if (sPath.size() > 2 && sPath[0] == '/' && sPath[sPath.size() - 1] == '/') {
-    s.assign(sPath, 1, sPath.size() - 2);
+    normalized_path.assign(sPath, 1, sPath.size() - 2);
   } else if (sPath.size() > 1 && sPath[0] == '/') {
-    s.assign(sPath, 1, sPath.size() - 1);
+    normalized_path.assign(sPath, 1, sPath.size() - 1);
   } else {
-    s = sPath;
+    normalized_path = sPath;
   }
   /* Change slashes and invalid utf-8 characters to _.
    * http://en.wikipedia.org/wiki/UTF-8
