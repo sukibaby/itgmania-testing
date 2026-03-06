@@ -305,6 +305,9 @@ bool Song::LoadFromSongDir(
     }
   }
 
+  bool loaded_from_cache = false;
+  bool cache_was_invalid = false;
+
   if (use_cache) {
     // Ensure these strings are cleared before reading from the cache so we
     // don't accidentally re-use stale data.
@@ -326,18 +329,53 @@ bool Song::LoadFromSongDir(
         loaderSM.TidyUpData(*this, true);
       }
     }
-    if (m_sMainTitle == "" ||
-        (m_sMusicFile == "" && m_vsKeysoundFile.empty())) {
+
+    const bool cache_parse_succeeded = bLoadedFromSSC || bLoadedFromSM;
+    const bool cache_has_required_fields =
+        m_sMainTitle != "" && (m_sMusicFile != "" || !m_vsKeysoundFile.empty());
+
+    if (!cache_parse_succeeded || !cache_has_required_fields) {
+      cache_was_invalid = true;
       LOG->Warn(
-          "Main title or music file for '%s' came up blank, forced to fall "
-          "back on TidyUpData to fix title and paths.  Do not use # or ; in a "
-          "song title.",
+          "Cache load for '%s' was incomplete or invalid; falling back to "
+          "full simfile parse and rebuilding cache.",
           m_sSongDir.c_str());
-      // Tell TidyUpData that it's not loaded from the cache because it needs
-      // to hit the song folder to find the files that weren't found. -Kyz
-      TidyUpData(false, false);
+      FILEMAN->Remove(cache_file_path);
+    } else {
+      loaded_from_cache = true;
     }
-  } else {
+  }
+
+  if (!loaded_from_cache) {
+    if (cache_was_invalid) {
+      const std::string song_dir = m_sSongDir;
+      const std::string song_name = m_sSongName;
+      const std::string group_name = m_sGroupName;
+      const ProfileSlot loaded_from_profile = m_LoadedFromProfile;
+
+      // Below is basically the code from Reset(), but has been placed here to
+      // ensure explicit behavior and safe handling of pointers.
+      RemoveAutoGenNotes();
+      for (Steps* s : m_vpSteps) {
+        RageUtil::SafeDelete(s);
+      }
+      m_vpSteps.clear();
+      FOREACH_ENUM(StepsType, st)
+      m_vpStepsByType[st].clear();
+      for (Steps* s : m_UnknownStyleSteps) {
+        RageUtil::SafeDelete(s);
+      }
+      m_UnknownStyleSteps.clear();
+
+      Song empty;
+      *this = empty;
+
+      m_sSongDir = song_dir;
+      m_sSongName = song_name;
+      m_sGroupName = group_name;
+      m_LoadedFromProfile = loaded_from_profile;
+    }
+
     std::set<std::string> blacklistedImages;
 
     // There was no entry in the cache for this song, or it was out of date.
