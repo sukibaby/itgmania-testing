@@ -306,6 +306,10 @@ bool Song::LoadFromSongDir(
   }
 
   if (use_cache) {
+    m_sMainTitle.clear();
+    m_sMusicFile.clear();
+    m_vsKeysoundFile.clear();
+
     /*
     LOG->Trace("Loading '%s' from cache file '%s'.",
                        m_sSongDir.c_str(),
