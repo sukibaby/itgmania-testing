@@ -311,14 +311,19 @@ bool Song::LoadFromSongDir(
                        m_sSongDir.c_str(),
                        GetCacheFilePath().c_str());
     */
+    bool bLoadedFromSSC = false;
+    bool bLoadedFromSM = false;
+
     SSCLoader loaderSSC;
-    bool bLoadedFromSSC =
-        loaderSSC.LoadFromSimfile(cache_file_path, *this, true);
+    bLoadedFromSSC = loaderSSC.LoadFromSimfile(cache_file_path, *this, true);
+
     if (!bLoadedFromSSC) {
       // load from .sm
       SMLoader loaderSM;
-      loaderSM.LoadFromSimfile(cache_file_path, *this, true);
-      loaderSM.TidyUpData(*this, true);
+      bLoadedFromSM = loaderSM.LoadFromSimfile(cache_file_path, *this, true);
+      if (bLoadedFromSM) {
+        loaderSM.TidyUpData(*this, true);
+      }
     }
     if (m_sMainTitle == "" ||
         (m_sMusicFile == "" && m_vsKeysoundFile.empty())) {
