@@ -278,6 +278,12 @@ void DirectFilenameDB::PopulateFileSet(FileSet& fs, const std::string& path) {
     struct stat st;
     if (DoStat((root + sPath + "/" + pEnt->d_name).c_str(), &st) == -1) {
       int iError = errno;
+      // Files can disappear between readdir and stat (e.g. temp files used
+      // during atomic cache writes).  Treat these as expected races.
+      if (iError == ENOENT || iError == ENOTDIR) {
+        continue;
+      }
+
       /* If it's a broken symlink, ignore it.  Otherwise, warn. */
       if (lstat((root + sPath + "/" + pEnt->d_name).c_str(), &st) == 0) {
         continue;
