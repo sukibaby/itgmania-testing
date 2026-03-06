@@ -519,7 +519,9 @@ void SongManager::LoadSongDir(
   std::unordered_map<std::string, std::string> cache_target_owner;
   cache_target_owner.reserve(songsToLoad.size());
 
-  int cache_path_collision_count = 0;
+  const char* cache_path_collision_error =
+      "Song cache path collision detected while building load list. "
+      "Different song directories resolved to the same cache file path.";
   for (const SongToLoad& songToLoad : songsToLoad) {
     const std::string& song_dir = songToLoad.sSongDirName;
     ++song_dir_counts[song_dir];
@@ -533,10 +535,10 @@ void SongManager::LoadSongDir(
     }
 
     if (CompareNoCase(existing_owner->second, song_dir) != 0) {
-      ++cache_path_collision_count;
-      LOG->Warn(
-          "Song cache path collision detected: '%s' and '%s' both map to '%s'",
-          existing_owner->second.c_str(), song_dir.c_str(), cache_path.c_str());
+      FAIL_M(ssprintf(
+          "%s Existing song dir: '%s', new song dir: '%s', cache path: '%s'",
+          cache_path_collision_error, existing_owner->second.c_str(),
+          song_dir.c_str(), cache_path.c_str()));
     }
   }
 
@@ -550,11 +552,10 @@ void SongManager::LoadSongDir(
     }
   }
 
-  if (duplicate_song_dir_count > 0 || cache_path_collision_count > 0) {
+    if (duplicate_song_dir_count > 0) {
     LOG->Warn(
-        "Song load diagnostics found %d duplicate song dirs and %d cache path "
-        "collisions.",
-        duplicate_song_dir_count, cache_path_collision_count);
+      "Song load diagnostics found %d duplicate song dirs.",
+      duplicate_song_dir_count);
   }
 
   // Holds the index of the next unloaded song for a thread to claim.
