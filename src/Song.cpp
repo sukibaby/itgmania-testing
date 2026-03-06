@@ -306,11 +306,6 @@ bool Song::LoadFromSongDir(
   }
 
   if (use_cache) {
-    /*
-    LOG->Trace("Loading '%s' from cache file '%s'.",
-                       m_sSongDir.c_str(),
-                       GetCacheFilePath().c_str());
-    */
     bool bLoadedFromSSC = false;
     bool bLoadedFromSM = false;
 
