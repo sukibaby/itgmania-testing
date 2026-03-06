@@ -314,14 +314,17 @@ bool Song::LoadFromSongDir(
                        m_sSongDir.c_str(),
                        GetCacheFilePath().c_str());
     */
+    bool bLoadedFromSM = false;
     SSCLoader loaderSSC;
     bool bLoadedFromSSC =
         loaderSSC.LoadFromSimfile(cache_file_path, *this, true);
     if (!bLoadedFromSSC) {
       // load from .sm
       SMLoader loaderSM;
-      loaderSM.LoadFromSimfile(cache_file_path, *this, true);
-      loaderSM.TidyUpData(*this, true);
+      bLoadedFromSM = loaderSM.LoadFromSimfile(cache_file_path, *this, true);
+      if (bLoadedFromSM) {
+        loaderSM.TidyUpData(*this, true);
+      }
     }
 
     const bool cache_parse_succeeded = bLoadedFromSSC || bLoadedFromSM;
