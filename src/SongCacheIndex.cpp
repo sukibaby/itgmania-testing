@@ -1,6 +1,7 @@
 #include "SongCacheIndex.h"
 
 #include <cstddef>
+#include <cstdint>
 #include <string>
 #include <vector>
 
@@ -42,28 +43,32 @@ std::string SongCacheIndex::GetCacheFilePath(
     const std::string& sGroup, const std::string& sPath) {
   /* Don't use GetHashForFile, since we don't want to spend time
    * checking the file size and date. */
-  std::string s;
+  std::string normalized_path;
 
   if (sPath.size() > 2 && sPath[0] == '/' && sPath[sPath.size() - 1] == '/') {
-    s.assign(sPath, 1, sPath.size() - 2);
+    normalized_path.assign(sPath, 1, sPath.size() - 2);
   } else if (sPath.size() > 1 && sPath[0] == '/') {
-    s.assign(sPath, 1, sPath.size() - 1);
+    normalized_path.assign(sPath, 1, sPath.size() - 1);
   } else {
-    s = sPath;
+    normalized_path = sPath;
   }
-  /* Change slashes and invalid utf-8 characters to _.
-   * http://en.wikipedia.org/wiki/UTF-8
-   * macOS doesn't support precomposed unicode characters in files names and
-   * so we should probably replace them with combining diacritics.
-   * XXX How do we do this and is it even worth it? */
-  const char* invalid = "/\xc0\xc1\xfe\xff\xf8\xf9\xfa\xfb\xfc\xfd\xf5\xf6\xf7";
-  for (size_t pos = s.find_first_of(invalid); pos != std::string::npos;
-       pos = s.find_first_of(invalid, pos)) {
-    s[pos] = '_';
+  // Traditionally at this point we would have changed slashes and invalid
+  // utf-8 characters to an underscore (_). This was needed due to RString
+  // limitations, but a safer way to store these items and prevent collissions
+  // is to use a hash for the filename instead. CRC32 is no good here since with
+  // a larger library, the risk of collission will increase. So, we use a FNV-1a
+  // 64-bit hash here which is easy to implement and does not have any
+  // dependencies. http://www.isthe.com/chongo/tech/comp/fnv/index.html
+  uint64_t path_hash = 14695981039346656037ULL;  // offset basis
+  for (unsigned char c : normalized_path) {
+    path_hash ^= c;
+    path_hash *= 1099511628211ULL;  // 64-bit prime
   }
+
   // CACHE_DIR ends with a /.
   return ssprintf(
-      "%s%s/%s", SpecialFiles::CACHE_DIR.c_str(), sGroup.c_str(), s.c_str());
+      "%s%s/%016llx.cache", SpecialFiles::CACHE_DIR.c_str(), sGroup.c_str(),
+      static_cast<unsigned long long>(path_hash));
 }
 
 SongCacheIndex::SongCacheIndex() : Mutex("SongCacheIndex") { ReadCacheIndex(); }
