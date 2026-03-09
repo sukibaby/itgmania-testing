@@ -9,7 +9,11 @@
 
 #include <cstddef>
 #include <cstdint>
+<<<<<<< Updated upstream
 #include <vector>
+=======
+#include <mutex>
+>>>>>>> Stashed changes
 
 #include <ApplicationServices/ApplicationServices.h>
 #include <CoreServices/CoreServices.h>
@@ -244,6 +248,7 @@ std::string ArchHooks::GetPreferredLanguage() {
   return ret;
 }
 
+<<<<<<< Updated upstream
 int64_t ArchHooks::GetSystemTimeInMicroseconds() {
   // http://developer.apple.com/qa/qa2004/qa1398.html
   static double factor = 0.0;
@@ -255,6 +260,21 @@ int64_t ArchHooks::GetSystemTimeInMicroseconds() {
     factor = timeBase.numer / (1000.0 * timeBase.denom);
   }
   return int64_t(mach_absolute_time() * factor);
+=======
+int64_t ArchHooks::GetSystemTimeInMicroseconds()
+{
+	// http://developer.apple.com/qa/qa2004/qa1398.html
+	static std::once_flag s_timeBaseInitFlag;
+	static mach_timebase_info_data_t s_timeBase = { 0, 0 };
+
+	std::call_once( s_timeBaseInitFlag, []() {
+		mach_timebase_info( &s_timeBase );
+	} );
+
+	const uint64_t t = mach_absolute_time();
+	const uint64_t ns = (t * uint64_t(s_timeBase.numer)) / uint64_t(s_timeBase.denom);
+	return int64_t(ns / 1000ULL);
+>>>>>>> Stashed changes
 }
 
 #include "RageFileManager.h"

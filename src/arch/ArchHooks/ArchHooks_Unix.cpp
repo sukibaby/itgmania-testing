@@ -11,9 +11,15 @@
 #include "RageUtil.h"
 #include "archutils/Common/PthreadHelpers.h"
 #include "archutils/Unix/AssertionHandler.h"
+<<<<<<< Updated upstream
 #include "archutils/Unix/EmergencyShutdown.h"
 #include "archutils/Unix/GetSysInfo.h"
 #include "archutils/Unix/SignalHandler.h"
+=======
+
+#include <cstdint>
+#include <mutex>
+>>>>>>> Stashed changes
 
 #if defined(HAVE_UNISTD_H)
 #include <unistd.h>
@@ -119,6 +125,7 @@ static void TestTLS() {
 #endif
 
 #if 1
+<<<<<<< Updated upstream
 /* If librt is available, use CLOCK_MONOTONIC to implement
  * GetSystemTimeInMicroseconds, if supported, so changes to the system clock
  * don't cause problems. */
@@ -138,6 +145,35 @@ void OpenGetTime() {
   if (clock_gettime(CLOCK_MONOTONIC, &ts) == -1) {
     return;
   }
+=======
+/* If librt is available, use a monotonic clock to implement
+ * GetSystemTimeInMicroseconds, if supported, so changes to the system clock
+ * don't cause problems. */
+namespace
+{
+	clockid_t g_Clock = CLOCK_REALTIME;
+	std::once_flag g_getTimeInitFlag;
+	void OpenGetTime()
+	{
+		std::call_once( g_getTimeInitFlag, []() {
+			/* Prefer CLOCK_MONOTONIC_RAW if available, then CLOCK_MONOTONIC.
+			 * If neither is available, use CLOCK_REALTIME. */
+			timespec ts;
+			#if defined(CLOCK_MONOTONIC_RAW)
+			if( clock_gettime(CLOCK_MONOTONIC_RAW, &ts) != -1 )
+			{
+				g_Clock = CLOCK_MONOTONIC_RAW;
+				return;
+			}
+			#endif
+			if( clock_gettime(CLOCK_MONOTONIC, &ts) == -1 )
+				return;
+
+			g_Clock = CLOCK_MONOTONIC;
+		} );
+	}
+};
+>>>>>>> Stashed changes
 
   g_Clock = CLOCK_MONOTONIC;
 }
@@ -151,6 +187,7 @@ clockid_t ArchHooks_Unix::GetClock() {
 int64_t ArchHooks::GetSystemTimeInMicroseconds() {
   OpenGetTime();
 
+<<<<<<< Updated upstream
   timespec ts;
   clock_gettime(g_Clock, &ts);
 
@@ -159,6 +196,19 @@ int64_t ArchHooks::GetSystemTimeInMicroseconds() {
     iRet = ArchHooks::FixupTimeIfBackwards(iRet);
   }
   return iRet;
+=======
+	timespec ts;
+	if( clock_gettime(g_Clock, &ts) == -1 )
+	{
+		if( g_Clock != CLOCK_REALTIME || clock_gettime(CLOCK_REALTIME, &ts) == -1 )
+			return 0;
+	}
+
+	int64_t iRet = int64_t(ts.tv_sec) * 1000000 + int64_t(ts.tv_nsec)/1000;
+	if( g_Clock == CLOCK_REALTIME )
+		iRet = ArchHooks::FixupTimeIfBackwards( iRet );
+	return iRet;
+>>>>>>> Stashed changes
 }
 #else
 int64_t ArchHooks::GetSystemTimeInMicroseconds() {

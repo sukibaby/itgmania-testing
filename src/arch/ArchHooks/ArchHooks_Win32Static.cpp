@@ -30,24 +30,40 @@ namespace {
 LARGE_INTEGER g_liFrequency;
 }  // namespace
 
+<<<<<<< Updated upstream
 static void InitTimer() {
   // Set the thread scheduler to let us update every 1ms.
   timeBeginPeriod(1);
 
   // Retrieve the number of ticks per second.
   QueryPerformanceFrequency(&g_liFrequency);
+=======
+static void InitTimer()
+{
+	// Retrieve the number of ticks per second.
+	QueryPerformanceFrequency(&g_liFrequency);
+>>>>>>> Stashed changes
 }
 
 int64_t ArchHooks::GetSystemTimeInMicroseconds() {
   // Make sure the timer is initialized.
   std::call_once(g_timerInitFlag, InitTimer);
 
+<<<<<<< Updated upstream
   // Get the current time.
   LARGE_INTEGER current_time;
   QueryPerformanceCounter(&current_time);
 
   // Calculate the elapsed time in microseconds.
   return (current_time.QuadPart * 1000000LL) / g_liFrequency.QuadPart;
+=======
+	// Calculate elapsed time in microseconds with overflow-safe math.
+	const int64_t ticks = current_time.QuadPart;
+	const int64_t freq = g_liFrequency.QuadPart;
+	const int64_t whole_seconds = ticks / freq;
+	const int64_t leftover_ticks = ticks % freq;
+	return whole_seconds * 1000000LL + (leftover_ticks * 1000000LL) / freq;
+>>>>>>> Stashed changes
 }
 
 static std::string GetMountDir(const std::string& sDirOfExecutable) {
