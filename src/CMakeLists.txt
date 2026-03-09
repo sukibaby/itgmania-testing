@@ -510,6 +510,14 @@ if(WIN32)
 elseif(APPLE)
   # On macOS, just install the .app bundle - resources are already inside it
   install(TARGETS "${SM_EXE_NAME}" BUNDLE DESTINATION ".")
+  
+  # ITGm v1.1.0 -> v1.2.0 migration extras
+  set(MAC_EXTRAS_DIR "${SM_INSTALLER_DIR}/mac")
+  install(FILES "${MAC_EXTRAS_DIR}/guide.rtf"
+          DESTINATION "."
+          RENAME "Important Notes about Save Data.rtf")
+  install(PROGRAMS "${MAC_EXTRAS_DIR}/Migrate_Save_Data.sh"
+          DESTINATION ".")
 else()
   install(TARGETS "${SM_EXE_NAME}" DESTINATION "${SM_INSTALL_DESTINATION}")
   if(LINUX)
