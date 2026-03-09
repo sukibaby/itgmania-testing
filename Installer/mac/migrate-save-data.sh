@@ -22,11 +22,21 @@ if ! $has_content; then
   exit 0
 fi
 
-echo "ITGmania data found in one or more of:"
-echo "  $PREFDIR"
-echo "  $LOGDIR"
-echo "  $CACHEDIR"
-echo "  $SCREENSHOTDIR"
+echo "ITGmania data for version 1.1.0 or below was found."
+for src in "$DEST_SAVE" "$DEST_LOGS" "$DEST_SCREENSHOTS"; do
+  if [[ -d "$src" ]] && find "$src" -mindepth 1 -print -quit >/dev/null 2>&1; then
+    echo ""
+    echo " --- Note ---"
+    echo "ITGmania data for version 1.2.0 or above seems to"
+    echo "exist already!"
+    echo ""
+    echo "Migration may overwrite newer data, so please double"
+    echo "check before moving or copying anything if you're"
+    echo "concerned about possibly losing any data!"
+    echo ""
+  fi
+done
+
 echo ""
 echo "Choose action: [m]ove (recommended), [c]opy, [x] cancel:"
 read -r choice
