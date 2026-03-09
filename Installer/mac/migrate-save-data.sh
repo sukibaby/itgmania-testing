@@ -34,7 +34,7 @@ case "$choice" in
   m|M) action="move" ;;
   c|C) action="copy" ;;
   x|X) echo "Cancelled."; exit 0 ;;
-  *) echo "Invalid choice. Cancelled."; exit 1 ;;
+  *) echo "Invalid choice - please enter m, c, or x."; exit 1 ;;
 esac
 
 mkdir -p "$DEST_SAVE" "$DEST_LOGS" "$DEST_SCREENSHOTS"
@@ -72,4 +72,5 @@ if [[ -d "$CACHEDIR" ]]; then
   rm -rf "$CACHEDIR"
 fi
 
-echo "Done."
+echo
+echo "Done!"
