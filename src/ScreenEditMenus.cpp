@@ -2,6 +2,7 @@
 
 #include "BackgroundUtil.h"
 #include "RageUtil.h"
+#include "RageUtil/RandomNumbers.h"
 
 namespace {
 
@@ -21,9 +22,10 @@ enum RowCountChoice {
   RCC_192ND,
 };
 
+
 #define RCC_CHOICES                                                       \
-  RCC_4TH, "4m", "2m", "1m", "2nd", "4th", "8th", "12th", "16th", "24th", \
-      "32nd", "48th", "64th", "192nd"
+    RCC_4TH, "4m", "2m", "1m", "2nd", "4th", "8th", "12th", "16th", "24th", \
+            "32nd", "48th", "64th", "192nd"
 
 bool EnabledIfClipboardTimingIsSafe();
 bool EnabledIfClipboardTimingIsSafe() {
@@ -32,22 +34,22 @@ bool EnabledIfClipboardTimingIsSafe() {
          clipboard_full_timing->IsSafeFullTiming();
 }
 
-bool EnabledIfSet1SongBGAnimation();
-bool EnabledIfSet1SongMovie();
-bool EnabledIfSet1SongBitmap();
-bool EnabledIfSet1GlobalBGAnimation();
-bool EnabledIfSet1GlobalMovie();
-bool EnabledIfSet1GlobalMovieSongGroup();
-bool EnabledIfSet1GlobalMovieSongGroupAndGenre();
-bool EnabledIfSet2SongBGAnimation();
-bool EnabledIfSet2SongMovie();
-bool EnabledIfSet2SongBitmap();
-bool EnabledIfSet2GlobalBGAnimation();
-bool EnabledIfSet2GlobalMovie();
-bool EnabledIfSet2GlobalMovieSongGroup();
-bool EnabledIfSet2GlobalMovieSongGroupAndGenre();
-
 }  // namespace
+
+static bool EnabledIfSet1SongBGAnimation();
+static bool EnabledIfSet1SongMovie();
+static bool EnabledIfSet1SongBitmap();
+static bool EnabledIfSet1GlobalBGAnimation();
+static bool EnabledIfSet1GlobalMovie();
+static bool EnabledIfSet1GlobalMovieSongGroup();
+static bool EnabledIfSet1GlobalMovieSongGroupAndGenre();
+static bool EnabledIfSet2SongBGAnimation();
+static bool EnabledIfSet2SongMovie();
+static bool EnabledIfSet2SongBitmap();
+static bool EnabledIfSet2GlobalBGAnimation();
+static bool EnabledIfSet2GlobalMovie();
+static bool EnabledIfSet2GlobalMovieSongGroup();
+static bool EnabledIfSet2GlobalMovieSongGroupAndGenre();
 
 int GetRowsFromAnswers(int choice, const std::vector<int>& answers) {
   if (answers.empty()) {
@@ -588,82 +590,82 @@ MenuDef g_BackgroundChange(
         ScreenEdit::delete_change, "Remove Change", true, EditMode_Full, true,
         true, 0, nullptr));
 
-bool EnabledIfSet1SongBGAnimation() {
+static bool EnabledIfSet1SongBGAnimation() {
   return ScreenMiniMenu::s_viLastAnswers[ScreenEdit::file1_type] ==
              song_bganimation &&
          !g_BackgroundChange.rows[ScreenEdit::file1_song_bganimation]
               .choices.empty();
 }
-bool EnabledIfSet1SongMovie() {
+static bool EnabledIfSet1SongMovie() {
   return ScreenMiniMenu::s_viLastAnswers[ScreenEdit::file1_type] ==
              song_movie &&
          !g_BackgroundChange.rows[ScreenEdit::file1_song_movie].choices.empty();
 }
-bool EnabledIfSet1SongBitmap() {
+static bool EnabledIfSet1SongBitmap() {
   return ScreenMiniMenu::s_viLastAnswers[ScreenEdit::file1_type] ==
              song_bitmap &&
          !g_BackgroundChange.rows[ScreenEdit::file1_song_still].choices.empty();
 }
-bool EnabledIfSet1GlobalBGAnimation() {
+static bool EnabledIfSet1GlobalBGAnimation() {
   return ScreenMiniMenu::s_viLastAnswers[ScreenEdit::file1_type] ==
              global_bganimation &&
          !g_BackgroundChange.rows[ScreenEdit::file1_global_bganimation]
               .choices.empty();
 }
-bool EnabledIfSet1GlobalMovie() {
+static bool EnabledIfSet1GlobalMovie() {
   return ScreenMiniMenu::s_viLastAnswers[ScreenEdit::file1_type] ==
              global_movie &&
          !g_BackgroundChange.rows[ScreenEdit::file1_global_movie]
               .choices.empty();
 }
-bool EnabledIfSet1GlobalMovieSongGroup() {
+static bool EnabledIfSet1GlobalMovieSongGroup() {
   return ScreenMiniMenu::s_viLastAnswers[ScreenEdit::file1_type] ==
              global_movie_song_group &&
          !g_BackgroundChange.rows[ScreenEdit::file1_global_movie_song_group]
               .choices.empty();
 }
-bool EnabledIfSet1GlobalMovieSongGroupAndGenre() {
+static bool EnabledIfSet1GlobalMovieSongGroupAndGenre() {
   return ScreenMiniMenu::s_viLastAnswers[ScreenEdit::file1_type] ==
              global_movie_song_group_and_genre &&
          !g_BackgroundChange
               .rows[ScreenEdit::file1_global_movie_song_group_and_genre]
               .choices.empty();
 }
-bool EnabledIfSet2SongBGAnimation() {
+static bool EnabledIfSet2SongBGAnimation() {
   return ScreenMiniMenu::s_viLastAnswers[ScreenEdit::file2_type] ==
              song_bganimation &&
          !g_BackgroundChange.rows[ScreenEdit::file2_song_bganimation]
               .choices.empty();
 }
-bool EnabledIfSet2SongMovie() {
+static bool EnabledIfSet2SongMovie() {
   return ScreenMiniMenu::s_viLastAnswers[ScreenEdit::file2_type] ==
              song_movie &&
          !g_BackgroundChange.rows[ScreenEdit::file2_song_movie].choices.empty();
 }
-bool EnabledIfSet2SongBitmap() {
+static bool EnabledIfSet2SongBitmap() {
   return ScreenMiniMenu::s_viLastAnswers[ScreenEdit::file2_type] ==
              song_bitmap &&
          !g_BackgroundChange.rows[ScreenEdit::file2_song_still].choices.empty();
 }
-bool EnabledIfSet2GlobalBGAnimation() {
+static bool EnabledIfSet2GlobalBGAnimation() {
   return ScreenMiniMenu::s_viLastAnswers[ScreenEdit::file2_type] ==
              global_bganimation &&
          !g_BackgroundChange.rows[ScreenEdit::file2_global_bganimation]
               .choices.empty();
 }
-bool EnabledIfSet2GlobalMovie() {
+static bool EnabledIfSet2GlobalMovie() {
   return ScreenMiniMenu::s_viLastAnswers[ScreenEdit::file2_type] ==
              global_movie &&
          !g_BackgroundChange.rows[ScreenEdit::file2_global_movie]
               .choices.empty();
 }
-bool EnabledIfSet2GlobalMovieSongGroup() {
+static bool EnabledIfSet2GlobalMovieSongGroup() {
   return ScreenMiniMenu::s_viLastAnswers[ScreenEdit::file2_type] ==
              global_movie_song_group &&
          !g_BackgroundChange.rows[ScreenEdit::file2_global_movie_song_group]
               .choices.empty();
 }
-bool EnabledIfSet2GlobalMovieSongGroupAndGenre() {
+static bool EnabledIfSet2GlobalMovieSongGroupAndGenre() {
   return ScreenMiniMenu::s_viLastAnswers[ScreenEdit::file2_type] ==
              global_movie_song_group_and_genre &&
          !g_BackgroundChange

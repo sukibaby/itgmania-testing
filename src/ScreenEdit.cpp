@@ -3,35 +3,168 @@
 
 #include <algorithm>
 #include <cfloat>
+#include <cmath>
+#include <cstddef>
+#include <cstdio>
+#include <utility>
+#include <vector>
 
+#include "ActorUtil.h"
+#include "AdjustSync.h"
 #include "AnnouncerManager.h"
+#include "ArrowEffects.h"
+#include "Attack.h"
 #include "BackgroundUtil.h"
+#include "CommonMetrics.h"
 #include "Course.h"
+#include "Difficulty.h"
+#include "EnumHelper.h"
+#include "Game.h"
 #include "GameCommand.h"
+#include "GameConstantsAndTypes.h"
+#include "GameInput.h"
 #include "GameManager.h"
-#include "GameState.h"
 #include "GameSoundManager.h"
+#include "GameState.h"
+#include "IniFile.h"
+#include "InputEventPlus.h"
+#include "InputFilter.h"
+#include "InputMapper.h"
 #include "LocalizedString.h"
+#include "MessageManager.h"
+#include "ModsGroup.h"
+#include "NoteData.h"
 #include "NoteDataUtil.h"
+#include "NoteField.h"
 #include "NoteSkinManager.h"
+#include "NoteTypes.h"
+#include "NotesWriterSM.h"
+#include "PlayerNumber.h"
 #include "Preference.h"
 #include "PrefsManager.h"
 #include "ProfileManager.h"
 #include "RageFileManager.h"
+#include "RageInput.h"
+#include "RageInputDevice.h"
 #include "RageLog.h"
+#include "RageSoundManager.h"
+#include "RageSoundReader.h"
+#include "RageSoundReader_FileReader.h"
 #include "RageTimer.h"
+#include "RageUtil.h"
+#include "RageUtil/ConvertValue.h"
+#include "RageUtil/RandomNumbers.h"
+#include "Screen.h"
 #include "ScreenDimensions.h"
 #include "ScreenEditMenus.h"
 #include "ScreenManager.h"
+#include "ScreenMessage.h"
 #include "ScreenMiniMenu.h"
 #include "ScreenPrompt.h"
+#include "ScreenSaveSync.h"
 #include "ScreenTextEntry.h"
+#include "ScreenWithMenuElements.h"
+#include "Song.h"
 #include "SongManager.h"
+#include "SongPosition.h"
 #include "SongUtil.h"
+#include "SpecialFiles.h"
+#include "StdString.h"
+#include "Steps.h"
 #include "StepsUtil.h"
 #include "Style.h"
 #include "ThemeManager.h"
+#include "ThemeMetric.h"
+#include "TimingData.h"
+#include "TimingSegments.h"
 #include "UnlockManager.h"
+#include "XmlFile.h"
+static Preference<float> g_iDefaultRecordLength("DefaultRecordLength", 4);
+static Preference<bool> g_bEditorShowBGChangesPlay(
+    "EditorShowBGChangesPlay", true);
+
+// How long must the button be held to generate a hold in record mode? This
+// must stay float so record can distinguish taps vs holds. -Kyz
+constexpr static float record_hold_default = 0.3f;
+float record_hold_seconds = record_hold_default;
+constexpr static float time_between_autosave = 300.0f;  // 5 minutes. -Kyz
+
+#define PLAYER_X (SCREEN_CENTER_X)
+#define PLAYER_Y (SCREEN_CENTER_Y)
+#define PLAYER_HEIGHT (360)
+#define PLAYER_Y_STANDARD \
+  (PLAYER_Y - ((SCREEN_HEIGHT / 480) * (PLAYER_HEIGHT / 2)))
+
+#define EDIT_X (SCREEN_CENTER_X)
+#define EDIT_Y (PLAYER_Y)
+
+#define RECORD_X (SCREEN_CENTER_X)
+#define RECORD_Y (SCREEN_CENTER_Y)
+
+#define PLAY_RECORD_HELP_TEXT THEME->GetString(m_sName, "PlayRecordHelpText")
+#define EDIT_HELP_TEXT THEME->GetString(m_sName, "EditHelpText")
+
+#define SET_MOD_SCREEN THEME->GetMetric("ScreenEdit", "SetModScreen")
+#define OPTIONS_SCREEN THEME->GetMetric("ScreenEdit", "OptionsScreen")
+
+AutoScreenMessage(SM_UpdateTextInfo);
+AutoScreenMessage(SM_BackFromMainMenu);
+AutoScreenMessage(SM_BackFromAreaMenu);
+AutoScreenMessage(SM_BackFromAlterMenu);
+AutoScreenMessage(SM_BackFromArbitraryRemap);
+AutoScreenMessage(SM_BackFromStepsInformation);
+AutoScreenMessage(SM_BackFromStepsData);
+AutoScreenMessage(SM_BackFromOptions);
+AutoScreenMessage(SM_BackFromSongInformation);
+AutoScreenMessage(SM_BackFromBGChange);
+AutoScreenMessage(SM_BackFromInsertTapAttack);
+AutoScreenMessage(SM_BackFromInsertTapAttackPlayerOptions);
+AutoScreenMessage(SM_BackFromAttackAtTime);
+AutoScreenMessage(SM_BackFromInsertStepAttack);
+AutoScreenMessage(SM_BackFromAddingModToExistingAttack);
+AutoScreenMessage(SM_BackFromEditingModToExistingAttack);
+AutoScreenMessage(SM_BackFromEditingAttackStart);
+AutoScreenMessage(SM_BackFromEditingAttackLength);
+AutoScreenMessage(SM_BackFromAddingAttackToChart);
+AutoScreenMessage(SM_BackFromInsertStepAttackPlayerOptions);
+AutoScreenMessage(SM_BackFromInsertCourseAttack);
+AutoScreenMessage(SM_BackFromInsertCourseAttackPlayerOptions);
+AutoScreenMessage(SM_BackFromCourseModeMenu);
+AutoScreenMessage(SM_BackFromKeysoundTrack);
+AutoScreenMessage(SM_BackFromNewKeysound);
+AutoScreenMessage(SM_DoRevertToLastSave);
+AutoScreenMessage(SM_DoRevertFromDisk);
+AutoScreenMessage(SM_ConfirmClearArea);
+AutoScreenMessage(SM_BackFromTimingDataInformation);
+AutoScreenMessage(SM_BackFromTimingDataChangeInformation);
+AutoScreenMessage(SM_BackFromDifficultyMeterChange);
+AutoScreenMessage(SM_BackFromBeat0Change);
+AutoScreenMessage(SM_BackFromBPMChange);
+AutoScreenMessage(SM_BackFromStopChange);
+AutoScreenMessage(SM_BackFromDelayChange);
+AutoScreenMessage(SM_BackFromTickcountChange);
+AutoScreenMessage(SM_BackFromComboChange);
+AutoScreenMessage(SM_BackFromLabelChange);
+AutoScreenMessage(SM_BackFromWarpChange);
+AutoScreenMessage(SM_BackFromSpeedPercentChange);
+AutoScreenMessage(SM_BackFromSpeedWaitChange);
+AutoScreenMessage(SM_BackFromSpeedModeChange);
+AutoScreenMessage(SM_BackFromScrollChange);
+AutoScreenMessage(SM_BackFromFakeChange);
+AutoScreenMessage(SM_BackFromStepMusicChange);
+AutoScreenMessage(SM_DoEraseStepTiming);
+AutoScreenMessage(SM_DoSaveAndExit);
+AutoScreenMessage(SM_DoExit);
+AutoScreenMessage(SM_AutoSaveSuccessful);
+AutoScreenMessage(SM_SaveSuccessful);
+AutoScreenMessage(SM_SaveSuccessNoSM);
+AutoScreenMessage(SM_SaveFailed);
+
+static const char* EditStateNames[] = {
+    "Edit", "Record", "RecordPaused", "Playing"};
+XToString(EditState);
+LuaXType(EditState);
+
 // HACK: need to remember the track we're inserting on so that we can lay the
 // attack note after coming back from menus.
 static int g_iLastInsertTapAttackTrack = -1;
