@@ -1,6 +1,3 @@
-#include "global.h"
-#include "ScreenEdit.h"
-
 #include "BackgroundUtil.h"
 #include "Course.h"
 #include "Game.h"
@@ -10,6 +7,8 @@
 #include "LocalizedString.h"
 #include "NoteDataUtil.h"
 #include "PrefsManager.h"
+#include "RageUtil/ConvertValue.h"
+#include "ScreenEdit.h"
 #include "ScreenEditMenu.h"
 #include "ScreenManager.h"
 #include "SongUtil.h"
@@ -17,7 +16,7 @@
 #include "Style.h"
 #include "ThemeManager.h"
 #include "ThemeMetric.h"
-#include "RageUtil/ConvertValue.h"
+#include "global.h"
 
 extern int g_iLastInsertTapAttackTrack;
 extern float g_fLastInsertAttackDurationSeconds;
@@ -825,8 +824,8 @@ bool ScreenEdit::InputEdit(const InputEventPlus& input, EditButton EditB) {
                   bgChange.m_def.m_sFile1)) {
             menu.rows[file1_type].iDefaultChoice = global_movie;
           }
-          if (menu.rows[file1_global_movie_song_group].SetDefaultChoiceIfPresent(
-                  bgChange.m_def.m_sFile1)) {
+          if (menu.rows[file1_global_movie_song_group]
+                  .SetDefaultChoiceIfPresent(bgChange.m_def.m_sFile1)) {
             menu.rows[file1_type].iDefaultChoice = global_movie_song_group;
           }
           if (menu.rows[file1_global_movie_song_group_and_genre]
@@ -859,8 +858,8 @@ bool ScreenEdit::InputEdit(const InputEventPlus& input, EditButton EditB) {
                   bgChange.m_def.m_sFile2)) {
             menu.rows[file2_type].iDefaultChoice = global_movie;
           }
-          if (menu.rows[file2_global_movie_song_group].SetDefaultChoiceIfPresent(
-                  bgChange.m_def.m_sFile2)) {
+          if (menu.rows[file2_global_movie_song_group]
+                  .SetDefaultChoiceIfPresent(bgChange.m_def.m_sFile2)) {
             menu.rows[file2_type].iDefaultChoice = global_movie_song_group;
           }
           if (menu.rows[file2_global_movie_song_group_and_genre]
@@ -868,7 +867,6 @@ bool ScreenEdit::InputEdit(const InputEventPlus& input, EditButton EditB) {
             menu.rows[file2_type].iDefaultChoice =
                 global_movie_song_group_and_genre;
           }
-
         }
         EditMiniMenu(&g_BackgroundChange, SM_BackFromBGChange);
       } else {
@@ -945,9 +943,9 @@ bool ScreenEdit::InputEdit(const InputEventPlus& input, EditButton EditB) {
       if (m_NoteFieldEdit.m_iBeginMarker == -1 ||
           m_NoteFieldEdit.m_iEndMarker == -1) {
         m_iStartPlayingAt = BeatToNoteRow(GetBeat());
-        m_iStopPlayingAt = m_iStartPlayingAt +
-                           BeatToNoteRow(
-                               NoteTypeToBeat(m_SnapDisplay.GetNoteType()));
+        m_iStopPlayingAt =
+            m_iStartPlayingAt +
+            BeatToNoteRow(NoteTypeToBeat(m_SnapDisplay.GetNoteType()));
       } else {
         m_iStartPlayingAt = m_NoteFieldEdit.m_iBeginMarker;
         m_iStopPlayingAt = m_NoteFieldEdit.m_iEndMarker;

@@ -1,5 +1,3 @@
-#include "ScreenEdit.h"
-
 #include <map>
 #include <string>
 #include <vector>
@@ -10,6 +8,7 @@
 #include "RageInput.h"
 #include "RageInputDevice.h"
 #include "RageUtil.h"
+#include "ScreenEdit.h"
 #include "SpecialFiles.h"
 
 namespace {

@@ -1,4 +1,3 @@
-#include "global.h"
 #include "ScreenEdit.h"
 
 #include <algorithm>
@@ -79,6 +78,7 @@
 #include "TimingSegments.h"
 #include "UnlockManager.h"
 #include "XmlFile.h"
+#include "global.h"
 Preference<float> g_iDefaultRecordLength("DefaultRecordLength", 4);
 Preference<bool> g_bEditorShowBGChangesPlay("EditorShowBGChangesPlay", true);
 

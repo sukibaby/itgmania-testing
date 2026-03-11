@@ -1,6 +1,3 @@
-#include "global.h"
-#include "ScreenEdit.h"
-
 #include "AdjustSync.h"
 #include "ArrowEffects.h"
 #include "GameSoundManager.h"
@@ -8,11 +5,12 @@
 #include "InputMapper.h"
 #include "NoteData.h"
 #include "NoteDataUtil.h"
-#include "PrefsManager.h"
 #include "Preference.h"
+#include "PrefsManager.h"
 #include "RageLog.h"
 #include "RageSound.h"
 #include "RageTimer.h"
+#include "ScreenEdit.h"
 #include "ScreenMiniMenu.h"
 #include "ScreenSaveSync.h"
 #include "Song.h"
@@ -20,6 +18,7 @@
 #include "Style.h"
 #include "ThemeManager.h"
 #include "ThemeMetric.h"
+#include "global.h"
 
 extern float record_hold_seconds;
 extern Preference<bool> g_bEditorShowBGChangesPlay;
