@@ -59,6 +59,7 @@ list(APPEND SMDATA_SCREEN_REST_SRC
             "ScreenDemonstration.cpp"
             "ScreenEdit.cpp"
             "ScreenEditLifecycle.cpp"
+            "ScreenEditInput.cpp"
             "ScreenEditInputMapping.cpp"
             "ScreenEditMenus.cpp"
             "ScreenEditMenu.cpp"
