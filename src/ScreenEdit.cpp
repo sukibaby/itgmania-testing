@@ -56,7 +56,7 @@
 #include "RageUtil/RandomNumbers.h"
 #include "Screen.h"
 #include "ScreenDimensions.h"
-#include "ScreenEditMenus.h"
+#include "ScreenEditMenu.h"
 #include "ScreenManager.h"
 #include "ScreenMessage.h"
 #include "ScreenMiniMenu.h"

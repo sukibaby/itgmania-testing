@@ -10,7 +10,7 @@
 #include "LocalizedString.h"
 #include "NoteDataUtil.h"
 #include "PrefsManager.h"
-#include "ScreenEditMenus.h"
+#include "ScreenEditMenu.h"
 #include "ScreenManager.h"
 #include "SongUtil.h"
 #include "StepsUtil.h"
