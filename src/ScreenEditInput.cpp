@@ -2,6 +2,8 @@
 #include "ScreenEdit.h"
 
 #include "BackgroundUtil.h"
+#include "Course.h"
+#include "Game.h"
 #include "GameManager.h"
 #include "GameState.h"
 #include "InputFilter.h"
@@ -12,13 +14,28 @@
 #include "ScreenManager.h"
 #include "SongUtil.h"
 #include "StepsUtil.h"
+#include "Style.h"
 #include "ThemeManager.h"
 #include "ThemeMetric.h"
+#include "RageUtil/ConvertValue.h"
 
 extern int g_iLastInsertTapAttackTrack;
 extern float g_fLastInsertAttackDurationSeconds;
 extern float g_fLastInsertAttackPositionSeconds;
 extern BackgroundLayer g_CurrentBGChangeLayer;
+extern const float record_hold_default;
+extern float record_hold_seconds;
+
+AutoScreenMessage(SM_BackFromMainMenu);
+AutoScreenMessage(SM_BackFromAreaMenu);
+AutoScreenMessage(SM_BackFromAlterMenu);
+AutoScreenMessage(SM_BackFromBGChange);
+AutoScreenMessage(SM_BackFromCourseModeMenu);
+AutoScreenMessage(SM_BackFromInsertTapAttack);
+AutoScreenMessage(SM_BackFromInsertCourseAttack);
+AutoScreenMessage(SM_BackFromInsertStepAttack);
+AutoScreenMessage(SM_BackFromInsertTapAttackPlayerOptions);
+AutoScreenMessage(SM_BackFromInsertCourseAttackPlayerOptions);
 
 bool ScreenEdit::Input(const InputEventPlus& input) {
   //  LOG->Trace( "ScreenEdit::Input()" );
@@ -852,17 +869,6 @@ bool ScreenEdit::InputEdit(const InputEventPlus& input, EditButton EditB) {
                 global_movie_song_group_and_genre;
           }
 
-          menu.rows[second].Load("1" + sTiming.ToString(m_iStartPlayingAt));
-          menu.rows[length].Load(
-              sTiming.ToString(m_iStopPlayingAt - m_iStartPlayingAt));
-
-          // don't allow "copy last used" if the current slot wasn't used.
-          menu.rows[file1_type].bEnabledForInputs[baked_random] =
-              m_SongLastSave.GetBackgroundChanges(g_CurrentBGChangeLayer)
-                  .size() > 0;
-          menu.rows[file2_type].bEnabledForInputs[baked_random] =
-              m_SongLastSave.GetBackgroundChanges(g_CurrentBGChangeLayer)
-                  .size() > 0;
         }
         EditMiniMenu(&g_BackgroundChange, SM_BackFromBGChange);
       } else {
@@ -875,21 +881,6 @@ bool ScreenEdit::InputEdit(const InputEventPlus& input, EditButton EditB) {
         return false;  // this is only supported in song timing
       }
       EditMiniMenu(&g_InsertCourseAttack, SM_BackFromInsertCourseAttack);
-      return true;
-    case EDIT_BUTTON_INSERT_ATTACK_P1:
-    case EDIT_BUTTON_INSERT_ATTACK_P2:
-      if (GAMESTATE->m_bIsUsingStepTiming) {
-        return false;  // this is only supported in song timing
-      }
-      g_iLastInsertTapAttackTrack = -1;
-      g_fLastInsertAttackPositionSeconds = GetAppropriatePosition().m_fMusicSeconds;
-      g_fLastInsertAttackDurationSeconds =
-          NoteTypeToBeat(m_SnapDisplay.GetNoteType()) / m_pSong->m_SongTiming
-              .GetBPMAtBeat(GetAppropriatePosition().m_fSongBeat) *
-          60.0f;
-      HandleMainMenuChoice(
-          EditB == EDIT_BUTTON_INSERT_ATTACK_P1 ? ScreenEdit::add_attack_p1
-                                                 : ScreenEdit::add_attack_p2);
       return true;
     case EDIT_BUTTON_ADD_COURSE_MODS:
       EditMiniMenu(&g_CourseMode, SM_BackFromCourseModeMenu);
@@ -917,12 +908,12 @@ bool ScreenEdit::InputEdit(const InputEventPlus& input, EditButton EditB) {
       return true;
     case EDIT_BUTTON_PLAY_FROM_START:
       m_iStartPlayingAt = 0;
-      m_iStopPlayingAt = BeatToNoteRow(m_pSong->m_fLastBeat);
+      m_iStopPlayingAt = BeatToNoteRow(m_pSong->GetLastBeat());
       TransitionEditState(STATE_PLAYING);
       return true;
     case EDIT_BUTTON_PLAY_FROM_CURSOR:
       m_iStartPlayingAt = BeatToNoteRow(GetBeat());
-      m_iStopPlayingAt = BeatToNoteRow(m_pSong->m_fLastBeat);
+      m_iStopPlayingAt = BeatToNoteRow(m_pSong->GetLastBeat());
       TransitionEditState(STATE_PLAYING);
       return true;
     case EDIT_BUTTON_PLAY_SELECTION:
@@ -930,7 +921,7 @@ bool ScreenEdit::InputEdit(const InputEventPlus& input, EditButton EditB) {
       if (m_NoteFieldEdit.m_iBeginMarker == -1 ||
           m_NoteFieldEdit.m_iEndMarker == -1) {
         m_iStartPlayingAt = 0;
-        m_iStopPlayingAt = BeatToNoteRow(m_pSong->m_fLastBeat);
+        m_iStopPlayingAt = BeatToNoteRow(m_pSong->GetLastBeat());
       } else {
         m_iStartPlayingAt = m_NoteFieldEdit.m_iBeginMarker;
         m_iStopPlayingAt = m_NoteFieldEdit.m_iEndMarker;
