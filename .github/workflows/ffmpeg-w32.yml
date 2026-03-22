@@ -78,6 +78,9 @@ jobs:
           --disable-programs \
           --disable-static \
           --disable-swresample \
+          --disable-mmxext \
+          --disable-3dnow \
+          --disable-3dnowext \
           --disable-sse3 \
           --disable-ssse3 \
           --disable-sse4 \
@@ -87,6 +90,7 @@ jobs:
           --disable-avx512 \
           --disable-fma3 \
           --disable-fma4 \
+          --disable-xop \
           --disable-aesni \
           --enable-bzlib \
           --enable-d3d11va \
