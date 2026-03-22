@@ -70,9 +70,15 @@ std::string SongCacheIndex::GetCacheFilePath(
     s = s.substr(0, kMaxStringLength);
   }
 
+  // This hash is based on the original unedited path. We append this to
+  // ensure there can't be naming collissions in the case of identical
+  // filenames after we've swapped out unwanted characters with underscores.
+  const unsigned int hash = GetHashForString(sPath);
+
   // CACHE_DIR ends with a /.
   return ssprintf(
-      "%s%s/%s", SpecialFiles::CACHE_DIR.c_str(), sGroup.c_str(), s.c_str());
+      "%s%s/%s_%08x", SpecialFiles::CACHE_DIR.c_str(), sGroup.c_str(),
+      s.c_str(), hash);
 }
 
 SongCacheIndex::SongCacheIndex() : Mutex("SongCacheIndex") { ReadCacheIndex(); }
