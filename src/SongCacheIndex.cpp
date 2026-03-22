@@ -61,6 +61,15 @@ std::string SongCacheIndex::GetCacheFilePath(
        pos = s.find_first_of(invalid, pos)) {
     s[pos] = '_';
   }
+
+  // Limit the string to 245 characters, so that we can comfortably
+  // append the underscore and 8-digit hash. This ensures we don't exceed
+  // the 255 character maximum for FAT32 file names.
+  constexpr size_t kMaxStringLength = 245;
+  if (s.size() > kMaxStringLength) {
+    s = s.substr(0, kMaxStringLength);
+  }
+
   // CACHE_DIR ends with a /.
   return ssprintf(
       "%s%s/%s", SpecialFiles::CACHE_DIR.c_str(), sGroup.c_str(), s.c_str());
