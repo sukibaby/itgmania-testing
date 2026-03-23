@@ -12,6 +12,7 @@ on:
   push:
     branches:
       - beta
+      - ffeman
     paths:
       - extern/ffmpeg
       - extern/ffmpeg/**
