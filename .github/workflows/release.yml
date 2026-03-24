@@ -55,7 +55,7 @@ jobs:
             release-nightly: cmake -B build -DWITH_FULL_RELEASE=Off -DWITH_NIGHTLY_RELEASE=On -DWITH_CLUB_FANTASTIC=Off
             release-full: cmake -B build -DWITH_FULL_RELEASE=On -DWITH_NIGHTLY_RELEASE=Off -DWITH_CLUB_FANTASTIC=Off
             package: cmake --build build --config Release --target package
-            path: build/ITGmania-*.exe
+            path: build/ITGmania-*.msi
     name: ${{ matrix.name }}
     steps:
       - uses: actions/checkout@v6
