@@ -1,8 +1,7 @@
 on:
   push:
     branches:
-      - beta
-      - release
+      - LetsBuild1point20
 
 name: Release
 
