@@ -1,8 +1,7 @@
 on:
   push:
     branches:
-      - beta
-      - release
+      - anananannaan
 
 name: Release
 
