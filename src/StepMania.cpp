@@ -84,6 +84,53 @@
 #include "UnlockManager.h"
 #include "ver.h"
 
+namespace {
+enum KeyboardModifierMask {
+  KEY_MODIFIER_SHIFT = 1 << 0,
+  KEY_MODIFIER_CTRL = 1 << 1,
+  KEY_MODIFIER_ALT = 1 << 2,
+  KEY_MODIFIER_META = 1 << 3,
+};
+
+unsigned GetKeyboardModifierMask(const DeviceInputList& input_list) {
+  unsigned modifier_mask = 0;
+  for (const auto& device_input : input_list) {
+    if (device_input.device != DEVICE_KEYBOARD || !device_input.bDown) {
+      continue;
+    }
+
+    switch (device_input.button) {
+      case KEY_LSHIFT:
+      case KEY_RSHIFT:
+        modifier_mask |= KEY_MODIFIER_SHIFT;
+        break;
+      case KEY_LCTRL:
+      case KEY_RCTRL:
+        modifier_mask |= KEY_MODIFIER_CTRL;
+        break;
+      case KEY_LALT:
+      case KEY_RALT:
+        modifier_mask |= KEY_MODIFIER_ALT;
+        break;
+      case KEY_LMETA:
+      case KEY_RMETA:
+        modifier_mask |= KEY_MODIFIER_META;
+        break;
+      default:
+        break;
+    }
+
+    if (modifier_mask ==
+        (KEY_MODIFIER_SHIFT | KEY_MODIFIER_CTRL | KEY_MODIFIER_ALT |
+         KEY_MODIFIER_META)) {
+      break;
+    }
+  }
+
+  return modifier_mask;
+}
+}  // namespace
+
 void ShutdownGame();
 bool HandleGlobalInputs(const InputEventPlus& input);
 void HandleInputEvents(float fDeltaTime);
@@ -1158,43 +1205,44 @@ bool HandleGlobalInputs(const InputEventPlus& input) {
   /* Re-added for StepMania 3.9 theming veterans, plus it's just faster than
    * the debug menu. The Shift button only reloads the metrics, unlike in 3.9
    * (where it saved bookkeeping and machine profile). -aj */
-  bool bIsShiftHeld =
-      INPUTFILTER->IsBeingPressed(
-          DeviceInput(DEVICE_KEYBOARD, KEY_LSHIFT), &input.InputList) ||
-      INPUTFILTER->IsBeingPressed(
-          DeviceInput(DEVICE_KEYBOARD, KEY_RSHIFT), &input.InputList);
-  bool bIsCtrlHeld =
-      INPUTFILTER->IsBeingPressed(
-          DeviceInput(DEVICE_KEYBOARD, KEY_LCTRL), &input.InputList) ||
-      INPUTFILTER->IsBeingPressed(
-          DeviceInput(DEVICE_KEYBOARD, KEY_RCTRL), &input.InputList);
+  const unsigned modifier_mask = GetKeyboardModifierMask(input.InputList);
+  const bool bIsShiftHeld = (modifier_mask & KEY_MODIFIER_SHIFT) != 0;
+  const bool bIsCtrlHeld = (modifier_mask & KEY_MODIFIER_CTRL) != 0;
+  const bool bIsAltHeld = (modifier_mask & KEY_MODIFIER_ALT) != 0;
+  const bool bIsMetaHeld = (modifier_mask & KEY_MODIFIER_META) != 0;
+
   if (input.DeviceI == DeviceInput(DEVICE_KEYBOARD, KEY_F2)) {
-    if (bIsShiftHeld && !bIsCtrlHeld) {
-      // Shift+F2: refresh metrics,noteskin cache and CodeDetector cache only
-      THEME->ReloadMetrics();
-      NOTESKIN->RefreshNoteSkinData(GAMESTATE->m_pCurGame);
-      CodeDetector::RefreshCacheItems();
-      SCREENMAN->SystemMessage(RELOADED_METRICS);
-    } else if (bIsCtrlHeld && !bIsShiftHeld) {
-      // Ctrl+F2: reload scripts only
-      if (NETWORK != nullptr) {
-        NETWORK->CloseAllWebSockets();
-      }
-      THEME->UpdateLuaGlobals();
-      SCREENMAN->SystemMessage(RELOADED_SCRIPTS);
-    } else if (bIsCtrlHeld && bIsShiftHeld) {
-      // Shift+Ctrl+F2: reload overlay screens (and metrics, since themers
-      // are likely going to do this after changing metrics.)
-      THEME->ReloadMetrics();
-      SCREENMAN->ReloadOverlayScreens();
-      SCREENMAN->SystemMessage(RELOADED_OVERLAY_SCREENS);
-    } else {
-      // F2 alone: refresh metrics, textures, noteskins, codedetector cache
-      THEME->ReloadMetrics();
-      TEXTUREMAN->ReloadAll();
-      NOTESKIN->RefreshNoteSkinData(GAMESTATE->m_pCurGame);
-      CodeDetector::RefreshCacheItems();
-      SCREENMAN->SystemMessage(RELOADED_METRICS_AND_TEXTURES);
+    switch (modifier_mask & (KEY_MODIFIER_SHIFT | KEY_MODIFIER_CTRL)) {
+      case KEY_MODIFIER_SHIFT:
+        // Shift+F2: refresh metrics,noteskin cache and CodeDetector cache only
+        THEME->ReloadMetrics();
+        NOTESKIN->RefreshNoteSkinData(GAMESTATE->m_pCurGame);
+        CodeDetector::RefreshCacheItems();
+        SCREENMAN->SystemMessage(RELOADED_METRICS);
+        break;
+      case KEY_MODIFIER_CTRL:
+        // Ctrl+F2: reload scripts only
+        if (NETWORK != nullptr) {
+          NETWORK->CloseAllWebSockets();
+        }
+        THEME->UpdateLuaGlobals();
+        SCREENMAN->SystemMessage(RELOADED_SCRIPTS);
+        break;
+      case KEY_MODIFIER_SHIFT | KEY_MODIFIER_CTRL:
+        // Shift+Ctrl+F2: reload overlay screens (and metrics, since themers
+        // are likely going to do this after changing metrics.)
+        THEME->ReloadMetrics();
+        SCREENMAN->ReloadOverlayScreens();
+        SCREENMAN->SystemMessage(RELOADED_OVERLAY_SCREENS);
+        break;
+      default:
+        // F2 alone: refresh metrics, textures, noteskins, codedetector cache
+        THEME->ReloadMetrics();
+        TEXTUREMAN->ReloadAll();
+        NOTESKIN->RefreshNoteSkinData(GAMESTATE->m_pCurGame);
+        CodeDetector::RefreshCacheItems();
+        SCREENMAN->SystemMessage(RELOADED_METRICS_AND_TEXTURES);
+        break;
     }
 
     return true;
@@ -1208,21 +1256,14 @@ bool HandleGlobalInputs(const InputEventPlus& input) {
 
 #if !defined(MACOSX)
   if (input.DeviceI == DeviceInput(DEVICE_KEYBOARD, KEY_F4)) {
-    if (INPUTFILTER->IsBeingPressed(
-            DeviceInput(DEVICE_KEYBOARD, KEY_RALT), &input.InputList) ||
-        INPUTFILTER->IsBeingPressed(
-            DeviceInput(DEVICE_KEYBOARD, KEY_LALT), &input.InputList)) {
+    if (bIsAltHeld) {
       // pressed Alt+F4
       ArchHooks::SetUserQuit();
       return true;
     }
   }
 #else
-  if (input.DeviceI == DeviceInput(DEVICE_KEYBOARD, KEY_Cq) &&
-      (INPUTFILTER->IsBeingPressed(
-           DeviceInput(DEVICE_KEYBOARD, KEY_LMETA), &input.InputList) ||
-       INPUTFILTER->IsBeingPressed(
-           DeviceInput(DEVICE_KEYBOARD, KEY_RMETA), &input.InputList))) {
+  if (input.DeviceI == DeviceInput(DEVICE_KEYBOARD, KEY_Cq) && bIsMetaHeld) {
     /* The user quit is handled by the menu item so we don't need to set it
      * here; however, we do want to return that it has been handled since
      * this will happen first. */
@@ -1235,11 +1276,7 @@ bool HandleGlobalInputs(const InputEventPlus& input) {
       // Notebooks don't have F13. Use cmd-F12 as well.
       input.DeviceI == DeviceInput(DEVICE_KEYBOARD, KEY_PRTSC) ||
       input.DeviceI == DeviceInput(DEVICE_KEYBOARD, KEY_F13) ||
-      (input.DeviceI == DeviceInput(DEVICE_KEYBOARD, KEY_F12) &&
-       (INPUTFILTER->IsBeingPressed(
-            DeviceInput(DEVICE_KEYBOARD, KEY_LMETA), &input.InputList) ||
-        INPUTFILTER->IsBeingPressed(
-            DeviceInput(DEVICE_KEYBOARD, KEY_RMETA), &input.InputList)));
+      (input.DeviceI == DeviceInput(DEVICE_KEYBOARD, KEY_F12) && bIsMetaHeld);
 #else
       /* The default Windows message handler will capture the desktop window
        * upon pressing PrntScrn, or will capture the foreground with focus upon
@@ -1247,29 +1284,18 @@ bool HandleGlobalInputs(const InputEventPlus& input) {
        * screenshot ourself by dumping the frame buffer. */
       // "if pressing PrintScreen and not pressing Alt"
       input.DeviceI == DeviceInput(DEVICE_KEYBOARD, KEY_PRTSC) &&
-      !INPUTFILTER->IsBeingPressed(
-          DeviceInput(DEVICE_KEYBOARD, KEY_LALT), &input.InputList) &&
-      !INPUTFILTER->IsBeingPressed(
-          DeviceInput(DEVICE_KEYBOARD, KEY_RALT), &input.InputList);
+      !bIsAltHeld;
 #endif
   if (bDoScreenshot) {
     // If holding Shift save uncompressed, else save compressed
-    bool bHoldingShift =
-        (INPUTFILTER->IsBeingPressed(
-             DeviceInput(DEVICE_KEYBOARD, KEY_LSHIFT)) ||
-         INPUTFILTER->IsBeingPressed(DeviceInput(DEVICE_KEYBOARD, KEY_RSHIFT)));
-    bool bSaveCompressed = !bHoldingShift;
+    bool bSaveCompressed = !bIsShiftHeld;
     RageTimer timer;
     StepMania::SaveScreenshot("Screenshots/", bSaveCompressed, false, "", "");
     LOG->Trace("Screenshot took %f seconds.", timer.GetDeltaTime());
     return true;  // handled
   }
 
-  if (input.DeviceI == DeviceInput(DEVICE_KEYBOARD, KEY_ENTER) &&
-      (INPUTFILTER->IsBeingPressed(
-           DeviceInput(DEVICE_KEYBOARD, KEY_RALT), &input.InputList) ||
-       INPUTFILTER->IsBeingPressed(
-           DeviceInput(DEVICE_KEYBOARD, KEY_LALT), &input.InputList))) {
+  if (input.DeviceI == DeviceInput(DEVICE_KEYBOARD, KEY_ENTER) && bIsAltHeld) {
     // alt-enter
     /* In macOS, this is a menu item and will be handled as such. This will
      * happen first and then the lower priority GUI thread will happen second,
