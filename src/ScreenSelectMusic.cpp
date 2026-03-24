@@ -64,6 +64,41 @@ static const char* SelectionStateNames[] = {
     "SelectingSong", "SelectingSteps", "Finalized"};
 XToString(SelectionState);
 
+namespace {
+enum KeyboardModifierMask {
+  KEY_MODIFIER_SHIFT = 1 << 0,
+  KEY_MODIFIER_CTRL = 1 << 1,
+};
+
+unsigned GetKeyboardModifierMask(const DeviceInputList& input_list) {
+  unsigned modifier_mask = 0;
+  for (const auto& device_input : input_list) {
+    if (device_input.device != DEVICE_KEYBOARD || !device_input.bDown) {
+      continue;
+    }
+
+    switch (device_input.button) {
+      case KEY_LSHIFT:
+      case KEY_RSHIFT:
+        modifier_mask |= KEY_MODIFIER_SHIFT;
+        break;
+      case KEY_LCTRL:
+      case KEY_RCTRL:
+        modifier_mask |= KEY_MODIFIER_CTRL;
+        break;
+      default:
+        break;
+    }
+
+    if (modifier_mask == (KEY_MODIFIER_SHIFT | KEY_MODIFIER_CTRL)) {
+      break;
+    }
+  }
+
+  return modifier_mask;
+}
+}  // namespace
+
 /** @brief The maximum number of digits for the ScoreDisplay. */
 const int NUM_SCORE_DIGITS = 9;
 
@@ -481,13 +516,9 @@ bool ScreenSelectMusic::Input(const InputEventPlus& input) {
   }
 
   if (!IsTransitioning() && m_SelectionState != SelectionState_Finalized) {
-    bool bHoldingCtrl =
-        INPUTFILTER->IsBeingPressed(DeviceInput(DEVICE_KEYBOARD, KEY_LCTRL)) ||
-        INPUTFILTER->IsBeingPressed(DeviceInput(DEVICE_KEYBOARD, KEY_RCTRL));
-
-    bool holding_shift =
-        INPUTFILTER->IsBeingPressed(DeviceInput(DEVICE_KEYBOARD, KEY_LSHIFT)) ||
-        INPUTFILTER->IsBeingPressed(DeviceInput(DEVICE_KEYBOARD, KEY_RSHIFT));
+  const unsigned modifier_mask = GetKeyboardModifierMask(input.InputList);
+  const bool bHoldingCtrl = (modifier_mask & KEY_MODIFIER_CTRL) != 0;
+  const bool holding_shift = (modifier_mask & KEY_MODIFIER_SHIFT) != 0;
 
     wchar_t c = INPUTMAN->DeviceInputToChar(input.DeviceI, false);
     MakeUpper(&c, 1);
