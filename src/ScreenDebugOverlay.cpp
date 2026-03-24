@@ -63,6 +63,25 @@ static RageTimer g_HaltTimer(RageZeroTimer);
 static float g_fImageScaleCurrent = 1;
 static float g_fImageScaleDestination = 1;
 
+namespace {
+bool IsPressedInInputList(
+    const DeviceInputList& input_list, const DeviceInput& device_input) {
+  const auto it =
+      std::lower_bound(input_list.begin(), input_list.end(), device_input);
+  return it != input_list.end() && *it == device_input && it->bDown;
+}
+
+bool IsEitherShiftHeld() {
+  return INPUTFILTER->IsBeingPressed(
+             DeviceInput(DEVICE_KEYBOARD, KEY_LSHIFT)) ||
+         INPUTFILTER->IsBeingPressed(DeviceInput(DEVICE_KEYBOARD, KEY_RSHIFT));
+}
+
+bool IsLeftShiftHeld() {
+  return INPUTFILTER->IsBeingPressed(DeviceInput(DEVICE_KEYBOARD, KEY_LSHIFT));
+}
+}  // namespace
+
 // This will disable the debug menu ENTIRELY - including F6 for autosync, F8 for
 // autoplay, etc
 static bool g_bEnableDebugMenu = true;
@@ -475,16 +494,14 @@ bool ScreenDebugOverlay::Input(const InputEventPlus& input) {
 
   if (input.DeviceI == g_Mappings.holdForDebug1 ||
       input.DeviceI == g_Mappings.holdForDebug2) {
-    bool bHoldingNeither =
-        (!g_Mappings.holdForDebug1.IsValid() ||
-         !INPUTFILTER->IsBeingPressed(g_Mappings.holdForDebug1)) &&
-        (!g_Mappings.holdForDebug2.IsValid() ||
-         !INPUTFILTER->IsBeingPressed(g_Mappings.holdForDebug2));
-    bool bHoldingBoth =
-        (!g_Mappings.holdForDebug1.IsValid() ||
-         INPUTFILTER->IsBeingPressed(g_Mappings.holdForDebug1)) &&
-        (!g_Mappings.holdForDebug2.IsValid() ||
-         INPUTFILTER->IsBeingPressed(g_Mappings.holdForDebug2));
+    const bool bDebug1Held =
+        !g_Mappings.holdForDebug1.IsValid() ||
+        IsPressedInInputList(input.InputList, g_Mappings.holdForDebug1);
+    const bool bDebug2Held =
+        !g_Mappings.holdForDebug2.IsValid() ||
+        IsPressedInInputList(input.InputList, g_Mappings.holdForDebug2);
+    bool bHoldingNeither = !bDebug1Held && !bDebug2Held;
+    bool bHoldingBoth = bDebug1Held && bDebug2Held;
     if (bHoldingNeither) {
       m_bForcedHidden = false;
     }
@@ -682,9 +699,7 @@ class DebugLineAutoplay : public IDebugLine {
     PlayerController pc =
         GAMESTATE->m_pPlayerState[GAMESTATE->GetMasterPlayerNumber()]
             ->m_PlayerController;
-    bool bHoldingShift =
-        INPUTFILTER->IsBeingPressed(DeviceInput(DEVICE_KEYBOARD, KEY_LSHIFT)) ||
-        INPUTFILTER->IsBeingPressed(DeviceInput(DEVICE_KEYBOARD, KEY_RSHIFT));
+    bool bHoldingShift = IsEitherShiftHeld();
     if (bHoldingShift) {
       pc = (pc == PC_CPU) ? PC_HUMAN : PC_CPU;
     } else {
@@ -720,8 +735,7 @@ class DebugLineAssist : public IDebugLine {
   }
   virtual void DoAndLog(std::string& sMessageOut) {
     ASSERT(GAMESTATE->GetMasterPlayerNumber() != PLAYER_INVALID);
-    bool bHoldingShift =
-        INPUTFILTER->IsBeingPressed(DeviceInput(DEVICE_KEYBOARD, KEY_LSHIFT));
+    bool bHoldingShift = IsLeftShiftHeld();
     bool b;
     if (bHoldingShift) {
       b = !GAMESTATE->m_SongOptions.GetSong().m_bAssistMetronome;
