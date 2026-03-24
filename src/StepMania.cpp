@@ -1212,9 +1212,9 @@ bool HandleGlobalInputs(const InputEventPlus& input) {
    * (where it saved bookkeeping and machine profile). -aj */
   const unsigned modifier_mask = GetKeyboardModifierMask(input.InputList);
   const bool bIsShiftHeld = (modifier_mask & KEY_MODIFIER_SHIFT) != 0;
-  const bool bIsCtrlHeld = (modifier_mask & KEY_MODIFIER_CTRL) != 0;
   const bool bIsAltHeld = (modifier_mask & KEY_MODIFIER_ALT) != 0;
   const bool bIsMetaHeld = (modifier_mask & KEY_MODIFIER_META) != 0;
+  //const bool bIsCtrlHeld = (modifier_mask & KEY_MODIFIER_CTRL) != 0; // unused
 
   if (input.DeviceI == DeviceInput(DEVICE_KEYBOARD, KEY_F2)) {
     switch (modifier_mask & (KEY_MODIFIER_SHIFT | KEY_MODIFIER_CTRL)) {
