@@ -63,6 +63,8 @@ jobs:
         with:
           msbuild-architecture: x64
 
+      - name: Configure
+        run: ${{ matrix.configure }}
       - name: Create nightly release
         if: github.ref_name == 'beta'
         run: >
