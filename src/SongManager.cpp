@@ -471,9 +471,10 @@ void SongManager::LoadSongDir(
     ld->SetTotalWork(songCount);
   }
 
-  int threadCount = std::thread::hardware_concurrency();
-  if (threadCount <= 0) {
-    threadCount = 1;
+  unsigned int threadCount = 1;
+  unsigned int potentialThreadCount = std::thread::hardware_concurrency();
+  if (potentialThreadCount > 0) {
+    threadCount = potentialThreadCount;
   }
   LOG->Trace("Loading songs using %d threads", threadCount);
 
