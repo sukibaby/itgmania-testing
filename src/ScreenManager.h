@@ -30,11 +30,28 @@ class ScreenManager {
         float overlayUpdate = 0.0f;
         float firstUpdateSoundFlush = 0.0f;
         float loadDelayedScreen = 0.0f;
+        float delayedPopTop = 0.0f;
+        float delayedActivatePreparedInitial = 0.0f;
+        float delayedDeletePreparedOrGrab = 0.0f;
+        float delayedPrepareScreen = 0.0f;
+        float delayedPrepareMakeScreen = 0.0f;
+        float delayedPrepareBackground = 0.0f;
+        float delayedActivatePreparedFinal = 0.0f;
+        float delayedActivateScreenPush = 0.0f;
+        float delayedActivateBackgroundSwap = 0.0f;
+        float delayedDeleteGrabbedActors = 0.0f;
+        float delayedBroadcastAndMessage = 0.0f;
         float totalUpdate = 0.0f;
         int stackScreenCountUpdated = 0;
         int overlayScreenCountUpdated = 0;
+        int delayedGrabbedActorCount = 0;
         bool didSoundFlush = false;
         bool didLoadDelayedScreen = false;
+        bool delayedUsedPreparedScreen = false;
+        bool delayedRequiredPrepare = false;
+        bool delayedDeletePreparedImmediately = false;
+        std::string delayedScreenName;
+        std::string delayedBackgroundName;
     };
 
   ScreenManager();

@@ -134,6 +134,8 @@ AutoScreenMessage(SM_BattleTrickLevel3);
 static Preference<bool> g_bCenter1Player("Center1Player", false);
 static Preference<bool> g_bShowLyrics("ShowLyrics", true);
 static Preference<bool> g_bEasterEggs("EasterEggs", true);
+static Preference<float> g_fScreenGameplayInitWarnSeconds(
+  "ScreenGameplayInitWarnSeconds", 0.250f);
 
 PlayerInfo::PlayerInfo()
     : m_pn(PLAYER_INVALID),
@@ -384,6 +386,20 @@ ScreenGameplay::ScreenGameplay() {
 }
 
 void ScreenGameplay::Init() {
+  RageTimer initTimer;
+  RageTimer stageTimer;
+  float metricsAndDefaultsSeconds = 0.0f;
+  float coreSetupSeconds = 0.0f;
+  float coreBaseInitSeconds = 0.0f;
+  float coreFillPlayerInfoSeconds = 0.0f;
+  float corePostFillSetupSeconds = 0.0f;
+  float gameplayStatePrepSeconds = 0.0f;
+  float actorSetupSeconds = 0.0f;
+  float playerInitSeconds = 0.0f;
+  float queueAndScoreSeconds = 0.0f;
+  float loadNextSongSeconds = 0.0f;
+  float finalizeSeconds = 0.0f;
+
   SubscribeToMessage("Judgment");
 
   PLAYER_TYPE.Load(m_sName, "PlayerType");
@@ -431,7 +447,15 @@ void ScreenGameplay::Init() {
     m_pSongForeground = new Foreground;
   }
 
+  metricsAndDefaultsSeconds = stageTimer.GetDeltaTime();
+
+  stageTimer.Touch();
+
   ScreenWithMenuElements::Init();
+
+  coreBaseInitSeconds = stageTimer.GetDeltaTime();
+
+  stageTimer.Touch();
 
   this->FillPlayerInfo(m_vPlayerInfo);
 
@@ -448,6 +472,10 @@ void ScreenGameplay::Init() {
     ASSERT(iNumEnabledPlayers > 0);
   }
 
+  coreFillPlayerInfoSeconds = stageTimer.GetDeltaTime();
+
+  stageTimer.Touch();
+
   /* Pause MEMCARDMAN.  If a memory card is removed, we don't want to interrupt
    * the player by making a noise until the game finishes. */
   if (!GAMESTATE->m_bDemonstrationOrJukebox) {
@@ -459,10 +487,24 @@ void ScreenGameplay::Init() {
 
   m_pCombinedLifeMeter = nullptr;
 
+  corePostFillSetupSeconds = stageTimer.GetDeltaTime();
+
+  coreSetupSeconds =
+      coreBaseInitSeconds + coreFillPlayerInfoSeconds + corePostFillSetupSeconds;
+
   if (GAMESTATE->m_pCurSong == nullptr && GAMESTATE->m_pCurCourse == nullptr) {
+    const float totalInitSeconds = initTimer.GetDeltaTime();
+    LOG->Trace(
+      "ScreenGameplay::Init timing (early return): total=%.4fs metrics=%.4fs core=%.4fs "
+      "coreBase=%.4fs coreFill=%.4fs corePost=%.4fs",
+      totalInitSeconds, metricsAndDefaultsSeconds, coreSetupSeconds,
+      coreBaseInitSeconds, coreFillPlayerInfoSeconds,
+      corePostFillSetupSeconds);
     return;  // ScreenDemonstration will move us to the next screen.  We just
              // need to survive for one update without crashing.
   }
+
+  stageTimer.Touch();
 
   /* Save settings to the profile now.  Don't do this on extra stages, since the
    * user doesn't have full control; saving would force profiles to
@@ -534,6 +576,10 @@ void ScreenGameplay::Init() {
   // m_fTimeLeftBeforeDancingComment = SECONDS_BETWEEN_COMMENTS;
 
   m_bZeroDeltaOnNextUpdate = false;
+
+  gameplayStatePrepSeconds = stageTimer.GetDeltaTime();
+
+  stageTimer.Touch();
 
   if (m_pSongBackground) {
     m_pSongBackground->SetName("SongBackground");
@@ -842,6 +888,10 @@ void ScreenGameplay::Init() {
     }
   }
 
+  actorSetupSeconds = stageTimer.GetDeltaTime();
+
+  stageTimer.Touch();
+
   if (m_pSongBackground) {
     m_pSongBackground->Init();
   }
@@ -857,6 +907,10 @@ void ScreenGameplay::Init() {
         pi->m_pSecondaryScoreDisplay, pi->m_pInventory,
         pi->m_pPrimaryScoreKeeper, pi->m_pSecondaryScoreKeeper);
   }
+
+  playerInitSeconds = stageTimer.GetDeltaTime();
+
+  stageTimer.Touch();
 
   // fill in m_apSongsQueue, m_vpStepsQueue, m_asModifiersQueue
   InitSongQueues();
@@ -884,16 +938,50 @@ void ScreenGameplay::Init() {
     }
   }
 
+  queueAndScoreSeconds = stageTimer.GetDeltaTime();
+
+  stageTimer.Touch();
+
   GAMESTATE->m_bGameplayLeadIn.Set(true);
 
   /* LoadNextSong first, since that positions some elements which need to be
    * positioned before we TweenOnScreen. */
   LoadNextSong();
 
+  loadNextSongSeconds = stageTimer.GetDeltaTime();
+
+  stageTimer.Touch();
+
   m_GiveUpTimer.SetZero();
   m_SkipSongTimer.SetZero();
   m_gave_up = false;
   m_skipped_song = false;
+
+  finalizeSeconds = stageTimer.GetDeltaTime();
+
+  const float totalInitSeconds = initTimer.GetDeltaTime();
+  const float warnSeconds = g_fScreenGameplayInitWarnSeconds;
+  if (totalInitSeconds >= warnSeconds) {
+    LOG->Warn(
+        "ScreenGameplay::Init slow: total=%.4fs metrics=%.4fs core=%.4fs "
+        "coreBase=%.4fs coreFill=%.4fs corePost=%.4fs prep=%.4fs "
+        "actors=%.4fs playerInit=%.4fs queueAndScore=%.4fs loadNextSong=%.4fs finalize=%.4fs",
+        totalInitSeconds, metricsAndDefaultsSeconds, coreSetupSeconds,
+        coreBaseInitSeconds, coreFillPlayerInfoSeconds,
+        corePostFillSetupSeconds,
+        gameplayStatePrepSeconds, actorSetupSeconds, playerInitSeconds,
+        queueAndScoreSeconds, loadNextSongSeconds, finalizeSeconds);
+  } else {
+    LOG->Trace(
+        "ScreenGameplay::Init timing: total=%.4fs metrics=%.4fs core=%.4fs "
+        "coreBase=%.4fs coreFill=%.4fs corePost=%.4fs prep=%.4fs "
+        "actors=%.4fs playerInit=%.4fs queueAndScore=%.4fs loadNextSong=%.4fs finalize=%.4fs",
+        totalInitSeconds, metricsAndDefaultsSeconds, coreSetupSeconds,
+        coreBaseInitSeconds, coreFillPlayerInfoSeconds,
+        corePostFillSetupSeconds,
+        gameplayStatePrepSeconds, actorSetupSeconds, playerInitSeconds,
+        queueAndScoreSeconds, loadNextSongSeconds, finalizeSeconds);
+  }
 }
 
 bool ScreenGameplay::Center1Player() const {

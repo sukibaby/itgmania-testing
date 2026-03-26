@@ -42,6 +42,8 @@ static Preference<float> g_fConstantUpdateDeltaSeconds(
 
 static Preference<bool> g_bEnableFrameBudgeting("EnableFrameBudgeting", true);
 static Preference<float> g_fFrameBudgetSeconds("FrameBudgetSeconds", 1.0f / 60);
+static Preference<float> g_fFrameBudgetExceedWarnMarginSeconds(
+  "FrameBudgetExceedWarnMarginSeconds", 0.0005f);
 static Preference<float> g_fFrameBudgetWarningCooldownSeconds(
     "FrameBudgetWarningCooldownSeconds", 0.5f);
 static Preference<bool> g_bWarnOnLikelyDrawBoundBudgetExceed(
@@ -50,6 +52,8 @@ static Preference<float> g_fLikelyDrawBoundShareThreshold(
   "LikelyDrawBoundShareThreshold", 0.80f);
 static Preference<float> g_fLikelyInputUpdateBoundShareThreshold(
   "LikelyInputUpdateBoundShareThreshold", 0.80f);
+static Preference<float> g_fLikelyDelayedScreenLoadBoundShareThreshold(
+    "LikelyDelayedScreenLoadBoundShareThreshold", 0.80f);
 static Preference<float> g_fLikelyScreenUpdateBoundShareThreshold(
     "LikelyScreenUpdateBoundShareThreshold", 0.80f);
 static Preference<float> g_fLikelyPresentBoundEndFrameShareThreshold(
@@ -139,11 +143,22 @@ static void LogFrameBudgetWarning(
       (updateSeconds > 0.0f)
           ? (g_LastUpdateTimingBreakdown.screenUpdate / updateSeconds)
           : 0.0f;
+  const float updateScreenDelayShare =
+      (updateSeconds > 0.0f)
+          ? (screenUpdateTiming.loadDelayedScreen / updateSeconds)
+          : 0.0f;
   const float inputUpdateThreshold = std::clamp(
       static_cast<float>(g_fLikelyInputUpdateBoundShareThreshold.Get()),
       0.0f, 1.0f);
   const bool likelyInputUpdateBound =
       updateSeconds > budgetSeconds && updateInputShare >= inputUpdateThreshold;
+  const float delayedScreenLoadThreshold = std::clamp(
+      static_cast<float>(g_fLikelyDelayedScreenLoadBoundShareThreshold.Get()),
+      0.0f, 1.0f);
+  const bool likelyScreenDelayedLoadBound =
+      updateSeconds > budgetSeconds &&
+      screenUpdateTiming.didLoadDelayedScreen &&
+      updateScreenDelayShare >= delayedScreenLoadThreshold;
   const float screenUpdateThreshold = std::clamp(
       static_cast<float>(g_fLikelyScreenUpdateBoundShareThreshold.Get()),
       0.0f, 1.0f);
@@ -154,11 +169,21 @@ static void LogFrameBudgetWarning(
       0.0f, 1.0f);
   const bool likelyPresentBound =
       likelyDrawBound && drawTiming.drewFrame && drawEndShare >= presentThreshold;
+  const char* delayedScreenName =
+      screenUpdateTiming.delayedScreenName.empty()
+          ? "<none>"
+          : screenUpdateTiming.delayedScreenName.c_str();
+  const char* delayedBackgroundName =
+      screenUpdateTiming.delayedBackgroundName.empty()
+          ? "<none>"
+          : screenUpdateTiming.delayedBackgroundName.c_str();
   const char* warningClass = "update-or-mixed";
   if (likelyPresentBound) {
     warningClass = "likely-present-bound";
   } else if (likelyInputUpdateBound) {
     warningClass = "likely-input-update-bound";
+  } else if (likelyScreenDelayedLoadBound) {
+    warningClass = "likely-screen-delayed-load-bound";
   } else if (likelyScreenUpdateBound) {
     warningClass = "likely-screen-update-bound";
   } else if (likelyDrawBound) {
@@ -193,13 +218,19 @@ static void LogFrameBudgetWarning(
 
   LOG->Warn(
       "Frame budget exceeded (%s): frame=%.4fs budget=%.4fs update=%.4fs draw=%.4fs drawShare=%.2f "
-      "updateInputShare=%.2f updateScreenShare=%.2f "
+      "updateInputShare=%.2f updateScreenShare=%.2f updateScreenDelayShare=%.2f "
       "drawBegin=%.4fs drawScene=%.4fs drawEnd=%.4fs drawEndShare=%.2f drewFrame=%d "
       "endPre=%.4fs endLimitBefore=%.4fs endPresent=%.4fs endLimitAfter=%.4fs "
       "endFinish=%.4fs endWindowUpdate=%.4fs endTotal=%.4fs endValid=%d "
       "scrPop=%.4fs scrStack=%.4fs scrBga=%.4fs scrOverlay=%.4fs "
       "scrFlush=%.4fs scrDelay=%.4fs scrTotal=%.4fs screens=%d overlays=%d "
       "didFlush=%d didDelay=%d "
+      "scrDelayPop=%.4fs scrDelayAct0=%.4fs scrDelayPrune=%.4fs scrDelayPrep=%.4fs "
+      "scrDelayPrepMake=%.4fs scrDelayPrepBga=%.4fs "
+      "scrDelayAct1=%.4fs scrDelayActScreen=%.4fs scrDelayActBga=%.4fs "
+      "scrDelayDelete=%.4fs scrDelayMsg=%.4fs "
+      "scrDelayActors=%d scrDelayPrepared=%d scrDelayNeedPrep=%d scrDelayDeleteNow=%d "
+      "scrDelayScreen=\"%s\" scrDelayBga=\"%s\" "
       "inFilter=%.4fs inCollect=%.4fs inProcess=%.4fs inPre=%.4fs inDispatch=%.4fs "
       "inToggle=%.4fs inTotal=%.4fs inCount=%d inFirstUpdate=%d inNoFocus=%d "
       "fps=%d refresh=%d "
@@ -211,6 +242,7 @@ static void LogFrameBudgetWarning(
       frameSeconds, budgetSeconds, updateSeconds, drawSeconds, drawShare,
       updateInputShare,
       updateScreenShare,
+      updateScreenDelayShare,
       drawTiming.beginFrame, drawTiming.sceneDraw, drawTiming.endFrame,
       drawEndShare, drawTiming.drewFrame ? 1 : 0,
       endFrameTiming.prePresentWork, endFrameTiming.frameLimitBeforeVsync,
@@ -228,6 +260,23 @@ static void LogFrameBudgetWarning(
       screenUpdateTiming.overlayScreenCountUpdated,
       screenUpdateTiming.didSoundFlush ? 1 : 0,
       screenUpdateTiming.didLoadDelayedScreen ? 1 : 0,
+      screenUpdateTiming.delayedPopTop,
+      screenUpdateTiming.delayedActivatePreparedInitial,
+      screenUpdateTiming.delayedDeletePreparedOrGrab,
+      screenUpdateTiming.delayedPrepareScreen,
+      screenUpdateTiming.delayedPrepareMakeScreen,
+      screenUpdateTiming.delayedPrepareBackground,
+      screenUpdateTiming.delayedActivatePreparedFinal,
+      screenUpdateTiming.delayedActivateScreenPush,
+      screenUpdateTiming.delayedActivateBackgroundSwap,
+      screenUpdateTiming.delayedDeleteGrabbedActors,
+      screenUpdateTiming.delayedBroadcastAndMessage,
+      screenUpdateTiming.delayedGrabbedActorCount,
+      screenUpdateTiming.delayedUsedPreparedScreen ? 1 : 0,
+      screenUpdateTiming.delayedRequiredPrepare ? 1 : 0,
+      screenUpdateTiming.delayedDeletePreparedImmediately ? 1 : 0,
+      delayedScreenName,
+      delayedBackgroundName,
       inputTiming.filterUpdate,
       inputTiming.collectEvents,
       inputTiming.processEventsTotal,
@@ -286,6 +335,29 @@ static bool IsLikelyScreenUpdateBoundFrame(
       static_cast<float>(g_fLikelyScreenUpdateBoundShareThreshold.Get()),
       0.0f, 1.0f);
   return screenShare >= threshold;
+}
+
+static bool IsLikelyDelayedScreenLoadBoundFrame(
+    float updateSeconds, float budgetSeconds) {
+  if (updateSeconds <= 0.0f || budgetSeconds <= 0.0f) {
+    return false;
+  }
+
+  if (updateSeconds <= budgetSeconds) {
+    return false;
+  }
+
+  const ScreenManager::UpdateTimingBreakdown& screenUpdateTiming =
+      SCREENMAN->GetLastUpdateTimingBreakdown();
+  if (!screenUpdateTiming.didLoadDelayedScreen) {
+    return false;
+  }
+
+  const float delayShare = screenUpdateTiming.loadDelayedScreen / updateSeconds;
+  const float threshold = std::clamp(
+      static_cast<float>(g_fLikelyDelayedScreenLoadBoundShareThreshold.Get()),
+      0.0f, 1.0f);
+  return delayShare >= threshold;
 }
 
 static bool IsLikelyInputUpdateBoundFrame(
@@ -617,9 +689,13 @@ void GameLoop::RunGameLoop() {
     if (g_bEnableFrameBudgeting.Get()) {
       const float budgetSeconds =
           std::max(0.0f, static_cast<float>(g_fFrameBudgetSeconds.Get()));
+      const float exceedWarnMarginSeconds =
+          std::max(0.0f, static_cast<float>(
+                             g_fFrameBudgetExceedWarnMarginSeconds.Get()));
       if (budgetSeconds > 0.0f) {
         const float frameSeconds = updateSeconds + drawSeconds;
-        if (frameSeconds > budgetSeconds && ShouldLogFrameBudgetWarning()) {
+        if (frameSeconds > (budgetSeconds + exceedWarnMarginSeconds) &&
+            ShouldLogFrameBudgetWarning()) {
           const bool likelyDrawBound = IsLikelyDrawBoundFrame(
               frameSeconds, budgetSeconds, updateSeconds, drawSeconds);
 
@@ -644,11 +720,15 @@ void GameLoop::RunGameLoop() {
                 (updateSeconds > 0.0f)
                     ? (g_LastUpdateTimingBreakdown.screenUpdate / updateSeconds)
                     : 0.0f;
+            const float updateScreenDelayShare =
+                (updateSeconds > 0.0f)
+                    ? (screenUpdateTiming.loadDelayedScreen / updateSeconds)
+                    : 0.0f;
             LOG->Trace(
                 "Frame near/over budget but likely draw-bound: frame=%.4fs "
                 "budget=%.4fs update=%.4fs draw=%.4fs drawBegin=%.4fs "
                 "drawScene=%.4fs drawEnd=%.4fs drawEndShare=%.2f updateInputShare=%.2f "
-                "updateScreenShare=%.2f inTotal=%.4fs inCount=%d class=%s "
+                "updateScreenShare=%.2f updateScreenDelayShare=%.2f inTotal=%.4fs inCount=%d class=%s "
                 "endPresent=%.4fs endLimitBefore=%.4fs endLimitAfter=%.4fs "
                 "endFinish=%.4fs endWindowUpdate=%.4fs endTotal=%.4fs "
                 "endValid=%d scrStack=%.4fs scrOverlay=%.4fs scrDelay=%.4fs scrTotal=%.4fs (set "
@@ -660,16 +740,20 @@ void GameLoop::RunGameLoop() {
                                      : 0.0f,
                 updateInputShare,
                 updateScreenShare,
+                updateScreenDelayShare,
                 inputTiming.total,
                 inputTiming.eventCount,
-              IsLikelyPresentBoundFrame(drawSeconds)
+                IsLikelyPresentBoundFrame(drawSeconds)
                     ? "likely-present-bound"
                     : (IsLikelyInputUpdateBoundFrame(updateSeconds, budgetSeconds)
                            ? "likely-input-update-bound"
-                           : (IsLikelyScreenUpdateBoundFrame(
+                           : (IsLikelyDelayedScreenLoadBoundFrame(
                                   updateSeconds, budgetSeconds)
-                                  ? "likely-screen-update-bound"
-                                  : "likely-draw-bound")),
+                                  ? "likely-screen-delayed-load-bound"
+                                  : (IsLikelyScreenUpdateBoundFrame(
+                                         updateSeconds, budgetSeconds)
+                                         ? "likely-screen-update-bound"
+                                         : "likely-draw-bound"))),
                 endFrameTiming.presentOrSwap,
                 endFrameTiming.frameLimitBeforeVsync,
                 endFrameTiming.frameLimitAfterVsync,

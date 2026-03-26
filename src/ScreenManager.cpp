@@ -92,6 +92,8 @@ ScreenManager* SCREENMAN =
     nullptr;  // global and accessible from anywhere in our program
 
 static Preference<bool> g_bDelayedScreenLoad("DelayedScreenLoad", false);
+static Preference<float> g_fScreenManagerInputWarnSeconds(
+  "ScreenManagerInputWarnSeconds", 0.010f);
 // static Preference<bool> g_bPruneFonts( "PruneFonts", true );
 
 // Screen registration
@@ -512,9 +514,7 @@ void ScreenManager::Update(float fDeltaTime) {
    * is set, then the screen called SetNewScreen before we finished preparing.
    * Postpone it until we're finished loading. */
   if (m_sDelayedScreen.size() != 0) {
-    stageTimer.Touch();
     LoadDelayedScreen();
-    m_LastUpdateTimingBreakdown.loadDelayedScreen = stageTimer.GetDeltaTime();
     m_LastUpdateTimingBreakdown.didLoadDelayedScreen = true;
   }
 
@@ -570,18 +570,85 @@ void ScreenManager::Input(const InputEventPlus& input) {
   //		DeviceI.device, DeviceI.button, GameI.controller, GameI.button,
   // MenuI.player, MenuI.button, StyleI.player, StyleI.col );
 
+  RageTimer totalInputTimer;
+  float overlayInputSeconds = 0.0f;
+  float overlayLuaSeconds = 0.0f;
+  float topInputSeconds = 0.0f;
+  float topLuaSeconds = 0.0f;
+  float reloadOverlaySeconds = 0.0f;
+  float slowestStageSeconds = 0.0f;
+  const char* slowestStage = "none";
+  std::string slowestScreen = "<none>";
+
+  auto updateSlowestStage =
+      [&](float seconds, const char* stage, const std::string& screenName) {
+        if (seconds > slowestStageSeconds) {
+          slowestStageSeconds = seconds;
+          slowestStage = stage;
+          slowestScreen = screenName;
+        }
+      };
+
+  auto maybeWarnSlowInput = [&](const char* path) {
+    const float totalInputSeconds = totalInputTimer.GetDeltaTime();
+    if (totalInputSeconds < g_fScreenManagerInputWarnSeconds.Get()) {
+      return;
+    }
+
+    const Screen* topScreen =
+        g_ScreenStack.empty() ? nullptr : g_ScreenStack.back().m_pScreen;
+    const std::string topScreenName =
+        topScreen == nullptr ? "<none>" : topScreen->GetName();
+
+    LOG->Warn(
+        "Slow ScreenManager::Input: total=%.4fs path=%s overlayIn=%.4fs overlayLua=%.4fs "
+        "topIn=%.4fs topLua=%.4fs overlayReload=%.4fs "
+        "slowestStage=%s slowestScreen=\"%s\" slowest=%.4fs "
+        "device=%d:%d type=%d game=%d:%d menu=%d pn=%d mp=%d top=\"%s\"",
+        totalInputSeconds, path, overlayInputSeconds, overlayLuaSeconds,
+        topInputSeconds, topLuaSeconds, reloadOverlaySeconds,
+        slowestStage, slowestScreen.c_str(), slowestStageSeconds,
+        static_cast<int>(input.DeviceI.device),
+        static_cast<int>(input.DeviceI.button),
+        static_cast<int>(input.type),
+        static_cast<int>(input.GameI.controller),
+        static_cast<int>(input.GameI.button),
+        static_cast<int>(input.MenuI),
+        static_cast<int>(input.pn),
+        static_cast<int>(input.mp),
+        topScreenName.c_str());
+  };
+
   // First, give overlay screens a shot at the input.  If Input returns
   // true, it handled the input, so don't pass it further.
   for (Screen* pScreen : g_OverlayScreens) {
+    RageTimer stageTimer;
     bool handled = pScreen->Input(input);
+    const float thisOverlayInputSeconds = stageTimer.GetDeltaTime();
+    overlayInputSeconds += thisOverlayInputSeconds;
+    updateSlowestStage(
+        thisOverlayInputSeconds, "overlay-input", pScreen->GetName());
+
     // Pass input to the screen and lua. Contention shouldn't be a problem
     // because anybody setting an input callback is probably doing it to
     // do something in addition to whatever the screen does.
-    if (pScreen->PassInputToLua(input) || handled) {
+    stageTimer.Touch();
+    const bool passToLuaHandled = pScreen->PassInputToLua(input);
+    const float thisOverlayLuaSeconds = stageTimer.GetDeltaTime();
+    overlayLuaSeconds += thisOverlayLuaSeconds;
+    updateSlowestStage(thisOverlayLuaSeconds, "overlay-lua", pScreen->GetName());
+
+    if (passToLuaHandled || handled) {
       if (m_bReloadOverlayScreensAfterInput) {
+        stageTimer.Touch();
         ReloadOverlayScreens();
+        const float thisReloadOverlaySeconds = stageTimer.GetDeltaTime();
+        reloadOverlaySeconds += thisReloadOverlaySeconds;
+        updateSlowestStage(
+            thisReloadOverlaySeconds, "overlay-reload", "<manager>");
         m_bReloadOverlayScreensAfterInput = false;
       }
+      maybeWarnSlowInput("overlay-return");
       return;
     }
   }
@@ -589,17 +656,30 @@ void ScreenManager::Input(const InputEventPlus& input) {
   // Pass input to the topmost screen.  If we have a new top screen pending,
   // don't send to the old screen, but do send to overlay screens.
   if (m_sDelayedScreen != "") {
+    maybeWarnSlowInput("delayed-screen");
     return;
   }
 
   if (g_ScreenStack.empty()) {
+    maybeWarnSlowInput("empty-stack");
     return;
   }
 
+  RageTimer stageTimer;
   if (!get_input_redirected(input.pn)) {
     g_ScreenStack.back().m_pScreen->Input(input);
+    topInputSeconds = stageTimer.GetDeltaTime();
+    updateSlowestStage(
+        topInputSeconds, "top-input", g_ScreenStack.back().m_pScreen->GetName());
   }
+
+  stageTimer.Touch();
   g_ScreenStack.back().m_pScreen->PassInputToLua(input);
+  topLuaSeconds = stageTimer.GetDeltaTime();
+  updateSlowestStage(
+      topLuaSeconds, "top-lua", g_ScreenStack.back().m_pScreen->GetName());
+
+  maybeWarnSlowInput("top-screen");
 }
 
 // Just create a new screen; don't do any associated cleanup.
@@ -631,12 +711,17 @@ Screen* ScreenManager::MakeNewScreen(const std::string& sScreenName) {
 }
 
 void ScreenManager::PrepareScreen(const std::string& sScreenName) {
+  RageTimer prepareTimer;
+  RageTimer stageTimer;
+
   // If the screen is already prepared, stop.
   if (ScreenIsPrepped(sScreenName)) {
     return;
   }
 
+  stageTimer.Touch();
   Screen* pNewScreen = MakeNewScreen(sScreenName);
+  m_LastUpdateTimingBreakdown.delayedPrepareMakeScreen = stageTimer.GetDeltaTime();
   if (pNewScreen == nullptr) {
     return;
   }
@@ -651,6 +736,7 @@ void ScreenManager::PrepareScreen(const std::string& sScreenName) {
   /* Don't delete previously prepared versions of the screen's background,
    * and only prepare it if it's different than the current background
    * and not already loaded. */
+  stageTimer.Touch();
   std::string sNewBGA = THEME->GetPathB(sScreenName, "background");
 
   if (!sNewBGA.empty() && sNewBGA != g_pSharedBGA->GetName()) {
@@ -673,6 +759,8 @@ void ScreenManager::PrepareScreen(const std::string& sScreenName) {
       }
     }
   }
+  m_LastUpdateTimingBreakdown.delayedPrepareBackground = stageTimer.GetDeltaTime();
+  m_LastUpdateTimingBreakdown.delayedPrepareScreen = prepareTimer.GetDeltaTime();
 
   // Prune any unused fonts now that we have had a chance to reference the fonts
   /*
@@ -701,6 +789,7 @@ void ScreenManager::SetNewScreen(const std::string& sScreenName) {
  * Return true if both were activated. */
 bool ScreenManager::ActivatePreparedScreenAndBackground(
     const std::string& sScreenName) {
+  RageTimer stageTimer;
   bool bLoadedBoth = true;
 
   // Find the prepped screen.
@@ -712,8 +801,11 @@ bool ScreenManager::ActivatePreparedScreenAndBackground(
       PushLoadedScreen(ls);
     }
   }
+  m_LastUpdateTimingBreakdown.delayedActivateScreenPush =
+      stageTimer.GetDeltaTime();
 
   // Find the prepared shared background (if any), and activate it.
+  stageTimer.Touch();
   std::string sNewBGA = THEME->GetPathB(sScreenName, "background");
   if (sNewBGA != g_pSharedBGA->GetName()) {
     Actor* pNewBGA = nullptr;
@@ -748,26 +840,42 @@ bool ScreenManager::ActivatePreparedScreenAndBackground(
     g_pSharedBGA = pNewBGA;
     g_pSharedBGA->PlayCommand("On");
   }
+  m_LastUpdateTimingBreakdown.delayedActivateBackgroundSwap =
+      stageTimer.GetDeltaTime();
 
   return bLoadedBoth;
 }
 
 void ScreenManager::LoadDelayedScreen() {
+  RageTimer totalDelayedLoadTimer;
+  RageTimer stageTimer;
+
   std::string sScreenName = m_sDelayedScreen;
   m_sDelayedScreen = "";
+  m_LastUpdateTimingBreakdown.delayedScreenName = sScreenName;
   if (!IsScreenNameValid(sScreenName)) {
     LuaHelpers::ReportScriptError(
         "Tried to go to invalid screen: " + sScreenName, "INVALID_SCREEN");
+    m_LastUpdateTimingBreakdown.loadDelayedScreen =
+        totalDelayedLoadTimer.GetDeltaTime();
     return;
   }
+  m_LastUpdateTimingBreakdown.delayedBackgroundName =
+      THEME->GetPathB(sScreenName, "background");
 
   // Pop the top screen, if any.
   ScreenMessage SM = PopTopScreenInternal();
+  m_LastUpdateTimingBreakdown.delayedPopTop = stageTimer.GetDeltaTime();
 
   /* If the screen is already prepared, activate it before performing any
    * cleanup, so it doesn't get deleted by cleanup. */
+  stageTimer.Touch();
   bool bLoaded = ActivatePreparedScreenAndBackground(sScreenName);
+  m_LastUpdateTimingBreakdown.delayedActivatePreparedInitial =
+      stageTimer.GetDeltaTime();
+  m_LastUpdateTimingBreakdown.delayedUsedPreparedScreen = bLoaded;
 
+  stageTimer.Touch();
   std::vector<Actor*> apActorsToDelete;
   if (g_setGroupedScreens.find(sScreenName) == g_setGroupedScreens.end()) {
     /* It's time to delete all old prepared screens. Depending on
@@ -778,14 +886,23 @@ void ScreenManager::LoadDelayedScreen() {
      * requirements, but results in redundant loads as we unload common data. */
     if (g_bDelayedScreenLoad) {
       DeletePreparedScreens();
+      m_LastUpdateTimingBreakdown.delayedDeletePreparedImmediately = true;
     } else {
       GrabPreparedActors(apActorsToDelete);
     }
   }
+  m_LastUpdateTimingBreakdown.delayedDeletePreparedOrGrab =
+      stageTimer.GetDeltaTime();
+  m_LastUpdateTimingBreakdown.delayedGrabbedActorCount =
+      static_cast<int>(apActorsToDelete.size());
 
   // If the screen wasn't already prepared, load it.
   if (!bLoaded) {
+    m_LastUpdateTimingBreakdown.delayedRequiredPrepare = true;
+
+    stageTimer.Touch();
     PrepareScreen(sScreenName);
+    m_LastUpdateTimingBreakdown.delayedPrepareScreen = stageTimer.GetDeltaTime();
 
     // Screens may not call SetNewScreen from the ctor or Init(). (We don't do
     // this check inside PrepareScreen; that may be called from a thread for
@@ -797,21 +914,45 @@ void ScreenManager::LoadDelayedScreen() {
       m_sDelayedScreen = "";
     }
 
+    stageTimer.Touch();
     bLoaded = ActivatePreparedScreenAndBackground(sScreenName);
+    m_LastUpdateTimingBreakdown.delayedActivatePreparedFinal =
+        stageTimer.GetDeltaTime();
     ASSERT(bLoaded);
   }
 
   if (!apActorsToDelete.empty()) {
+    stageTimer.Touch();
     BeforeDeleteScreen();
     for (Actor* a : apActorsToDelete) {
       RageUtil::SafeDelete(a);
     }
     AfterDeleteScreen();
+    m_LastUpdateTimingBreakdown.delayedDeleteGrabbedActors =
+        stageTimer.GetDeltaTime();
   }
 
+  stageTimer.Touch();
   MESSAGEMAN->Broadcast(Message_ScreenChanged);
 
   SendMessageToTopScreen(SM);
+  m_LastUpdateTimingBreakdown.delayedBroadcastAndMessage =
+      stageTimer.GetDeltaTime();
+  m_LastUpdateTimingBreakdown.loadDelayedScreen =
+      totalDelayedLoadTimer.GetDeltaTime();
+  LOG->Trace(
+      "LoadDelayedScreen \"%s\": total=%.4fs prep=%.4fs prepMake=%.4fs prepBga=%.4fs "
+      "act0=%.4fs act1=%.4fs actScreen=%.4fs actBga=%.4fs delete=%.4fs msg=%.4fs",
+      sScreenName.c_str(), m_LastUpdateTimingBreakdown.loadDelayedScreen,
+      m_LastUpdateTimingBreakdown.delayedPrepareScreen,
+      m_LastUpdateTimingBreakdown.delayedPrepareMakeScreen,
+      m_LastUpdateTimingBreakdown.delayedPrepareBackground,
+      m_LastUpdateTimingBreakdown.delayedActivatePreparedInitial,
+      m_LastUpdateTimingBreakdown.delayedActivatePreparedFinal,
+      m_LastUpdateTimingBreakdown.delayedActivateScreenPush,
+      m_LastUpdateTimingBreakdown.delayedActivateBackgroundSwap,
+      m_LastUpdateTimingBreakdown.delayedDeleteGrabbedActors,
+      m_LastUpdateTimingBreakdown.delayedBroadcastAndMessage);
 }
 
 void ScreenManager::AddNewScreenToTop(

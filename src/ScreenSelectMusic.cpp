@@ -274,6 +274,9 @@ void ScreenSelectMusic::Init() {
 }
 
 void ScreenSelectMusic::BeginScreen() {
+  RageTimer beginScreenTimer;
+  RageTimer stageTimer;
+
   g_ScreenStartedLoadingAt.Touch();
   m_timerIdleComment.GetDeltaTime();
 
@@ -311,10 +314,16 @@ void ScreenSelectMusic::BeginScreen() {
     m_sprHighScoreFrame[pn]->SetVisible(false);
     m_textHighScore[pn].SetVisible(false);
   }
+  const float setupAndVisibilitySeconds = stageTimer.GetDeltaTime();
 
+  stageTimer.Touch();
   OPTIONS_MENU_AVAILABLE.Load(m_sName, "OptionsMenuAvailable");
   PlayCommand("Mods");
+  const float modsAndOptionsSeconds = stageTimer.GetDeltaTime();
+
+  stageTimer.Touch();
   m_MusicWheel.BeginScreen();
+  const float musicWheelBeginSeconds = stageTimer.GetDeltaTime();
 
   m_SelectionState = SelectionState_SelectingSong;
   ZERO(m_bStepsChosen);
@@ -326,11 +335,22 @@ void ScreenSelectMusic::BeginScreen() {
     FOREACH_PlayerNumber(pn) m_OptionsList[pn].Reset();
   }
 
+  stageTimer.Touch();
   AfterMusicChange();
+  const float afterMusicChangeSeconds = stageTimer.GetDeltaTime();
 
   SOUND->PlayOnceFromAnnouncer("select music intro");
 
+  stageTimer.Touch();
   ScreenWithMenuElements::BeginScreen();
+  const float baseBeginSeconds = stageTimer.GetDeltaTime();
+
+  LOG->Trace(
+      "ScreenSelectMusic::BeginScreen timing: total=%.4fs setup=%.4fs mods=%.4fs wheel=%.4fs "
+      "afterMusicChange=%.4fs baseBegin=%.4fs",
+      beginScreenTimer.GetDeltaTime(), setupAndVisibilitySeconds,
+      modsAndOptionsSeconds, musicWheelBeginSeconds, afterMusicChangeSeconds,
+      baseBeginSeconds);
 }
 
 ScreenSelectMusic::~ScreenSelectMusic() {

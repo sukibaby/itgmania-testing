@@ -43,6 +43,7 @@
 #include "RageLog.h"
 #include "RageSound.h"
 #include "RageSoundManager.h"
+#include "RageTimer.h"
 #include "RageUtil.h"
 #include "RageUtil/RandomNumbers.h"
 #include "ScoreDisplay.h"
@@ -67,6 +68,7 @@
 std::string ATTACK_DISPLAY_X_NAME(size_t p, size_t both_sides);
 void TimingWindowSecondsInit(
     size_t /*TimingWindow*/ i, std::string& sNameOut, float& defaultValueOut);
+static Preference<float> g_fPlayerInitWarnSeconds("PlayerInitWarnSeconds", 0.250f);
 
 /**
  * @brief Helper class to ensure that each row is only judged once without
@@ -363,6 +365,15 @@ void Player::Init(
     CombinedLifeMeter* pCombinedLM, ScoreDisplay* pScoreDisplay,
     ScoreDisplay* pSecondaryScoreDisplay, Inventory* pInventory,
     ScoreKeeper* pPrimaryScoreKeeper, ScoreKeeper* pSecondaryScoreKeeper) {
+  RageTimer initTimer;
+  RageTimer stageTimer;
+  float metricsAndTransformsSeconds = 0.0f;
+  float stateAndSoundSetupSeconds = 0.0f;
+  float readBpmSeconds = 0.0f;
+  float visibleActorsLoadSeconds = 0.0f;
+  float noteFieldInitSeconds = 0.0f;
+  float finalizeSeconds = 0.0f;
+
   GRAY_ARROWS_Y_STANDARD.Load(sType, "ReceptorArrowsYStandard");
   GRAY_ARROWS_Y_REVERSE.Load(sType, "ReceptorArrowsYReverse");
   ATTACK_DISPLAY_X.Load(sType, ATTACK_DISPLAY_X_NAME, NUM_PLAYERS, 2);
@@ -439,6 +450,10 @@ void Player::Init(
 
   this->SortByDrawOrder();
 
+  metricsAndTransformsSeconds = stageTimer.GetDeltaTime();
+
+  stageTimer.Touch();
+
   m_pPlayerState = pPlayerState;
   m_pPlayerStageStats = pPlayerStageStats;
   m_pLifeMeter = pLM;
@@ -484,6 +499,10 @@ void Player::Init(
           THEME->GetPathS(sType, "course attack ending"), true, &SoundParams);
       break;
   }
+
+      stateAndSoundSetupSeconds = stageTimer.GetDeltaTime();
+
+      stageTimer.Touch();
 
   // calculate M-mod speed here, so we can adjust properly on a per-song basis.
   // XXX: can we find a better location for this?
@@ -547,6 +566,10 @@ void Player::Init(
     m_pPlayerState->m_fReadBPM = fMaxBPM;
   }
 
+  readBpmSeconds = stageTimer.GetDeltaTime();
+
+  stageTimer.Touch();
+
   float fBalance = GameSoundManager::GetPlayerBalance(pn);
   m_soundMine.SetProperty("Pan", fBalance);
   m_soundAttackLaunch.SetProperty("Pan", fBalance);
@@ -599,6 +622,10 @@ void Player::Init(
     }
   }
 
+  visibleActorsLoadSeconds = stageTimer.GetDeltaTime();
+
+  stageTimer.Touch();
+
   m_fNoteFieldHeight = GRAY_ARROWS_Y_REVERSE - GRAY_ARROWS_Y_STANDARD;
   if (m_pNoteField) {
     m_pNoteField->Init(m_pPlayerState, m_fNoteFieldHeight);
@@ -606,12 +633,33 @@ void Player::Init(
     this->AddChild(m_pNoteField);
   }
 
+  noteFieldInitSeconds = stageTimer.GetDeltaTime();
+
+  stageTimer.Touch();
+
   m_vbFretIsDown.resize(
       GAMESTATE->GetCurrentStyle(GetPlayerState()->m_PlayerNumber)
           ->m_iColsPerPlayer);
   std::fill_n(m_vbFretIsDown.begin(), m_vbFretIsDown.size(), false);
 
   m_fActiveRandomAttackStart = -1.0f;
+
+  finalizeSeconds = stageTimer.GetDeltaTime();
+
+  const float totalInitSeconds = initTimer.GetDeltaTime();
+  if (totalInitSeconds >= g_fPlayerInitWarnSeconds.Get()) {
+    LOG->Warn(
+        "Player::Init slow: total=%.4fs type=\"%s\" pn=%d mp=%d visible=%d "
+        "metrics=%.4fs stateAndSound=%.4fs readBpm=%.4fs visibleActors=%.4fs "
+        "noteField=%.4fs finalize=%.4fs",
+        totalInitSeconds, sType.c_str(),
+        static_cast<int>(pPlayerState->m_PlayerNumber),
+        static_cast<int>(pPlayerState->m_mp),
+        HasVisibleParts() ? 1 : 0,
+        metricsAndTransformsSeconds, stateAndSoundSetupSeconds,
+        readBpmSeconds, visibleActorsLoadSeconds, noteFieldInitSeconds,
+        finalizeSeconds);
+  }
 }
 /**
  * @brief Determine if a TapNote needs a tap note style judgment.
