@@ -114,18 +114,33 @@ static void LogFrameBudgetWarning(
     float drawSeconds) {
   int pendingMainThreadTasks = 0;
   int pendingBackgroundTasks = 0;
+  int peakPendingMainThreadTasks = 0;
+  int peakPendingBackgroundTasks = 0;
+  uint64_t submittedWork = 0;
+  uint64_t completedWork = 0;
+  uint64_t submittedMainTasks = 0;
+  uint64_t completedMainTasks = 0;
   if (SYNCHRONIZER != nullptr) {
     pendingMainThreadTasks =
         static_cast<int>(SYNCHRONIZER->GetPendingMainThreadTaskCount());
     pendingBackgroundTasks =
         static_cast<int>(SYNCHRONIZER->GetPendingWorkCount());
+    peakPendingMainThreadTasks =
+        static_cast<int>(SYNCHRONIZER->GetPeakPendingMainThreadTaskCount());
+    peakPendingBackgroundTasks =
+        static_cast<int>(SYNCHRONIZER->GetPeakPendingWorkCount());
+    submittedWork = SYNCHRONIZER->GetSubmittedWorkCount();
+    completedWork = SYNCHRONIZER->GetCompletedWorkCount();
+    submittedMainTasks = SYNCHRONIZER->GetSubmittedMainThreadTaskCount();
+    completedMainTasks = SYNCHRONIZER->GetCompletedMainThreadTaskCount();
   }
 
   LOG->Warn(
       "Frame budget exceeded: frame=%.4fs budget=%.4fs update=%.4fs draw=%.4fs "
       "[sndman=%.4fs sound=%.4fs tex=%.4fs gs=%.4fs net=%.4fs sync=%d/%.4fs "
       "scr=%.4fs mem=%.4fs input=%.4fs lights=%.4fs pendingMain=%d "
-      "pendingWork=%d]",
+      "pendingWork=%d peakMain=%d peakWork=%d submittedMain=%llu completedMain=%llu "
+      "submittedWork=%llu completedWork=%llu]",
       frameSeconds, budgetSeconds, updateSeconds, drawSeconds,
       g_LastUpdateTimingBreakdown.soundManagerUpdate,
       g_LastUpdateTimingBreakdown.soundUpdate,
@@ -138,7 +153,12 @@ static void LogFrameBudgetWarning(
       g_LastUpdateTimingBreakdown.memoryCardUpdate,
       g_LastUpdateTimingBreakdown.inputUpdate,
       g_LastUpdateTimingBreakdown.lightsUpdate, pendingMainThreadTasks,
-      pendingBackgroundTasks);
+      pendingBackgroundTasks, peakPendingMainThreadTasks,
+      peakPendingBackgroundTasks,
+      static_cast<unsigned long long>(submittedMainTasks),
+      static_cast<unsigned long long>(completedMainTasks),
+      static_cast<unsigned long long>(submittedWork),
+      static_cast<unsigned long long>(completedWork));
 }
 
 static bool ChangeAppPri() {

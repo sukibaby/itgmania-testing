@@ -3,6 +3,7 @@
 
 #include <cstddef>
 #include <condition_variable>
+#include <cstdint>
 #include <functional>
 #include <mutex>
 #include <queue>
@@ -22,12 +23,20 @@ class Synchronizer {
 
   void EnqueueWork(std::function<void()> job);
   void EnqueueMainThreadTask(std::function<void()> task);
+  void EnqueueWorkThenMainThreadTask(
+      std::function<void()> work, std::function<void()> mainThreadTask);
 
   int RunMainThreadTasks(int maxTasks, float maxSeconds);
 
   int GetWorkerCount() const;
   std::size_t GetPendingWorkCount() const;
   std::size_t GetPendingMainThreadTaskCount() const;
+  uint64_t GetSubmittedWorkCount() const;
+  uint64_t GetCompletedWorkCount() const;
+  uint64_t GetSubmittedMainThreadTaskCount() const;
+  uint64_t GetCompletedMainThreadTaskCount() const;
+  std::size_t GetPeakPendingWorkCount() const;
+  std::size_t GetPeakPendingMainThreadTaskCount() const;
 
  private:
   void WorkerMain();
@@ -39,6 +48,13 @@ class Synchronizer {
 
   mutable std::mutex m_mainThreadMutex;
   std::queue<std::function<void()>> m_mainThreadQueue;
+
+  uint64_t m_submittedWorkCount;
+  uint64_t m_completedWorkCount;
+  uint64_t m_submittedMainThreadTaskCount;
+  uint64_t m_completedMainThreadTaskCount;
+  std::size_t m_peakPendingWorkCount;
+  std::size_t m_peakPendingMainThreadTaskCount;
 
   bool m_started;
   bool m_shutdown;

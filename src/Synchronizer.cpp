@@ -23,7 +23,15 @@ int GetDefaultWorkerCount() {
 }
 }  // namespace
 
-Synchronizer::Synchronizer() : m_started(false), m_shutdown(false) {
+Synchronizer::Synchronizer()
+    : m_submittedWorkCount(0),
+      m_completedWorkCount(0),
+      m_submittedMainThreadTaskCount(0),
+      m_completedMainThreadTaskCount(0),
+      m_peakPendingWorkCount(0),
+      m_peakPendingMainThreadTaskCount(0),
+      m_started(false),
+      m_shutdown(false) {
   Start(GetDefaultWorkerCount());
 }
 
@@ -42,6 +50,13 @@ void Synchronizer::Start(int workerCount) {
   }
 
   m_shutdown = false;
+  m_submittedWorkCount = 0;
+  m_completedWorkCount = 0;
+  m_submittedMainThreadTaskCount = 0;
+  m_completedMainThreadTaskCount = 0;
+  m_peakPendingWorkCount = 0;
+  m_peakPendingMainThreadTaskCount = 0;
+
   m_workers.reserve(workerCount);
   for (int i = 0; i < workerCount; ++i) {
     m_workers.emplace_back([this] { this->WorkerMain(); });
@@ -101,6 +116,10 @@ void Synchronizer::EnqueueWork(std::function<void()> job) {
       return;
     }
     m_workerQueue.push(std::move(job));
+    ++m_submittedWorkCount;
+    if (m_workerQueue.size() > m_peakPendingWorkCount) {
+      m_peakPendingWorkCount = m_workerQueue.size();
+    }
   }
 
   m_workerCv.notify_one();
@@ -113,6 +132,22 @@ void Synchronizer::EnqueueMainThreadTask(std::function<void()> task) {
 
   std::lock_guard<std::mutex> lock(m_mainThreadMutex);
   m_mainThreadQueue.push(std::move(task));
+  ++m_submittedMainThreadTaskCount;
+  if (m_mainThreadQueue.size() > m_peakPendingMainThreadTaskCount) {
+    m_peakPendingMainThreadTaskCount = m_mainThreadQueue.size();
+  }
+}
+
+void Synchronizer::EnqueueWorkThenMainThreadTask(
+    std::function<void()> work, std::function<void()> mainThreadTask) {
+  if (!work || !mainThreadTask) {
+    return;
+  }
+
+  EnqueueWork([this, work, mainThreadTask]() {
+    work();
+    EnqueueMainThreadTask(mainThreadTask);
+  });
 }
 
 int Synchronizer::RunMainThreadTasks(int maxTasks, float maxSeconds) {
@@ -138,6 +173,10 @@ int Synchronizer::RunMainThreadTasks(int maxTasks, float maxSeconds) {
 
     ASSERT(task != nullptr);
     task();
+    {
+      std::lock_guard<std::mutex> lock(m_mainThreadMutex);
+      ++m_completedMainThreadTaskCount;
+    }
 
     ++tasksProcessed;
 
@@ -164,6 +203,36 @@ std::size_t Synchronizer::GetPendingMainThreadTaskCount() const {
   return m_mainThreadQueue.size();
 }
 
+uint64_t Synchronizer::GetSubmittedWorkCount() const {
+  std::lock_guard<std::mutex> lock(m_workerMutex);
+  return m_submittedWorkCount;
+}
+
+uint64_t Synchronizer::GetCompletedWorkCount() const {
+  std::lock_guard<std::mutex> lock(m_workerMutex);
+  return m_completedWorkCount;
+}
+
+uint64_t Synchronizer::GetSubmittedMainThreadTaskCount() const {
+  std::lock_guard<std::mutex> lock(m_mainThreadMutex);
+  return m_submittedMainThreadTaskCount;
+}
+
+uint64_t Synchronizer::GetCompletedMainThreadTaskCount() const {
+  std::lock_guard<std::mutex> lock(m_mainThreadMutex);
+  return m_completedMainThreadTaskCount;
+}
+
+std::size_t Synchronizer::GetPeakPendingWorkCount() const {
+  std::lock_guard<std::mutex> lock(m_workerMutex);
+  return m_peakPendingWorkCount;
+}
+
+std::size_t Synchronizer::GetPeakPendingMainThreadTaskCount() const {
+  std::lock_guard<std::mutex> lock(m_mainThreadMutex);
+  return m_peakPendingMainThreadTaskCount;
+}
+
 void Synchronizer::WorkerMain() {
   for (;;) {
     std::function<void()> job;
@@ -184,6 +253,10 @@ void Synchronizer::WorkerMain() {
 
     ASSERT(job != nullptr);
     job();
+    {
+      std::lock_guard<std::mutex> lock(m_workerMutex);
+      ++m_completedWorkCount;
+    }
   }
 }
 
