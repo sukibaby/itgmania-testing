@@ -604,11 +604,31 @@ bool RageDisplay_D3D::BeginFrame() {
 
 static RageTimer g_LastFrameEndedAt(RageZeroTimer);
 void RageDisplay_D3D::EndFrame() {
-  g_pd3dDevice->EndScene();
+  EndFrameTimingBreakdown timing;
+  RageTimer totalTimer;
+  RageTimer stageTimer;
 
+  timing.prePresentWork = stageTimer.GetDeltaTime();
+
+  stageTimer.Touch();
+  g_pd3dDevice->EndScene();
+  timing.prePresentWork += stageTimer.GetDeltaTime();
+
+  stageTimer.Touch();
   FrameLimitBeforeVsync(GetActualVideoModeParams().rate);
+  timing.frameLimitBeforeVsync = stageTimer.GetDeltaTime();
+
+  stageTimer.Touch();
   g_pd3dDevice->Present(0, 0, 0, 0);
+  timing.presentOrSwap = stageTimer.GetDeltaTime();
+
+  stageTimer.Touch();
   FrameLimitAfterVsync();
+  timing.frameLimitAfterVsync = stageTimer.GetDeltaTime();
+
+  timing.totalEndFrame = totalTimer.GetDeltaTime();
+  timing.valid = true;
+  SetLastEndFrameTimingBreakdown(timing);
 
   RageDisplay::EndFrame();
 }

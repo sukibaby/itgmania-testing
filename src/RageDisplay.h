@@ -249,8 +249,22 @@ class RageDisplay {
   // Call this when the resolution has been changed externally:
   virtual void ResolutionChanged();
 
+  struct EndFrameTimingBreakdown {
+    float prePresentWork = 0.0f;
+    float frameLimitBeforeVsync = 0.0f;
+    float presentOrSwap = 0.0f;
+    float frameLimitAfterVsync = 0.0f;
+    float finishGpu = 0.0f;
+    float windowUpdate = 0.0f;
+    float totalEndFrame = 0.0f;
+    bool valid = false;
+  };
+
   virtual bool BeginFrame();
   virtual void EndFrame();
+  const EndFrameTimingBreakdown& GetLastEndFrameTimingBreakdown() const {
+    return m_LastEndFrameTimingBreakdown;
+  }
   virtual ActualVideoModeParams GetActualVideoModeParams() const = 0;
   bool IsWindowed() const { return this->GetActualVideoModeParams().windowed; }
 
@@ -410,6 +424,9 @@ class RageDisplay {
 
   // Stuff in RageDisplay.cpp
   void SetDefaultRenderStates();
+  void SetLastEndFrameTimingBreakdown(const EndFrameTimingBreakdown& timing) {
+    m_LastEndFrameTimingBreakdown = timing;
+  }
 
  public:
   // Statistics
@@ -496,6 +513,9 @@ class RageDisplay {
   // for vsync and FrameLimitAfterVsync after.
   void FrameLimitBeforeVsync(int iFPS);
   void FrameLimitAfterVsync();
+
+ private:
+  EndFrameTimingBreakdown m_LastEndFrameTimingBreakdown;
 };
 
 extern RageDisplay*

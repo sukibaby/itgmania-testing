@@ -27,6 +27,7 @@
 #include "RageTextureID.h"
 #include "RageTextureManager.h"
 #include "RageTextureRenderTarget.h"
+#include "RageTimer.h"
 #include "RageTypes.h"
 #include "RageUtil.h"
 #include "RageUtil/Endian.h"
@@ -887,6 +888,10 @@ bool RageDisplay_Legacy::BeginFrame() {
 }
 
 void RageDisplay_Legacy::EndFrame() {
+  EndFrameTimingBreakdown timing;
+  RageTimer totalTimer;
+  RageTimer stageTimer;
+
   if (UseOffscreenRenderTarget()) {
     offscreenRenderTarget->FinishRenderingTo();
     Sprite fullscreenSprite;
@@ -904,10 +909,19 @@ void RageDisplay_Legacy::EndFrame() {
     fullscreenSprite.Draw();
     CameraPopMatrix();
   }
+  timing.prePresentWork = stageTimer.GetDeltaTime();
 
+  stageTimer.Touch();
   FrameLimitBeforeVsync(g_pWind->GetActualVideoModeParams().rate);
+  timing.frameLimitBeforeVsync = stageTimer.GetDeltaTime();
+
+  stageTimer.Touch();
   g_pWind->SwapBuffers();
+  timing.presentOrSwap = stageTimer.GetDeltaTime();
+
+  stageTimer.Touch();
   FrameLimitAfterVsync();
+  timing.frameLimitAfterVsync = stageTimer.GetDeltaTime();
 
   // Some would advise against glFinish(), ever. Those people don't realize
   // the degree of freedom GL hosts are permitted in queueing commands.
@@ -918,9 +932,17 @@ void RageDisplay_Legacy::EndFrame() {
   // glFinish() blocks. We WANT to block. Why? This puts the engine state
   // reflected by the next frame as close as possible to the on-screen
   // appearance of that frame.
+  stageTimer.Touch();
   glFinish();
+  timing.finishGpu = stageTimer.GetDeltaTime();
 
+  stageTimer.Touch();
   g_pWind->Update();
+  timing.windowUpdate = stageTimer.GetDeltaTime();
+
+  timing.totalEndFrame = totalTimer.GetDeltaTime();
+  timing.valid = true;
+  SetLastEndFrameTimingBreakdown(timing);
 
   RageDisplay::EndFrame();
 }

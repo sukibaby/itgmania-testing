@@ -15,12 +15,23 @@ class InputEventPlus;
 /** @brief Manager/container for Screens. */
 class ScreenManager {
  public:
+    struct DrawTimingBreakdown {
+        float beginFrame = 0.0f;
+        float sceneDraw = 0.0f;
+        float endFrame = 0.0f;
+        float totalDraw = 0.0f;
+        bool drewFrame = false;
+    };
+
   ScreenManager();
   ~ScreenManager();
 
   // pass these messages along to the current state
   void Update(float fDeltaTime);
   void Draw();
+    const DrawTimingBreakdown& GetLastDrawTimingBreakdown() const {
+        return m_LastDrawTimingBreakdown;
+    }
   void Input(const InputEventPlus& input);
 
   // Main screen stack management
@@ -120,6 +131,8 @@ class ScreenManager {
   /** @brief The sound played when a Player wishes to take a picture of their
    * Score. */
   RageSound m_soundScreenshot;
+
+    DrawTimingBreakdown m_LastDrawTimingBreakdown;
 };
 
 extern ScreenManager*

@@ -498,6 +498,8 @@ void ScreenManager::Update(float fDeltaTime) {
 }
 
 void ScreenManager::Draw() {
+  m_LastDrawTimingBreakdown = DrawTimingBreakdown();
+
   /* If it hasn't been updated yet, skip the render. We can't call Update(0),
    * since that'll confuse the "zero out the next update after loading a screen
    * logic. If we don't render, don't call BeginFrame or EndFrame. That way, we
@@ -506,10 +508,16 @@ void ScreenManager::Draw() {
     return;
   }
 
+  RageTimer totalDrawTimer;
+  RageTimer stageTimer;
   if (!DISPLAY->BeginFrame()) {
+    m_LastDrawTimingBreakdown.beginFrame = stageTimer.GetDeltaTime();
+    m_LastDrawTimingBreakdown.totalDraw = totalDrawTimer.GetDeltaTime();
     return;
   }
+  m_LastDrawTimingBreakdown.beginFrame = stageTimer.GetDeltaTime();
 
+  stageTimer.Touch();
   DISPLAY->CameraPushMatrix();
   DISPLAY->LoadMenuPerspective(
       0, SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_CENTER_X, SCREEN_CENTER_Y);
@@ -524,8 +532,13 @@ void ScreenManager::Draw() {
   for (Screen* overlayScreen : g_OverlayScreens) {
     overlayScreen->Draw();
   }
+  m_LastDrawTimingBreakdown.sceneDraw = stageTimer.GetDeltaTime();
 
+  stageTimer.Touch();
   DISPLAY->EndFrame();
+  m_LastDrawTimingBreakdown.endFrame = stageTimer.GetDeltaTime();
+  m_LastDrawTimingBreakdown.totalDraw = totalDrawTimer.GetDeltaTime();
+  m_LastDrawTimingBreakdown.drewFrame = true;
 }
 
 void ScreenManager::Input(const InputEventPlus& input) {

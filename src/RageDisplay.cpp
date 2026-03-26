@@ -184,6 +184,7 @@ std::string RageDisplay::GetStats() const {
 }
 
 bool RageDisplay::BeginFrame() {
+  m_LastEndFrameTimingBreakdown = EndFrameTimingBreakdown();
   this->SetDefaultRenderStates();
 
   return true;

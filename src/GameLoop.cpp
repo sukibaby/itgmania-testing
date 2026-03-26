@@ -43,6 +43,12 @@ static Preference<bool> g_bEnableFrameBudgeting("EnableFrameBudgeting", true);
 static Preference<float> g_fFrameBudgetSeconds("FrameBudgetSeconds", 1.0f / 60);
 static Preference<float> g_fFrameBudgetWarningCooldownSeconds(
     "FrameBudgetWarningCooldownSeconds", 0.5f);
+static Preference<bool> g_bWarnOnLikelyDrawBoundBudgetExceed(
+  "WarnOnLikelyDrawBoundBudgetExceed", false);
+static Preference<float> g_fLikelyDrawBoundShareThreshold(
+  "LikelyDrawBoundShareThreshold", 0.80f);
+static Preference<float> g_fLikelyPresentBoundEndFrameShareThreshold(
+    "LikelyPresentBoundEndFrameShareThreshold", 0.70f);
 static Preference<int> g_iMainThreadSyncTaskBudget(
     "MainThreadSyncTaskBudget", 32);
 static Preference<float> g_fMainThreadSyncTimeBudgetSeconds(
@@ -111,7 +117,18 @@ static bool ShouldLogFrameBudgetWarning() {
 
 static void LogFrameBudgetWarning(
     float frameSeconds, float budgetSeconds, float updateSeconds,
-    float drawSeconds) {
+    float drawSeconds, bool likelyDrawBound) {
+  const ScreenManager::DrawTimingBreakdown& drawTiming =
+      SCREENMAN->GetLastDrawTimingBreakdown();
+  const RageDisplay::EndFrameTimingBreakdown& endFrameTiming =
+      DISPLAY->GetLastEndFrameTimingBreakdown();
+  const float drawEndShare =
+      (drawSeconds > 0.0f) ? (drawTiming.endFrame / drawSeconds) : 0.0f;
+  const float presentThreshold = std::clamp(
+      static_cast<float>(g_fLikelyPresentBoundEndFrameShareThreshold.Get()),
+      0.0f, 1.0f);
+  const bool likelyPresentBound =
+      likelyDrawBound && drawTiming.drewFrame && drawEndShare >= presentThreshold;
   int pendingMainThreadTasks = 0;
   int pendingBackgroundTasks = 0;
   int peakPendingMainThreadTasks = 0;
@@ -120,6 +137,10 @@ static void LogFrameBudgetWarning(
   uint64_t completedWork = 0;
   uint64_t submittedMainTasks = 0;
   uint64_t completedMainTasks = 0;
+  const int fps = DISPLAY->GetFPS();
+  const int refresh = DISPLAY->GetActualVideoModeParams().rate;
+  const float drawShare =
+      (frameSeconds > 0.0f) ? (drawSeconds / frameSeconds) : 0.0f;
   if (SYNCHRONIZER != nullptr) {
     pendingMainThreadTasks =
         static_cast<int>(SYNCHRONIZER->GetPendingMainThreadTaskCount());
@@ -136,12 +157,26 @@ static void LogFrameBudgetWarning(
   }
 
   LOG->Warn(
-      "Frame budget exceeded: frame=%.4fs budget=%.4fs update=%.4fs draw=%.4fs "
+      "Frame budget exceeded (%s): frame=%.4fs budget=%.4fs update=%.4fs draw=%.4fs drawShare=%.2f "
+      "drawBegin=%.4fs drawScene=%.4fs drawEnd=%.4fs drawEndShare=%.2f drewFrame=%d "
+      "endPre=%.4fs endLimitBefore=%.4fs endPresent=%.4fs endLimitAfter=%.4fs "
+      "endFinish=%.4fs endWindowUpdate=%.4fs endTotal=%.4fs endValid=%d "
+      "fps=%d refresh=%d "
       "[sndman=%.4fs sound=%.4fs tex=%.4fs gs=%.4fs net=%.4fs sync=%d/%.4fs "
       "scr=%.4fs mem=%.4fs input=%.4fs lights=%.4fs pendingMain=%d "
       "pendingWork=%d peakMain=%d peakWork=%d submittedMain=%llu completedMain=%llu "
       "submittedWork=%llu completedWork=%llu]",
-      frameSeconds, budgetSeconds, updateSeconds, drawSeconds,
+      likelyPresentBound
+          ? "likely-present-bound"
+          : (likelyDrawBound ? "likely-draw-bound" : "update-or-mixed"),
+      frameSeconds, budgetSeconds, updateSeconds, drawSeconds, drawShare,
+      drawTiming.beginFrame, drawTiming.sceneDraw, drawTiming.endFrame,
+      drawEndShare, drawTiming.drewFrame ? 1 : 0,
+      endFrameTiming.prePresentWork, endFrameTiming.frameLimitBeforeVsync,
+      endFrameTiming.presentOrSwap, endFrameTiming.frameLimitAfterVsync,
+      endFrameTiming.finishGpu, endFrameTiming.windowUpdate,
+      endFrameTiming.totalEndFrame, endFrameTiming.valid ? 1 : 0,
+      fps, refresh,
       g_LastUpdateTimingBreakdown.soundManagerUpdate,
       g_LastUpdateTimingBreakdown.soundUpdate,
       g_LastUpdateTimingBreakdown.textureUpdate,
@@ -159,6 +194,37 @@ static void LogFrameBudgetWarning(
       static_cast<unsigned long long>(completedMainTasks),
       static_cast<unsigned long long>(submittedWork),
       static_cast<unsigned long long>(completedWork));
+}
+
+static bool IsLikelyDrawBoundFrame(
+    float frameSeconds, float budgetSeconds, float updateSeconds,
+    float drawSeconds) {
+  if (frameSeconds <= 0.0f || budgetSeconds <= 0.0f) {
+    return false;
+  }
+
+  const float drawShare = drawSeconds / frameSeconds;
+  const float threshold =
+      std::clamp(static_cast<float>(g_fLikelyDrawBoundShareThreshold.Get()), 0.0f, 1.0f);
+  return updateSeconds <= budgetSeconds && drawShare >= threshold;
+}
+
+static bool IsLikelyPresentBoundFrame(float drawSeconds) {
+  if (drawSeconds <= 0.0f) {
+    return false;
+  }
+
+  const ScreenManager::DrawTimingBreakdown& drawTiming =
+      SCREENMAN->GetLastDrawTimingBreakdown();
+  if (!drawTiming.drewFrame) {
+    return false;
+  }
+
+  const float endShare = drawTiming.endFrame / drawSeconds;
+  const float threshold = std::clamp(
+      static_cast<float>(g_fLikelyPresentBoundEndFrameShareThreshold.Get()),
+      0.0f, 1.0f);
+  return endShare >= threshold;
 }
 
 static bool ChangeAppPri() {
@@ -458,8 +524,40 @@ void GameLoop::RunGameLoop() {
       if (budgetSeconds > 0.0f) {
         const float frameSeconds = updateSeconds + drawSeconds;
         if (frameSeconds > budgetSeconds && ShouldLogFrameBudgetWarning()) {
-          LogFrameBudgetWarning(
+          const bool likelyDrawBound = IsLikelyDrawBoundFrame(
               frameSeconds, budgetSeconds, updateSeconds, drawSeconds);
+
+          if (!likelyDrawBound || g_bWarnOnLikelyDrawBoundBudgetExceed.Get()) {
+            LogFrameBudgetWarning(
+                frameSeconds, budgetSeconds, updateSeconds, drawSeconds,
+                likelyDrawBound);
+          } else {
+            const ScreenManager::DrawTimingBreakdown& drawTiming =
+                SCREENMAN->GetLastDrawTimingBreakdown();
+            const RageDisplay::EndFrameTimingBreakdown& endFrameTiming =
+                DISPLAY->GetLastEndFrameTimingBreakdown();
+            LOG->Trace(
+                "Frame near/over budget but likely draw-bound: frame=%.4fs "
+                "budget=%.4fs update=%.4fs draw=%.4fs drawBegin=%.4fs "
+                "drawScene=%.4fs drawEnd=%.4fs drawEndShare=%.2f class=%s "
+                "endPresent=%.4fs endLimitBefore=%.4fs endLimitAfter=%.4fs "
+                "endFinish=%.4fs endWindowUpdate=%.4fs endTotal=%.4fs "
+                "endValid=%d (set "
+                "WarnOnLikelyDrawBoundBudgetExceed=1 to warn)",
+                frameSeconds, budgetSeconds, updateSeconds, drawSeconds,
+                drawTiming.beginFrame, drawTiming.sceneDraw,
+                drawTiming.endFrame,
+                (drawSeconds > 0.0f) ? (drawTiming.endFrame / drawSeconds)
+                                     : 0.0f,
+                IsLikelyPresentBoundFrame(drawSeconds)
+                    ? "likely-present-bound"
+                    : "likely-draw-bound",
+                endFrameTiming.presentOrSwap,
+                endFrameTiming.frameLimitBeforeVsync,
+                endFrameTiming.frameLimitAfterVsync,
+                endFrameTiming.finishGpu, endFrameTiming.windowUpdate,
+                endFrameTiming.totalEndFrame, endFrameTiming.valid ? 1 : 0);
+          }
         }
       }
     }
