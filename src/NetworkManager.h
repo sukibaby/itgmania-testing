@@ -145,6 +145,9 @@ class NetworkManager {
   void RunHttpWorker();
   void RunWebSocketWorker();
   void StopWorkers();
+  bool EnqueueBackgroundHttpTask(std::function<void()> task);
+  bool EnqueueBackgroundWebSocketTask(std::function<void()> task);
+  void WaitForPendingBackgroundTasks();
 
   std::string GetUserAgent();
   void ClearDownloads();
@@ -173,6 +176,10 @@ class NetworkManager {
 
   std::mutex mainThreadTaskMutex;
   std::queue<std::function<void()>> mainThreadTaskQueue;
+
+  std::mutex pendingBackgroundTaskMutex;
+  std::condition_variable pendingBackgroundTaskCv;
+  int pendingBackgroundTaskCount = 0;
 };
 
 extern NetworkManager* NETWORK;

@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <atomic>
 #include <chrono>
+#include <condition_variable>
 #include <cstddef>
 #include <map>
 #include <memory>
@@ -50,6 +51,7 @@
 #include "RageUtil/RandomNumbers.h"
 #include "Song.h"
 #include "SongCacheIndex.h"
+#include "Synchronizer.h"
 #include "SongUtil.h"
 #include "SpecialFiles.h"
 #include "Sprite.h"
@@ -471,11 +473,21 @@ void SongManager::LoadSongDir(
     ld->SetTotalWork(songCount);
   }
 
-  int threadCount = std::thread::hardware_concurrency();
-  if (threadCount <= 0) {
-    threadCount = 1;
+  const bool useSynchronizer =
+      (SYNCHRONIZER != nullptr && SYNCHRONIZER->GetWorkerCount() > 0);
+  int threadCount = 1;
+  if (useSynchronizer) {
+    threadCount = SYNCHRONIZER->GetWorkerCount();
+  } else {
+    threadCount = std::thread::hardware_concurrency();
+    if (threadCount <= 0) {
+      threadCount = 1;
+    }
   }
-  LOG->Trace("Loading songs using %d threads", threadCount);
+
+  LOG->Trace(
+      "Loading songs using %d %s",
+      threadCount, useSynchronizer ? "Synchronizer workers" : "threads");
 
   // We need to keep track of previously loaded groups so we don't delete them
   // if we're only loading additions.
@@ -527,58 +539,71 @@ void SongManager::LoadSongDir(
   std::unique_ptr<SongLoadResult[]> loadedSongs(
       new SongLoadResult[songsToLoad.size()]);
 
+  std::mutex songLoadCompletionMutex;
+  std::condition_variable songLoadCompletionCv;
+  std::atomic<int> completedSongTaskCount = 0;
+
   LOG->Trace(
       "Loading all %d songs across %d groups across %d threads",
       (int)(songsToLoad.size()), (int)(mapGroupSongDirs.size()), threadCount);
 
-  // Create the pool of threads that will load songs.
-  std::vector<std::thread> threads{};
-  threads.reserve(threadCount);
+  auto loadSongByIndex = [&songsToLoad, &loadedSongs, &completedSongTaskCount,
+                          &songLoadCompletionCv](int songToLoadIndex) {
+    SongToLoad& songToLoad = songsToLoad[songToLoadIndex];
 
-  // Define the work done in each thread.
-  auto loadSongFn = [&songsToLoad, &nextSongToLoadIndex, &loadedSongs]() {
-    while (true) {
-      // Atomically grab the index of the next song to load and increment it.
-      // This means that each thread gets a uniquely incremented value as they
-      // load songs and move on to the next.
-      int songToLoadIndex = nextSongToLoadIndex.fetch_add(1);
-      if (songToLoadIndex >= (int)(songsToLoad.size())) {
-        // Exit the thread when there are not more songs to load.
-        return;
-      }
+    // Is the LOG framework thread safe ?
+    LOG->Trace("Loading %s", songToLoad.sSongDirName.c_str());
 
-      SongToLoad& songToLoad = songsToLoad[songToLoadIndex];
-
-      // Is the LOG framework thread safe ?
-      LOG->Trace("Loading %s", songToLoad.sSongDirName.c_str());
-
-      Song* pNewSong = new Song;
-      if (!pNewSong->LoadFromSongDir(songToLoad.sSongDirName)) {
-        // The song failed to load.
-        delete pNewSong;
-        loadedSongs[songToLoadIndex].state.store(
-            SongLoadResult::State::STATE_LOAD_FAILED,
-            std::memory_order_release);
-      } else {
-        // We intentionally set the song pointer before updating the state so
-        // that when the main thread checks the state, the song will be
-        // populated. This may not be the case if we set the song pointer
-        // afterwards.
-        //
-        // Alternatively, if we find this has the potential to create a race
-        // condition, we could consider making this operation of setting both
-        // fields a single atomic operation.
-        loadedSongs[songToLoadIndex].pSong = pNewSong;
-        loadedSongs[songToLoadIndex].state.store(
-            SongLoadResult::State::STATE_LOAD_SUCCEEDED,
-            std::memory_order_release);
-      }
+    Song* pNewSong = new Song;
+    if (!pNewSong->LoadFromSongDir(songToLoad.sSongDirName)) {
+      // The song failed to load.
+      delete pNewSong;
+      loadedSongs[songToLoadIndex].state.store(
+          SongLoadResult::State::STATE_LOAD_FAILED, std::memory_order_release);
+    } else {
+      // We intentionally set the song pointer before updating the state so
+      // that when the main thread checks the state, the song will be
+      // populated. This may not be the case if we set the song pointer
+      // afterwards.
+      loadedSongs[songToLoadIndex].pSong = pNewSong;
+      loadedSongs[songToLoadIndex].state.store(
+          SongLoadResult::State::STATE_LOAD_SUCCEEDED,
+          std::memory_order_release);
     }
+
+    completedSongTaskCount.fetch_add(1, std::memory_order_relaxed);
+    songLoadCompletionCv.notify_one();
   };
 
-  // Start the threads.
-  for (int i = 0; i < threadCount; i++) {
-    threads.emplace_back(loadSongFn);
+  std::vector<std::thread> threads{};
+  if (useSynchronizer) {
+    for (int i = 0; i < static_cast<int>(songsToLoad.size()); ++i) {
+      SYNCHRONIZER->EnqueueWork(
+          [i, &loadSongByIndex]() { loadSongByIndex(i); });
+    }
+  } else {
+    // Create a fallback pool of local worker threads when Synchronizer is
+    // unavailable.
+    threads.reserve(threadCount);
+    auto loadSongFn =
+        [&songsToLoad, &nextSongToLoadIndex, &loadSongByIndex]() {
+          while (true) {
+            // Atomically grab the index of the next song to load and increment
+            // it. This means that each thread gets a uniquely incremented
+            // value as they load songs and move on to the next.
+            int songToLoadIndex = nextSongToLoadIndex.fetch_add(1);
+            if (songToLoadIndex >= (int)(songsToLoad.size())) {
+              // Exit the thread when there are no more songs to load.
+              return;
+            }
+
+            loadSongByIndex(songToLoadIndex);
+          }
+        };
+
+    for (int i = 0; i < threadCount; i++) {
+      threads.emplace_back(loadSongFn);
+    }
   }
 
   // Here in the main thread, check songs sequentially for finishing loading.
@@ -623,14 +648,19 @@ void SongManager::LoadSongDir(
       // Even if a song fails to load, just move on.
       loadedSongsProcessed++;
     } else {
-      // Sleeping for a short time tells the CPU it can context switch to other
-      // tasks for a bit.
-      std::this_thread::sleep_for(std::chrono::milliseconds(1));
+      // Wait until at least one background load task completes.
+      std::unique_lock<std::mutex> lock(songLoadCompletionMutex);
+      songLoadCompletionCv.wait_for(lock, std::chrono::milliseconds(1), [&]() {
+        return loadedSong.state.load(std::memory_order_acquire) !=
+                   SongLoadResult::State::STATE_UNLOADED ||
+               completedSongTaskCount.load(std::memory_order_relaxed) >=
+                   static_cast<int>(songsToLoad.size());
+      });
     }
   }
 
-  // Wait for all of the threads to exit.
-  for (int i = 0; i < threadCount; i++) {
+  // Wait for all fallback worker threads to exit.
+  for (int i = 0; i < (int)(threads.size()); i++) {
     threads[i].join();
   }
 

@@ -34,6 +34,7 @@
 #include "ixwebsocket/IXWebSocketMessage.h"
 #include "ixwebsocket/IXWebSocketMessageType.h"
 #include "ver.h"
+#include "global.h"
 
 NetworkManager* NETWORK =
     nullptr;  // global and accessible from anywhere in our program
@@ -111,9 +112,11 @@ NetworkManager::NetworkManager() : httpClient(true), downloadClient(true) {
 
   this->ClearDownloads();
 
-  this->httpWorker = std::thread(&NetworkManager::RunHttpWorker, this);
-  this->webSocketWorker =
-      std::thread(&NetworkManager::RunWebSocketWorker, this);
+  if (SYNCHRONIZER == nullptr) {
+    this->httpWorker = std::thread(&NetworkManager::RunHttpWorker, this);
+    this->webSocketWorker =
+        std::thread(&NetworkManager::RunWebSocketWorker, this);
+  }
 }
 
 NetworkManager::~NetworkManager() {
@@ -196,16 +199,96 @@ void NetworkManager::RunWebSocketWorker() {
 void NetworkManager::StopWorkers() {
   this->shutdownWorkers = true;
 
+  if (SYNCHRONIZER == nullptr) {
+    this->httpWorkerCv.notify_one();
+    this->webSocketWorkerCv.notify_one();
+
+    if (this->httpWorker.joinable()) {
+      this->httpWorker.join();
+    }
+
+    if (this->webSocketWorker.joinable()) {
+      this->webSocketWorker.join();
+    }
+  }
+
+  this->WaitForPendingBackgroundTasks();
+}
+
+bool NetworkManager::EnqueueBackgroundHttpTask(std::function<void()> task) {
+  if (!task || this->shutdownWorkers.load()) {
+    return false;
+  }
+
+  {
+    std::lock_guard<std::mutex> lock(this->pendingBackgroundTaskMutex);
+    ++this->pendingBackgroundTaskCount;
+  }
+
+  auto wrapped = [this, task]() {
+    task();
+
+    {
+      std::lock_guard<std::mutex> lock(this->pendingBackgroundTaskMutex);
+      ASSERT(this->pendingBackgroundTaskCount > 0);
+      --this->pendingBackgroundTaskCount;
+    }
+    this->pendingBackgroundTaskCv.notify_all();
+  };
+
+  if (SYNCHRONIZER != nullptr) {
+    SYNCHRONIZER->EnqueueWork(std::move(wrapped));
+    return true;
+  }
+
+  {
+    std::lock_guard<std::mutex> lock(this->httpWorkerMutex);
+    this->httpWorkerQueue.push(std::move(wrapped));
+  }
+
   this->httpWorkerCv.notify_one();
+  return true;
+}
+
+bool NetworkManager::EnqueueBackgroundWebSocketTask(std::function<void()> task) {
+  if (!task || this->shutdownWorkers.load()) {
+    return false;
+  }
+
+  {
+    std::lock_guard<std::mutex> lock(this->pendingBackgroundTaskMutex);
+    ++this->pendingBackgroundTaskCount;
+  }
+
+  auto wrapped = [this, task]() {
+    task();
+
+    {
+      std::lock_guard<std::mutex> lock(this->pendingBackgroundTaskMutex);
+      ASSERT(this->pendingBackgroundTaskCount > 0);
+      --this->pendingBackgroundTaskCount;
+    }
+    this->pendingBackgroundTaskCv.notify_all();
+  };
+
+  if (SYNCHRONIZER != nullptr) {
+    SYNCHRONIZER->EnqueueWork(std::move(wrapped));
+    return true;
+  }
+
+  {
+    std::lock_guard<std::mutex> lock(this->webSocketWorkerMutex);
+    this->webSocketWorkerQueue.push(std::move(wrapped));
+  }
+
   this->webSocketWorkerCv.notify_one();
+  return true;
+}
 
-  if (this->httpWorker.joinable()) {
-    this->httpWorker.join();
-  }
-
-  if (this->webSocketWorker.joinable()) {
-    this->webSocketWorker.join();
-  }
+void NetworkManager::WaitForPendingBackgroundTasks() {
+  std::unique_lock<std::mutex> lock(this->pendingBackgroundTaskMutex);
+  this->pendingBackgroundTaskCv.wait(
+      lock, [this] { return this->pendingBackgroundTaskCount == 0; });
 }
 
 void NetworkManager::EnqueueMainThreadTask(std::function<void()> task) {
@@ -347,45 +430,43 @@ HttpRequestFuturePtr NetworkManager::HttpRequest(const HttpRequestArgs& args) {
     req->onProgressCallback = args.onProgress;
   }
 
-  {
-    std::lock_guard<std::mutex> lock(this->httpWorkerMutex);
-    this->httpWorkerQueue.push(
-        [this, useDownloadClient, req, args, downloadFile, downloadFilename]() {
-          if (this->shutdownWorkers.load()) {
-            return;
-          }
+  bool accepted = this->EnqueueBackgroundHttpTask(
+      [this, useDownloadClient, req, args, downloadFile, downloadFilename]() {
+        if (this->shutdownWorkers.load()) {
+          return;
+        }
 
-          auto& workerClient =
-              useDownloadClient ? this->downloadClient : this->httpClient;
+        auto& workerClient =
+            useDownloadClient ? this->downloadClient : this->httpClient;
 
-          workerClient.performRequest(
-              req, [args, downloadFile,
-                    downloadFilename](const ix::HttpResponsePtr& response) {
-                if (!args.downloadFile.empty()) {
-                  std::string error = downloadFile->GetError();
-                  downloadFile->Close();
+        workerClient.performRequest(
+            req, [args, downloadFile,
+                  downloadFilename](const ix::HttpResponsePtr& response) {
+              if (!args.downloadFile.empty()) {
+                std::string error = downloadFile->GetError();
+                downloadFile->Close();
 
-                  if (!error.empty()) {
-                    std::string errorMessage = "could not write to " +
-                                               downloadFile->GetPath() + ": " +
-                                               error;
-                    if (args.onFileError) {
-                      args.onFileError(errorMessage);
-                    }
-
-                    FILEMAN->Remove(downloadFilename);
-                    return;
+                if (!error.empty()) {
+                  std::string errorMessage =
+                      "could not write to " + downloadFile->GetPath() + ": " +
+                      error;
+                  if (args.onFileError) {
+                    args.onFileError(errorMessage);
                   }
-                }
 
-                if (args.onResponse) {
-                  args.onResponse(response);
+                  FILEMAN->Remove(downloadFilename);
+                  return;
                 }
-              });
-        });
+              }
+
+              if (args.onResponse) {
+                args.onResponse(response);
+              }
+            });
+      });
+  if (!accepted) {
+    req->cancel = true;
   }
-
-  this->httpWorkerCv.notify_one();
 
   return std::make_shared<HttpRequestFuture>(req);
 }
@@ -424,18 +505,13 @@ WebSocketHandlePtr NetworkManager::WebSocket(const WebSocketArgs& args) {
     handle->webSocket.disableAutomaticReconnection();
   }
 
-  {
-    std::lock_guard<std::mutex> lock(this->webSocketWorkerMutex);
-    this->webSocketWorkerQueue.push([this, handle]() {
-      if (this->shutdownWorkers.load()) {
-        return;
-      }
+  this->EnqueueBackgroundWebSocketTask([this, handle]() {
+    if (this->shutdownWorkers.load()) {
+      return;
+    }
 
-      handle->webSocket.start();
-    });
-  }
-
-  this->webSocketWorkerCv.notify_one();
+    handle->webSocket.start();
+  });
 
   {
     std::lock_guard<std::mutex> lock(this->webSocketHandlesMutex);
