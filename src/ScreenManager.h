@@ -23,6 +23,20 @@ class ScreenManager {
         bool drewFrame = false;
     };
 
+    struct UpdateTimingBreakdown {
+        float popTopScreenAndMessages = 0.0f;
+        float screenStackUpdate = 0.0f;
+        float sharedBackgroundUpdate = 0.0f;
+        float overlayUpdate = 0.0f;
+        float firstUpdateSoundFlush = 0.0f;
+        float loadDelayedScreen = 0.0f;
+        float totalUpdate = 0.0f;
+        int stackScreenCountUpdated = 0;
+        int overlayScreenCountUpdated = 0;
+        bool didSoundFlush = false;
+        bool didLoadDelayedScreen = false;
+    };
+
   ScreenManager();
   ~ScreenManager();
 
@@ -31,6 +45,9 @@ class ScreenManager {
   void Draw();
     const DrawTimingBreakdown& GetLastDrawTimingBreakdown() const {
         return m_LastDrawTimingBreakdown;
+    }
+    const UpdateTimingBreakdown& GetLastUpdateTimingBreakdown() const {
+        return m_LastUpdateTimingBreakdown;
     }
   void Input(const InputEventPlus& input);
 
@@ -133,6 +150,7 @@ class ScreenManager {
   RageSound m_soundScreenshot;
 
     DrawTimingBreakdown m_LastDrawTimingBreakdown;
+    UpdateTimingBreakdown m_LastUpdateTimingBreakdown;
 };
 
 extern ScreenManager*

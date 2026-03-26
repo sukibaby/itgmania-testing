@@ -428,6 +428,10 @@ ScreenMessage ScreenManager::PopTopScreenInternal(bool bSendLoseFocus) {
 }
 
 void ScreenManager::Update(float fDeltaTime) {
+  m_LastUpdateTimingBreakdown = UpdateTimingBreakdown();
+  RageTimer totalUpdateTimer;
+  RageTimer stageTimer;
+
   // Pop the top screen, if PopTopScreen was called.
   if (m_PopTopScreen != SM_Invalid) {
     ScreenMessage SM = m_PopTopScreen;
@@ -439,6 +443,8 @@ void ScreenManager::Update(float fDeltaTime) {
     SendMessageToTopScreen(SM);
     SendMessageToTopScreen(SM2);
   }
+  m_LastUpdateTimingBreakdown.popTopScreenAndMessages =
+      stageTimer.GetDeltaTime();
 
   /* Screens take some time to load.  If we don't do this, then screens
    * receive an initial update that includes all of the time they spent
@@ -471,30 +477,48 @@ void ScreenManager::Update(float fDeltaTime) {
   }
 
   // Update screens.
+  stageTimer.Touch();
+  m_LastUpdateTimingBreakdown.stackScreenCountUpdated =
+      static_cast<int>(g_ScreenStack.size());
   for (const LoadedScreen& screen : g_ScreenStack) {
     screen.m_pScreen->Update(fDeltaTime);
   }
+  m_LastUpdateTimingBreakdown.screenStackUpdate = stageTimer.GetDeltaTime();
 
+  stageTimer.Touch();
   g_pSharedBGA->Update(fDeltaTime);
+  m_LastUpdateTimingBreakdown.sharedBackgroundUpdate = stageTimer.GetDeltaTime();
 
+  stageTimer.Touch();
+  m_LastUpdateTimingBreakdown.overlayScreenCountUpdated =
+      static_cast<int>(g_OverlayScreens.size());
   for (Screen* overlay : g_OverlayScreens) {
     overlay->Update(fDeltaTime);
   }
+  m_LastUpdateTimingBreakdown.overlayUpdate = stageTimer.GetDeltaTime();
 
   /* The music may be started on the first update. If we're reading from a CD,
    * it might not start immediately. Make sure we start playing the sound before
    * continuing, since it's strange to start rendering before the music starts.
    */
   if (bFirstUpdate) {
+    stageTimer.Touch();
     SOUND->Flush();
+    m_LastUpdateTimingBreakdown.firstUpdateSoundFlush = stageTimer.GetDeltaTime();
+    m_LastUpdateTimingBreakdown.didSoundFlush = true;
   }
 
   /* If we're currently inside a background screen load, and m_sDelayedScreen
    * is set, then the screen called SetNewScreen before we finished preparing.
    * Postpone it until we're finished loading. */
   if (m_sDelayedScreen.size() != 0) {
+    stageTimer.Touch();
     LoadDelayedScreen();
+    m_LastUpdateTimingBreakdown.loadDelayedScreen = stageTimer.GetDeltaTime();
+    m_LastUpdateTimingBreakdown.didLoadDelayedScreen = true;
   }
+
+  m_LastUpdateTimingBreakdown.totalUpdate = totalUpdateTimer.GetDeltaTime();
 }
 
 void ScreenManager::Draw() {
