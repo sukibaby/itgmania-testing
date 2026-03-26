@@ -63,6 +63,7 @@
 #include "InputFilter.h"
 #include "InputMapper.h"
 #include "InputQueue.h"
+#include "Synchronizer.h"
 #include "LightsManager.h"
 #include "LuaDebugManager.h"
 #include "LuaManager.h"
@@ -273,6 +274,7 @@ void ShutdownGame() {
   }
 
   RageUtil::SafeDelete(NETWORK);
+  RageUtil::SafeDelete(SYNCHRONIZER);
   RageUtil::SafeDelete(SCREENMAN);
   RageUtil::SafeDelete(STATSMAN);
   RageUtil::SafeDelete(MESSAGEMAN);
@@ -943,6 +945,7 @@ int sm_main(int argc, char* argv[]) {
   UNLOCKMAN = new UnlockManager;
   SONGMAN->UpdatePopular();
   SONGMAN->UpdatePreferredSort();
+  SYNCHRONIZER = new Synchronizer;
   NETWORK = new NetworkManager;
   STATSMAN = new StatsManager;
 

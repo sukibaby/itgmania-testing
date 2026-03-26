@@ -18,6 +18,7 @@
 #include <vector>
 
 #include "EnumHelper.h"
+#include "Synchronizer.h"
 #include "LuaManager.h"
 #include "Preference.h"
 #include "ProductInfo.h"
@@ -212,11 +213,21 @@ void NetworkManager::EnqueueMainThreadTask(std::function<void()> task) {
     return;
   }
 
+  if (SYNCHRONIZER != nullptr) {
+    SYNCHRONIZER->EnqueueMainThreadTask(std::move(task));
+    return;
+  }
+
   std::lock_guard<std::mutex> lock(this->mainThreadTaskMutex);
   this->mainThreadTaskQueue.push(std::move(task));
 }
 
 void NetworkManager::Update() {
+  // If the central Synchronizer exists, callbacks are drained from there.
+  if (SYNCHRONIZER != nullptr) {
+    return;
+  }
+
   RageTimer timer;
   int tasksProcessed = 0;
 

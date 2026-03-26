@@ -1,10 +1,12 @@
 #include "GameLoop.h"
 
+#include <algorithm>
 #include <cmath>
 #include <string>
 
 #include "GameSoundManager.h"
 #include "GameState.h"
+#include "Synchronizer.h"
 #include "InputFilter.h"
 #include "InputMapper.h"
 #include "LightsManager.h"
@@ -37,6 +39,32 @@ static Preference<bool> g_bNeverBoostAppPriority(
 static Preference<float> g_fConstantUpdateDeltaSeconds(
     "ConstantUpdateDeltaSeconds", 0);
 
+static Preference<bool> g_bEnableFrameBudgeting("EnableFrameBudgeting", true);
+static Preference<float> g_fFrameBudgetSeconds("FrameBudgetSeconds", 1.0f / 60);
+static Preference<float> g_fFrameBudgetWarningCooldownSeconds(
+    "FrameBudgetWarningCooldownSeconds", 0.5f);
+static Preference<int> g_iMainThreadSyncTaskBudget(
+    "MainThreadSyncTaskBudget", 32);
+static Preference<float> g_fMainThreadSyncTimeBudgetSeconds(
+    "MainThreadSyncTimeBudgetSeconds", 0.001f);
+
+struct UpdateTimingBreakdown {
+  float soundManagerUpdate = 0.0f;
+  float soundUpdate = 0.0f;
+  float textureUpdate = 0.0f;
+  float gameStateUpdate = 0.0f;
+  float networkUpdate = 0.0f;
+  float mainThreadSyncTaskTime = 0.0f;
+  int mainThreadSyncTasksRun = 0;
+  float screenUpdate = 0.0f;
+  float memoryCardUpdate = 0.0f;
+  float inputUpdate = 0.0f;
+  float lightsUpdate = 0.0f;
+  float totalUpdate = 0.0f;
+};
+
+static UpdateTimingBreakdown g_LastUpdateTimingBreakdown;
+
 void HandleInputEvents(float fDeltaTime);
 
 static float g_fUpdateRate = 1;
@@ -65,6 +93,52 @@ static void CheckGameLoopTimerSkips(float fDeltaTime) {
         "difference)",
         iThisFPS, fExpectedTime, fDeltaTime, fDifference);
   }
+}
+
+static bool ShouldLogFrameBudgetWarning() {
+  static double lastWarningAt = -1000.0;
+
+  const double now = RageTimer::GetTimeSinceStart();
+  const float cooldown =
+      std::max(0.0f, static_cast<float>(g_fFrameBudgetWarningCooldownSeconds));
+  if ((now - lastWarningAt) < cooldown) {
+    return false;
+  }
+
+  lastWarningAt = now;
+  return true;
+}
+
+static void LogFrameBudgetWarning(
+    float frameSeconds, float budgetSeconds, float updateSeconds,
+    float drawSeconds) {
+  int pendingMainThreadTasks = 0;
+  int pendingBackgroundTasks = 0;
+  if (SYNCHRONIZER != nullptr) {
+    pendingMainThreadTasks =
+        static_cast<int>(SYNCHRONIZER->GetPendingMainThreadTaskCount());
+    pendingBackgroundTasks =
+        static_cast<int>(SYNCHRONIZER->GetPendingWorkCount());
+  }
+
+  LOG->Warn(
+      "Frame budget exceeded: frame=%.4fs budget=%.4fs update=%.4fs draw=%.4fs "
+      "[sndman=%.4fs sound=%.4fs tex=%.4fs gs=%.4fs net=%.4fs sync=%d/%.4fs "
+      "scr=%.4fs mem=%.4fs input=%.4fs lights=%.4fs pendingMain=%d "
+      "pendingWork=%d]",
+      frameSeconds, budgetSeconds, updateSeconds, drawSeconds,
+      g_LastUpdateTimingBreakdown.soundManagerUpdate,
+      g_LastUpdateTimingBreakdown.soundUpdate,
+      g_LastUpdateTimingBreakdown.textureUpdate,
+      g_LastUpdateTimingBreakdown.gameStateUpdate,
+      g_LastUpdateTimingBreakdown.networkUpdate,
+      g_LastUpdateTimingBreakdown.mainThreadSyncTasksRun,
+      g_LastUpdateTimingBreakdown.mainThreadSyncTaskTime,
+      g_LastUpdateTimingBreakdown.screenUpdate,
+      g_LastUpdateTimingBreakdown.memoryCardUpdate,
+      g_LastUpdateTimingBreakdown.inputUpdate,
+      g_LastUpdateTimingBreakdown.lightsUpdate, pendingMainThreadTasks,
+      pendingBackgroundTasks);
 }
 
 static bool ChangeAppPri() {
@@ -232,6 +306,9 @@ void DoChangeGame() {
 }  // namespace
 
 void GameLoop::UpdateAllButDraw(bool bRunningFromVBLANK) {
+  RageTimer updateTimer;
+  g_LastUpdateTimingBreakdown = UpdateTimingBreakdown();
+
   // Flag to indicate whether an update has been processed during the VBLANK
   // period.
   static bool m_bUpdatedDuringVBLANK = false;
@@ -267,27 +344,65 @@ void GameLoop::UpdateAllButDraw(bool bRunningFromVBLANK) {
 
   fDeltaTime *= g_fUpdateRate;
 
+  RageTimer stageTimer;
+
   // Update SOUNDMAN early (before any RageSound::GetPosition calls), to flush
   // position data.
   SOUNDMAN->Update();
+  g_LastUpdateTimingBreakdown.soundManagerUpdate = stageTimer.GetDeltaTime();
 
   /* Update song beat information -before- calling update on all the classes
    * that depend on it. If you don't do this first, the classes are all acting
    * on old information and will lag. (but no longer fatally, due to
    * timestamping -glenn) */
+  stageTimer.Touch();
   SOUND->Update(fDeltaTime);
+  g_LastUpdateTimingBreakdown.soundUpdate = stageTimer.GetDeltaTime();
+
+  stageTimer.Touch();
   TEXTUREMAN->Update(fDeltaTime);
+  g_LastUpdateTimingBreakdown.textureUpdate = stageTimer.GetDeltaTime();
+
+  stageTimer.Touch();
   GAMESTATE->Update(fDeltaTime);
+  g_LastUpdateTimingBreakdown.gameStateUpdate = stageTimer.GetDeltaTime();
+
+  stageTimer.Touch();
   NETWORK->Update();
+  g_LastUpdateTimingBreakdown.networkUpdate = stageTimer.GetDeltaTime();
+
+  stageTimer.Touch();
+  if (SYNCHRONIZER != nullptr) {
+    g_LastUpdateTimingBreakdown.mainThreadSyncTasksRun =
+        SYNCHRONIZER->RunMainThreadTasks(
+            std::max(1, static_cast<int>(g_iMainThreadSyncTaskBudget.Get())),
+            std::max(
+                0.0f,
+                static_cast<float>(g_fMainThreadSyncTimeBudgetSeconds.Get())));
+  }
+  g_LastUpdateTimingBreakdown.mainThreadSyncTaskTime =
+      stageTimer.GetDeltaTime();
+
+  stageTimer.Touch();
   SCREENMAN->Update(fDeltaTime);
+  g_LastUpdateTimingBreakdown.screenUpdate = stageTimer.GetDeltaTime();
+
+  stageTimer.Touch();
   MEMCARDMAN->Update();
+  g_LastUpdateTimingBreakdown.memoryCardUpdate = stageTimer.GetDeltaTime();
 
   /* Important: Process input AFTER updating game logic, or input will be
    * acting on song beat from last frame */
+  stageTimer.Touch();
   HandleInputEvents(fDeltaTime);
+  g_LastUpdateTimingBreakdown.inputUpdate = stageTimer.GetDeltaTime();
 
   // Update the lights
+  stageTimer.Touch();
   LIGHTSMAN->Update(fDeltaTime);
+  g_LastUpdateTimingBreakdown.lightsUpdate = stageTimer.GetDeltaTime();
+
+  g_LastUpdateTimingBreakdown.totalUpdate = updateTimer.GetDeltaTime();
 }
 
 void GameLoop::RunGameLoop() {
@@ -307,11 +422,27 @@ void GameLoop::RunGameLoop() {
 
     CheckFocus();
 
+    RageTimer frameTimer;
     UpdateAllButDraw(false);
+    const float updateSeconds = frameTimer.GetDeltaTime();
 
     CallEveryNFrames(500, CheckInputDevices);
 
+    RageTimer drawTimer;
     SCREENMAN->Draw();
+    const float drawSeconds = drawTimer.GetDeltaTime();
+
+    if (g_bEnableFrameBudgeting.Get()) {
+      const float budgetSeconds =
+          std::max(0.0f, static_cast<float>(g_fFrameBudgetSeconds.Get()));
+      if (budgetSeconds > 0.0f) {
+        const float frameSeconds = updateSeconds + drawSeconds;
+        if (frameSeconds > budgetSeconds && ShouldLogFrameBudgetWarning()) {
+          LogFrameBudgetWarning(
+              frameSeconds, budgetSeconds, updateSeconds, drawSeconds);
+        }
+      }
+    }
   }
 
   // If we ended mid-game, finish up.
