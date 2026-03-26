@@ -7,6 +7,23 @@ struct Game;
 class RageTimer;
 class VideoModeParams;
 
+struct InputEventHandlingTimingBreakdown {
+    float filterUpdate = 0.0f;
+    float collectEvents = 0.0f;
+    float processEventsTotal = 0.0f;
+    float perEventPreDispatch = 0.0f;
+    float perEventScreenDispatch = 0.0f;
+    float toggleWindowed = 0.0f;
+    float total = 0.0f;
+    int eventCount = 0;
+    bool returnedFirstUpdate = false;
+    bool returnedNoFocus = false;
+};
+
+void HandleInputEvents(float fDeltaTime);
+const InputEventHandlingTimingBreakdown&
+GetLastInputEventHandlingTimingBreakdown();
+
 int sm_main(int argc, char* argv[]);
 
 /** @brief Utility functions for controlling the whole game. */

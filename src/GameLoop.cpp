@@ -25,6 +25,7 @@
 #include "RageTimer.h"
 #include "RageUtil.h"
 #include "ScreenManager.h"
+#include "StepMania.h"
 #include "ThemeManager.h"
 #include "arch/ArchHooks/ArchHooks.h"
 #include "global.h"
@@ -47,6 +48,8 @@ static Preference<bool> g_bWarnOnLikelyDrawBoundBudgetExceed(
   "WarnOnLikelyDrawBoundBudgetExceed", false);
 static Preference<float> g_fLikelyDrawBoundShareThreshold(
   "LikelyDrawBoundShareThreshold", 0.80f);
+static Preference<float> g_fLikelyInputUpdateBoundShareThreshold(
+  "LikelyInputUpdateBoundShareThreshold", 0.80f);
 static Preference<float> g_fLikelyScreenUpdateBoundShareThreshold(
     "LikelyScreenUpdateBoundShareThreshold", 0.80f);
 static Preference<float> g_fLikelyPresentBoundEndFrameShareThreshold(
@@ -72,8 +75,6 @@ struct UpdateTimingBreakdown {
 };
 
 static UpdateTimingBreakdown g_LastUpdateTimingBreakdown;
-
-void HandleInputEvents(float fDeltaTime);
 
 static float g_fUpdateRate = 1;
 void GameLoop::SetUpdateRate(float fUpdateRate) { g_fUpdateRate = fUpdateRate; }
@@ -123,25 +124,46 @@ static void LogFrameBudgetWarning(
   const ScreenManager::DrawTimingBreakdown& drawTiming =
       SCREENMAN->GetLastDrawTimingBreakdown();
   const ScreenManager::UpdateTimingBreakdown& screenUpdateTiming =
-    SCREENMAN->GetLastUpdateTimingBreakdown();
+      SCREENMAN->GetLastUpdateTimingBreakdown();
+  const InputEventHandlingTimingBreakdown& inputTiming =
+      GetLastInputEventHandlingTimingBreakdown();
   const RageDisplay::EndFrameTimingBreakdown& endFrameTiming =
       DISPLAY->GetLastEndFrameTimingBreakdown();
   const float drawEndShare =
       (drawSeconds > 0.0f) ? (drawTiming.endFrame / drawSeconds) : 0.0f;
+  const float updateInputShare =
+      (updateSeconds > 0.0f)
+          ? (g_LastUpdateTimingBreakdown.inputUpdate / updateSeconds)
+          : 0.0f;
   const float updateScreenShare =
-    (updateSeconds > 0.0f)
-      ? (g_LastUpdateTimingBreakdown.screenUpdate / updateSeconds)
-      : 0.0f;
+      (updateSeconds > 0.0f)
+          ? (g_LastUpdateTimingBreakdown.screenUpdate / updateSeconds)
+          : 0.0f;
+  const float inputUpdateThreshold = std::clamp(
+      static_cast<float>(g_fLikelyInputUpdateBoundShareThreshold.Get()),
+      0.0f, 1.0f);
+  const bool likelyInputUpdateBound =
+      updateSeconds > budgetSeconds && updateInputShare >= inputUpdateThreshold;
   const float screenUpdateThreshold = std::clamp(
-    static_cast<float>(g_fLikelyScreenUpdateBoundShareThreshold.Get()),
-    0.0f, 1.0f);
+      static_cast<float>(g_fLikelyScreenUpdateBoundShareThreshold.Get()),
+      0.0f, 1.0f);
   const bool likelyScreenUpdateBound =
-    updateSeconds > budgetSeconds && updateScreenShare >= screenUpdateThreshold;
+      updateSeconds > budgetSeconds && updateScreenShare >= screenUpdateThreshold;
   const float presentThreshold = std::clamp(
       static_cast<float>(g_fLikelyPresentBoundEndFrameShareThreshold.Get()),
       0.0f, 1.0f);
   const bool likelyPresentBound =
       likelyDrawBound && drawTiming.drewFrame && drawEndShare >= presentThreshold;
+  const char* warningClass = "update-or-mixed";
+  if (likelyPresentBound) {
+    warningClass = "likely-present-bound";
+  } else if (likelyInputUpdateBound) {
+    warningClass = "likely-input-update-bound";
+  } else if (likelyScreenUpdateBound) {
+    warningClass = "likely-screen-update-bound";
+  } else if (likelyDrawBound) {
+    warningClass = "likely-draw-bound";
+  }
   int pendingMainThreadTasks = 0;
   int pendingBackgroundTasks = 0;
   int peakPendingMainThreadTasks = 0;
@@ -171,24 +193,23 @@ static void LogFrameBudgetWarning(
 
   LOG->Warn(
       "Frame budget exceeded (%s): frame=%.4fs budget=%.4fs update=%.4fs draw=%.4fs drawShare=%.2f "
-      "updateScreenShare=%.2f "
+      "updateInputShare=%.2f updateScreenShare=%.2f "
       "drawBegin=%.4fs drawScene=%.4fs drawEnd=%.4fs drawEndShare=%.2f drewFrame=%d "
       "endPre=%.4fs endLimitBefore=%.4fs endPresent=%.4fs endLimitAfter=%.4fs "
       "endFinish=%.4fs endWindowUpdate=%.4fs endTotal=%.4fs endValid=%d "
       "scrPop=%.4fs scrStack=%.4fs scrBga=%.4fs scrOverlay=%.4fs "
       "scrFlush=%.4fs scrDelay=%.4fs scrTotal=%.4fs screens=%d overlays=%d "
       "didFlush=%d didDelay=%d "
+      "inFilter=%.4fs inCollect=%.4fs inProcess=%.4fs inPre=%.4fs inDispatch=%.4fs "
+      "inToggle=%.4fs inTotal=%.4fs inCount=%d inFirstUpdate=%d inNoFocus=%d "
       "fps=%d refresh=%d "
       "[sndman=%.4fs sound=%.4fs tex=%.4fs gs=%.4fs net=%.4fs sync=%d/%.4fs "
       "scr=%.4fs mem=%.4fs input=%.4fs lights=%.4fs pendingMain=%d "
       "pendingWork=%d peakMain=%d peakWork=%d submittedMain=%llu completedMain=%llu "
       "submittedWork=%llu completedWork=%llu]",
-      likelyPresentBound
-          ? "likely-present-bound"
-        : (likelyScreenUpdateBound
-           ? "likely-screen-update-bound"
-           : (likelyDrawBound ? "likely-draw-bound" : "update-or-mixed")),
+      warningClass,
       frameSeconds, budgetSeconds, updateSeconds, drawSeconds, drawShare,
+      updateInputShare,
       updateScreenShare,
       drawTiming.beginFrame, drawTiming.sceneDraw, drawTiming.endFrame,
       drawEndShare, drawTiming.drewFrame ? 1 : 0,
@@ -207,6 +228,16 @@ static void LogFrameBudgetWarning(
       screenUpdateTiming.overlayScreenCountUpdated,
       screenUpdateTiming.didSoundFlush ? 1 : 0,
       screenUpdateTiming.didLoadDelayedScreen ? 1 : 0,
+      inputTiming.filterUpdate,
+      inputTiming.collectEvents,
+      inputTiming.processEventsTotal,
+      inputTiming.perEventPreDispatch,
+      inputTiming.perEventScreenDispatch,
+      inputTiming.toggleWindowed,
+      inputTiming.total,
+      inputTiming.eventCount,
+      inputTiming.returnedFirstUpdate ? 1 : 0,
+      inputTiming.returnedNoFocus ? 1 : 0,
       fps, refresh,
       g_LastUpdateTimingBreakdown.soundManagerUpdate,
       g_LastUpdateTimingBreakdown.soundUpdate,
@@ -255,6 +286,23 @@ static bool IsLikelyScreenUpdateBoundFrame(
       static_cast<float>(g_fLikelyScreenUpdateBoundShareThreshold.Get()),
       0.0f, 1.0f);
   return screenShare >= threshold;
+}
+
+static bool IsLikelyInputUpdateBoundFrame(
+    float updateSeconds, float budgetSeconds) {
+  if (updateSeconds <= 0.0f || budgetSeconds <= 0.0f) {
+    return false;
+  }
+
+  if (updateSeconds <= budgetSeconds) {
+    return false;
+  }
+
+  const float inputShare = g_LastUpdateTimingBreakdown.inputUpdate / updateSeconds;
+  const float threshold = std::clamp(
+      static_cast<float>(g_fLikelyInputUpdateBoundShareThreshold.Get()),
+      0.0f, 1.0f);
+  return inputShare >= threshold;
 }
 
 static bool IsLikelyPresentBoundFrame(float drawSeconds) {
@@ -586,38 +634,51 @@ void GameLoop::RunGameLoop() {
               SCREENMAN->GetLastUpdateTimingBreakdown();
             const RageDisplay::EndFrameTimingBreakdown& endFrameTiming =
                 DISPLAY->GetLastEndFrameTimingBreakdown();
+            const InputEventHandlingTimingBreakdown& inputTiming =
+                GetLastInputEventHandlingTimingBreakdown();
+            const float updateInputShare =
+                (updateSeconds > 0.0f)
+                    ? (g_LastUpdateTimingBreakdown.inputUpdate / updateSeconds)
+                    : 0.0f;
             const float updateScreenShare =
-              (updateSeconds > 0.0f)
-                ? (g_LastUpdateTimingBreakdown.screenUpdate / updateSeconds)
-                : 0.0f;
+                (updateSeconds > 0.0f)
+                    ? (g_LastUpdateTimingBreakdown.screenUpdate / updateSeconds)
+                    : 0.0f;
             LOG->Trace(
                 "Frame near/over budget but likely draw-bound: frame=%.4fs "
                 "budget=%.4fs update=%.4fs draw=%.4fs drawBegin=%.4fs "
-              "drawScene=%.4fs drawEnd=%.4fs drawEndShare=%.2f updateScreenShare=%.2f class=%s "
+                "drawScene=%.4fs drawEnd=%.4fs drawEndShare=%.2f updateInputShare=%.2f "
+                "updateScreenShare=%.2f inTotal=%.4fs inCount=%d class=%s "
                 "endPresent=%.4fs endLimitBefore=%.4fs endLimitAfter=%.4fs "
                 "endFinish=%.4fs endWindowUpdate=%.4fs endTotal=%.4fs "
-              "endValid=%d scrStack=%.4fs scrOverlay=%.4fs scrDelay=%.4fs scrTotal=%.4fs (set "
+                "endValid=%d scrStack=%.4fs scrOverlay=%.4fs scrDelay=%.4fs scrTotal=%.4fs (set "
                 "WarnOnLikelyDrawBoundBudgetExceed=1 to warn)",
                 frameSeconds, budgetSeconds, updateSeconds, drawSeconds,
                 drawTiming.beginFrame, drawTiming.sceneDraw,
                 drawTiming.endFrame,
                 (drawSeconds > 0.0f) ? (drawTiming.endFrame / drawSeconds)
                                      : 0.0f,
-              updateScreenShare,
+                updateInputShare,
+                updateScreenShare,
+                inputTiming.total,
+                inputTiming.eventCount,
               IsLikelyPresentBoundFrame(drawSeconds)
-                ? "likely-present-bound"
-                : (IsLikelyScreenUpdateBoundFrame(updateSeconds, budgetSeconds)
-                     ? "likely-screen-update-bound"
-                     : "likely-draw-bound"),
+                    ? "likely-present-bound"
+                    : (IsLikelyInputUpdateBoundFrame(updateSeconds, budgetSeconds)
+                           ? "likely-input-update-bound"
+                           : (IsLikelyScreenUpdateBoundFrame(
+                                  updateSeconds, budgetSeconds)
+                                  ? "likely-screen-update-bound"
+                                  : "likely-draw-bound")),
                 endFrameTiming.presentOrSwap,
                 endFrameTiming.frameLimitBeforeVsync,
                 endFrameTiming.frameLimitAfterVsync,
                 endFrameTiming.finishGpu, endFrameTiming.windowUpdate,
-              endFrameTiming.totalEndFrame, endFrameTiming.valid ? 1 : 0,
-              screenUpdateTiming.screenStackUpdate,
-              screenUpdateTiming.overlayUpdate,
-              screenUpdateTiming.loadDelayedScreen,
-              screenUpdateTiming.totalUpdate);
+                endFrameTiming.totalEndFrame, endFrameTiming.valid ? 1 : 0,
+                screenUpdateTiming.screenStackUpdate,
+                screenUpdateTiming.overlayUpdate,
+                screenUpdateTiming.loadDelayedScreen,
+                screenUpdateTiming.totalUpdate);
           }
         }
       }

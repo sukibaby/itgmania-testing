@@ -89,6 +89,14 @@ void ShutdownGame();
 bool HandleGlobalInputs(const InputEventPlus& input);
 void HandleInputEvents(float fDeltaTime);
 
+static InputEventHandlingTimingBreakdown
+    g_LastInputEventHandlingTimingBreakdown;
+
+const InputEventHandlingTimingBreakdown&
+GetLastInputEventHandlingTimingBreakdown() {
+  return g_LastInputEventHandlingTimingBreakdown;
+}
+
 static Preference<bool> g_bAllowMultipleInstances(
     "AllowMultipleInstances", false);
 
@@ -1289,7 +1297,13 @@ bool HandleGlobalInputs(const InputEventPlus& input) {
 }
 
 void HandleInputEvents(float fDeltaTime) {
+  RageTimer totalTimer;
+  g_LastInputEventHandlingTimingBreakdown = InputEventHandlingTimingBreakdown();
+
+  RageTimer stageTimer;
   INPUTFILTER->Update(fDeltaTime);
+  g_LastInputEventHandlingTimingBreakdown.filterUpdate =
+      stageTimer.GetDeltaTime();
 
   /* Hack: If the topmost screen hasn't been updated yet, don't process input,
    * since we must not send inputs to a screen that hasn't at least had one
@@ -1297,18 +1311,29 @@ void HandleInputEvents(float fDeltaTime) {
    * gets.) We'll process it next time. Call Update above, so the inputs are
    * read and timestamped. */
   if (SCREENMAN->GetTopScreen()->IsFirstUpdate()) {
+    g_LastInputEventHandlingTimingBreakdown.returnedFirstUpdate = true;
+    g_LastInputEventHandlingTimingBreakdown.total = totalTimer.GetDeltaTime();
     return;
   }
 
+  stageTimer.Touch();
   std::vector<InputEvent> ieArray;
   INPUTFILTER->GetInputEvents(ieArray);
+  g_LastInputEventHandlingTimingBreakdown.collectEvents =
+      stageTimer.GetDeltaTime();
+  g_LastInputEventHandlingTimingBreakdown.eventCount =
+      static_cast<int>(ieArray.size());
 
   // If we don't have focus, discard input.
   if (!HOOKS->AppHasFocus()) {
+    g_LastInputEventHandlingTimingBreakdown.returnedNoFocus = true;
+    g_LastInputEventHandlingTimingBreakdown.total = totalTimer.GetDeltaTime();
     return;
   }
 
+  RageTimer processTimer;
   for (unsigned i = 0; i < ieArray.size(); i++) {
+    RageTimer eventPreDispatchTimer;
     InputEventPlus input;
     input.DeviceI = ieArray[i].di;
     input.type = ieArray[i].type;
@@ -1377,6 +1402,9 @@ void HandleInputEvents(float fDeltaTime) {
       }
     }
 
+    g_LastInputEventHandlingTimingBreakdown.perEventPreDispatch +=
+        eventPreDispatchTimer.GetDeltaTime();
+
     if (HandleGlobalInputs(input)) {
       continue;  // skip
     }
@@ -1388,13 +1416,23 @@ void HandleInputEvents(float fDeltaTime) {
       input.MenuI = GAME_BUTTON_BACK;
     }
 
+    RageTimer dispatchTimer;
     SCREENMAN->Input(input);
+    g_LastInputEventHandlingTimingBreakdown.perEventScreenDispatch +=
+        dispatchTimer.GetDeltaTime();
   }
+  g_LastInputEventHandlingTimingBreakdown.processEventsTotal =
+      processTimer.GetDeltaTime();
 
+  stageTimer.Touch();
   if (ArchHooks::GetAndClearToggleWindowed()) {
     PREFSMAN->m_bWindowed.Set(!PREFSMAN->m_bWindowed);
     StepMania::ApplyGraphicOptions();
   }
+  g_LastInputEventHandlingTimingBreakdown.toggleWindowed =
+      stageTimer.GetDeltaTime();
+
+  g_LastInputEventHandlingTimingBreakdown.total = totalTimer.GetDeltaTime();
 }
 
 #include "LuaManager.h"
