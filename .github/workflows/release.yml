@@ -30,12 +30,12 @@ jobs:
             path: build/ITGmania-*.tar.gz
           - os: macos-15
             name: macOS (M1)
-            install: brew install nasm autoconf libtool
+            install: brew install nasm autoconf automake libtool
             flags: -G "Unix Makefiles" -DCMAKE_MAKE_PROGRAM="$(command -v make)" -DCMAKE_C_COMPILER="$(command -v cc)" -DCMAKE_CXX_COMPILER="$(command -v c++)" -DSM_USE_VCPKG=ON -DCMAKE_TOOLCHAIN_FILE=$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake -DCMAKE_OSX_ARCHITECTURES=arm64 -DWITH_FFMPEG_JOBS="$(sysctl -n hw.logicalcpu)"
             path: build/ITGmania-*.dmg
           - os: macos-15-intel
             name: macOS (Intel)
-            install: brew install nasm autoconf libtool
+            install: brew install nasm autoconf automake libtool
             flags: -G "Unix Makefiles" -DCMAKE_MAKE_PROGRAM="$(command -v make)" -DCMAKE_C_COMPILER="$(command -v cc)" -DCMAKE_CXX_COMPILER="$(command -v c++)" -DSM_USE_VCPKG=ON -DCMAKE_TOOLCHAIN_FILE=$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake -DCMAKE_OSX_ARCHITECTURES=x86_64 -DWITH_FFMPEG_JOBS="$(sysctl -n hw.logicalcpu)"
             path: build/ITGmania-*.dmg
           - os: windows-2022
