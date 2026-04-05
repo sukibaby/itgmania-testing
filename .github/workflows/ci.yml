@@ -26,12 +26,12 @@ jobs:
             build: cmake --build build --parallel "$(nproc)"
           - os: macos-15
             name: macOS (M1)
-            install: brew install nasm autoconf libtool
+            install: brew install nasm autoconf automake libtool
             configure: cmake -G "Unix Makefiles" -B build -DCMAKE_MAKE_PROGRAM="$(command -v make)" -DCMAKE_C_COMPILER="$(command -v cc)" -DCMAKE_CXX_COMPILER="$(command -v c++)" -DCMAKE_COMPILE_WARNING_AS_ERROR=ON -DSM_USE_VCPKG=ON -DCMAKE_TOOLCHAIN_FILE=$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake -DCMAKE_OSX_ARCHITECTURES=arm64 -DWITH_FFMPEG_JOBS="$(sysctl -n hw.logicalcpu)"
             build: cmake --build build --parallel "$(sysctl -n hw.logicalcpu)"
           - os: macos-15-intel
             name: macOS (Intel)
-            install: brew install nasm autoconf libtool
+            install: brew install nasm autoconf automake libtool
             configure: cmake -G "Unix Makefiles" -B build -DCMAKE_MAKE_PROGRAM="$(command -v make)" -DCMAKE_C_COMPILER="$(command -v cc)" -DCMAKE_CXX_COMPILER="$(command -v c++)" -DCMAKE_COMPILE_WARNING_AS_ERROR=ON -DSM_USE_VCPKG=ON -DCMAKE_TOOLCHAIN_FILE=$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake -DCMAKE_OSX_ARCHITECTURES=x86_64 -DWITH_FFMPEG_JOBS="$(sysctl -n hw.logicalcpu)"
             build: cmake --build build --parallel "$(sysctl -n hw.logicalcpu)"
           - os: windows-2022
