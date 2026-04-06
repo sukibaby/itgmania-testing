@@ -1,5 +1,4 @@
-#ifndef CommandLineActions_H
-#define CommandLineActions_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -25,8 +24,6 @@ class CommandLineArgs {
  * from another process. */
 extern std::vector<CommandLineArgs> ToProcess;
 }  // namespace CommandLineActions
-
-#endif
 
 /**
  * @file

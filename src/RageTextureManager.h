@@ -1,7 +1,6 @@
 /* RageTextureManager - Interface for loading textures. */
 
-#ifndef RAGE_TEXTURE_MANAGER_H
-#define RAGE_TEXTURE_MANAGER_H
+#pragma once
 
 #include "RageSurface.h"
 #include "RageTexture.h"
@@ -103,8 +102,6 @@ class RageTextureManager {
 
 extern RageTextureManager*
     TEXTUREMAN;  // global and accessible from anywhere in our program
-
-#endif
 
 /*
  * Copyright (c) 2001-2004 Chris Danford, Glenn Maynard

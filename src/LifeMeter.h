@@ -1,5 +1,4 @@
-#ifndef LIFE_METER_H
-#define LIFE_METER_H
+#pragma once
 
 #include "ActorFrame.h"
 #include "GameConstantsAndTypes.h"
@@ -52,8 +51,6 @@ class LifeMeter : public ActorFrame {
   const PlayerState* m_pPlayerState;
   PlayerStageStats* m_pPlayerStageStats;
 };
-
-#endif
 
 /**
  * @file

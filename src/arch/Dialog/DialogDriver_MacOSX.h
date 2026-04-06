@@ -1,5 +1,4 @@
-#ifndef DIALOG_BOX_DRIVER_MACOSX_H
-#define DIALOG_BOX_DRIVER_MACOSX_H
+#pragma once
 
 #include <string>
 
@@ -16,8 +15,6 @@ class DialogDriver_MacOSX : public DialogDriver {
   Dialog::Result YesNo(std::string sMessage, std::string sID);
 };
 #define USE_DIALOG_DRIVER_COCOA
-
-#endif
 
 /*
  * (c) 2003-2004 Steve Checkoway

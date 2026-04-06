@@ -1,7 +1,6 @@
 /* RageSoundReader_Chain - Chain sounds together */
 
-#ifndef RAGE_SOUND_READER_CHAIN
-#define RAGE_SOUND_READER_CHAIN
+#pragma once
 
 #include <cstdint>
 #include <map>
@@ -77,8 +76,6 @@ class RageSoundReader_Chain : public RageSoundReader {
   void ActivateSound(Sound* s);
   void ReleaseSound(Sound* s);
 };
-
-#endif
 
 /*
  * Copyright (c) 2004-2006 Glenn Maynard

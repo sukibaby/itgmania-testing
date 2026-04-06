@@ -1,5 +1,4 @@
-#ifndef NOTES_LOADER_BMS_H
-#define NOTES_LOADER_BMS_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -13,8 +12,6 @@ void GetApplicableFiles(
 bool LoadFromDir(const std::string& sDir, Song& out);
 bool LoadNoteDataFromSimfile(const std::string& cachePath, Steps& out);
 }  // namespace BMSLoader
-
-#endif
 
 /*
  * (c) 2001-2003 Chris Danford

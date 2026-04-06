@@ -1,7 +1,6 @@
 /* RageFileDriverReadAhead - Read-ahead hinting for seamless rewinding. */
 
-#ifndef RAGE_FILE_DRIVER_READ_AHEAD_H
-#define RAGE_FILE_DRIVER_READ_AHEAD_H
+#pragma once
 
 #include <cstddef>
 #include <string>
@@ -44,8 +43,6 @@ class RageFileDriverReadAhead : public RageFileObj {
   int m_iPostBufferReadAhead;
   bool m_bReadAheadNeeded;
 };
-
-#endif
 
 /*
  * Copyright (c) 2010 Glenn Maynard

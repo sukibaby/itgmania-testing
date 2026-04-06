@@ -1,11 +1,8 @@
-#ifndef GET_SYS_INFO_H
-#define GET_SYS_INFO_H
+#pragma once
 
 #include <string>
 
 void GetKernel(std::string& sys, int& vers);
-
-#endif
 
 /*
  * (c) 2003-2004 Glenn Maynard

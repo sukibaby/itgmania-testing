@@ -1,5 +1,4 @@
-#ifndef THREADS_PTHREADS_H
-#define THREADS_PTHREADS_H
+#pragma once
 
 #include <cstdint>
 
@@ -87,8 +86,6 @@ class SemaImpl_Pthreads : public SemaImpl {
   pthread_mutex_t m_Mutex;
   unsigned m_iValue;
 };
-
-#endif
 
 #endif
 

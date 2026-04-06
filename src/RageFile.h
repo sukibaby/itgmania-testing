@@ -1,7 +1,6 @@
 /* RageFile - High-level file access. */
 
-#ifndef RAGE_FILE_H
-#define RAGE_FILE_H
+#pragma once
 
 #include <cstddef>
 #include <cstdint>
@@ -114,8 +113,6 @@ uint16_t read_u16_le(RageFileBasic& f, std::string& sError);
 int32_t read_32_le(RageFileBasic& f, std::string& sError);
 uint32_t read_u32_le(RageFileBasic& f, std::string& sError);
 };  // namespace FileReading
-
-#endif
 
 /*
  * Copyright (c) 2003-2005 Glenn Maynard, Chris Danford

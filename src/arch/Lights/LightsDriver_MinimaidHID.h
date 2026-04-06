@@ -1,7 +1,6 @@
 /* LightsDriver_MinimaidHID: Control lights minimaid using hidapi */
 
-#ifndef LightsDriver_MinimaidHID_H
-#define LightsDriver_MinimaidHID_H
+#pragma once
 
 /*
  * -------------------------- NOTE --------------------------
@@ -125,8 +124,6 @@ class LightsDriver_MinimaidHID : public LightsDriver {
 
   virtual void Set(const LightsState* ls);
 };
-
-#endif
 
 /*
  * (c) 2025 din

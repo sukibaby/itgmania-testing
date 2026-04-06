@@ -1,7 +1,6 @@
 /* RageSoundReader_Vorbisfile - Read from a Vorbisfile interface. */
 
-#ifndef RAGE_SOUND_READER_VORBISFILE_H
-#define RAGE_SOUND_READER_VORBISFILE_H
+#pragma once
 
 #include <string>
 
@@ -32,8 +31,6 @@ class RageSoundReader_Vorbisfile : public RageSoundReader_FileReader {
   int read_offset;
   unsigned channels;
 };
-
-#endif
 
 /*
  * Copyright (c) 2003 Glenn Maynard

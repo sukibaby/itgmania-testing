@@ -1,8 +1,7 @@
 /* GameConstantsAndTypes - Things used in many places that don't change often.
  */
 
-#ifndef GAME_CONSTANTS_AND_TYPES_H
-#define GAME_CONSTANTS_AND_TYPES_H
+#pragma once
 
 #include <cfloat>
 #include <string>
@@ -718,8 +717,6 @@ enum FailType {
 const std::string& FailTypeToString(FailType cat);
 const std::string& FailTypeToLocalizedString(FailType cat);
 LuaDeclareType(FailType);
-
-#endif
 
 /**
  * @file

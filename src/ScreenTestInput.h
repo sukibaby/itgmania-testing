@@ -1,7 +1,6 @@
 /* ScreenTestInput - Display pressed keys. */
 
-#ifndef SCREEN_TEST_INPUT_H
-#define SCREEN_TEST_INPUT_H
+#pragma once
 
 #include "InputQueue.h"
 #include "ScreenWithMenuElements.h"
@@ -13,8 +12,6 @@ class ScreenTestInput : public ScreenWithMenuElements {
   virtual bool MenuStart(const InputEventPlus& input);
   virtual bool MenuBack(const InputEventPlus& input);
 };
-
-#endif
 
 /*
  * (c) 2003-2004 Chris Danford

@@ -1,6 +1,5 @@
 /* Manages our X connection and window. */
-#ifndef X11_HELPER_H
-#define X11_HELPER_H
+#pragma once
 
 #include <DisplaySpec.h>
 #include <X11/Xlib.h>  // Window
@@ -39,8 +38,6 @@ void SetWMState(
 bool SetWMFullscreenMonitors(const DisplaySpec& target);
 #endif
 };  // namespace X11Helper
-
-#endif
 
 /*
  * (c) 2005, 2006 Ben Anderson, Steve Checkoway

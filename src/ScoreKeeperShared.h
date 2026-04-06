@@ -1,5 +1,4 @@
-#ifndef SCORE_KEEPER_SHARED_H
-#define SCORE_KEEPER_SHARED_H
+#pragma once
 
 #include <vector>
 
@@ -31,7 +30,6 @@ class ScoreKeeperShared : public ScoreKeeperNormal {
       int iNumHoldsMissedThisRow);
   virtual void HandleTapScoreNone();
 };
-#endif
 
 /*
  * (c) 2006 Steve Checkoway

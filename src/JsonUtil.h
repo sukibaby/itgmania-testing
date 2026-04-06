@@ -1,6 +1,5 @@
 /** @brief Utilities for handling JSON data. */
-#ifndef JsonUtil_H
-#define JsonUtil_H
+#pragma once
 
 #include <map>
 #include <string>
@@ -260,8 +259,6 @@ static void DeserializeVectorValues(
   }
 }
 }  // namespace JsonUtil
-
-#endif
 
 /*
  * (c) 2010 Chris Danford

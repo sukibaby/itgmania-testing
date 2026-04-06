@@ -1,7 +1,6 @@
 /* LightsDriver_Linux_PIUIO: Control lights via PIUIO kernel driver */
 
-#ifndef LightsDriver_Linux_PIUIO_H
-#define LightsDriver_Linux_PIUIO_H
+#pragma once
 
 #include "arch/Lights/LightsDriver.h"
 
@@ -15,8 +14,6 @@ class LightsDriver_Linux_PIUIO : public LightsDriver {
  private:
   int fd;
 };
-
-#endif
 
 /*
  * (c) 2012 Devin J. Pohly

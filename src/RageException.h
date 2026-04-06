@@ -1,5 +1,4 @@
-#ifndef RAGE_EXCEPTION_H
-#define RAGE_EXCEPTION_H
+#pragma once
 
 #include <string>
 
@@ -15,8 +14,6 @@ void Throw(const char* fmt, ...) PRINTF(1, 2);
 
 void SetCleanupHandler(void (*pHandler)(const std::string& sError));
 }  // namespace RageException
-
-#endif
 
 /*
  * Copyright (c) 2001-2004 Chris Danford

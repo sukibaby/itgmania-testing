@@ -1,5 +1,4 @@
-#ifndef RollingNumbers_H
-#define RollingNumbers_H
+#pragma once
 
 #include <string>
 
@@ -45,8 +44,6 @@ class RollingNumbers : public BitmapText {
   float m_fScoreVelocity;
   bool m_metrics_loaded;
 };
-
-#endif
 
 /**
  * @file

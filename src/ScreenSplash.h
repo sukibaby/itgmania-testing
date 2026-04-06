@@ -1,7 +1,6 @@
 /* ScreenSplash - A loading screen. */
 
-#ifndef ScreenSplash_H
-#define ScreenSplash_H
+#pragma once
 
 #include "InputQueue.h"
 #include "ScreenMessage.h"
@@ -21,8 +20,6 @@ class ScreenSplash : public ScreenWithMenuElements {
   ThemeMetric<bool> ALLOW_START_TO_SKIP;
   ThemeMetric<bool> PREPARE_SCREEN;
 };
-
-#endif
 
 /*
  * (c) 2001-2004 Chris Danford

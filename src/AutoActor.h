@@ -1,5 +1,4 @@
-#ifndef AutoActor_H
-#define AutoActor_H
+#pragma once
 
 #include <string>
 
@@ -40,8 +39,6 @@ class AutoActor {
   /** @brief the Actor for which there is a smart pointer to. */
   Actor* m_pActor;
 };
-
-#endif
 
 /**
  * @file

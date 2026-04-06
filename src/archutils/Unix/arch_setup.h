@@ -1,5 +1,4 @@
-#ifndef ARCH_SETUP_UNIX_H
-#define ARCH_SETUP_UNIX_H
+#pragma once
 
 #if !defined(_STDC_C99) && !defined(__C99FEATURES__)
 #define __C99FEATURES__
@@ -15,8 +14,6 @@
 #ifdef BSD
 #undef ALIGN
 #undef MACHINE
-#endif
-
 #endif
 
 /*

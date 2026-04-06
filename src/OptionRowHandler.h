@@ -1,5 +1,4 @@
-#ifndef OptionRowHandler_H
-#define OptionRowHandler_H
+#pragma once
 
 #include <cstddef>
 #include <limits>
@@ -282,8 +281,6 @@ inline void VerifySelected(
     }
   }
 }
-
-#endif
 
 /**
  * @file

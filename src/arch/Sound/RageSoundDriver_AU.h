@@ -1,5 +1,4 @@
-#ifndef RAGE_SOUND_DRIVER_AU_H
-#define RAGE_SOUND_DRIVER_AU_H
+#pragma once
 
 #include <AudioUnit/AudioUnit.h>
 #include <CoreFoundation/CoreFoundation.h>
@@ -40,7 +39,6 @@ class RageSoundDriver_AU : public RageSoundDriver {
   RageSemaphore m_Semaphore;
 };
 
-#endif
 /*
  * (c) 2004-2006 Steve Checkoway
  * All rights reserved.

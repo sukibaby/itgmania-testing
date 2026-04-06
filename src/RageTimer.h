@@ -1,7 +1,6 @@
 /* RageTimer - Timer services. */
 
-#ifndef RAGE_TIMER_H
-#define RAGE_TIMER_H
+#pragma once
 
 #include <cstdint>
 
@@ -55,8 +54,6 @@ class RageTimer {
 };
 
 extern const RageTimer RageZeroTimer;
-
-#endif  // RAGE_TIMER_H
 
 /*
  * Copyright (c) 2001-2003 Chris Danford, Glenn Maynard

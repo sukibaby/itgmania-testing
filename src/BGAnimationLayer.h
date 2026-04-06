@@ -1,5 +1,4 @@
-#ifndef BGANIMATIONLAYER_H
-#define BGANIMATIONLAYER_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -49,8 +48,6 @@ class BGAnimationLayer : public ActorFrame {
   float m_fTileVelocityX;
   float m_fTileVelocityY;
 };
-
-#endif
 
 /**
  * @file

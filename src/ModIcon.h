@@ -1,5 +1,4 @@
-#ifndef ModIcon_H
-#define ModIcon_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -26,8 +25,6 @@ class ModIcon : public ActorFrame {
   ThemeMetric<std::string> STOP_WORDS;
   std::vector<std::string> m_vStopWords;
 };
-
-#endif
 
 /*
  * (c) 2002-2004 Chris Danford

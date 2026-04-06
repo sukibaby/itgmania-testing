@@ -1,7 +1,6 @@
 /* AutoPtrCopyOnWrite - Simple smart pointer template. */
 
-#ifndef RAGE_UTIL_AUTO_PTR_H
-#define RAGE_UTIL_AUTO_PTR_H
+#pragma once
 
 #include <utility>
 
@@ -182,8 +181,6 @@ template <class T>
 inline void swap(HiddenPtr<T>& a, HiddenPtr<T>& b) {
   a.Swap(b);
 }
-
-#endif
 
 /*
  * (c) 2005 Glenn Maynard

@@ -1,7 +1,6 @@
 /* RageInput - Starts up InputHandlers, which generate InputEvents. */
 
-#ifndef RAGEINPUT_H
-#define RAGEINPUT_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -39,8 +38,6 @@ extern Preference<std::string> g_sInputDeviceOrder;
 
 extern RageInput*
     INPUTMAN;  // global and accessible from anywhere in our program
-
-#endif
 
 /*
  * Copyright (c) 2001-2004 Chris Danford, Glenn Maynard

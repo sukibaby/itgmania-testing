@@ -1,5 +1,4 @@
-#ifndef SCREEN_PROFILE_SAVE_H
-#define SCREEN_PROFILE_SAVE_H
+#pragma once
 
 #include "InputQueue.h"
 #include "ScreenWithMenuElements.h"
@@ -12,8 +11,6 @@ class ScreenProfileSave : public ScreenWithMenuElements {
 
   virtual void PushSelf(lua_State* L);
 };
-
-#endif
 
 /*
  * (c) 2007 Glenn Maynard

@@ -1,5 +1,4 @@
-#ifndef MOVIE_TEXTURE_NULL_H
-#define MOVIE_TEXTURE_NULL_H
+#pragma once
 
 #include <string>
 
@@ -10,8 +9,6 @@ class RageMovieTextureDriver_Null : public RageMovieTextureDriver {
  public:
   virtual RageMovieTexture* Create(RageTextureID ID, std::string& sError);
 };
-
-#endif
 
 /*
  * (c) 2003 Steve Checkoway

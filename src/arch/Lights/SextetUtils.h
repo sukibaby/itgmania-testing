@@ -1,5 +1,4 @@
-#ifndef SextetUtils_H
-#define SextetUtils_H
+#pragma once
 
 #include <cstddef>
 #include <cstdint>
@@ -134,8 +133,6 @@ inline size_t packLine(uint8_t* buffer, const LightsState* ls) {
 
   return index;
 }
-
-#endif
 
 /*
  * Copyright © 2014 Peter S. May

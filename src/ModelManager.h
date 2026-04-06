@@ -1,5 +1,4 @@
-#ifndef MODEL_MANAGER_H
-#define MODEL_MANAGER_H
+#pragma once
 
 #include <map>
 #include <string>
@@ -45,8 +44,6 @@ class ModelManager {
 
 extern ModelManager*
     MODELMAN;  // global and accessible from anywhere in our program
-
-#endif
 
 /**
  * @file

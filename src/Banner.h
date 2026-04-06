@@ -1,7 +1,6 @@
 /** @brief Banner - The song/course's banner displayed in SelectMusic/Course. */
 
-#ifndef BANNER_H
-#define BANNER_H
+#pragma once
 
 #include <string>
 
@@ -58,8 +57,6 @@ class Banner : public Sprite {
   bool m_bScrolling;
   float m_fPercentScrolling;
 };
-
-#endif
 
 /**
  * @file

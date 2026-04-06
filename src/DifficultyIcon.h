@@ -1,7 +1,6 @@
 /* DifficultyIcon - Graphical representation of the difficulty class. */
 
-#ifndef DIFFICULTY_ICON_H
-#define DIFFICULTY_ICON_H
+#pragma once
 
 #include <string>
 
@@ -38,8 +37,6 @@ class DifficultyIcon : public Sprite {
   bool m_bBlank;
   PlayerNumber m_PlayerNumber;
 };
-
-#endif
 
 /*
  * (c) 2001-2004 Chris Danford

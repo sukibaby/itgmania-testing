@@ -1,5 +1,4 @@
-#ifndef GameplayAssist_H
-#define GameplayAssist_H
+#pragma once
 
 #include "PlayerState.h"
 #include "RageSound.h"
@@ -26,8 +25,6 @@ class GameplayAssist {
   /** @brief the sound made when crossing a new beat. */
   RageSound m_soundAssistMetronomeBeat;
 };
-
-#endif
 
 /**
  * @file

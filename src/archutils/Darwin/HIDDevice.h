@@ -1,5 +1,4 @@
-#ifndef HIDDEVICE_H
-#define HIDDEVICE_H
+#pragma once
 
 #include <CoreFoundation/CoreFoundation.h>
 #include <IOKit/IOCFPlugIn.h>
@@ -138,8 +137,6 @@ class HIDDevice {
   virtual void GetDevicesAndDescriptions(
       std::vector<InputDeviceInfo>& vDevices) const = 0;
 };
-
-#endif
 
 /*
  * (c) 2005-2006 Steve Checkoway

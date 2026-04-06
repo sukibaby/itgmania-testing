@@ -1,5 +1,4 @@
-#ifndef CRASH_HANDLER_H
-#define CRASH_HANDLER_H
+#pragma once
 
 #include <sys/signal.h>
 
@@ -14,8 +13,6 @@ void CrashSignalHandler(int signal, siginfo_t* si, const ucontext_t* uc);
 void ForceCrash(const char* reason);
 void ForceDeadlock(std::string reason, uint64_t CrashHandle);
 }  // namespace CrashHandler
-
-#endif
 
 /*
  * (c) 2003-2004 Glenn Maynard

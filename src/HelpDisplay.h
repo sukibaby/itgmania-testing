@@ -1,5 +1,4 @@
-#ifndef HELP_DISPLAY_H
-#define HELP_DISPLAY_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -43,8 +42,6 @@ class HelpDisplay : public BitmapText {
   float m_fSecsBetweenSwitches;
   float m_fSecsUntilSwitch;
 };
-
-#endif
 
 /*
  * (c) 2001-2003 Chris Danford, Glenn Maynard

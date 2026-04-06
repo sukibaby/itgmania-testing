@@ -1,5 +1,4 @@
-#ifndef MODS_GROUP_H
-#define MODS_GROUP_H
+#pragma once
 
 #include <cstddef>
 #include <string>
@@ -116,8 +115,6 @@ class ModsGroup {
   T& GetSong() { return m_[ModsLevel_Song]; }
   T& GetCurrent() { return m_[ModsLevel_Current]; }
 };
-
-#endif
 
 /*
  * (c) 2006 Chris Danford, Steve Checkoway

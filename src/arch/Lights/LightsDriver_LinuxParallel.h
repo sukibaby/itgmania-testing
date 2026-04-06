@@ -1,7 +1,6 @@
 /* LightsDriver_LinuxParallel - Parallel port-based lights for Linux */
 
-#ifndef LightsDriver_LinuxParallel_H
-#define LightsDriver_LinuxParallel_H
+#pragma once
 
 #include "LightsDriver.h"
 
@@ -12,8 +11,6 @@ class LightsDriver_LinuxParallel : public LightsDriver {
   virtual ~LightsDriver_LinuxParallel();
   virtual void Set(const LightsState* ls);
 };
-
-#endif
 
 /*
  * (c) 2004 Hugo Hromic M. <hhromic@udec.cl>

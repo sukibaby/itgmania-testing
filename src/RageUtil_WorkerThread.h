@@ -1,8 +1,7 @@
 /* RageWorkerThread - a worker thread for operations that are allowed to time
  * out. */
 
-#ifndef RAGE_UTIL_WORKER_THREAD_H
-#define RAGE_UTIL_WORKER_THREAD_H
+#pragma once
 
 #include <string>
 
@@ -75,8 +74,6 @@ class RageWorkerThread {
   RageTimer m_NextHeartbeat;
   RageEvent m_HeartbeatEvent;
 };
-
-#endif
 
 /*
  * (c) 2005 Glenn Maynard

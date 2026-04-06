@@ -1,5 +1,4 @@
-#ifndef SCORE_DISPLAY_RAVE_H
-#define SCORE_DISPLAY_RAVE_H
+#pragma once
 
 #include "AutoActor.h"
 #include "BitmapText.h"
@@ -25,8 +24,6 @@ class ScoreDisplayRave : public ScoreDisplay {
 
   AttackLevel m_lastLevelSeen;
 };
-
-#endif
 
 /*
  * (c) 2003 Chris Danford

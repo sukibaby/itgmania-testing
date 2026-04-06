@@ -1,7 +1,6 @@
 /* GetVideoDriverInfo - Get information about Win32 video drivers. */
 
-#ifndef VIDEO_DRIVER_INFO_H
-#define VIDEO_DRIVER_INFO_H
+#pragma once
 
 #include <string>
 
@@ -16,8 +15,6 @@ struct VideoDriverInfo {
 std::string GetPrimaryVideoName();
 bool GetVideoDriverInfo(int iCardno, VideoDriverInfo& info);
 std::string GetPrimaryVideoDriverName();
-
-#endif
 
 /*
  * (c) 2002-2004 Chris Danford, Glenn Maynard

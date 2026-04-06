@@ -1,5 +1,4 @@
-#ifndef CHARACTER_MANAGER_H
-#define CHARACTER_MANAGER_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -36,8 +35,6 @@ class CharacterManager {
 
 extern CharacterManager*
     CHARMAN;  // global and accessible from anywhere in our program
-
-#endif
 
 /*
  * (c) 2001-2004 Chris Danford

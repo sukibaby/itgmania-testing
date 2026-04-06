@@ -1,5 +1,4 @@
-#ifndef SCREEN_EDIT_H
-#define SCREEN_EDIT_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -762,8 +761,6 @@ class ScreenEdit : public ScreenWithMenuElements {
   float GetBeat();
   int GetRow();
 };
-
-#endif
 
 /*
  * (c) 2001-2004 Chris Danford

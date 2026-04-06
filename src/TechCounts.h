@@ -1,5 +1,4 @@
-#ifndef TECH_COUNTS_H
-#define TECH_COUNTS_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -79,8 +78,6 @@ struct TechCounts {
       int c, const StepParity::Row& currentRow,
       const StepParity::Row& previousRow, float elapsedTime);
 };
-
-#endif
 
 /**
  * @file

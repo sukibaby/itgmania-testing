@@ -1,5 +1,4 @@
-#ifndef SOUND_EFFECT_CONTROL_H
-#define SOUND_EFFECT_CONTROL_H
+#pragma once
 
 #include <string>
 
@@ -40,8 +39,6 @@ class SoundEffectControl {
   const NoteData* m_pNoteData;
   RageSoundReader* m_pSoundReader;
 };
-
-#endif
 
 /**
  * @file

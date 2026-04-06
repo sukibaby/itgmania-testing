@@ -1,5 +1,4 @@
-#ifndef GRAPHICS_WINDOW_H
-#define GRAPHICS_WINDOW_H
+#pragma once
 
 #include <windows.h>
 
@@ -40,8 +39,6 @@ void Update();
 
 HWND GetHwnd();
 };  // namespace GraphicsWindow
-
-#endif
 
 /*
  * (c) 2004 Glenn Maynard

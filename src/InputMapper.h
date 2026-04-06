@@ -1,5 +1,4 @@
-#ifndef INPUT_MAPPER_H
-#define INPUT_MAPPER_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -271,8 +270,6 @@ class InputMapper {
 
 extern InputMapper*
     INPUTMAPPER;  // global and accessible from anywhere in our program
-
-#endif
 
 /*
  * (c) 2001-2003 Chris Danford

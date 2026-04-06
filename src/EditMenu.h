@@ -1,5 +1,4 @@
-#ifndef EDIT_MENU_H
-#define EDIT_MENU_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -263,8 +262,6 @@ class EditMenu : public ActorFrame {
   ThemeMetric<EditMode> EDIT_MODE;
   ThemeMetric<std::string> TEXT_BANNER_TYPE;
 };
-
-#endif
 
 /**
  * @file

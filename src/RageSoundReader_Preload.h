@@ -1,7 +1,6 @@
 /* RageSoundReader_Preload - Preload sounds from another reader into memory. */
 
-#ifndef RAGE_SOUND_READER_PRELOAD
-#define RAGE_SOUND_READER_PRELOAD
+#pragma once
 
 #include <string>
 
@@ -47,8 +46,6 @@ class RageSoundReader_Preload : public RageSoundReader {
   unsigned m_iChannels;
   float m_fRate;
 };
-
-#endif
 
 /*
  * Copyright (c) 2003 Glenn Maynard

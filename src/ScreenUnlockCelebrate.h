@@ -1,5 +1,4 @@
-#ifndef ScreenUnlockCelebrate_H
-#define ScreenUnlockCelebrate_H
+#pragma once
 
 #include "InputQueue.h"
 #include "ScreenUnlockBrowse.h"
@@ -17,8 +16,6 @@ class ScreenUnlockCelebrate : public ScreenUnlockBrowse {
 
  protected:
 };
-
-#endif
 
 /*
  * (c) 2006 Chris Danford

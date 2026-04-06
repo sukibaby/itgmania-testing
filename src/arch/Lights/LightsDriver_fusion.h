@@ -1,8 +1,7 @@
 /* LightsDriver_fusion: Control lights for the fusion board by icedragon.io
  * using hidapi */
 
-#ifndef LightsDriver_fusion_H
-#define LightsDriver_fusion_H
+#pragma once
 
 /*
  * -------------------------- NOTE --------------------------
@@ -85,8 +84,6 @@ class LightsDriver_fusion : public LightsDriver {
 
   virtual void Set(const LightsState* ls);
 };
-
-#endif
 
 /*
  * (c) 2025 din

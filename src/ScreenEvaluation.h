@@ -1,5 +1,4 @@
-#ifndef SCREEN_EVALUATION_H
-#define SCREEN_EVALUATION_H
+#pragma once
 
 #include <string>
 
@@ -126,8 +125,6 @@ class ScreenEvaluation : public ScreenWithMenuElements {
   /** @brief Did a player save a screenshot of their score? */
   bool m_bSavedScreenshot[NUM_PLAYERS];
 };
-
-#endif
 
 /**
  * @file

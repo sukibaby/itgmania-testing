@@ -1,5 +1,4 @@
-#ifndef ScreenSelectMaster_H
-#define ScreenSelectMaster_H
+#pragma once
 
 #include <map>
 #include <string>
@@ -133,8 +132,6 @@ class ScreenSelectMaster : public ScreenSelect {
 
   GameButton m_TrackingRepeatingInput;
 };
-
-#endif
 
 /*
  * (c) 2003-2004 Chris Danford

@@ -1,5 +1,4 @@
-#ifndef GRAPH_DISPLAY_H
-#define GRAPH_DISPLAY_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -41,8 +40,6 @@ class GraphDisplay : public ActorFrame {
   GraphLine* m_pGraphLine;
   GraphBody* m_pGraphBody;
 };
-
-#endif
 
 /*
  * (c) 2003 Glenn Maynard

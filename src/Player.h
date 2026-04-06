@@ -1,5 +1,4 @@
-#ifndef PLAYER_H
-#define PLAYER_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -288,8 +287,6 @@ class PlayerPlus {
   operator Player*() { return m_pPlayer; }
   operator const Player*() const { return m_pPlayer; }
 };
-
-#endif
 
 /*
  * (c) 2001-2006 Chris Danford, Steve Checkoway

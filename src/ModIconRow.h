@@ -1,7 +1,6 @@
 /* ModIconRow - Shows a row of ModIcons. */
 
-#ifndef ModIconRow_H
-#define ModIconRow_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -41,8 +40,6 @@ class ModIconRow : public ActorFrame {
 
   std::vector<ModIcon*> m_vpModIcon;
 };
-
-#endif
 
 /*
  * (c) 2002-2004 Chris Danford

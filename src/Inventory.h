@@ -1,5 +1,4 @@
-#ifndef Inventory_H
-#define Inventory_H
+#pragma once
 
 #include <vector>
 
@@ -35,8 +34,6 @@ class Inventory : public Actor {
   std::vector<RageSound*> m_vpSoundUseItem;
   RageSound m_soundItemEnding;
 };
-
-#endif
 
 /**
  * @file

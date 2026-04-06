@@ -1,5 +1,4 @@
-#ifndef SCREEN_RELOAD_SONGS_H
-#define SCREEN_RELOAD_SONGS_H
+#pragma once
 
 #include "BitmapText.h"
 #include "Screen.h"
@@ -19,8 +18,6 @@ class ScreenReloadSongs : public Screen {
   LoadingWindow* m_pLoadingWindow;
   BitmapText m_Loading;
 };
-
-#endif
 
 /*
  * (c) 2003-2004 Glenn Maynard

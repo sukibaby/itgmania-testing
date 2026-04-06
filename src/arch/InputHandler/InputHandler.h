@@ -1,5 +1,4 @@
-#ifndef INPUT_HANDLER_H
-#define INPUT_HANDLER_H
+#pragma once
 
 /* This is a simple class to handle special input devices. Update() will be
  * called during the input update; the derived class should send appropriate
@@ -84,8 +83,6 @@ class InputHandler : public RageDriver {
       CreateClass<InputHandler_##x, RageDriver>)
 #define REGISTER_INPUT_HANDLER_CLASS(name) \
   REGISTER_INPUT_HANDLER_CLASS2(name, name)
-
-#endif
 
 /**
  * @file

@@ -1,7 +1,6 @@
 /* Model - A 3D model. */
 
-#ifndef MODEL_H
-#define MODEL_H
+#pragma once
 
 #include <map>
 #include <string>
@@ -95,8 +94,6 @@ class Model : public Actor {
   bool m_bLoop;
   bool m_bDrawCelShaded;  // for Lua models
 };
-
-#endif
 
 /*
  * (c) 2003-2004 Chris Danford

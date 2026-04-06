@@ -1,5 +1,4 @@
-#ifndef HOLD_JUDGMENT_H
-#define HOLD_JUDGMENT_H
+#pragma once
 
 #include <string>
 
@@ -28,8 +27,6 @@ class HoldJudgment : public ActorFrame {
   AutoActor m_sprJudgment;
   MultiPlayer m_mpToTrack;
 };
-
-#endif
 
 /*
  * (c) 2001-2004 Chris Danford

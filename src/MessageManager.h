@@ -1,5 +1,4 @@
-#ifndef MessageManager_H
-#define MessageManager_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -299,8 +298,6 @@ class BroadcastOnChangePtr1D {
   const BroadcastOnChangePtr<T>& operator[](unsigned i) const { return val[i]; }
   BroadcastOnChangePtr<T>& operator[](unsigned i) { return val[i]; }
 };
-
-#endif
 
 /*
  * (c) 2003-2004 Chris Danford

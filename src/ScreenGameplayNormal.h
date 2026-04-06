@@ -1,8 +1,7 @@
 /* ScreenGameplay - The music plays, the notes scroll, and the Player is
  * pressing buttons. */
 
-#ifndef ScreenGameplayNormal_H
-#define ScreenGameplayNormal_H
+#pragma once
 
 #include <vector>
 
@@ -12,8 +11,6 @@ class ScreenGameplayNormal : public ScreenGameplay {
  public:
   virtual void FillPlayerInfo(std::vector<PlayerInfo>& vPlayerInfoOut);
 };
-
-#endif
 
 /*
  * (c) 2005 Chris Danford

@@ -1,7 +1,6 @@
 /* RageSoundReader_Resample_Good - fast audio resampling. */
 
-#ifndef RAGE_SOUND_READER_RESAMPLE_GOOD_H
-#define RAGE_SOUND_READER_RESAMPLE_GOOD_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -48,8 +47,6 @@ class RageSoundReader_Resample_Good : public RageSoundReader_Filter {
   int m_iSampleRate;
   float m_fRate;
 };
-
-#endif
 
 /*
  * (c) 2006 Glenn Maynard

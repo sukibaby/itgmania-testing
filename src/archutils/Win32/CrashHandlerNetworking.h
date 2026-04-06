@@ -1,5 +1,4 @@
-#ifndef CRASH_HANDLER_NETWORKING_H
-#define CRASH_HANDLER_NETWORKING_H
+#pragma once
 
 #include <map>
 #include <string>
@@ -60,8 +59,6 @@ class NetworkPostData {
 
   NetworkStream* m_pStream;
 };
-
-#endif
 
 /*
  * (c) 2006 Glenn Maynard

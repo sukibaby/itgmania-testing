@@ -1,8 +1,7 @@
 /* LightsDriver_stac: Control lights for the stac by icedragon.io using hidapi
  */
 
-#ifndef LightsDriver_stac_H
-#define LightsDriver_stac_H
+#pragma once
 
 /*
  * -------------------------- NOTE --------------------------
@@ -74,8 +73,6 @@ class LightsDriver_stac : public LightsDriver {
 
   virtual void Set(const LightsState* ls);
 };
-
-#endif
 
 /*
  * (c) 2025 din

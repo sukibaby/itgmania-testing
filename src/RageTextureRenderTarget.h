@@ -1,8 +1,7 @@
 /* RageTextureRenderTarget - RageTexture interface for creating render targets.
  */
 
-#ifndef RAGE_TEXTURE_RENDER_TARGET_H
-#define RAGE_TEXTURE_RENDER_TARGET_H
+#pragma once
 
 #include <cstdint>
 
@@ -31,8 +30,6 @@ class RageTextureRenderTarget : public RageTexture {
   uintptr_t m_iTexHandle;
   uintptr_t m_iPreviousRenderTarget;
 };
-
-#endif
 
 /*
  * Copyright (c) 2001-2006 Glenn Maynard, Chris Danford

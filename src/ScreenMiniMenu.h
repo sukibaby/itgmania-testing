@@ -1,7 +1,6 @@
 /* ScreenMiniMenu - Displays a simple menu over the top of another screen. */
 
-#ifndef SCREEN_MINI_MENU_H
-#define SCREEN_MINI_MENU_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -289,8 +288,6 @@ class ScreenMiniMenu : public ScreenOptions {
   static int s_iLastRowCode;
   static std::vector<int> s_viLastAnswers;
 };
-
-#endif
 
 /*
  * (c) 2003-2004 Chris Danford

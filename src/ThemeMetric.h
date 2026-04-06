@@ -1,7 +1,6 @@
 /* ThemeMetric - Theme specific data. */
 
-#ifndef THEME_METRIC_H
-#define THEME_METRIC_H
+#pragma once
 
 #include <cstddef>
 #include <map>
@@ -288,8 +287,6 @@ class ThemeMetricMap : public IThemeMetric {
     return iter->second.GetValue();
   }
 };
-
-#endif
 
 /**
  * @file

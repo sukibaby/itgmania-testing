@@ -1,5 +1,4 @@
-#ifndef IMAGE_CACHE_H
-#define IMAGE_CACHE_H
+#pragma once
 
 #include <string>
 
@@ -37,8 +36,6 @@ class ImageCache {
 
 extern ImageCache*
     IMAGECACHE;  // global and accessible from anywhere in our program
-
-#endif
 
 /**
  * @file

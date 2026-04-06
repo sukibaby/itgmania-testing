@@ -1,5 +1,4 @@
-#ifndef Character_H
-#define Character_H
+#pragma once
 
 #include <string>
 
@@ -66,8 +65,6 @@ class Character {
   RageTexturePreloader m_Preload;
   int m_iPreloadRefcount;
 };
-
-#endif
 
 /*
  * (c) 2003 Chris Danford

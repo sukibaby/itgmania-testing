@@ -1,5 +1,4 @@
-#ifndef NOTE_DATA_H
-#define NOTE_DATA_H
+#pragma once
 
 #include <map>
 #include <set>
@@ -460,8 +459,6 @@ inline void swap<NoteData>(NoteData& nd1, NoteData& nd2) noexcept {
   nd1.swap(nd2);
 }
 }  // namespace std
-
-#endif
 
 /*
  * (c) 2001-2004 Chris Danford, Glenn Maynard

@@ -1,7 +1,6 @@
 /* PlayerAI - Chooses which notes the AI steps on. */
 
-#ifndef PlayerAI_H
-#define PlayerAI_H
+#pragma once
 
 #include "GameConstantsAndTypes.h"
 
@@ -14,8 +13,6 @@ class PlayerAI {
   static void InitFromDisk();
   static TapNoteScore GetTapNoteScore(const PlayerState* pPlayerState);
 };
-
-#endif
 
 /*
  * (c) 2003-2004 Chris Danford

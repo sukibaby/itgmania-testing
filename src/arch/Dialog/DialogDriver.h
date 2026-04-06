@@ -1,5 +1,4 @@
-#ifndef DIALOG_BOX_DRIVER_H
-#define DIALOG_BOX_DRIVER_H
+#pragma once
 
 #include <cstdio>
 #include <map>
@@ -44,8 +43,6 @@ struct RegisterDialogDriver {
 #define REGISTER_DIALOG_DRIVER_CLASS(name)     \
   static RegisterDialogDriver register_##name( \
       #name, CreateClass<DialogDriver_##name, DialogDriver>)
-
-#endif
 
 /*
  * (c) 2003-2004 Glenn Maynard, Chris Danford

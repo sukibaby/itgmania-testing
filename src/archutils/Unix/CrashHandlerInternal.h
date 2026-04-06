@@ -1,5 +1,4 @@
-#ifndef CRASH_HANDLER_INTERNAL_H
-#define CRASH_HANDLER_INTERNAL_H
+#pragma once
 
 #include <signal.h>
 
@@ -36,8 +35,6 @@ struct CrashData {
 const char* itoa(unsigned n);
 const char* SignalName(int signo);
 const char* SignalCodeName(int signo, int code);
-
-#endif
 
 /*
  * (c) 2003-2006 Glenn Maynard

@@ -1,5 +1,4 @@
-#ifndef ANNOUNCER_MANAGER_H
-#define ANNOUNCER_MANAGER_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -47,8 +46,6 @@ class AnnouncerManager {
 
 extern AnnouncerManager*
     ANNOUNCER;  // global and accessible from anywhere in our program
-
-#endif
 
 /**
  * @file

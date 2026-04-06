@@ -1,5 +1,4 @@
-#ifndef ScreenOptionsManageEditSteps_H
-#define ScreenOptionsManageEditSteps_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -32,8 +31,6 @@ class ScreenOptionsManageEditSteps : public ScreenOptions {
 
   ThemeMetric<std::string> CREATE_NEW_SCREEN;
 };
-
-#endif
 
 /*
  * (c) 2003-2004 Chris Danford

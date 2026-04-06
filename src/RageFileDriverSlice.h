@@ -1,7 +1,6 @@
 /* RageFileDriverSlice - Treat a portion of a file as a file. */
 
-#ifndef RAGE_FILE_DRIVER_SLICE_H
-#define RAGE_FILE_DRIVER_SLICE_H
+#pragma once
 
 #include <cstddef>
 
@@ -32,8 +31,6 @@ class RageFileDriverSlice : public RageFileObj {
   int m_iOffset, m_iFileSize;
   bool m_bFileOwned;
 };
-
-#endif
 
 /*
  * Copyright (c) 2003-2004 Glenn Maynard

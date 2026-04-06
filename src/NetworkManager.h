@@ -1,5 +1,4 @@
-#ifndef NETWORK_MANAGER_H
-#define NETWORK_MANAGER_H
+#pragma once
 
 #include <ixwebsocket/IXHttp.h>
 #include <ixwebsocket/IXHttpClient.h>
@@ -176,8 +175,6 @@ class NetworkManager {
 };
 
 extern NetworkManager* NETWORK;
-
-#endif
 
 /*
  * (c) 2021 Martin Natano

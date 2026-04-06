@@ -1,5 +1,4 @@
-#ifndef WHEEL_ITEM_BASE_H
-#define WHEEL_ITEM_BASE_H
+#pragma once
 
 #include <string>
 
@@ -77,8 +76,6 @@ class WheelItemBase : public ActorFrame {
 
   Actor* m_pGrayBar;
 };
-
-#endif
 
 /*
  * (c) 2001-2006 Chris Danford, Chris Gomez, Glenn Maynard, Josh Allen

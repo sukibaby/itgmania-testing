@@ -1,7 +1,6 @@
 /* MusicWheel - A wheel with song names used in the Select Music screen. */
 
-#ifndef MUSIC_WHEEL_H
-#define MUSIC_WHEEL_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -131,8 +130,6 @@ class MusicWheel : public WheelBase {
       std::vector<MusicWheelItemData*>& aUnFilteredDatas,
       std::vector<MusicWheelItemData*>& aFilteredData, SortOrder so);
 };
-
-#endif
 
 /*
  * (c) 2001-2004 Chris Danford, Chris Gomez, Glenn Maynard

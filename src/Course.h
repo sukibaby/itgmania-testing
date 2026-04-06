@@ -1,5 +1,4 @@
-#ifndef COURSE_H
-#define COURSE_H
+#pragma once
 
 #include <map>
 #include <set>
@@ -243,8 +242,6 @@ class Course {
   // Preferred styles:
   std::set<std::string> m_setStyles;
 };
-
-#endif
 
 /*
  * (c) 2001-2004 Chris Danford, Glenn Maynard

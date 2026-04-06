@@ -1,7 +1,6 @@
 /* ScreenSaveSync -  */
 
-#ifndef ScreenSaveSync_H
-#define ScreenSaveSync_H
+#pragma once
 
 #include "ScreenMessage.h"
 #include "ScreenPrompt.h"
@@ -12,8 +11,6 @@ class ScreenSaveSync : public ScreenPrompt {
 
   static void PromptSaveSync(ScreenMessage sm = SM_None);
 };
-
-#endif
 
 /*
  * (c) 2001-2005 Chris Danford

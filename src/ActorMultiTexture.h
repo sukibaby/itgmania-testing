@@ -1,7 +1,6 @@
 /** @brief ActorMultiTexture - A texture created from multiple textures. */
 
-#ifndef ACTOR_MULTI_TEXTURE_H
-#define ACTOR_MULTI_TEXTURE_H
+#pragma once
 
 #include <vector>
 
@@ -43,8 +42,6 @@ class ActorMultiTexture : public Actor {
   std::vector<TextureUnitState> m_aTextureUnits;
   RectF m_Rect;
 };
-
-#endif
 
 /**
  * @file

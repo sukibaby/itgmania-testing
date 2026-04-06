@@ -1,5 +1,4 @@
-#ifndef SCREEN_OPTIONS_MASTER_PREFS_H
-#define SCREEN_OPTIONS_MASTER_PREFS_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -112,8 +111,6 @@ struct ConfOption {
   std::vector<std::string> names;
   void (*MakeOptionsListCB)(std::vector<std::string>& out);
 };
-
-#endif
 
 /**
  * @file

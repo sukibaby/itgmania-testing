@@ -1,7 +1,6 @@
 /* RageSoundReader_Pan - Pan a sound left and right. */
 
-#ifndef RAGE_SOUND_READER_PAN_H
-#define RAGE_SOUND_READER_PAN_H
+#pragma once
 
 #include <string>
 
@@ -19,8 +18,6 @@ class RageSoundReader_Pan : public RageSoundReader_Filter {
  private:
   float m_fPan;
 };
-
-#endif
 
 /*
  * Copyright (c) 2006 Glenn Maynard

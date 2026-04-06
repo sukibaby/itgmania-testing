@@ -1,5 +1,4 @@
-#ifndef StageStats_H
-#define StageStats_H
+#pragma once
 
 #include <vector>
 
@@ -86,8 +85,6 @@ class StageStats {
  private:
   // TODO: Implement the copy and assignment operators on our own.
 };
-
-#endif
 
 /**
  * @file

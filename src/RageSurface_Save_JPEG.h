@@ -1,7 +1,6 @@
 /* RageSurface_Save_JPEG - Save a RageSurface to a JPEG. */
 
-#ifndef RAGE_SURFACE_SAVE_JPEG_H
-#define RAGE_SURFACE_SAVE_JPEG_H
+#pragma once
 
 struct RageSurface;
 class RageFile;
@@ -9,8 +8,6 @@ class RageFile;
 namespace RageSurfaceUtils {
 bool SaveJPEG(RageSurface* surface, RageFile& f, bool bHighQual = true);
 };
-
-#endif
 
 /*
  * (c) 2004 Chris Danford

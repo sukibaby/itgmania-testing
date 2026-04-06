@@ -1,5 +1,4 @@
-#ifndef SCREEN_OPTIONS_TOGGLE_SONGS_H
-#define SCREEN_OPTIONS_TOGGLE_SONGS_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -36,8 +35,6 @@ class ScreenOptionsToggleSongsSubPage : public ScreenOptions {
 
   std::vector<Song*> m_apSongs;
 };
-
-#endif
 
 /*
  * (c) 2007 Glenn Maynard

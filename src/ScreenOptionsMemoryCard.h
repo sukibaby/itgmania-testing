@@ -1,5 +1,4 @@
-#ifndef ScreenOptionsMemoryCard_H
-#define ScreenOptionsMemoryCard_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -38,8 +37,6 @@ class ScreenOptionsMemoryCard : public ScreenOptions {
 
   BitmapText m_textOsMountDir;
 };
-
-#endif
 
 /*
  * (c) 2005 Chris Danford

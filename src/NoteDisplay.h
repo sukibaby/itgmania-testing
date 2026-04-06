@@ -1,5 +1,4 @@
-#ifndef NOTE_DISPLAY_H
-#define NOTE_DISPLAY_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -360,8 +359,6 @@ struct NoteColumnRenderer : public Actor {
   NCR_TweenState NCR_current;
   NCR_TweenState NCR_start;
 };
-
-#endif
 
 /**
  * NoteColumnRenderer and associated spline stuff (c) Eric Reese 2014-2015

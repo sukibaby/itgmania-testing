@@ -1,5 +1,4 @@
-#ifndef ScreenOptionsCourseOverview_H
-#define ScreenOptionsCourseOverview_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -31,8 +30,6 @@ class ScreenOptionsCourseOverview : public ScreenOptions {
   ThemeMetric<std::string> PLAY_SCREEN;
   ThemeMetric<std::string> EDIT_SCREEN;
 };
-
-#endif
 
 /*
  * (c) 2003-2004 Chris Danford

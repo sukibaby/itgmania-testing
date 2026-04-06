@@ -1,7 +1,6 @@
 /** @brief RageUtil - Miscellaneous helper macros and functions. */
 
-#ifndef RAGE_UTIL_H
-#define RAGE_UTIL_H
+#pragma once
 
 #include <cmath>
 #include <cstdarg>
@@ -591,8 +590,6 @@ void GetConnectsDisconnects(
   GetAsNotInBs(before, after, disconnects);
   GetAsNotInBs(after, before, connects);
 }
-
-#endif
 
 /**
  * @file

@@ -1,5 +1,4 @@
-#ifndef INPUT_HANDLER_WIN32_MIDI
-#define INPUT_HANDLER_WIN32_MIDI
+#pragma once
 
 #include <vector>
 
@@ -18,8 +17,6 @@ class InputHandler_Win32_MIDI : public InputHandler {
  private:
   bool m_bFoundDevice;
 };
-
-#endif
 
 /*
  * (c) 2002-2005 Charles Lohr, Glenn Maynard

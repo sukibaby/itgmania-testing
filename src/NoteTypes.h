@@ -1,7 +1,6 @@
 /** @brief NoteTypes - Types for holding tap notes and scores. */
 
-#ifndef NOTE_TYPES_H
-#define NOTE_TYPES_H
+#pragma once
 
 #include <cmath>
 #include <string>
@@ -405,8 +404,6 @@ inline T ScalePosition(T start, T length, T newLength, T position) {
   }
   return start + (position - start) * newLength / length;
 }
-
-#endif
 
 /**
  * @file

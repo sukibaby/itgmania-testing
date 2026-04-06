@@ -1,5 +1,4 @@
-#ifndef GRADE_DISPLAY_H
-#define GRADE_DISPLAY_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -23,8 +22,6 @@ class GradeDisplay : public ActorFrame {
  protected:
   std::vector<AutoActor> m_vSpr;
 };
-
-#endif
 
 /*
  * (c) 2001-2002 Chris Danford

@@ -1,5 +1,4 @@
-#ifndef STEP_MANIA_H
-#define STEP_MANIA_H
+#pragma once
 
 #include <string>
 
@@ -30,8 +29,6 @@ void ClearCredits();
 void GetPreferredVideoModeParams(VideoModeParams& paramsOut);
 bool GetHighResolutionTextures();
 }  // namespace StepMania
-
-#endif
 
 /*
  * (c) 2001-2004 Chris Danford

@@ -1,5 +1,4 @@
-#ifndef MSDFILE_H
-#define MSDFILE_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -114,8 +113,6 @@ class MsdFile {
   /** @brief The error string. */
   std::string error;
 };
-
-#endif
 
 /**
  * @file

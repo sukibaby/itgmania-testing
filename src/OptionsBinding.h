@@ -5,8 +5,7 @@
 // it doesn't need to be. DefaultNilArgs would be in here, but then there would
 // need to be a .cpp file, and DefaultNilArgs is more widely useful.
 
-#ifndef OptionsBinding_H
-#define OptionsBinding_H
+#pragma once
 
 #include <cstddef>
 
@@ -114,8 +113,6 @@
     OPTIONAL_RETURN_SELF(original_top);                 \
     return 1;                                           \
   }
-
-#endif
 
 /*
  * (c) 2014 Eric Reese

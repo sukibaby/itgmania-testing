@@ -1,8 +1,7 @@
 /* LightsDriver_Export - Export lights data for other devices that supply lights
  * as a secondary service. */
 
-#ifndef LIGHTS_DRIVER_EXPORT_H
-#define LIGHTS_DRIVER_EXPORT_H
+#pragma once
 
 #include "LightsDriver.h"
 #include "RageThreads.h"
@@ -20,8 +19,6 @@ class LightsDriver_Export : public LightsDriver {
   static RageMutex m_Lock;
   static LightsState m_State;
 };
-
-#endif
 
 /*
  * (c) 2006 Glenn Maynard

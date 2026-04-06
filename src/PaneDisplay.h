@@ -1,5 +1,4 @@
-#ifndef PANE_DISPLAY_H
-#define PANE_DISPLAY_H
+#pragma once
 
 #include "ActorFrame.h"
 #include "ActorUtil.h"
@@ -62,8 +61,6 @@ class PaneDisplay : public ActorFrame {
   ThemeMetric<std::string> COUNT_FORMAT;
   ThemeMetric<std::string> NULL_COUNT_STRING;
 };
-
-#endif
 
 /**
  * @file

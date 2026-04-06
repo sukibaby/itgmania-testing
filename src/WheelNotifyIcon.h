@@ -1,5 +1,4 @@
-#ifndef WHEEL_NOTIFY_ICON_H
-#define WHEEL_NOTIFY_ICON_H
+#pragma once
 
 #include <vector>
 
@@ -45,8 +44,6 @@ class WheelNotifyIcon : public Sprite {
   /** @brief the list of Icons to show. */
   std::vector<Icons> m_vIconsToShow;
 };
-
-#endif
 
 /**
  * @file

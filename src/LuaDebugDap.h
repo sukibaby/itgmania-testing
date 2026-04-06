@@ -1,5 +1,4 @@
-#ifndef LUA_DEBUG_DAP
-#define LUA_DEBUG_DAP
+#pragma once
 
 #include <cstdint>
 #include <string>
@@ -63,7 +62,6 @@ Response CreateErrorResponse(
 Response CreateNotStoppedResponse(const Request& request);
 
 }  // namespace LuaDebug
-#endif
 
 /*
  * Copyright (C) 2025  Arttu Ylä-Outinen

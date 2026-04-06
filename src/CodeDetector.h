@@ -1,7 +1,6 @@
 /* CodeDetector - Uses InputQueue to detect input of codes. */
 
-#ifndef CODE_DETECTOR_H
-#define CODE_DETECTOR_H
+#pragma once
 
 #include <string>
 
@@ -74,8 +73,6 @@ class CodeDetector {
   // todo: move to PlayerOptions.h -aj
   void ChangeScrollSpeed(GameController controller, bool bIncrement);
 };
-
-#endif
 
 /*
  * (c) 2001-2004 Chris Danford

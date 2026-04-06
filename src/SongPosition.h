@@ -1,5 +1,4 @@
-#ifndef SONGPOSITION_H
-#define SONGPOSITION_H
+#pragma once
 
 #include "RageTimer.h"
 #include "TimingData.h"
@@ -63,8 +62,6 @@ class SongPosition {
   // Lua
   void PushSelf(lua_State* L);
 };
-
-#endif  // SONGPOSITION_H
 
 /**
  * @file

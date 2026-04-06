@@ -1,5 +1,4 @@
-#ifndef RAGE_THREADS_H
-#define RAGE_THREADS_H
+#pragma once
 
 #include <atomic>
 #include <cstdint>
@@ -208,8 +207,6 @@ class RageSemaphore {
   RageSemaphore& operator=(const RageSemaphore& rhs);
   RageSemaphore(const RageSemaphore& rhs);
 };
-
-#endif
 
 /**
  * @file

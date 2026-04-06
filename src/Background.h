@@ -1,5 +1,4 @@
-#ifndef BACKGROUND_H
-#define BACKGROUND_H
+#pragma once
 
 #include <vector>
 
@@ -40,8 +39,6 @@ class Background : public ActorFrame {
  protected:
   BackgroundImpl* m_pImpl;
 };
-
-#endif
 
 /**
  * @file

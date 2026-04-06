@@ -1,5 +1,4 @@
-#ifndef TRAIL_UTIL_H
-#define TRAIL_UTIL_H
+#pragma once
 
 #include <string>
 
@@ -44,8 +43,6 @@ class TrailID {
   bool IsValid() const;
   static void Invalidate(Song* pStaleSong);
 };
-
-#endif
 
 /*
  * (c) 2004 Chris Danford

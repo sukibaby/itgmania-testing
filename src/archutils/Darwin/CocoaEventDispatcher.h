@@ -1,5 +1,4 @@
-#ifndef COCOA_EVENT_DISPATCHER_H
-#define COCOA_EVENT_DISPATCHER_H
+#pragma once
 
 #include <functional>
 #include <vector>
@@ -35,5 +34,3 @@ class CocoaEventDispatcher {
   std::vector<Responder> m_Responders;
   unsigned m_NextResponderID;
 };
-
-#endif  // COCOA_EVENT_DISPATCHER_H

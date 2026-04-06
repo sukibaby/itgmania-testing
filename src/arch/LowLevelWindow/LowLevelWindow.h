@@ -1,5 +1,4 @@
-#ifndef LOW_LEVEL_WINDOW_H
-#define LOW_LEVEL_WINDOW_H
+#pragma once
 
 #include <set>
 #include <string>
@@ -45,8 +44,6 @@ class LowLevelWindow {
   virtual void BeginConcurrentRendering() {}
   virtual void EndConcurrentRendering() {}
 };
-
-#endif
 
 /**
  * @file

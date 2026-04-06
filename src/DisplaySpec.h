@@ -1,5 +1,4 @@
-#ifndef DisplaySpec_H
-#define DisplaySpec_H
+#pragma once
 
 #include <set>
 #include <sstream>
@@ -164,8 +163,6 @@ class DisplaySpec {
 typedef std::set<DisplaySpec> DisplaySpecs;
 // Lua
 DisplaySpecs* pushDisplaySpecs(lua_State* L, const DisplaySpecs& specs);
-
-#endif
 
 /**
  * @file

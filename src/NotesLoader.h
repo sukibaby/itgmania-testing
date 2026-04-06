@@ -1,5 +1,4 @@
-#ifndef NOTES_LOADER_H
-#define NOTES_LOADER_H
+#pragma once
 
 #include <set>
 #include <string>
@@ -26,8 +25,6 @@ bool LoadFromDir(
     const std::string& sPath, Song& out,
     std::set<std::string>& BlacklistedImages, bool load_autosave = false);
 }  // namespace NotesLoader
-
-#endif
 
 /**
  * @file

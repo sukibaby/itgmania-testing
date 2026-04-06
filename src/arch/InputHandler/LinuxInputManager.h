@@ -1,5 +1,4 @@
-#ifndef LINUX_INPUT_MANAGER
-#define LINUX_INPUT_MANAGER 1
+#pragma once
 
 #include <string>
 #include <vector>
@@ -39,8 +38,6 @@ class LinuxInputManager {
 
 extern LinuxInputManager*
     LINUXINPUT;  // global and accessible from anywhere in our program
-
-#endif  // LINUX_INPUT_MANAGER
 
 /*
  * (c) 2013 Ben "root" Anderson

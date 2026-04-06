@@ -1,7 +1,6 @@
 /** @brief CourseWriterCRS - Writes a Course to an .CRS file. */
 
-#ifndef COURSE_WRITER_CRS_H
-#define COURSE_WRITER_CRS_H
+#pragma once
 
 #include <string>
 
@@ -43,8 +42,6 @@ bool WriteCourseEntry(const CourseEntry& entry, RageFileBasic& f);
 
 bool WriteSongSelectCourseEntry(const CourseEntry& entry, RageFileBasic& f);
 }  // namespace CourseWriterCRS
-
-#endif
 
 /**
  * @file

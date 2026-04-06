@@ -1,5 +1,4 @@
-#ifndef CRASH_H
-#define CRASH_H
+#pragma once
 
 #include <windows.h>
 
@@ -28,7 +27,6 @@ void SetForegroundWindow(HWND hWnd);
 void CrashHandlerHandleArgs(int argc, char* argv[]);
 };  // namespace CrashHandler
 
-#endif
 /*
  * (c) 1998-2001 Avery Lee
  * (c) 2003-2004 Glenn Maynard

@@ -1,5 +1,4 @@
-#ifndef DIALOG_BOX_DRIVER_WIN32_H
-#define DIALOG_BOX_DRIVER_WIN32_H
+#pragma once
 
 #include <string>
 
@@ -15,8 +14,6 @@ class DialogDriver_Win32 : public DialogDriver {
   Dialog::Result AbortRetry(std::string sMessage, std::string sID);
   Dialog::Result YesNo(std::string sMessage, std::string sID);
 };
-
-#endif
 
 /*
  * (c) 2003-2004 Glenn Maynard, Chris Danford

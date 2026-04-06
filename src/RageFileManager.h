@@ -1,5 +1,4 @@
-#ifndef RAGE_FILE_MANAGER_H
-#define RAGE_FILE_MANAGER_H
+#pragma once
 
 #include <string>
 #include <unordered_set>
@@ -101,8 +100,6 @@ class RageFileManager {
 };
 
 extern RageFileManager* FILEMAN;
-
-#endif
 
 /*
  * Copyright (c) 2001-2004 Glenn Maynard, Chris Danford

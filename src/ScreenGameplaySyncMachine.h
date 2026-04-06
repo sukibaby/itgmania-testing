@@ -1,5 +1,4 @@
-#ifndef ScreenGameplaySyncMachine_H
-#define ScreenGameplaySyncMachine_H
+#pragma once
 
 #include "BitmapText.h"
 #include "InputEventPlus.h"
@@ -32,8 +31,6 @@ class ScreenGameplaySyncMachine : public ScreenGameplayNormal {
 
   BitmapText m_textSyncInfo;
 };
-
-#endif
 
 /**
  * @file

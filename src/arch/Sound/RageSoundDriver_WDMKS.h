@@ -1,5 +1,4 @@
-#ifndef RAGE_SOUND_WAVEOUT_H
-#define RAGE_SOUND_WAVEOUT_H
+#pragma once
 
 #include <windows.h>
 
@@ -38,8 +37,6 @@ class RageSoundDriver_WDMKS : public RageSoundDriver {
   WinWdmStream* m_pStream;
   WinWdmFilter* m_pFilter;
 };
-
-#endif
 
 /*
  * (c) 2002-2006 Glenn Maynard

@@ -1,5 +1,4 @@
-#ifndef SONG_CACHE_INDEX_H
-#define SONG_CACHE_INDEX_H
+#pragma once
 
 #include <string>
 
@@ -27,8 +26,6 @@ class SongCacheIndex {
 
 extern SongCacheIndex*
     SONGINDEX;  // global and accessible from anywhere in our program
-
-#endif
 
 /*
  * (c) 2002-2003 Glenn Maynard

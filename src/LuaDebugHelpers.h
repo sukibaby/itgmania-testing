@@ -1,5 +1,4 @@
-#ifndef LUA_DEBUG_HELPERS_H
-#define LUA_DEBUG_HELPERS_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -32,8 +31,6 @@ std::string ResolvePath(const std::string& luaPath);
 /** Returns a list of Lua source files that map to the absolute path. */
 std::vector<std::string> UnresolvePath(const std::string& absolutePath);
 }  // namespace LuaDebug
-
-#endif
 
 /*
  * Copyright (C) 2025  Arttu Ylä-Outinen

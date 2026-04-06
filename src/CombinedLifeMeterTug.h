@@ -1,5 +1,4 @@
-#ifndef CombinedLifeMeterTug_H
-#define CombinedLifeMeterTug_H
+#pragma once
 
 #include <array>
 
@@ -27,8 +26,6 @@ class CombinedLifeMeterTug : public CombinedLifeMeter {
   AutoActor m_sprSeparator;
   AutoActor m_sprFrame;
 };
-
-#endif
 
 /**
  * @file

@@ -1,7 +1,4 @@
-#ifndef EMERGENCY_SHUTDOWN_H
-#define EMERGENCY_SHUTDOWN_H
+#pragma once
 
 void RegisterEmergencyShutdownCallback(void (*pFunc)());
 void DoEmergencyShutdown();
-
-#endif

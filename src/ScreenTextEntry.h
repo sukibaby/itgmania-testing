@@ -1,5 +1,4 @@
-#ifndef SCREEN_TEXT_ENTRY_H
-#define SCREEN_TEXT_ENTRY_H
+#pragma once
 
 #include <string>
 
@@ -182,8 +181,6 @@ class ScreenTextEntryVisual : public ScreenTextEntry {
   ThemeMetric<float> ROW_END_X;
   ThemeMetric<float> ROW_END_Y;
 };
-
-#endif
 
 /*
  * (c) 2001-2004 Chris Danford

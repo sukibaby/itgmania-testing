@@ -1,7 +1,6 @@
 /* SongOptions - Options that apply to an entire song (not per-player). */
 
-#ifndef SONG_OPTIONS_H
-#define SONG_OPTIONS_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -78,8 +77,6 @@ class SongOptions {
   // Lua
   void PushSelf(lua_State* L);
 };
-
-#endif
 
 /*
  * (c) 2001-2004 Chris Danford, Glenn Maynard

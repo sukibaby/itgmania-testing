@@ -1,5 +1,4 @@
-#ifndef ENUM_HELPER_H
-#define ENUM_HELPER_H
+#pragma once
 
 #include <memory>
 #include <string>
@@ -179,8 +178,6 @@ const std::string& EnumToString(
     Enum::Push<X>(L, Object);                                             \
   }                                                                       \
   }
-
-#endif
 
 /**
  * @file

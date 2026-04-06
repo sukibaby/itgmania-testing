@@ -1,5 +1,4 @@
-#ifndef ProfileManager_H
-#define ProfileManager_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -180,8 +179,6 @@ class ProfileManager {
 
 extern ProfileManager*
     PROFILEMAN;  // global and accessible from anywhere in our program
-
-#endif
 
 /*
  * (c) 2003-2004 Chris Danford

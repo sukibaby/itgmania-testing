@@ -1,5 +1,4 @@
-#ifndef ARCH_HOOKS_UNIX_H
-#define ARCH_HOOKS_UNIX_H
+#pragma once
 
 #include <cstdint>
 #include <ctime>
@@ -29,7 +28,6 @@ class ArchHooks_Unix : public ArchHooks {
 #endif
 #define ARCH_HOOKS ArchHooks_Unix
 
-#endif
 /*
  * (c) 2003-2004 Glenn Maynard
  * All rights reserved.

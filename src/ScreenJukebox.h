@@ -1,5 +1,4 @@
-#ifndef ScreenJukebox_H
-#define ScreenJukebox_H
+#pragma once
 
 #include "InputEventPlus.h"
 #include "ScreenGameplayNormal.h"
@@ -23,8 +22,6 @@ class ScreenJukebox : public ScreenGameplayNormal {
   void SetSong();
   virtual void InitSongQueues();
 };
-
-#endif
 
 /*
  * (c) 2003-2004 Chris Danford

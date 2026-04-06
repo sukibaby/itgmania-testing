@@ -1,7 +1,6 @@
 /* ScreenSelectCharacter - Deprecated. Replaced by ScreenSelectMaster. */
 
-#ifndef SCREEN_SELECT_CHARACTER_H
-#define SCREEN_SELECT_CHARACTER_H
+#pragma once
 
 #include "Banner.h"
 #include "GameConstantsAndTypes.h"
@@ -68,8 +67,6 @@ class ScreenSelectCharacter : public ScreenWithMenuElements {
 
   RageSound m_soundChange;
 };
-
-#endif
 
 /*
  * (c) 2003-2004 Chris Danford

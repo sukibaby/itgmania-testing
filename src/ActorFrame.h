@@ -1,5 +1,4 @@
-#ifndef ACTORFRAME_H
-#define ACTORFRAME_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -170,8 +169,6 @@ class ActorFrameAutoDeleteChildren : public ActorFrame {
   virtual bool AutoLoadChildren() const { return true; }
   virtual ActorFrameAutoDeleteChildren* Copy() const;
 };
-
-#endif
 
 /**
  * @file

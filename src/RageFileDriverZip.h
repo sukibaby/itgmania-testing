@@ -1,5 +1,4 @@
-#ifndef RAGE_FILE_DRIVER_ZIP_H
-#define RAGE_FILE_DRIVER_ZIP_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -60,8 +59,6 @@ class RageFileDriverZip : public RageFileDriver {
   bool SeekToEndCentralRecord();
   bool ReadLocalFileHeader(FileInfo& info);
 };
-
-#endif
 
 /*
  * Copyright (c) 2003-2005 Glenn Maynard

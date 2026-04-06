@@ -1,5 +1,4 @@
-#ifndef ScreenRanking_H
-#define ScreenRanking_H
+#pragma once
 
 #include <string>
 #include <utility>
@@ -98,8 +97,6 @@ class ScreenRanking : public ScreenAttract {
   ThemeMetric<float> TIME_START_X;
   ThemeMetric<float> TIME_START_Y;
 };
-
-#endif
 
 /*
  * (c) 2001-2007 Chris Danford, Ben Nordstrom, Glenn Maynard

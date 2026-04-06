@@ -1,5 +1,4 @@
-#ifndef WHEELBASE_H
-#define WHEELBASE_H
+#pragma once
 
 #include <climits>
 #include <string>
@@ -133,8 +132,6 @@ class WheelBase : public ActorFrame {
   ThemeMetric<float> NUM_WHEEL_ITEMS_TO_DRAW;
   ThemeMetric<RageColor> WHEEL_ITEM_LOCKED_COLOR;
 };
-
-#endif
 
 /*
  * (c) 2001-2004 Chris Danford, Chris Gomez, Glenn Maynard, Josh Allen

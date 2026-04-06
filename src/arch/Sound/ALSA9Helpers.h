@@ -1,5 +1,4 @@
-#ifndef ALSA9_HELPERS_H
-#define ALSA9_HELPERS_H
+#pragma once
 
 #include <cstdint>
 #include <string>
@@ -50,7 +49,6 @@ class Alsa9Buf {
   int64_t GetPosition() const;
   int64_t GetPlayPos() const { return last_cursor_pos; }
 };
-#endif
 
 /*
  * (c) 2002-2004 Glenn Maynard, Aaron VonderHaar

@@ -1,5 +1,4 @@
-#ifndef RAGE_SOUNDS_H
-#define RAGE_SOUNDS_H
+#pragma once
 
 #include <string>
 
@@ -67,7 +66,6 @@ class GameSoundManager {
 };
 
 extern GameSoundManager* SOUND;
-#endif
 
 /*
  * Copyright (c) 2003-2004 Glenn Maynard

@@ -1,8 +1,7 @@
 /* Preference - Holds user-chosen preferences that are saved between sessions.
  */
 
-#ifndef PREFERENCE_H
-#define PREFERENCE_H
+#pragma once
 
 #include <cstddef>
 #include <string>
@@ -163,8 +162,6 @@ class Preference1D {
   const Preference<T>& operator[](size_t i) const { return *m_v[i]; }
   Preference<T>& operator[](size_t i) { return *m_v[i]; }
 };
-
-#endif
 
 /*
  * (c) 2001-2004 Chris Danford, Chris Gomez

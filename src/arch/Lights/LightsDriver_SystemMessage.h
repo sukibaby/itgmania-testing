@@ -1,6 +1,5 @@
 /* LightsDriver_SystemMessage: Outputs light state as a system message. */
-#ifndef LightsDriver_SystemMessage_H
-#define LightsDriver_SystemMessage_H
+#pragma once
 
 #include "LightsDriver.h"
 
@@ -11,8 +10,6 @@ class LightsDriver_SystemMessage : public LightsDriver {
 
   virtual void Set(const LightsState* ls);
 };
-
-#endif
 
 /*
  * (c) 2003-2004 Chris Danford

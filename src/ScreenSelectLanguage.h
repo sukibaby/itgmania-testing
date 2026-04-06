@@ -1,5 +1,4 @@
-#ifndef ScreenSelectLanguage_H
-#define ScreenSelectLanguage_H
+#pragma once
 
 #include <string>
 
@@ -14,8 +13,6 @@ class ScreenSelectLanguage : public ScreenSelectMaster {
   virtual bool MenuStart(const InputEventPlus& input);
   virtual bool MenuBack(const InputEventPlus& input);
 };
-
-#endif
 
 /*
  * (c) 2006 Chris Danford

@@ -1,7 +1,6 @@
 /** @brief Font - stores a font, used by BitmapText. */
 
-#ifndef FONT_H
-#define FONT_H
+#pragma once
 
 #include <cstddef>
 #include <map>
@@ -240,8 +239,6 @@ class Font {
  *
  * This is in the header to reduce file dependencies. */
 const wchar_t FONT_DEFAULT_GLYPH = 0xF8FF;
-
-#endif
 
 /**
  * @file

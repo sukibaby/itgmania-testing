@@ -1,5 +1,4 @@
-#ifndef ScreenOptionsExportPackage_H
-#define ScreenOptionsExportPackage_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -44,8 +43,6 @@ class ScreenOptionsExportPackageSubPage : public ScreenOptions {
 
   std::vector<std::string> m_vsPossibleDirsToExport;
 };
-
-#endif
 
 /*
  * (c) 2003-2004 Chris Danford

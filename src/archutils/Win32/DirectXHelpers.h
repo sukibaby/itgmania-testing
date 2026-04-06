@@ -1,5 +1,4 @@
-#ifndef DIRECTX_HELPERS_H
-#define DIRECTX_HELPERS_H
+#pragma once
 
 // clang-format off
 #include <windows.h>
@@ -15,8 +14,6 @@ std::string GetErrorString(HRESULT hr);
 // These defined need to be exposed anywhere this is included.
 #define DIRECTINPUT_VERSION 0x0800
 #define DIRECTSOUND_VERSION 0x0700
-
-#endif
 
 /*
  * Copyright (c) 2001-2005 Chris Danford, Glenn Maynard

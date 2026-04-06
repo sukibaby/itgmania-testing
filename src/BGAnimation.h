@@ -1,5 +1,4 @@
-#ifndef BGANIMATION_H
-#define BGANIMATION_H
+#pragma once
 
 #include <string>
 
@@ -21,8 +20,6 @@ class BGAnimation : public ActorFrameAutoDeleteChildren {
  protected:
   void AddLayersFromAniDir(const std::string& _sAniDir, const XNode* pNode);
 };
-
-#endif
 
 /**
  * @file

@@ -1,5 +1,4 @@
-#ifndef PID_THREAD_HELPERS_H
-#define PID_THREAD_HELPERS_H
+#pragma once
 
 #include <cstdint>
 #include <string>
@@ -17,8 +16,6 @@ int ResumeThread(uint64_t ThreadID);
 
 struct BacktraceContext;
 int GetThreadContext(uint64_t ThreadID, BacktraceContext* ctx);
-
-#endif
 
 /*
  * (c) 2004 Glenn Maynard

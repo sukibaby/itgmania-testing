@@ -1,5 +1,4 @@
-#ifndef ScreenWithMenuElements_H
-#define ScreenWithMenuElements_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -80,8 +79,6 @@ class ScreenWithMenuElementsSimple : public ScreenWithMenuElements {
 
  protected:
 };
-
-#endif
 
 /*
  * (c) 2004 Chris Danford

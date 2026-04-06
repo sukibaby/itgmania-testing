@@ -1,7 +1,6 @@
 /* pos_map_queue - A container that maps one set of frame numbers to another. */
 
-#ifndef RAGE_SOUND_POS_MAP_H
-#define RAGE_SOUND_POS_MAP_H
+#pragma once
 
 #include <cstdint>
 
@@ -31,8 +30,6 @@ class pos_map_queue {
  private:
   pos_map_impl* m_pImpl;
 };
-
-#endif
 
 /*
  * Copyright (c) 2002-2004 Glenn Maynard

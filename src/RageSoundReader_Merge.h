@@ -1,5 +1,4 @@
-#ifndef RAGE_SOUND_READER_MERGE
-#define RAGE_SOUND_READER_MERGE
+#pragma once
 
 #include <string>
 #include <vector>
@@ -48,8 +47,6 @@ class RageSoundReader_Merge : public RageSoundReader {
   int m_iNextSourceFrame;
   float m_fCurrentStreamToSourceRatio;
 };
-
-#endif
 
 /**
  * @file

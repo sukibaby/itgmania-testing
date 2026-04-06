@@ -1,5 +1,4 @@
-#ifndef MUSIC_WHEEL_ITEM_H
-#define MUSIC_WHEEL_ITEM_H
+#pragma once
 
 #include <string>
 
@@ -91,8 +90,6 @@ struct MusicWheelItemData : public WheelItemBaseData {
   std::string m_sLabel;
   HiddenPtr<GameCommand> m_pAction;
 };
-
-#endif
 
 /**
  * @file

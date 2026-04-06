@@ -1,5 +1,4 @@
-#ifndef DIFFICULTY_H
-#define DIFFICULTY_H
+#pragma once
 
 #include <string>
 
@@ -44,8 +43,6 @@ std::string CustomDifficultyToLocalizedString(
     const std::string& sCustomDifficulty);
 std::string StepsToCustomDifficulty(const Steps* pSteps);
 std::string TrailToCustomDifficulty(const Trail* pTrail);
-
-#endif
 
 /*
  * (c) 2001-2004 Chris Danford

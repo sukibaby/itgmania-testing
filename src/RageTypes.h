@@ -1,7 +1,6 @@
 /* RageTypes - vector and matrix types. */
 
-#ifndef RAGETYPES_H
-#define RAGETYPES_H
+#pragma once
 
 #include <algorithm>
 #include <array>
@@ -520,8 +519,6 @@ struct RageMatrix {
 
   std::array<std::array<float, 4>, 4> m{};
 };
-
-#endif
 
 /*
  * Copyright (c) 2001-2002 Chris Danford

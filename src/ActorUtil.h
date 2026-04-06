@@ -1,5 +1,4 @@
-#ifndef ActorUtil_H
-#define ActorUtil_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -201,8 +200,6 @@ FileType GetFileType(const std::string& sPath);
   ActorUtil::LoadAllCommandsAndOnCommand(actor, m_sName)
 #define LOAD_ALL_COMMANDS_AND_SET_XY_AND_ON_COMMAND(actor) \
   ActorUtil::LoadAllCommandsAndSetXYAndOnCommand(actor, m_sName)
-
-#endif
 
 /*
  * (c) 2003-2004 Chris Danford

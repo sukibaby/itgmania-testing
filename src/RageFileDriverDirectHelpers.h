@@ -1,7 +1,6 @@
 /* RageFileDriverDirectHelpers - Internal helpers for RageFileDriverDirect. */
 
-#ifndef RAGE_FILE_DRIVER_DIRECT_HELPERS_H
-#define RAGE_FILE_DRIVER_DIRECT_HELPERS_H
+#pragma once
 
 #include <string>
 
@@ -55,8 +54,6 @@ class DirectFilenameDB : public FilenameDB {
   virtual void PopulateFileSet(FileSet& fs, const std::string& sPath);
   std::string root;
 };
-
-#endif
 
 /*
  * Copyright (c) 2003-2004 Glenn Maynard, Chris Danford

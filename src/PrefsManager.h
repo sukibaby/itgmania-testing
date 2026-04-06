@@ -1,5 +1,4 @@
-#ifndef PREFSMANAGER_H
-#define PREFSMANAGER_H
+#pragma once
 
 #include <map>
 #include <string>
@@ -403,8 +402,6 @@ extern bool g_bAutoRestart;
 
 extern PrefsManager*
     PREFSMAN;  // global and accessible from anywhere in our program
-
-#endif
 
 /**
  * @file

@@ -1,5 +1,4 @@
-#ifndef LOW_LEVEL_WINDOW_WIN32_H
-#define LOW_LEVEL_WINDOW_WIN32_H
+#pragma once
 
 #include <string>
 
@@ -30,8 +29,6 @@ class LowLevelWindow_Win32 : public LowLevelWindow {
 #error "More than one LowLevelWindow selected!"
 #endif
 #define ARCH_LOW_LEVEL_WINDOW LowLevelWindow_Win32
-
-#endif
 
 /*
  * (c) 2004 Glenn Maynard

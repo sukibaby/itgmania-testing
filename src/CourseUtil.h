@@ -1,5 +1,4 @@
-#ifndef COURSEUTIL_H
-#define COURSEUTIL_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -108,8 +107,6 @@ class CourseID {
   std::string sPath;
   std::string sFullTitle;
 };
-
-#endif
 
 /**
  * @file

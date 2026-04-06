@@ -1,8 +1,7 @@
 /* RandomSample - Holds multiple sounds samples and can play a random sound
  * easily. */
 
-#ifndef RANDOM_SAMPLE_H
-#define RANDOM_SAMPLE_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -28,8 +27,6 @@ class RandomSample {
   std::vector<RageSound*> m_pSamples;
   int m_iIndexLastPlayed;
 };
-
-#endif
 
 /*
  * (c) 2001-2003 Chris Danford

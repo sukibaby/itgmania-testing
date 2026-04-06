@@ -1,5 +1,4 @@
-#ifndef TRAIL_H
-#define TRAIL_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -97,8 +96,6 @@ class Trail {
   // Lua
   void PushSelf(lua_State* L);
 };
-
-#endif
 
 /**
  * @file

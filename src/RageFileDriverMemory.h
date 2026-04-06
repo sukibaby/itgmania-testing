@@ -1,7 +1,6 @@
 /* RageFileDriverMemory: Simple memory-based "filesystem". */
 
-#ifndef RAGE_FILE_DRIVER_MEMORY_H
-#define RAGE_FILE_DRIVER_MEMORY_H
+#pragma once
 
 #include <cstddef>
 #include <string>
@@ -47,8 +46,6 @@ class RageFileDriverMem : public RageFileDriver {
   RageMutex m_Mutex;
   std::vector<RageFileObjMemFile*> m_Files;
 };
-
-#endif
 
 /*
  * (c) 2004 Glenn Maynard

@@ -1,5 +1,4 @@
-#ifndef ScreenUnlockBrowse_H
-#define ScreenUnlockBrowse_H
+#pragma once
 
 #include "FadingBanner.h"
 #include "InputQueue.h"
@@ -17,8 +16,6 @@ class ScreenUnlockBrowse : public ScreenSelectMaster {
  protected:
   FadingBanner m_banner;
 };
-
-#endif
 
 /*
  * (c) 2006 Chris Danford

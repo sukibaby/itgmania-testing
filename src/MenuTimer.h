@@ -1,7 +1,6 @@
 /* MenuTimer - A timer on the menu that ticks down. */
 
-#ifndef MENU_TIMER_H
-#define MENU_TIMER_H
+#pragma once
 
 #include <cstddef>
 #include <string>
@@ -62,8 +61,6 @@ class MenuTimer : public ActorFrame {
   ThemeMetric<float> HURRY_UP_TRANSITION;
   ThemeMetric1D<apActorCommands>* WARNING_COMMAND;
 };
-
-#endif
 
 /*
  * (c) 2002-2004 Chris Danford

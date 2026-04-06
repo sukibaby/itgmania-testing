@@ -1,7 +1,6 @@
 /* Windows-specific file helpers. */
 
-#ifndef GET_FILE_INFORMATION_H
-#define GET_FILE_INFORMATION_H
+#pragma once
 
 #include <cstdint>
 #include <string>
@@ -9,8 +8,6 @@
 bool GetFileVersion(const std::string& sFile, std::string& sOut);
 std::string FindSystemFile(const std::string& sFile);
 bool GetProcessFileName(uint32_t iProcessID, std::string& sName);
-
-#endif
 
 /*
  * (c) 2004 Glenn Maynard

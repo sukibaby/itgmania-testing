@@ -1,5 +1,4 @@
-#ifndef SCREEN_MANAGER_H
-#define SCREEN_MANAGER_H
+#pragma once
 
 #include <string>
 
@@ -124,8 +123,6 @@ class ScreenManager {
 
 extern ScreenManager*
     SCREENMAN;  // global and accessible from anywhere in our program
-
-#endif
 
 /**
  * @file

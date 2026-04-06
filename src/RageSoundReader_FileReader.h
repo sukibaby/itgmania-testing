@@ -1,7 +1,6 @@
 /* SoundReader_FileReader - base class for SoundReaders that read from files. */
 
-#ifndef RAGE_SOUND_READER_FILE_READER_H
-#define RAGE_SOUND_READER_FILE_READER_H
+#pragma once
 
 #include <string>
 
@@ -48,8 +47,6 @@ class RageSoundReader_FileReader : public RageSoundReader {
       bool& bKeepTrying);
   mutable std::string m_sError;
 };
-
-#endif
 
 /*
  * Copyright (c) 2003-2004 Glenn Maynard

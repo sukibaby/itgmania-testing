@@ -1,5 +1,4 @@
-#ifndef BPM_DISPLAY_H
-#define BPM_DISPLAY_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -119,8 +118,6 @@ class BPMDisplay : public BitmapText {
   /** @brief How long it takes to cycle the various BPMs. */
   float m_fCycleTime;
 };
-
-#endif
 
 /**
  * @file

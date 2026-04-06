@@ -1,5 +1,4 @@
-#ifndef StatsManager_H
-#define StatsManager_H
+#pragma once
 
 #include <set>
 #include <vector>
@@ -49,8 +48,6 @@ class StatsManager {
 
 extern StatsManager*
     STATSMAN;  // global and accessible from anywhere in our program
-
-#endif
 
 /**
  * @file

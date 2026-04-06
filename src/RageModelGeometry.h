@@ -1,7 +1,6 @@
 /* RageModelGeometry - Stores mesh data. */
 
-#ifndef RAGE_MODEL_GEOMETRY_H
-#define RAGE_MODEL_GEOMETRY_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -30,8 +29,6 @@ class RageModelGeometry {
 
   RageVector3 m_vMins, m_vMaxs;
 };
-
-#endif
 
 /*
  * Copyright (c) 2001-2002 Chris Danford

@@ -1,5 +1,4 @@
-#ifndef SCORE_DISPLAY_BATTLE_H
-#define SCORE_DISPLAY_BATTLE_H
+#pragma once
 
 #include <string>
 
@@ -25,8 +24,6 @@ class ScoreDisplayBattle : public ScoreDisplay {
   std::string m_iLastSeenInventory[NUM_INVENTORY_SLOTS];
   RageTexturePreloader m_TexturePreload;
 };
-
-#endif
 
 /*
  * (c) 2001-2003 Chris Danford

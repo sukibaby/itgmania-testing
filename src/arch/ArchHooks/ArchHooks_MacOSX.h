@@ -1,5 +1,4 @@
-#ifndef ARCH_HOOKS_MACOSX_H
-#define ARCH_HOOKS_MACOSX_H
+#pragma once
 
 #include <string>
 
@@ -18,8 +17,6 @@ class ArchHooks_MacOSX : public ArchHooks {
 #error "More than one ArchHooks selected!"
 #endif
 #define ARCH_HOOKS ArchHooks_MacOSX
-
-#endif /* ARCH_HOOKS_MACOSX_H */
 
 /*
  * (c) 2003-2005 Steve Checkoway

@@ -1,5 +1,4 @@
-#ifndef INPUT_HANDLER_LINUX_PIUIO_H
-#define INPUT_HANDLER_LINUX_PIUIO_H 1
+#pragma once
 
 #include <vector>
 
@@ -22,8 +21,6 @@ class InputHandler_Linux_PIUIO : public InputHandler {
   RageThread m_InputThread;
   bool m_bShutdown;
 };
-
-#endif
 
 /*
  * Written by Devin J. Pohly, 2012.  Based on code from Input_Linux_Joystick,

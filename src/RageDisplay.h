@@ -1,7 +1,6 @@
 /* RageDisplay - Renderer base class. */
 
-#ifndef RAGEDISPLAY_H
-#define RAGEDISPLAY_H
+#pragma once
 
 #include <cstddef>
 #include <cstdint>
@@ -501,7 +500,6 @@ class RageDisplay {
 extern RageDisplay*
     DISPLAY;  // global and accessible from anywhere in our program
 
-#endif
 /*
  * Copyright (c) 2001-2004 Chris Danford, Glenn Maynard
  * All rights reserved.

@@ -1,5 +1,4 @@
-#ifndef MEMORY_CARD_DRIVER_H
-#define MEMORY_CARD_DRIVER_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -92,8 +91,6 @@ class MemoryCardDriver {
   std::vector<UsbStorageDevice> m_vDevicesLastSeen;
   bool NeedUpdate(bool bMount);
 };
-
-#endif
 
 /*
  * (c) 2003-2004 Chris Danford

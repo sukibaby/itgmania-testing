@@ -1,5 +1,4 @@
-#ifndef RECEPTOR_ARROW_ROW_H
-#define RECEPTOR_ARROW_ROW_H
+#pragma once
 
 #include <vector>
 
@@ -36,8 +35,6 @@ class ReceptorArrowRow : public ActorFrame {
   const std::vector<NoteColumnRenderer>* m_renderers;
   std::vector<ReceptorArrow*> m_ReceptorArrow;
 };
-
-#endif
 
 /**
  * @file

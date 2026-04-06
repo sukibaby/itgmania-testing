@@ -1,5 +1,4 @@
-#ifndef CRYPT_HELPERS_H
-#define CRYPT_HELPERS_H
+#pragma once
 
 #if !defined(DISABLE_CRYPTO)
 
@@ -32,7 +31,5 @@ class RSAKeyWrapper {
 
   rsa_key m_Key;
 };
-
-#endif
 
 #endif

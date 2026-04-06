@@ -1,5 +1,4 @@
-#ifndef SCREEN_SELECT_H
-#define SCREEN_SELECT_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -49,8 +48,6 @@ class ScreenSelect : public ScreenWithMenuElements {
   ThemeMetric<float> IDLE_TIMEOUT_SECONDS;
   ThemeMetric<bool> ALLOW_DISABLED_PLAYER_INPUT;
 };
-
-#endif
 
 /**
  * @file

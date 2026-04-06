@@ -1,5 +1,4 @@
-#ifndef SCREEN_TEST_LIGHTS_H
-#define SCREEN_TEST_LIGHTS_H
+#pragma once
 
 #include "BitmapText.h"
 #include "InputQueue.h"
@@ -25,8 +24,6 @@ class ScreenTestLights : public ScreenWithMenuElements {
 
   RageTimer m_timerBackToAutoCycle;
 };
-
-#endif
 
 /*
  * (c) 2004 Chris Danford

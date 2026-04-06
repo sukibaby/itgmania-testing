@@ -1,8 +1,7 @@
 /* ScreenStatsOverlay - credits and statistics drawn on top of everything else.
  */
 
-#ifndef ScreenStatsOverlay_H
-#define ScreenStatsOverlay_H
+#pragma once
 
 #include <array>
 #include <string>
@@ -38,8 +37,6 @@ class ScreenStatsOverlay : public Screen {
   ThemeMetric<float> SKIP_SPACING_Y;
   ThemeMetric<float> SKIP_WIDTH;
 };
-
-#endif
 
 /*
  * (c) 2001-2005 Chris Danford, Glenn Maynard

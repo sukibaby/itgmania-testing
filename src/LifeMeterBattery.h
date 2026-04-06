@@ -1,5 +1,4 @@
-#ifndef LIFEMETERBATTERY_H
-#define LIFEMETERBATTERY_H
+#pragma once
 
 #include <string>
 
@@ -73,8 +72,6 @@ class LifeMeterBattery : public LifeMeter {
   /** @brief The sound played when a Player gains a life. */
   RageSound m_soundGainLife;
 };
-
-#endif
 
 /*
  * (c) 2001-2004 Chris Danford

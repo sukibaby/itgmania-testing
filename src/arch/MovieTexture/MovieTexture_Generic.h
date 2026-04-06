@@ -1,5 +1,4 @@
-#ifndef RAGE_MOVIE_TEXTURE_GENERIC_H
-#define RAGE_MOVIE_TEXTURE_GENERIC_H
+#pragma once
 
 #include <cstdint>
 #include <memory>
@@ -140,8 +139,6 @@ class MovieTexture_Generic : public RageMovieTexture {
 
   float CheckFrameTime();
 };
-
-#endif
 
 /*
  * (c) 2003-2005 Glenn Maynard

@@ -1,5 +1,4 @@
-#ifndef BackgroundUtil_H
-#define BackgroundUtil_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -106,8 +105,6 @@ void GetGlobalRandomMovies(
 
 void BakeAllBackgroundChanges(Song* pSong);
 };  // namespace BackgroundUtil
-
-#endif
 
 /*
  * (c) 2001-2004 Chris Danford, Ben Nordstrom

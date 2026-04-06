@@ -1,5 +1,4 @@
-#ifndef HIGH_SCORE_H
-#define HIGH_SCORE_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -178,8 +177,6 @@ struct Screenshot {
     return sFileName == rhs.sFileName;
   }
 };
-
-#endif
 
 /**
  * @file

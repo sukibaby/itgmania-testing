@@ -1,7 +1,6 @@
 /* Commands - Actor command parsing and reading helpers. */
 
-#ifndef Commands_H
-#define Commands_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -43,8 +42,6 @@ class Commands {
 // structures.
 void ParseCommands(const std::string& sCmds, Commands& vCmdsOut, bool bLegacy);
 Commands ParseCommands(const std::string& sCmds);
-
-#endif
 
 /*
  * (c) 2004 Chris Danford

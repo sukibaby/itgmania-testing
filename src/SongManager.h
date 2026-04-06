@@ -1,5 +1,4 @@
-#ifndef SONGMANAGER_H
-#define SONGMANAGER_H
+#pragma once
 
 #include <map>
 #include <set>
@@ -322,8 +321,6 @@ class SongManager {
 
 extern SongManager*
     SONGMAN;  // global and accessible from anywhere in our program
-
-#endif
 
 /**
  * @file

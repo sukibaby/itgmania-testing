@@ -1,5 +1,4 @@
-#ifndef SCREEN_ENDING_H
-#define SCREEN_ENDING_H
+#pragma once
 
 #include "InputQueue.h"
 #include "PlayerNumber.h"
@@ -15,8 +14,6 @@ class ScreenEnding : public ScreenAttract {
  private:
   Sprite m_sprRemoveMemoryCard[NUM_PLAYERS];
 };
-
-#endif
 
 /**
  * @file

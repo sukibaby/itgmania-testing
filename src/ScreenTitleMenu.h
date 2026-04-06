@@ -1,7 +1,6 @@
 /* ScreenTitleMenu - The main title screen and menu. */
 
-#ifndef SCREEN_TITLE_MENU_H
-#define SCREEN_TITLE_MENU_H
+#pragma once
 
 #include "InputQueue.h"
 #include "MessageManager.h"
@@ -16,8 +15,6 @@ class ScreenTitleMenu : public ScreenSelectMaster {
 
   virtual void HandleMessage(const Message& msg);
 };
-
-#endif
 
 /*
  * (c) 2001-2004 Chris Danford

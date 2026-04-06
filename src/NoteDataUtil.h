@@ -1,5 +1,4 @@
-#ifndef NOTEDATAUTIL_H
-#define NOTEDATAUTIL_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -237,8 +236,6 @@ bool GetPrevEditorPosition(const NoteData& in, int& rowInOut);
  * @param td The TimingData from the relevant Steps. */
 unsigned int GetTotalHoldTicks(NoteData* nd, const TimingData* td);
 };  // namespace NoteDataUtil
-
-#endif
 
 /**
  * @file

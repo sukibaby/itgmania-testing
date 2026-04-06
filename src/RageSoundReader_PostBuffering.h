@@ -1,7 +1,6 @@
 /* RageSoundReader_PostBuffering - Apply low-latency effects. */
 
-#ifndef RAGE_SOUND_READER_POST_BUFFERING_H
-#define RAGE_SOUND_READER_POST_BUFFERING_H
+#pragma once
 
 #include <string>
 
@@ -21,8 +20,6 @@ class RageSoundReader_PostBuffering : public RageSoundReader_Filter {
  private:
   float m_fVolume;
 };
-
-#endif
 
 /*
  * Copyright (c) 2007 Glenn Maynard

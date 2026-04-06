@@ -1,5 +1,4 @@
-#ifndef MOVIE_TEXTURE_H
-#define MOVIE_TEXTURE_H
+#pragma once
 
 #include <string>
 
@@ -40,8 +39,6 @@ class RageMovieTextureDriver : public RageDriver {
   static RegisterRageDriver register_##name(         \
       &RageMovieTextureDriver::m_pDriverList, #name, \
       CreateClass<RageMovieTextureDriver_##name, RageDriver>)
-
-#endif
 
 /*
  * (c) 2003-2004 Glenn Maynard

@@ -1,5 +1,4 @@
-#ifndef TIMING_SEGMENTS_H
-#define TIMING_SEGMENTS_H
+#pragma once
 
 #include <cmath>
 #include <string>
@@ -770,8 +769,6 @@ struct DelaySegment : public TimingSegment {
   /** @brief The number of seconds to pause at the segment's row. */
   float m_fSeconds;
 };
-
-#endif
 
 /**
  * @file

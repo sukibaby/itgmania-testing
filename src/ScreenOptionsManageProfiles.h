@@ -1,5 +1,4 @@
-#ifndef ScreenOptionsManageProfiles_H
-#define ScreenOptionsManageProfiles_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -30,8 +29,6 @@ class ScreenOptionsManageProfiles : public ScreenOptions {
 
   std::vector<std::string> m_vsLocalProfileID;
 };
-
-#endif
 
 /*
  * (c) 2003-2004 Chris Danford

@@ -1,5 +1,4 @@
-#ifndef StepsDisplay_H
-#define StepsDisplay_H
+#pragma once
 
 #include <string>
 
@@ -73,8 +72,6 @@ class StepsDisplay : public ActorFrame {
   ThemeMetric<std::string> m_sZeroMeterString;
   ThemeMetric<std::string> m_sMeterFormatString;
 };
-
-#endif
 
 /*
  * (c) 2001-2004 Chris Danford, Glenn Maynard

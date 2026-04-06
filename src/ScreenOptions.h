@@ -1,5 +1,4 @@
-#ifndef SCREENOPTIONS_H
-#define SCREENOPTIONS_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -193,8 +192,6 @@ class ScreenOptions : public ScreenWithMenuElements {
   ThemeMetric<std::string> OPTION_ROW_NORMAL_METRICS_GROUP;
   ThemeMetric<std::string> OPTION_ROW_EXIT_METRICS_GROUP;
 };
-
-#endif
 
 /**
  * @file

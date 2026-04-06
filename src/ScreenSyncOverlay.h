@@ -1,5 +1,4 @@
-#ifndef ScreenSyncOverlay_H
-#define ScreenSyncOverlay_H
+#pragma once
 
 #include "AutoActor.h"
 #include "Screen.h"
@@ -18,8 +17,6 @@ class ScreenSyncOverlay : public Screen {
 
   AutoActor m_overlay;
 };
-
-#endif
 
 /**
  * @file

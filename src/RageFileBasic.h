@@ -1,7 +1,6 @@
 /* RageFileBasic - simple file interface. */
 
-#ifndef RAGE_FILE_BASIC_H
-#define RAGE_FILE_BASIC_H
+#pragma once
 
 #include <cstddef>
 #include <cstdint>
@@ -166,8 +165,6 @@ class RageFileObj : public RageFileBasic {
   // Swallow up warnings. If they must be used, define them.
   RageFileObj& operator=(const RageFileObj& rhs);
 };
-
-#endif
 
 /*
  * Copyright (c) 2003-2004 Glenn Maynard, Chris Danford, Steve Checkoway

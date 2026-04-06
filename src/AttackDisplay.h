@@ -1,5 +1,4 @@
-#ifndef AttackDisplay_H
-#define AttackDisplay_H
+#pragma once
 
 #include <string>
 
@@ -27,8 +26,6 @@ class AttackDisplay : public ActorFrame {
 
   RageTexturePreloader m_TexturePreload;
 };
-
-#endif
 
 /**
  * @file

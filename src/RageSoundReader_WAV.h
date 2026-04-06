@@ -1,7 +1,6 @@
 /* RageSoundReader_WAV - WAV reader. */
 
-#ifndef RAGE_SOUND_READER_WAV_H
-#define RAGE_SOUND_READER_WAV_H
+#pragma once
 
 #include <cstdint>
 #include <string>
@@ -38,8 +37,6 @@ class RageSoundReader_WAV : public RageSoundReader_FileReader {
 
   WavReader* m_pImpl;
 };
-
-#endif
 
 /*
  * (c) 2004 Glenn Maynard

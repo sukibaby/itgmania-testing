@@ -1,5 +1,4 @@
-#ifndef RAGE_FILE_MANAGER_READAHEAD_H
-#define RAGE_FILE_MANAGER_READAHEAD_H
+#pragma once
 
 #include "RageFileBasic.h"
 /** @brief Utilities for reading the RageFiles. */
@@ -17,8 +16,6 @@ void DiscardCache(RageFileBasic* pFile, int iRelativePosition, int iBytes);
 
 void CacheHintStreaming(RageFileBasic* pFile);
 };  // namespace RageFileManagerReadAhead
-
-#endif
 
 /*
  * Copyright (c) 2010 Glenn Maynard

@@ -1,5 +1,4 @@
-#ifndef INPUT_HANDLER_MONKEY_SCRIPT
-#define INPUT_HANDLER_MONKEY_SCRIPT
+#pragma once
 
 #include <vector>
 
@@ -18,8 +17,6 @@ class InputHandler_MonkeyKeyboard : public InputHandler {
   RageTimer m_timerPressButton;
   DeviceButton m_dbLast;  // Last input that we sent
 };
-
-#endif
 
 /*
  * (c) 2002-2004 Glenn Maynard

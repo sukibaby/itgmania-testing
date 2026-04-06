@@ -1,7 +1,6 @@
 /* NotesWriterJson - Writes a Song to a .json file. */
 
-#ifndef NotesWriterJson_H
-#define NotesWriterJson_H
+#pragma once
 
 #include <string>
 
@@ -12,8 +11,6 @@ namespace NotesWriterJson {
 bool WriteSong(const std::string& sFile, const Song& out, bool bWriteSteps);
 bool WriteSteps(const std::string& sFile, const Steps& out);
 };  // namespace NotesWriterJson
-
-#endif
 
 /*
  * (c) 2001-2010 Chris Danford, Glenn Maynard

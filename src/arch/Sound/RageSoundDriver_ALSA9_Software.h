@@ -1,5 +1,4 @@
-#ifndef RAGE_SOUND_ALSA9_SOFTWARE_H
-#define RAGE_SOUND_ALSA9_SOFTWARE_H
+#pragma once
 
 #include <cstdint>
 #include <string>
@@ -32,8 +31,6 @@ class RageSoundDriver_ALSA9_Software : public RageSoundDriver {
   Alsa9Buf* m_pPCM;
   RageThread m_MixingThread;
 };
-
-#endif
 
 /*
  * (c) 2002-2004 Glenn Maynard, Aaron VonderHaar

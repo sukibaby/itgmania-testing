@@ -1,5 +1,4 @@
-#ifndef LUA_DEBUGGER_H
-#define LUA_DEBUGGER_H
+#pragma once
 
 #include <memory>
 
@@ -26,8 +25,6 @@ class Debugger {
   std::unique_ptr<Impl> m_impl;
 };
 }  // namespace LuaDebug
-
-#endif
 
 /*
  * Copyright (C) 2025  Arttu Ylä-Outinen

@@ -1,7 +1,6 @@
 /** @brief DWILoader - reads a Song from a .DWI file. */
 
-#ifndef NOTES_LOADER_DWI_H
-#define NOTES_LOADER_DWI_H
+#pragma once
 
 #include <set>
 #include <string>
@@ -32,8 +31,6 @@ bool LoadFromDir(
 
 bool LoadNoteDataFromSimfile(const std::string& path, Steps& out);
 }  // namespace DWILoader
-
-#endif
 
 /**
  * @file

@@ -1,5 +1,4 @@
-#ifndef PLAYER_OPTIONS_H
-#define PLAYER_OPTIONS_H
+#pragma once
 
 #include "EnumHelper.h"
 #include "RageUtil.h"
@@ -543,8 +542,6 @@ class PlayerOptions {
   FLOAT_INTERFACE(func_name##14, member[13], valid);       \
   FLOAT_INTERFACE(func_name##15, member[14], valid);       \
   FLOAT_INTERFACE(func_name##16, member[15], valid);
-
-#endif
 
 /*
  * (c) 2001-2004 Chris Danford, Glenn Maynard

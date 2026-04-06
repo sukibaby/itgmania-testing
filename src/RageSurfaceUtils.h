@@ -1,7 +1,6 @@
 /* Utility functions for RageSurfaces. */
 
-#ifndef RAGE_SURFACE_UTILS_H
-#define RAGE_SURFACE_UTILS_H
+#pragma once
 
 #include <cstdint>
 #include <string>
@@ -69,8 +68,6 @@ RageSurface* MakeDummySurface(int height, int width);
 void ApplyHotPinkColorKey(RageSurface*& img);
 void FlipVertically(RageSurface* img);
 };  // namespace RageSurfaceUtils
-
-#endif
 
 /*
  * (c) 2001-2004 Glenn Maynard, Chris Danford

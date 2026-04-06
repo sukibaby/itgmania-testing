@@ -1,5 +1,4 @@
-#ifndef RAGE_FILE_DRIVER_DIRECT_H
-#define RAGE_FILE_DRIVER_DIRECT_H
+#pragma once
 
 #include <cstddef>
 #include <string>
@@ -66,8 +65,6 @@ class RageFileObjDirect : public RageFileObj {
   RageFileObjDirect& operator=(const RageFileObjDirect& rhs);
   RageFileObjDirect(const RageFileObjDirect& rhs);
 };
-
-#endif
 
 /*
  * Copyright (c) 2003-2004 Glenn Maynard

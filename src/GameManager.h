@@ -1,7 +1,6 @@
 /** @brief GameManager - Manages Games and Styles. */
 
-#ifndef GAMEMANAGER_H
-#define GAMEMANAGER_H
+#pragma once
 
 class Style;
 struct Game;
@@ -64,8 +63,6 @@ class GameManager {
 
 extern GameManager*
     GAMEMAN;  // global and accessible from anywhere in our program
-
-#endif
 
 /**
  * @file

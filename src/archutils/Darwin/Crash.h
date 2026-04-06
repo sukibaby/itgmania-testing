@@ -1,5 +1,4 @@
-#ifndef DARWIN_CRASH_H
-#define DARWIN_CRASH_H
+#pragma once
 #include <string>
 
 namespace CrashHandler {
@@ -8,8 +7,6 @@ void InformUserOfCrash(const std::string& sPath);
 bool IsDebuggerPresent();
 void DebugBreak();
 }  // namespace CrashHandler
-
-#endif /* DARWIN_CRASH_H */
 
 /*
  * (c) 2003-2006 Steve Checkoway

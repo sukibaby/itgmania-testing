@@ -1,5 +1,4 @@
-#ifndef LOADING_WINDOW_NULL_H
-#define LOADING_WINDOW_NULL_H
+#pragma once
 
 #include <string>
 
@@ -11,8 +10,6 @@ class LoadingWindow_Null : public LoadingWindow {
   void SetSplash(const RageSurface* pSplash) {}
 };
 #define USE_LOADING_WINDOW_NULL
-
-#endif
 
 /*
  * (c) 2003-2004 Glenn Maynard

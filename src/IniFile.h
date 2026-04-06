@@ -1,7 +1,6 @@
 /** @brief IniFile - Reading and writing .INI files. */
 
-#ifndef INIFILE_H
-#define INIFILE_H
+#pragma once
 
 #include <string>
 
@@ -71,8 +70,6 @@ class IniFile : public XNode {
 
   mutable std::string m_sError;
 };
-
-#endif
 
 /**
  * @file

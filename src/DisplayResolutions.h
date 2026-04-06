@@ -1,5 +1,4 @@
-#ifndef DisplayResolutions_H
-#define DisplayResolutions_H
+#pragma once
 
 #include <set>
 /** @brief The dimensions of the program. */
@@ -32,8 +31,6 @@ class DisplayResolution {
 };
 /** @brief The collection of DisplayResolutions available within the program. */
 typedef std::set<DisplayResolution> DisplayResolutions;
-
-#endif
 
 /**
  * @file

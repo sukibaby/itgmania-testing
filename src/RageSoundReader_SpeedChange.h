@@ -1,8 +1,7 @@
 /* RageSoundReader_SpeedChange - change the speed of an audio stream without
  * changing its pitch. */
 
-#ifndef RAGE_SOUND_READER_SPEED_CHANGE_H
-#define RAGE_SOUND_READER_SPEED_CHANGE_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -58,8 +57,6 @@ class RageSoundReader_SpeedChange : public RageSoundReader_Filter {
   float m_fTrailingSpeedRatio;
   float m_fErrorFrames;
 };
-
-#endif
 
 /*
  * Copyright (c) 2006 Glenn Maynard

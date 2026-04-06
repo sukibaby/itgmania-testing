@@ -1,7 +1,6 @@
 /* RegistryAccess - Windows registry helpers */
 
-#ifndef REGISTRY_ACCESS_H
-#define REGISTRY_ACCESS_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -25,8 +24,6 @@ bool SetRegValue(const std::string& sKey, const std::string& sName, bool val);
 
 bool CreateKey(const std::string& sKey);
 }  // namespace RegistryAccess
-
-#endif
 
 /*
  * (c) 2004 Glenn Maynard

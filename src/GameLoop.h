@@ -1,5 +1,4 @@
-#ifndef GAME_LOOP_H
-#define GAME_LOOP_H
+#pragma once
 
 #include <string>
 /** @brief Main rendering and update loop. */
@@ -14,8 +13,6 @@ void StartConcurrentRendering();
 void FinishConcurrentRendering();
 
 };  // namespace GameLoop
-
-#endif
 
 /*
  * (c) 2001-2005 Chris Danford, Glenn Maynard

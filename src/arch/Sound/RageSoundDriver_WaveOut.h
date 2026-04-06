@@ -1,5 +1,4 @@
-#ifndef RAGE_SOUND_WAVEOUT_H
-#define RAGE_SOUND_WAVEOUT_H
+#pragma once
 
 // clang-format off
 #include <windows.h>
@@ -46,8 +45,6 @@ class RageSoundDriver_WaveOut : public RageSoundDriver {
   int wo_num_blocks_;
   int wo_blocksize_;
 };
-
-#endif
 
 /*
  * (c) 2002-2004 Glenn Maynard

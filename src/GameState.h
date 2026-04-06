@@ -1,5 +1,4 @@
-#ifndef GAMESTATE_H
-#define GAMESTATE_H
+#pragma once
 
 #include <cstddef>
 #include <deque>
@@ -504,8 +503,6 @@ MultiPlayer GetNextEnabledMultiPlayer(MultiPlayer mp);
 
 extern GameState*
     GAMESTATE;  // global and accessible from anywhere in our program
-
-#endif
 
 /**
  * @file

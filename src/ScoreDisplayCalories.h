@@ -1,5 +1,4 @@
-#ifndef ScoreDisplayCalories_H
-#define ScoreDisplayCalories_H
+#pragma once
 
 #include <string>
 
@@ -30,8 +29,6 @@ class ScoreDisplayCalories : public RollingNumbers {
   PlayerNumber m_PlayerNumber;
   std::string m_sMessageOnStep;
 };
-
-#endif
 
 /*
  * (c) 2001-2004 Chris Danford

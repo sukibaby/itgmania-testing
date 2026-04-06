@@ -1,7 +1,6 @@
 /* WindowsFileIO - Windows device I/O. */
 
-#ifndef WIN32_USB_H
-#define WIN32_USB_H
+#pragma once
 
 #include <windows.h>
 
@@ -42,8 +41,6 @@ class USBDevice {
 
   WindowsFileIO m_IO;
 };
-
-#endif
 
 /*
  * (c) 2002-2005 Glenn Maynard

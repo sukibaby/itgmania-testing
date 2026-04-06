@@ -1,7 +1,6 @@
 /* JsonLoader - Reads a Song from a .json file. */
 
-#ifndef NotesLoaderJson_H
-#define NotesLoaderJson_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -16,8 +15,6 @@ void GetApplicableFiles(
 bool LoadFromDir(const std::string& sPath, Song& out);
 bool LoadFromJsonFile(const std::string& sPath, Song& out);
 };  // namespace NotesLoaderJson
-
-#endif
 
 /*
  * (c) 2001-2004 Chris Danford, Glenn Maynard

@@ -1,5 +1,4 @@
-#ifndef SpecialFiles_H
-#define SpecialFiles_H
+#pragma once
 
 #include <string>
 
@@ -35,8 +34,6 @@ extern const std::string NOTESKINS_DIR;
 extern const std::string COINS_INI;
 
 }  // namespace SpecialFiles
-
-#endif
 
 /**
  * @file

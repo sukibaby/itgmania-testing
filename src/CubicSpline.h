@@ -1,5 +1,4 @@
-#ifndef CUBIC_SPLINE_H
-#define CUBIC_SPLINE_H
+#pragma once
 
 #include <cstddef>
 #include <vector>
@@ -95,8 +94,6 @@ struct CubicSplineN {
   bool m_dirty;
   spline_cont_t m_splines;
 };
-
-#endif
 
 // Side note:  Actually written between 2014/12/26 and 2014/12/28
 /*

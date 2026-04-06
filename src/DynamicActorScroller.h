@@ -1,5 +1,4 @@
-#ifndef ACTOR_SCROLLER_H
-#define ACTOR_SCROLLER_H
+#pragma once
 
 #include "Actor.h"
 #include "ActorScroller.h"
@@ -23,8 +22,6 @@ class DynamicActorScrollerAutoDeleteChildren : public DynamicActorScroller {
   virtual bool AutoLoadChildren() const { return true; }
   virtual DynamicActorScrollerAutoDeleteChildren* Copy() const;
 };
-
-#endif
 
 /**
  * @file

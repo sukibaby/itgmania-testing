@@ -1,5 +1,4 @@
-#ifndef MemoryCardDriverThreaded_Linux_H
-#define MemoryCardDriverThreaded_Linux_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -23,8 +22,6 @@ class MemoryCardDriverThreaded_Linux : public MemoryCardDriver {
 #error "More than one MemoryCardDriver selected!"
 #endif
 #define ARCH_MEMORY_CARD_DRIVER MemoryCardDriverThreaded_Linux
-
-#endif
 
 /*
  * (c) 2003-2004 Chris Danford

@@ -1,8 +1,7 @@
 /* ScreenSelectProfile - Screen that allows to select and load profile to use.
  */
 
-#ifndef SCREEN_SELECT_PROFILE_H
-#define SCREEN_SELECT_PROFILE_H
+#pragma once
 
 #include "GameInput.h"
 #include "InputQueue.h"
@@ -31,8 +30,6 @@ class ScreenSelectProfile : public ScreenWithMenuElements {
  protected:
   int m_iSelectedProfiles[NUM_PLAYERS];
 };
-
-#endif
 
 /*
  * Copyright (c) 2007 vdl

@@ -1,5 +1,4 @@
-#ifndef STEPS_H
-#define STEPS_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -356,8 +355,6 @@ class Steps {
    * If this is a range, then min should not be equal to max. */
   float specifiedBPMMax;
 };
-
-#endif
 
 /**
  * @file

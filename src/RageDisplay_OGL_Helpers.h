@@ -1,5 +1,4 @@
-#ifndef RAGE_DISPLAY_OGL_HELPERS_H
-#define RAGE_DISPLAY_OGL_HELPERS_H
+#pragma once
 
 /* Import RageDisplay, for types.  Do not include RageDisplay_Legacy.h. */
 #include <cstdint>
@@ -47,8 +46,6 @@ class RenderTarget {
  protected:
   RenderTargetParam m_Param;
 };
-
-#endif
 
 /*
  * Copyright (c) 2001-2011 Chris Danford, Glenn Maynard, Colby Klein

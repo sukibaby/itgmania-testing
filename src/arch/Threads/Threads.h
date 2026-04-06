@@ -1,5 +1,4 @@
-#ifndef THREADS_H
-#define THREADS_H
+#pragma once
 
 #include <cstdint>
 
@@ -77,8 +76,6 @@ uint64_t GetThisThreadId();
 /* Since ThreadId is implementation-defined, we can't define a universal
  * invalid value. Return the invalid value for this implementation. */
 uint64_t GetInvalidThreadId();
-
-#endif
 
 /*
  * (c) 2001-2004 Glenn Maynard

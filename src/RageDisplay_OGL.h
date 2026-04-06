@@ -1,7 +1,6 @@
 /* RageDisplay_Legacy: OpenGL renderer. */
 
-#ifndef RAGE_DISPLAY_OGL_H
-#define RAGE_DISPLAY_OGL_H
+#pragma once
 
 #ifdef __APPLE__
 #define GL_SILENCE_DEPRECATION 1
@@ -140,8 +139,6 @@ class RageDisplay_Legacy : public RageDisplay {
  private:
   RageTextureRenderTarget* offscreenRenderTarget;
 };
-
-#endif
 
 /*
  * Copyright (c) 2001-2011 Chris Danford, Glenn Maynard, Colby Klein

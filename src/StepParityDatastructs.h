@@ -1,5 +1,4 @@
-#ifndef STEP_PARITY_DATASTRUCTS_H
-#define STEP_PARITY_DATASTRUCTS_H
+#pragma once
 
 #include <array>
 #include <cstdint>
@@ -267,5 +266,3 @@ struct StepParityNode {
   }
 };
 };  // namespace StepParity
-
-#endif

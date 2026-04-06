@@ -1,7 +1,6 @@
 /* LoadingWindow_Gtk - Loading window for GTK (usually X) */
 
-#ifndef LOADING_WINDOW_GTK
-#define LOADING_WINDOW_GTK
+#pragma once
 
 #include <string>
 
@@ -20,8 +19,6 @@ class LoadingWindow_Gtk : public LoadingWindow {
   void SetIndeterminate(bool indeterminate);
 };
 #define USE_LOADING_WINDOW_GTK
-
-#endif
 
 /*
  * (c) 2003-2004 Glenn Maynard, Sean Burke

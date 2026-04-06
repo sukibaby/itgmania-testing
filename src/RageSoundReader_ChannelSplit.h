@@ -1,8 +1,7 @@
 /* RageSoundReader_ChannelSplit - Split a sound channels into separate sounds.
  */
 
-#ifndef RAGE_SOUND_READER_CHANNEL_SPLIT
-#define RAGE_SOUND_READER_CHANNEL_SPLIT
+#pragma once
 
 #include <string>
 #include <vector>
@@ -63,8 +62,6 @@ class RageSoundSplitter {
  private:
   RageSoundSplitterImpl* m_pImpl;
 };
-
-#endif
 
 /*
  * Copyright (c) 2006 Glenn Maynard

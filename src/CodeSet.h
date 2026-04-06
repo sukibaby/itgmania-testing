@@ -1,5 +1,4 @@
-#ifndef CODE_SET_H
-#define CODE_SET_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -17,8 +16,6 @@ class InputQueueCodeSet {
   std::vector<InputQueueCode> m_aCodes;
   std::vector<std::string> m_asCodeNames;
 };
-
-#endif
 
 /*
  * (c) 2007 Glenn Maynard

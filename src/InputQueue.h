@@ -1,5 +1,4 @@
-#ifndef INPUT_QUEUE_H
-#define INPUT_QUEUE_H
+#pragma once
 
 #include <cstring>
 #include <string>
@@ -61,8 +60,6 @@ struct InputQueueCode {
 
 extern InputQueue*
     INPUTQUEUE;  // global and accessible from anywhere in our program
-
-#endif
 
 /*
  * (c) 2001-2007 Chris Danford, Glenn Maynard

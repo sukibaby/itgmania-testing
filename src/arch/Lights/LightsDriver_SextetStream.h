@@ -1,5 +1,4 @@
-#ifndef LightsDriver_SextetStream_H
-#define LightsDriver_SextetStream_H
+#pragma once
 
 /*
  * `LightsDriver_SextetStream` (abstract): Streams the light data (in
@@ -44,8 +43,6 @@ class LightsDriver_SextetStreamToFile : public LightsDriver_SextetStream {
   LightsDriver_SextetStreamToFile(RageFile* file);
 #endif
 };
-
-#endif
 
 /*
  * Copyright © 2014 Peter S. May

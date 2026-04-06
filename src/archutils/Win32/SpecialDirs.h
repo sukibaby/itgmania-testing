@@ -1,5 +1,4 @@
-#ifndef SpecialDirs_H
-#define SpecialDirs_H
+#pragma once
 
 #include <string>
 
@@ -10,8 +9,6 @@ std::string GetCommonAppDataDir();
 std::string GetPicturesDir();
 std::string GetDesktopDir();
 };  // namespace SpecialDirs
-
-#endif
 
 /*
  * (c) 2002-2004 Chris Danford

@@ -1,7 +1,6 @@
 /* ScreenSelectMusic - Choose a Song and Steps. */
 
-#ifndef SCREEN_SELECT_MUSIC_H
-#define SCREEN_SELECT_MUSIC_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -189,8 +188,6 @@ class ScreenSelectMusic : public ScreenWithMenuElements {
 
   Song* m_pSongAwaitingDeletionConfirmation;
 };
-
-#endif
 
 /*
  * (c) 2001-2004 Chris Danford

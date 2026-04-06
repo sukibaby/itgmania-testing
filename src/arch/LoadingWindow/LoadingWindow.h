@@ -1,5 +1,4 @@
-#ifndef LOADING_WINDOW_H
-#define LOADING_WINDOW_H
+#pragma once
 
 #include <string>
 
@@ -26,8 +25,6 @@ class LoadingWindow {
   int m_totalWork;
   bool m_indeterminate;
 };
-
-#endif
 
 /**
  * @file

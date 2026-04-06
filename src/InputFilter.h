@@ -1,8 +1,7 @@
 /* InputFilter - Checks RageInput and generates a list of InputEvents,
  * representing button presses, releases, and repeats. */
 
-#ifndef INPUT_FILTER_H
-#define INPUT_FILTER_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -107,8 +106,6 @@ class InputFilter {
 
 extern InputFilter*
     INPUTFILTER;  // global and accessible from anywhere in our program
-
-#endif
 
 /*
  * (c) 2001-2004 Chris Danford

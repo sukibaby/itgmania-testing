@@ -1,5 +1,4 @@
-#ifndef INPUTHANDLER_DIRECTINPUT_HELPER_H
-#define INPUTHANDLER_DIRECTINPUT_HELPER_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -59,8 +58,6 @@ struct XIDevice {
 
   XIDevice();
 };
-
-#endif
 
 /*
  * (c) 2003-2004 Glenn Maynard

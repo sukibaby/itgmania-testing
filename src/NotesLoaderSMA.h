@@ -1,5 +1,4 @@
-#ifndef NOTES_LOADER_SMA_H
-#define NOTES_LOADER_SMA_H
+#pragma once
 
 #include <string>
 
@@ -29,8 +28,6 @@ struct SMALoader : public SMLoader {
   virtual void ProcessSpeeds(
       TimingData& out, const std::string line, const int rowsPerBeat);
 };
-
-#endif
 
 /**
  * @file

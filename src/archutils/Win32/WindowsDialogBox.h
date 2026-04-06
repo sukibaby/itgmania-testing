@@ -1,7 +1,6 @@
 /* WindowsDialogBox - Simplifies the creation of modal Windows dialog boxes. */
 
-#ifndef WINDOWS_DIALOG_BOX_H
-#define WINDOWS_DIALOG_BOX_H
+#pragma once
 
 #include <windows.h>
 
@@ -23,8 +22,6 @@ class WindowsDialogBox {
   DlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam);
   HWND m_hWnd;
 };
-
-#endif
 
 /*
  * (c) 2006 Glenn Maynard

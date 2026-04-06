@@ -1,5 +1,4 @@
-#ifndef RAGE_SURFACE_LOAD_H
-#define RAGE_SURFACE_LOAD_H
+#pragma once
 
 #include <string>
 
@@ -17,8 +16,6 @@ enum OpenResult {
 RageSurface* LoadFile(
     const std::string& sPath, std::string& error, bool bHeaderOnly = false);
 }  // namespace RageSurfaceUtils
-
-#endif
 
 /*
  * (c) 2004 Glenn Maynard

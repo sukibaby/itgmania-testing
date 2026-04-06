@@ -1,5 +1,4 @@
-#ifndef ACTOR_FRAME_TEXTURE_H
-#define ACTOR_FRAME_TEXTURE_H
+#pragma once
 
 #include <string>
 
@@ -57,8 +56,6 @@ class ActorFrameTextureAutoDeleteChildren : public ActorFrameTexture {
   virtual bool AutoLoadChildren() const { return true; }
   virtual ActorFrameTextureAutoDeleteChildren* Copy() const;
 };
-
-#endif
 
 /**
  * @file

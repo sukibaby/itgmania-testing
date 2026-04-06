@@ -1,5 +1,4 @@
-#ifndef COMMON_METRICS_H
-#define COMMON_METRICS_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -82,8 +81,6 @@ extern ThemeMetric<std::string> IMAGES_TO_CACHE;
 
 std::string LocalizeOptionItem(const std::string& s, bool bOptional);
 };  // namespace CommonMetrics
-
-#endif
 
 /**
  * @file

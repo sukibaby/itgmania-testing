@@ -1,5 +1,4 @@
-#ifndef BACKTRACE_NAMES_H
-#define BACKTRACE_NAMES_H
+#pragma once
 
 #include <cstdint>
 #include <string>
@@ -14,8 +13,6 @@ struct BacktraceNames {
   std::string Format() const;
   BacktraceNames() : Address(0), Offset(0) {}
 };
-
-#endif
 
 /*
  * (c) 2003-2004 Glenn Maynard

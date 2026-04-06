@@ -1,5 +1,4 @@
-#ifndef Bookkeeper_H
-#define Bookkeeper_H
+#pragma once
 
 #include <ctime>
 #include <map>
@@ -67,8 +66,6 @@ class Bookkeeper {
 
 extern Bookkeeper*
     BOOKKEEPER;  // global and accessible from anywhere in our program
-
-#endif
 
 /**
  * @file

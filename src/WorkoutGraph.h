@@ -1,7 +1,6 @@
 /* WorkoutGraph - A bar graph of the Steps in a Trail. */
 
-#ifndef WorkoutGraph_H
-#define WorkoutGraph_H
+#pragma once
 
 #include <vector>
 
@@ -34,8 +33,6 @@ class WorkoutGraph : public ActorFrame {
 
   int m_iSongsChoppedOffAtBeginning;
 };
-
-#endif
 
 /*
  * (c) 2001-2004 Chris Danford

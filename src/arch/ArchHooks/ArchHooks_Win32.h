@@ -1,5 +1,4 @@
-#ifndef ARCH_HOOKS_WIN32_H
-#define ARCH_HOOKS_WIN32_H
+#pragma once
 
 #include <ctime>
 #include <string>
@@ -31,7 +30,6 @@ class ArchHooks_Win32 : public ArchHooks {
 #endif
 #define ARCH_HOOKS ArchHooks_Win32
 
-#endif
 /*
  * (c) 2002-2004 Glenn Maynard, Chris Danford
  * All rights reserved.

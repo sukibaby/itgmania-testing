@@ -1,5 +1,4 @@
-#ifndef NOTE_FIELD_H
-#define NOTE_FIELD_H
+#pragma once
 
 #include <map>
 #include <string>
@@ -151,8 +150,6 @@ class NoteField : public ActorFrame {
   float m_fBar8thAlpha;
   float m_fBar16thAlpha;
 };
-
-#endif
 
 /**
  * @file

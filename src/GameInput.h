@@ -1,5 +1,4 @@
-#ifndef GAME_INPUT_H
-#define GAME_INPUT_H
+#pragma once
 
 #include <string>
 
@@ -233,8 +232,6 @@ struct GameInput {
   std::string ToString(const InputScheme* pInputs) const;
   bool FromString(const InputScheme* pInputs, const std::string& s);
 };
-
-#endif
 
 /**
  * @file

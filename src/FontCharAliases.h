@@ -1,5 +1,4 @@
-#ifndef FONT_CHAR_ALIASES
-#define FONT_CHAR_ALIASES
+#pragma once
 
 #include <string>
 
@@ -8,8 +7,6 @@ namespace FontCharAliases {
 void ReplaceMarkers(std::string& sText);
 bool GetChar(std::string& codepoint, wchar_t& ch);
 };  // namespace FontCharAliases
-
-#endif
 
 /*
  * (c) 2003 Glenn Maynard

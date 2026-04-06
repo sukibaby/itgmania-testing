@@ -1,7 +1,6 @@
 /* RageSound - High-level sound object. */
 
-#ifndef RAGE_SOUND_H
-#define RAGE_SOUND_H
+#pragma once
 
 #include <cstdint>
 #include <string>
@@ -199,8 +198,6 @@ class RageSound : public RageSoundBase {
   void CommitPlayingPosition(
       int64_t iHardwareFrame, int64_t iStreamFrame, int iGotFrames);
 };
-
-#endif
 
 /*
  * Copyright (c) 2002-2004 Glenn Maynard

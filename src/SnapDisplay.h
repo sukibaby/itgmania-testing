@@ -1,5 +1,4 @@
-#ifndef SNAPDISPLAY_H
-#define SNAPDISPLAY_H
+#pragma once
 
 #include "ActorFrame.h"
 #include "NoteTypes.h"
@@ -31,8 +30,6 @@ class SnapDisplay : public ActorFrame {
    * TODO: Convert to an AutoActor. -aj */
   Sprite m_sprIndicators[2];  // left and right side
 };
-
-#endif
 
 /**
  * @file

@@ -1,5 +1,4 @@
-#ifndef APP_INSTANCE_H
-#define APP_INSTANCE_H
+#pragma once
 
 #include <windows.h>
 
@@ -14,8 +13,6 @@ class AppInstance {
  private:
   HINSTANCE h;
 };
-
-#endif
 
 /*
  * (c) 2002-2004 Glenn Maynard

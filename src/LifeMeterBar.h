@@ -1,5 +1,4 @@
-#ifndef LIFEMETERBAR_H
-#define LIFEMETERBAR_H
+#pragma once
 
 #include "AutoActor.h"
 #include "GameConstantsAndTypes.h"
@@ -65,8 +64,6 @@ class LifeMeterBar : public LifeMeter {
    * Player failed. */
   int m_iComboToRegainLife;
 };
-
-#endif
 
 /*
  * (c) 2001-2004 Chris Danford

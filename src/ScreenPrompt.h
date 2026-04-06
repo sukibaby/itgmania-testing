@@ -1,7 +1,6 @@
 /* ScreenPrompt - Displays a prompt on top of another screen. */
 
-#ifndef SCREEN_PROMPT_H
-#define SCREEN_PROMPT_H
+#pragma once
 
 #include <string>
 
@@ -59,8 +58,6 @@ class ScreenPrompt : public ScreenWithMenuElements {
 
   RageSound m_sndChange;
 };
-
-#endif
 
 /*
  * (c) 2001-2004 Chris Danford

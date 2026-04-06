@@ -1,5 +1,4 @@
-#ifndef LYRIC_DISPLAY_H
-#define LYRIC_DISPLAY_H
+#pragma once
 
 #include "ActorFrame.h"
 #include "BitmapText.h"
@@ -21,8 +20,6 @@ class LyricDisplay : public ActorFrame {
   float m_fLastSecond;
   bool m_bStopped;
 };
-
-#endif
 
 /*
  * (c) 2003-2004 Kevin Slaughter, Glenn Maynard

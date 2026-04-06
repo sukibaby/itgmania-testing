@@ -1,7 +1,6 @@
 /* RageTexture - Abstract class for a texture and metadata.  */
 
-#ifndef RAGE_TEXTURE_H
-#define RAGE_TEXTURE_H
+#pragma once
 
 #include <cstdint>
 #include <string>
@@ -103,8 +102,6 @@ class RageTexture {
 
   virtual void CreateFrameRects();
 };
-
-#endif
 
 /*
  * Copyright (c) 2001-2004 Chris Danford

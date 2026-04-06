@@ -1,7 +1,6 @@
 /* ScreenMapControllers - Maps device input to instrument buttons. */
 
-#ifndef SCREEN_MAP_CONTROLLERS_H
-#define SCREEN_MAP_CONTROLLERS_H
+#pragma once
 
 #include <set>
 #include <string>
@@ -132,8 +131,6 @@ class ScreenMapControllers : public ScreenWithMenuElements {
   RageSound m_soundChange;
   RageSound m_soundDelete;
 };
-
-#endif
 
 /*
  * (c) 2001-2004 Chris Danford

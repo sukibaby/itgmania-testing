@@ -1,5 +1,4 @@
-#ifndef SCREEN_SET_TIME_H
-#define SCREEN_SET_TIME_H
+#pragma once
 
 #include <ctime>
 
@@ -46,8 +45,6 @@ class ScreenSetTime : public ScreenWithMenuElements {
   BitmapText m_textValue[NUM_SetTimeSelection];
   BitmapText m_textDayOfWeek;
 };
-
-#endif
 
 /*
  * (c) 2004 Chris Danford

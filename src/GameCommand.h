@@ -1,7 +1,6 @@
 /* GameCommand */
 
-#ifndef GameCommand_H
-#define GameCommand_H
+#pragma once
 
 #include <map>
 #include <string>
@@ -150,8 +149,6 @@ class GameCommand {
  private:
   bool m_bApplyCommitsScreens;
 };
-
-#endif
 
 /*
  * (c) 2001-2004 Chris Danford, Glenn Maynard

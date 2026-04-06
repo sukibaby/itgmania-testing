@@ -1,5 +1,4 @@
-#ifndef PUMP_DEVICE_H
-#define PUMP_DEVICE_H
+#pragma once
 
 #include <vector>
 
@@ -26,8 +25,6 @@ class PumpDevice : public HIDDevice {
   int AssignIDs(InputDevice startID);
   void GetDevicesAndDescriptions(std::vector<InputDeviceInfo>& vDevices) const;
 };
-
-#endif
 
 /*
  * (c) 2006 Steve Checkoway

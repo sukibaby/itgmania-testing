@@ -1,5 +1,4 @@
-#ifndef ScreenMessage_H
-#define ScreenMessage_H
+#pragma once
 
 #include <string>
 /** @brief Definition of common ScreenMessages and helpers. */
@@ -26,8 +25,6 @@ std::string ScreenMessageToString(ScreenMessage SM);
 /** @brief Automatically generate a unique ScreenMessage value */
 #define AutoScreenMessage(x) \
   const ScreenMessage x = ScreenMessageHelpers::ToScreenMessage(#x)
-
-#endif
 
 /**
  * @file

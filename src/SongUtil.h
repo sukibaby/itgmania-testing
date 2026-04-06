@@ -1,7 +1,6 @@
 /** @brief SongUtil - Utility functions that deal with Song. */
 
-#ifndef SONG_UTIL_H
-#define SONG_UTIL_H
+#pragma once
 #include <set>
 #include <string>
 #include <vector>
@@ -241,8 +240,6 @@ class SongID {
   std::string ToString() const;
   bool IsValid() const;
 };
-
-#endif
 
 /**
  * @file

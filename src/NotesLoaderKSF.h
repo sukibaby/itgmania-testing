@@ -1,5 +1,4 @@
-#ifndef NOTES_LOADER_KSF_H
-#define NOTES_LOADER_KSF_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -13,8 +12,6 @@ void GetApplicableFiles(
 bool LoadFromDir(const std::string& sDir, Song& out);
 bool LoadNoteDataFromSimfile(const std::string& cachePath, Steps& out);
 }  // namespace KSFLoader
-
-#endif
 
 /*
  * (c) 2001-2004 Chris Danford, Glenn Maynard

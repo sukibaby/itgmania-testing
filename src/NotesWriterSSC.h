@@ -1,5 +1,4 @@
-#ifndef NOTES_WRITER_SSC_H
-#define NOTES_WRITER_SSC_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -41,8 +40,6 @@ std::string GetEditFileName(const Song* pSong, const Steps* pSteps);
 bool WriteEditFileToMachine(
     const Song* pSong, Steps* pSteps, std::string& sErrorOut);
 }  // namespace NotesWriterSSC
-
-#endif
 
 /**
  * @file

@@ -1,5 +1,4 @@
-#ifndef ActorScroller_H
-#define ActorScroller_H
+#pragma once
 
 #include <string>
 
@@ -110,8 +109,6 @@ class ActorScrollerAutoDeleteChildren : public ActorScroller {
   virtual bool AutoLoadChildren() const { return true; }
   virtual ActorScrollerAutoDeleteChildren* Copy() const;
 };
-
-#endif
 
 /**
  * @file

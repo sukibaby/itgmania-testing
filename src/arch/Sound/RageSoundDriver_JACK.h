@@ -1,5 +1,4 @@
-#ifndef RAGE_SOUND_JACK
-#define RAGE_SOUND_JACK
+#pragma once
 
 #include <jack/jack.h>
 
@@ -36,8 +35,6 @@ class RageSoundDriver_JACK : public RageSoundDriver {
   int SampleRateCallback(jack_nframes_t nframes);
   static int SampleRateTrampoline(jack_nframes_t nframes, void* arg);
 };
-
-#endif
 
 /*
  * (c) 2013 Devin J. Pohly

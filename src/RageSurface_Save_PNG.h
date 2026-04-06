@@ -1,7 +1,6 @@
 /* RageSurface_Save_PNG - Save a RageSurface to a PNG. */
 
-#ifndef RAGE_SURFACE_SAVE_PNG_H
-#define RAGE_SURFACE_SAVE_PNG_H
+#pragma once
 
 #include <string>
 
@@ -11,8 +10,6 @@ class RageFile;
 namespace RageSurfaceUtils {
 bool SavePNG(RageSurface* pImg, RageFile& f, std::string& sError);
 };
-
-#endif
 
 /*
  * (c) 2004-2006 Glenn Maynard

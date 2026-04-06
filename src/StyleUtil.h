@@ -1,5 +1,4 @@
-#ifndef STYLEUTIL_H
-#define STYLEUTIL_H
+#pragma once
 
 #include <string>
 
@@ -23,8 +22,6 @@ class StyleID {
   bool IsValid() const;
   static void FlushCache(Song* pStaleSong);
 };
-
-#endif
 
 /*
  * (c) 2001-2004 Chris Danford, Glenn Maynard

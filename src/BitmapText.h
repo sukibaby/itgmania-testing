@@ -1,5 +1,4 @@
-#ifndef BITMAP_TEXT_H
-#define BITMAP_TEXT_H
+#pragma once
 
 #include <cstddef>
 #include <map>
@@ -163,8 +162,6 @@ class BitmapText : public Actor {
   BMT_TweenState BMT_current;
   BMT_TweenState BMT_start;
 };
-
-#endif
 
 /**
  * @file

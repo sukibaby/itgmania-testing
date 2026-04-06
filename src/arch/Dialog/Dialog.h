@@ -1,5 +1,4 @@
-#ifndef DIALOG_BOX_H
-#define DIALOG_BOX_H
+#pragma once
 
 #include <string>
 
@@ -22,8 +21,6 @@ Result YesNo(std::string sMessage, std::string sID = "");
 /* for DialogDrivers */
 void IgnoreMessage(std::string sID);
 }  // namespace Dialog
-
-#endif
 
 /*
  * (c) 2003-2004 Glenn Maynard, Chris Danford

@@ -1,5 +1,4 @@
-#ifndef THREADS_WIN32_H
-#define THREADS_WIN32_H
+#pragma once
 
 #include <cstdint>
 
@@ -75,8 +74,6 @@ class SemaImpl_Win32 : public SemaImpl {
   // We have to track the count ourself, since Windows gives no way to query it.
   int m_iCounter;
 };
-
-#endif
 
 /*
  * (c) 2001-2004 Glenn Maynard

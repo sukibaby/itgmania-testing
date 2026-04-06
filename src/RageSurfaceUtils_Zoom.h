@@ -1,13 +1,10 @@
-#ifndef RAGE_SURFACE_UTILS_ZOOM_H
-#define RAGE_SURFACE_UTILS_ZOOM_H
+#pragma once
 
 struct RageSurface;
 /** @brief Utility functions for the RageSurfaces. */
 namespace RageSurfaceUtils {
 void Zoom(RageSurface*& src, int width, int height);
 };
-
-#endif
 
 /*
  * (c) A. Schiffler, Glenn Maynard

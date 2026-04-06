@@ -1,5 +1,4 @@
-#ifndef AUTO_KEYSOUNDS_H
-#define AUTO_KEYSOUNDS_H
+#pragma once
 
 #include <vector>
 
@@ -40,8 +39,6 @@ class AutoKeysounds {
   RageSoundReader* m_pPlayerSounds[NUM_PLAYERS];  // owned by m_sSound
   RageSoundReader* m_pSharedSound;                // owned by m_sSound
 };
-
-#endif
 
 /**
  * @file

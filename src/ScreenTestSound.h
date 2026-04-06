@@ -1,5 +1,4 @@
-#ifndef SCREEN_TEST_SOUND_H
-#define SCREEN_TEST_SOUND_H
+#pragma once
 
 #include <vector>
 
@@ -30,8 +29,6 @@ class ScreenTestSound : public Screen {
 
   int selected;
 };
-
-#endif
 
 /**
  * @file

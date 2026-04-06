@@ -1,13 +1,10 @@
-#ifndef SpecialDirs_H
-#define SpecialDirs_H
+#pragma once
 
 #include <string>
 
 namespace SpecialDirs {
 std::string GetDesktopDir();
 }
-
-#endif
 
 /*
  * (c) 2011 AJ Kelly

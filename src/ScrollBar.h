@@ -1,7 +1,6 @@
 /* ScrollBar - A simple scrollbar. */
 
-#ifndef SCROLL_BAR_H
-#define SCROLL_BAR_H
+#pragma once
 
 #include "ActorFrame.h"
 #include "AutoActor.h"
@@ -22,8 +21,6 @@ class ScrollBar : public ActorFrame {
   AutoActor m_sprScrollTickThumb;
   AutoActor m_sprScrollStretchThumb[2];
 };
-
-#endif
 
 /*
  * (c) 2001-2003 Chris Danford

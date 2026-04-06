@@ -1,5 +1,4 @@
-#ifndef RAGE_SOUND_NULL
-#define RAGE_SOUND_NULL
+#pragma once
 
 #include <cstdint>
 
@@ -17,8 +16,6 @@ class RageSoundDriver_Null : public RageSoundDriver {
   int m_iSampleRate;
 };
 #define USE_RAGE_SOUND_NULL
-
-#endif
 
 /*
  * (c) 2002-2004 Glenn Maynard, Aaron VonderHaar

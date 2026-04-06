@@ -1,5 +1,4 @@
-#ifndef LUA_DEBUG_BREAKPOINT
-#define LUA_DEBUG_BREAKPOINT
+#pragma once
 
 #include <cstdint>
 #include <string>
@@ -85,8 +84,6 @@ class Breakpoint {
   bool m_temporary = false;
 };
 }  // namespace LuaDebug
-
-#endif
 
 /*
  * Copyright (C) 2025  Arttu Ylä-Outinen

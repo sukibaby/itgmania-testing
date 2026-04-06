@@ -1,5 +1,4 @@
-#ifndef SCREEN_H
-#define SCREEN_H
+#pragma once
 
 #include <map>
 #include <string>
@@ -170,8 +169,6 @@ class Screen : public ActorFrame {
   bool m_CallingInputCallbacks;
   void InternalRemoveCallback(callback_key_t key);
 };
-
-#endif
 
 /**
  * @file

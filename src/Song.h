@@ -1,5 +1,4 @@
-#ifndef SONG_H
-#define SONG_H
+#pragma once
 
 #include <array>
 #include <set>
@@ -500,8 +499,6 @@ class Song {
   /** @brief the Steps that are of unrecognized Styles. */
   std::vector<Steps*> m_UnknownStyleSteps;
 };
-
-#endif
 
 /**
  * @file

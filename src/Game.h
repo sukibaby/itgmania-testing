@@ -1,5 +1,4 @@
-#ifndef GAMEDEF_H
-#define GAMEDEF_H
+#pragma once
 
 #include "GameConstantsAndTypes.h"
 #include "GameInput.h"
@@ -63,8 +62,6 @@ struct Game {
   // Lua
   void PushSelf(lua_State* L);
 };
-
-#endif
 
 /**
  * @file

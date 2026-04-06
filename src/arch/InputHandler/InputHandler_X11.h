@@ -1,7 +1,6 @@
 /* InputHandler_X11 - X-based keyboard input handler. */
 
-#ifndef INPUT_HANDLER_X11_H
-#define INPUT_HANDLER_X11_H
+#pragma once
 
 #include <vector>
 
@@ -20,8 +19,6 @@ class InputHandler_X11 : public InputHandler {
   void RegisterKeyEvent(
       unsigned long timestamp, bool keyDown, DeviceButton button);
 };
-
-#endif
 
 /*
  * (c) 2005 Sean Burke, Ben Anderson

@@ -1,7 +1,6 @@
 /* RageSurface_Load_JPEG - JPEG file loader */
 
-#ifndef RAGE_SURFACE_LOAD_JPEG_H
-#define RAGE_SURFACE_LOAD_JPEG_H
+#pragma once
 
 #include <string>
 
@@ -9,8 +8,6 @@
 RageSurfaceUtils::OpenResult RageSurface_Load_JPEG(
     const std::string& sPath, RageSurface*& ret, bool bHeaderOnly,
     std::string& error);
-
-#endif
 
 /*
  * (c) 2004 Glenn Maynard

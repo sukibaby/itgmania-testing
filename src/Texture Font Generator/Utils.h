@@ -1,5 +1,4 @@
-#ifndef UTILS_H
-#define UTILS_H
+#pragma once
 
 #include <cstdio>
 
@@ -21,8 +20,6 @@ void GrayScaleToAlpha(Surface* pSurf);
 void GetBounds(const Surface* pSurf, RECT* out);
 
 bool SavePNG(FILE* f, char szErrorbuf[1024], const Surface* pSurf);
-
-#endif
 
 /*
  * Copyright (c) 2003-2007 Glenn Maynard

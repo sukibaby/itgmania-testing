@@ -1,5 +1,4 @@
-#ifndef LOADING_WINDOW_MACOSX_H
-#define LOADING_WINDOW_MACOSX_H
+#pragma once
 
 #include <string>
 
@@ -16,8 +15,6 @@ class LoadingWindow_MacOSX : public LoadingWindow {
   void SetIndeterminate(bool indeterminate);
 };
 #define USE_LOADING_WINDOW_MACOSX
-
-#endif
 
 /**
  * @file

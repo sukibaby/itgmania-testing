@@ -1,5 +1,4 @@
-#ifndef LifeMeterTime_H
-#define LifeMeterTime_H
+#pragma once
 
 #include "AutoActor.h"
 #include "GameConstantsAndTypes.h"
@@ -46,8 +45,6 @@ class LifeMeterTime : public LifeMeter {
   /** @brief The sound played when time is gained at the start of each Song. */
   RageSound m_soundGainLife;
 };
-
-#endif
 
 /**
  * @file

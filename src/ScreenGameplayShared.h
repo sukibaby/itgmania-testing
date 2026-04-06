@@ -1,5 +1,4 @@
-#ifndef SCREEN_GAMEPLAY_ROUTINE_H
-#define SCREEN_GAMEPLAY_ROUTINE_H
+#pragma once
 
 #include <vector>
 
@@ -11,8 +10,6 @@ class ScreenGameplayShared : public ScreenGameplay {
   virtual void FillPlayerInfo(std::vector<PlayerInfo>& vPlayerInfoOut);
   virtual PlayerInfo& GetPlayerInfoForInput(const InputEventPlus& iep);
 };
-
-#endif
 
 /*
  * (c) 2006 Steve Checkoway

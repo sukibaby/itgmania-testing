@@ -1,5 +1,4 @@
-#ifndef LOW_LEVEL_WINDOW_MACOSX_H
-#define LOW_LEVEL_WINDOW_MACOSX_H
+#pragma once
 
 #include <objc/objc.h>
 
@@ -50,8 +49,6 @@ class LowLevelWindow_MacOSX : public LowLevelWindow {
 #error "More than one LowLevelWindow selected!"
 #endif
 #define ARCH_LOW_LEVEL_WINDOW LowLevelWindow_MacOSX
-
-#endif
 
 /*
  * (c) 2005-2006, 2008 Steve Checkoway

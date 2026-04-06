@@ -1,5 +1,4 @@
-#ifndef MEMORY_CARD_DRIVER_THREADED_MACOSX_H
-#define MEMORY_CARD_DRIVER_THREADED_MACOSX_H
+#pragma once
 
 #include <vector>
 
@@ -33,8 +32,6 @@ class MemoryCardDriverThreaded_MacOSX : public MemoryCardDriver {
 #error "More than one MemoryCardDriver selected."
 #endif
 #define ARCH_MEMORY_CARD_DRIVER MemoryCardDriverThreaded_MacOSX
-
-#endif
 
 /*
  * (c) 2005-2006, 2008 Steve Checkoway

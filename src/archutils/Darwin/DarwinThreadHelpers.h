@@ -1,5 +1,4 @@
-#ifndef DARWIN_THREAD_HELPERS_H
-#define DARWIN_THREAD_HELPERS_H
+#pragma once
 
 #include <cstdint>
 #include <string>
@@ -25,8 +24,6 @@ uint64_t GetCurrentThreadId();
  * 0.5f is the default.
  * @param prec the precedence to set. */
 std::string SetThreadPrecedence(float prec);
-
-#endif
 
 /**
  * @file

@@ -1,5 +1,4 @@
-#ifndef MemoryCardManager_H
-#define MemoryCardManager_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -85,8 +84,6 @@ class MemoryCardManager {
 
 extern MemoryCardManager*
     MEMCARDMAN;  // global and accessible from anywhere in our program
-
-#endif
 
 /*
  * (c) 2003-2004 Chris Danford

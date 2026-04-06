@@ -2,8 +2,7 @@
  * Technologies http://www.weedtech.com / http://www.weedtech.com/wtdio-m.html
  * */
 
-#ifndef LightsDriver_LinuxWeedTech_H
-#define LightsDriver_LinuxWeedTech_H
+#pragma once
 
 #include "arch/Lights/LightsDriver.h"
 
@@ -14,8 +13,6 @@ class LightsDriver_LinuxWeedTech : public LightsDriver {
 
   virtual void Set(const LightsState* ls);
 };
-
-#endif
 
 /*
  * (c) 2003-2004 Kevin Slaughter

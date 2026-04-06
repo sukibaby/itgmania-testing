@@ -1,7 +1,6 @@
 /* LowLevelWindow_X11 - OpenGL GLX window driver. */
 
-#ifndef LOW_LEVEL_WINDOW_X11_H
-#define LOW_LEVEL_WINDOW_X11_H
+#pragma once
 
 #include <string>
 
@@ -50,8 +49,6 @@ class LowLevelWindow_X11 : public LowLevelWindow {
 #error "More than one LowLevelWindow selected!"
 #endif
 #define ARCH_LOW_LEVEL_WINDOW LowLevelWindow_X11
-
-#endif
 
 /*
  * (c) 2005 Ben Anderson

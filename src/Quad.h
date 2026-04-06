@@ -1,5 +1,4 @@
-#ifndef QUAD_H
-#define QUAD_H
+#pragma once
 
 #include "Actor.h"
 #include "Sprite.h"
@@ -17,8 +16,6 @@ class Quad : public Sprite {
   /** @brief Copy the quad. */
   virtual Quad* Copy() const;
 };
-
-#endif
 
 /**
  * @file

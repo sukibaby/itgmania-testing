@@ -1,8 +1,7 @@
 /* ScreenAttract - Base class for all attraction screens. This class handles
  * input and coin logic. */
 
-#ifndef ScreenAttract_H
-#define ScreenAttract_H
+#pragma once
 
 #include <string>
 
@@ -38,8 +37,6 @@ class ScreenAttract : public ScreenWithMenuElements {
   ThemeMetric<bool> RESET_GAME_STATE;
   ThemeMetric<bool> ATTRACT_VOLUME;
 };
-
-#endif
 
 /*
  * (c) 2003-2004 Chris Danford

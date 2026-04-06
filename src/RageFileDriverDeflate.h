@@ -1,8 +1,7 @@
 /* RageFileObjInflate - decompress streams compressed with "deflate"
  * compression. */
 
-#ifndef RAGE_FILE_DRIVER_DEFLATE_H
-#define RAGE_FILE_DRIVER_DEFLATE_H
+#pragma once
 
 #include <cstddef>
 #include <cstdint>
@@ -83,8 +82,6 @@ void GzipString(const std::string& sIn, std::string& sOut);
 bool GunzipString(
     const std::string& sIn, std::string& sOut,
     std::string& sError);  // returns false on CRC, etc. error
-
-#endif
 
 /*
  * Copyright (c) 2003-2004 Glenn Maynard

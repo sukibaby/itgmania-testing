@@ -1,5 +1,4 @@
-#ifndef LYRICS_LOADER_H
-#define LYRICS_LOADER_H
+#pragma once
 
 #include <string>
 
@@ -13,8 +12,6 @@ class LyricsLoader {
    * @param out the Song to receive the Lyrics. */
   bool LoadFromLRCFile(const std::string& sPath, Song& out);
 };
-
-#endif
 
 /**
  * @file

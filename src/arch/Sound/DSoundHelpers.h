@@ -1,5 +1,4 @@
-#ifndef DSOUND_HELPERS
-#define DSOUND_HELPERS 1
+#pragma once
 
 #include <cstdint>
 #include <string>
@@ -85,8 +84,6 @@ class DSoundBuf {
 
   int m_iLastCursors[4][2];
 };
-
-#endif
 
 /*
  * (c) 2002-2004 Glenn Maynard

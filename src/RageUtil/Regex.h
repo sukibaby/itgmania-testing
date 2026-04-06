@@ -1,5 +1,4 @@
-#ifndef RAGEUTIL_REGEX_H
-#define RAGEUTIL_REGEX_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -26,5 +25,3 @@ class Regex {
   unsigned m_iBackrefs;
   std::string m_sPattern;
 };
-
-#endif

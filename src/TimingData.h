@@ -1,5 +1,4 @@
-#ifndef TIMING_DATA_H
-#define TIMING_DATA_H
+#pragma once
 
 #include <array>
 #include <cfloat>
@@ -593,8 +592,6 @@ class TimingData {
   std::array<std::vector<TimingSegment*>, NUM_TimingSegmentType>
       m_avpTimingSegments;
 };
-
-#endif
 
 /**
  * @file

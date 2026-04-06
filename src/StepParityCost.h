@@ -1,5 +1,4 @@
-#ifndef STEP_PARITY_COST_H
-#define STEP_PARITY_COST_H
+#pragma once
 
 #include <vector>
 
@@ -107,5 +106,3 @@ class StepParityCost {
       bool movedRight, bool didJump, int columnCount);
 };
 };  // namespace StepParity
-
-#endif

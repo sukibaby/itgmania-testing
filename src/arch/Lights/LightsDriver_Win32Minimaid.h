@@ -1,7 +1,6 @@
 /* LightsDriver_Win32Minimaid - Minimaid based lights with libmmmagic */
 
-#ifndef LightsDriver_Win32Minimaid_H
-#define LightsDriver_Win32Minimaid_H
+#pragma once
 
 #include "LightsDriver.h"
 
@@ -70,8 +69,6 @@ class LightsDriver_Win32Minimaid : public LightsDriver {
   virtual ~LightsDriver_Win32Minimaid();
   virtual void Set(const LightsState* ls);
 };
-
-#endif
 
 /*
  * (c) 2013 pkgingo

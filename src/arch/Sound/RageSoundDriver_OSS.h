@@ -1,5 +1,4 @@
-#ifndef RAGE_SOUND_WAVEOUT
-#define RAGE_SOUND_WAVEOUT
+#pragma once
 
 #include <cstdint>
 #include <string>
@@ -33,8 +32,6 @@ class RageSoundDriver_OSS : public RageSoundDriver {
   std::string Init();
   ~RageSoundDriver_OSS();
 };
-
-#endif
 
 /*
  * (c) 2002-2004 Glenn Maynard

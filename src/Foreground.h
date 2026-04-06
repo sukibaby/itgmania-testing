@@ -1,5 +1,4 @@
-#ifndef FOREGROUND_H
-#define FOREGROUND_H
+#pragma once
 
 #include <vector>
 
@@ -30,8 +29,6 @@ class Foreground : public ActorFrame {
   float m_fLastMusicSeconds;
   const Song* m_pSong;
 };
-
-#endif
 
 /*
  * (c) 2004 Glenn Maynard

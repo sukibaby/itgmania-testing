@@ -1,5 +1,4 @@
-#ifndef ARROWEFFECTS_H
-#define ARROWEFFECTS_H
+#pragma once
 
 #include "PlayerNumber.h"
 #include "RageTypes.h"
@@ -138,8 +137,6 @@ class ArrowEffects {
   static float GetFrameWidthScale(
       const PlayerState* pPlayerState, float fYOffset, float fOverlappedTime);
 };
-
-#endif
 
 /**
  * @file

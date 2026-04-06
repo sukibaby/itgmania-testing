@@ -1,5 +1,4 @@
-#ifndef RAGEUTIL_ENDIAN_H
-#define RAGEUTIL_ENDIAN_H
+#pragma once
 
 #include <cstdint>
 
@@ -34,5 +33,3 @@ inline uint16_t Swap16LE(uint16_t n) { return Endian::little ? n : Swap16(n); }
 inline uint32_t Swap32BE(uint32_t n) { return Endian::big ? n : Swap32(n); }
 inline uint32_t Swap24BE(uint32_t n) { return Endian::big ? n : Swap24(n); }
 inline uint16_t Swap16BE(uint16_t n) { return Endian::big ? n : Swap16(n); }
-
-#endif

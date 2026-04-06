@@ -1,5 +1,4 @@
-#ifndef MOUSE_DEVICE_H
-#define MOUSE_DEVICE_H
+#pragma once
 
 #include <unordered_map>
 #include <vector>
@@ -39,8 +38,6 @@ class MouseDevice : public HIDDevice {
       const RageTimer& now) const;
   void GetDevicesAndDescriptions(std::vector<InputDeviceInfo>& vDevices) const;
 };
-
-#endif
 
 /*
  * (c) 2011 AJ Kelly

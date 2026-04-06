@@ -1,5 +1,4 @@
-#ifndef SCREEN_HOW_TO_PLAY_H
-#define SCREEN_HOW_TO_PLAY_H
+#pragma once
 
 #include "NoteData.h"
 #include "Player.h"
@@ -34,8 +33,6 @@ class ScreenHowToPlay : public ScreenAttract {
   NoteData m_NoteData;
   float m_fFakeSecondsIntoSong;
 };
-
-#endif
 
 /*
  * (c) 2001-2004 Chris Danford, Tracy Ward

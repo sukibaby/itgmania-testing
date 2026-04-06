@@ -2,8 +2,7 @@
  *	http://www.google.com/search?hl=en&lr=&ie=UTF-8&oe=UTF-8&q=kit+74+relay
  * */
 
-#ifndef LightsDriver_Win32Parallel_H
-#define LightsDriver_Win32Parallel_H
+#pragma once
 
 #include "arch/Lights/LightsDriver.h"
 
@@ -14,8 +13,6 @@ class LightsDriver_Win32Parallel : public LightsDriver {
 
   virtual void Set(const LightsState* ls);
 };
-
-#endif
 
 /*
  * (c) 2003-2004 Chris Danford

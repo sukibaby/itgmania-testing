@@ -1,5 +1,4 @@
-#ifndef HidDevice_H
-#define HidDevice_H
+#pragma once
 
 #include <cstddef>
 #include <string>
@@ -66,5 +65,3 @@ class HidDevice {
   int Read(unsigned char* data, size_t length);
   HidResults Write(const unsigned char* data, size_t length);
 };
-
-#endif

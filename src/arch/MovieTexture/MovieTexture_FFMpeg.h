@@ -1,7 +1,6 @@
 /* MovieTexture_FFMpeg - FFMpeg movie renderer. */
 
-#ifndef RAGE_MOVIE_TEXTURE_FFMPEG_H
-#define RAGE_MOVIE_TEXTURE_FFMPEG_H
+#pragma once
 
 #include <cstdint>
 #include <limits>
@@ -251,8 +250,6 @@ static struct AVPixelFormat_t {
      true,
      false,
      PixelFormatYCbCr_Invalid}};
-
-#endif
 
 /*
  * (c) 2003-2005 Glenn Maynard

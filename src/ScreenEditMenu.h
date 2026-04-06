@@ -1,5 +1,4 @@
-#ifndef SCREEN_EDIT_MENU_H
-#define SCREEN_EDIT_MENU_H
+#pragma once
 
 #include "BitmapText.h"
 #include "EditMenu.h"
@@ -31,8 +30,6 @@ class ScreenEditMenu : public ScreenWithMenuElements {
   BitmapText m_textNumStepsLoadedFromProfile;
   BitmapText m_NoSongsMessage;
 };
-
-#endif
 
 /*
  * (c) 2002-2004 Chris Danford

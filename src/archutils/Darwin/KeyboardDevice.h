@@ -1,5 +1,4 @@
-#ifndef KEYBOARD_DEVICE_H
-#define KEYBOARD_DEVICE_H
+#pragma once
 
 #include <unordered_map>
 #include <vector>
@@ -28,8 +27,6 @@ class KeyboardDevice : public HIDDevice {
   static bool DeviceButtonToMacVirtualKey(
       DeviceButton button, UInt8& iMacVKOut);
 };
-
-#endif
 
 /*
  * (c) 2005-2006 Steve Checkoway

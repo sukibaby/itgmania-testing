@@ -1,8 +1,7 @@
 /* ScreenDebugOverlay - credits and statistics drawn on top of everything else.
  */
 
-#ifndef ScreenDebugOverlay_H
-#define ScreenDebugOverlay_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -37,8 +36,6 @@ class ScreenDebugOverlay : public Screen {
   std::vector<BitmapText*> m_vptextButton;
   std::vector<BitmapText*> m_vptextFunction;
 };
-
-#endif
 
 /*
  * (c) 2001-2005 Chris Danford, Glenn Maynard

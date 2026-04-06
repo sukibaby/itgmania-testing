@@ -1,7 +1,6 @@
 /* RageFileDriver - File driver base classes. */
 
-#ifndef RAGE_FILE_DRIVER_H
-#define RAGE_FILE_DRIVER_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -53,8 +52,6 @@ struct FileDriverEntry {
 };
 RageFileDriver* MakeFileDriver(
     const std::string& Type, const std::string& Root);
-
-#endif
 
 /*
  * Copyright (c) 2003-2004 Glenn Maynard

@@ -1,5 +1,4 @@
-#ifndef GHOSTARROWROW_H
-#define GHOSTARROWROW_H
+#pragma once
 
 #include <vector>
 
@@ -33,8 +32,6 @@ class GhostArrowRow : public ActorFrame {
   std::vector<TapNoteSubType> m_bHoldShowing;
   std::vector<TapNoteSubType> m_bLastHoldShowing;
 };
-
-#endif
 
 /**
  * @file

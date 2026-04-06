@@ -1,5 +1,4 @@
-#ifndef CryptManager_H
-#define CryptManager_H
+#pragma once
 
 #include <string>
 
@@ -49,8 +48,6 @@ class CryptManager {
 
 extern CryptManager*
     CRYPTMAN;  // global and accessible from anywhere in our program
-
-#endif
 
 /*
  * (c) 2004 Chris Danford

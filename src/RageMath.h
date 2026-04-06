@@ -1,7 +1,6 @@
 /* RageMath - vector/matrix math utilities. */
 
-#ifndef RAGE_MATH_H
-#define RAGE_MATH_H
+#pragma once
 
 #include <vector>
 
@@ -103,8 +102,6 @@ class RageBezier2D {
   RageQuadratic m_X;
   RageQuadratic m_Y;
 };
-
-#endif
 
 /*
  * Copyright (c) 2001-2006 Chris Danford, Glenn Maynard

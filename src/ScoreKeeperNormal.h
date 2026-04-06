@@ -1,7 +1,6 @@
 /* ScoreKeeperNormal -  */
 
-#ifndef SCORE_KEEPER_NORMAL_H
-#define SCORE_KEEPER_NORMAL_H
+#pragma once
 
 #include <vector>
 
@@ -123,8 +122,6 @@ class ScoreKeeperNormal : public ScoreKeeper {
       const NoteData& nd, int iRow, int& iNumHitContinueCombo,
       int& iNumHitMaintainCombo, int& iNumBreakCombo);
 };
-
-#endif
 
 /*
  * (c) 2001-2004 Chris Danford, Glenn Maynard

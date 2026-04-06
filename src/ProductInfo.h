@@ -1,5 +1,4 @@
-#ifndef PRODUCT_INFO_H
-#define PRODUCT_INFO_H
+#pragma once
 
 /**
  * @brief A friendly string to refer to the product in crash dialogs, etc.
@@ -30,8 +29,6 @@
 #define SM_DOWNLOAD_URL "https://www.itgmania.com/"
 
 #define CAN_INSTALL_PACKAGES true
-
-#endif
 
 /**
  * @file

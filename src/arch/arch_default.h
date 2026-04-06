@@ -1,5 +1,4 @@
-#ifndef ARCH_DEFAULT_H
-#define ARCH_DEFAULT_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -98,8 +97,6 @@ inline const std::vector<std::string>& GetDefaultSoundDriverList() {
 #include "LoadingWindow/LoadingWindow_Null.h"
 #include "MemoryCard/MemoryCardDriverThreaded_Folder.h"
 #include "MemoryCard/MemoryCardDriver_Null.h"
-
-#endif  // ARCH_DEFAULT_H
 
 /*
  * (c) 2002-2006 Glenn Maynard, Ben Anderson, Steve Checkoway

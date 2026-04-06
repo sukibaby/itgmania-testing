@@ -1,5 +1,4 @@
-#ifndef INPUTHANDLER_DIRECTINPUT_H
-#define INPUTHANDLER_DIRECTINPUT_H
+#pragma once
 
 #include <vector>
 
@@ -42,8 +41,6 @@ class InputHandler_DInput : public InputHandler {
   void StartThread();
   void ShutdownThread();
 };
-
-#endif
 
 /*
  * (c) 2003-2004 Glenn Maynard

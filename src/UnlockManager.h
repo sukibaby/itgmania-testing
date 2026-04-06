@@ -1,7 +1,6 @@
 /* UnlockManager - Unlocks handling. */
 
-#ifndef UNLOCK_MANAGER_H
-#define UNLOCK_MANAGER_H
+#pragma once
 
 #include <set>
 #include <string>
@@ -201,8 +200,6 @@ class UnlockManager {
 
 extern UnlockManager*
     UNLOCKMAN;  // global and accessible from anywhere in program
-
-#endif
 
 /*
  * (c) 2001-2004 Kevin Slaughter, Andrew Wong, Glenn Maynard

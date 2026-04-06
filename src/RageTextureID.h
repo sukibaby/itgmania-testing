@@ -1,8 +1,7 @@
 /* RageTextureID - An identifier for a texture and associated loading
  * parameters. */
 
-#ifndef RAGE_TEXTURE_ID_H
-#define RAGE_TEXTURE_ID_H
+#pragma once
 
 #include <string>
 
@@ -132,8 +131,6 @@ inline bool operator<=(const RageTextureID& lhs, const RageTextureID& rhs) {
 inline bool operator>=(const RageTextureID& lhs, const RageTextureID& rhs) {
   return !operator<(lhs, rhs);
 }
-
-#endif
 
 /*
  * Copyright (c) 2003-2004 Chris Danford, Glenn Maynard

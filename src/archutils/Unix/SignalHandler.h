@@ -1,5 +1,4 @@
-#ifndef SIGNAL_HANDLER_H
-#define SIGNAL_HANDLER_H
+#pragma once
 
 #include <signal.h>
 
@@ -19,8 +18,6 @@ typedef bool (*handler)(int, siginfo_t* si, const ucontext_t* uc);
 
 void OnClose(handler);
 };  // namespace SignalHandler
-
-#endif
 
 /*
  * (c) 2003-2004 Glenn Maynard

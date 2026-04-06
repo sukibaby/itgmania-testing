@@ -1,7 +1,6 @@
 /* RageSoundReader_MP3 - An interface to read MP3s via MAD. */
 
-#ifndef RAGE_SOUND_READER_MP3_H
-#define RAGE_SOUND_READER_MP3_H
+#pragma once
 
 #include <string>
 
@@ -52,8 +51,6 @@ class RageSoundReader_MP3 : public RageSoundReader_FileReader {
   int GetLengthInternal(bool fast);
   int GetLengthConst(bool fast) const;
 };
-
-#endif
 
 /*
  * Copyright (c) 2001-2004 Chris Danford, Glenn Maynard

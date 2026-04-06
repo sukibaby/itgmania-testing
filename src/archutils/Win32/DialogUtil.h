@@ -1,5 +1,4 @@
-#ifndef DialogUtil_H
-#define DialogUtil_H
+#pragma once
 
 #include <windows.h>
 
@@ -7,8 +6,6 @@ namespace DialogUtil {
 void SetHeaderFont(HWND hdlg, int nID);
 void LocalizeDialogAndContents(HWND hdlg);
 };  // namespace DialogUtil
-
-#endif
 
 /*
  * (c) 2002-2004 Glenn Maynard

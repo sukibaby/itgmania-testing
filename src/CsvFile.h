@@ -1,7 +1,6 @@
 /* CsvFile - Reading and writing .CSV files. */
 
-#ifndef CsvFile_H
-#define CsvFile_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -24,8 +23,6 @@ class CsvFile {
   std::string m_sPath;
   mutable std::string m_sError;
 };
-
-#endif
 
 /*
  * (c) 2001-2004 Adam Clauss, Chris Danford

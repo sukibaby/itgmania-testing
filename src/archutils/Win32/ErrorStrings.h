@@ -1,5 +1,4 @@
-#ifndef ERROR_STRINGS_H
-#define ERROR_STRINGS_H
+#pragma once
 
 #include <string>
 
@@ -8,8 +7,6 @@ std::string ConvertWstringToCodepage(std::wstring s, int iCodePage);
 std::string ConvertUTF8ToACP(const std::string& s);
 std::wstring ConvertCodepageToWString(std::string s, int iCodePage);
 std::string ConvertACPToUTF8(const std::string& s);
-
-#endif
 
 /*
  * Copyright (c) 2001-2005 Chris Danford, Glenn Maynard

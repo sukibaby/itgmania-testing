@@ -1,5 +1,4 @@
-#ifndef SCREEN_EXIT_H
-#define SCREEN_EXIT_H
+#pragma once
 
 #include "Screen.h"
 
@@ -10,8 +9,6 @@ class ScreenExit : public Screen {
  private:
   bool m_Exited;
 };
-
-#endif
 
 /*
  * (c) 2003-2004 Glenn Maynard

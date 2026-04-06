@@ -1,7 +1,6 @@
 /* InputHandler_Linux_Event - evdev-based input driver */
 
-#ifndef INPUT_HANDLER_LINUX_EVENT_H
-#define INPUT_HANDLER_LINUX_EVENT_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -35,8 +34,6 @@ class InputHandler_Linux_Event : public InputHandler {
   struct udev_monitor* m_udev_monitor;
 };
 #define USE_INPUT_HANDLER_LINUX_JOYSTICK
-
-#endif
 
 /*
  * (c) 2003-2008 Glenn Maynard

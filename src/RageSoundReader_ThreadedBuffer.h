@@ -1,7 +1,6 @@
 /* RageSoundReader_ThreadedBuffer - Buffer sounds into memory. */
 
-#ifndef RAGE_SOUND_READER_THREADED_BUFFER
-#define RAGE_SOUND_READER_THREADED_BUFFER
+#pragma once
 
 #include <list>
 #include <string>
@@ -85,8 +84,6 @@ class RageSoundReader_ThreadedBuffer : public RageSoundReader_Filter {
 
   void BufferingThread();
 };
-
-#endif
 
 /*
  * Copyright (c) 2006 Glenn Maynard

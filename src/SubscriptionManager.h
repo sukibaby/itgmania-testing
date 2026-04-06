@@ -1,7 +1,6 @@
 /* SubscriptionManager - Object that accepts subscriptions. */
 
-#ifndef SubscriptionManager_H
-#define SubscriptionManager_H
+#pragma once
 
 #include <set>
 
@@ -45,8 +44,6 @@ class SubscriptionManager {
     m_pSubscribers->erase(iter);
   }
 };
-
-#endif
 
 /*
  * (c) 2004-2005 Chris Danford

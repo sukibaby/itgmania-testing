@@ -1,5 +1,4 @@
-#ifndef ARCH_SETUP_DARWIN_H
-#define ARCH_SETUP_DARWIN_H
+#pragma once
 
 #define HAVE_CXA_DEMANGLE
 /* This must be defined to 1 because autoconf's AC_CHECK_DECLS macro decides to
@@ -21,8 +20,6 @@
 #endif
 
 #define OSX_KEYBOARD_USE_NSEVENT 1
-
-#endif
 
 /*
  * (c) 2003-2006 Steve Checkoway

@@ -1,7 +1,6 @@
 /* BackgroundLoader - Loads files in a thread. */
 
-#ifndef RAGE_UTIL_BACKGROUND_LOADER_H
-#define RAGE_UTIL_BACKGROUND_LOADER_H
+#pragma once
 
 #include <map>
 #include <string>
@@ -64,8 +63,6 @@ class BackgroundLoader {
 
   RageFileDriverCached* m_pDriver;
 };
-
-#endif
 
 /*
  * (c) 2004 Glenn Maynard

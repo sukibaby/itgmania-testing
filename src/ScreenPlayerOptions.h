@@ -1,5 +1,4 @@
-#ifndef SCREENPLAYEROPTIONS_H
-#define SCREENPLAYEROPTIONS_H
+#pragma once
 
 #include <vector>
 
@@ -34,8 +33,6 @@ class ScreenPlayerOptions : public ScreenOptionsMaster {
   // show if the current selections will disqualify a high score
   AutoActor m_sprDisqualify[NUM_PLAYERS];
 };
-
-#endif
 
 /*
  * (c) 2001-2004 Chris Danford

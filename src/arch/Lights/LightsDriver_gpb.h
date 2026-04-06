@@ -1,8 +1,7 @@
 /* LightsDriver_gpb: Control lights for the gpb board by icedragon.io
  * using hidapi */
 
-#ifndef LightsDriver_GPB_H
-#define LightsDriver_GPB_H
+#pragma once
 
 /*
  * -------------------------- NOTE --------------------------
@@ -79,8 +78,6 @@ class LightsDriver_gpb : public LightsDriver {
 
   virtual void Set(const LightsState* ls);
 };
-
-#endif
 
 /*
  * (c) 2026 din

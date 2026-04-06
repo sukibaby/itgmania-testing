@@ -1,7 +1,6 @@
 /* PlayerNumber - A simple type representing a player. */
 
-#ifndef PlayerNumber_H
-#define PlayerNumber_H
+#pragma once
 
 #include <string>
 
@@ -65,8 +64,6 @@ const std::string& MultiPlayerToLocalizedString(MultiPlayer mp);
 LuaDeclareType(MultiPlayer);
 /** @brief A foreach loop to handle the different Players in MultiPlayer. */
 #define FOREACH_MultiPlayer(pn) FOREACH_ENUM(MultiPlayer, pn)
-
-#endif
 
 /*
  * (c) 2001-2004 Chris Danford, Chris Gomez

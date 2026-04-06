@@ -1,8 +1,7 @@
 /* LightsDriver_snek: Control lights for the snek board by icedragon.io using
  * hidapi */
 
-#ifndef LightsDriver_snek_H
-#define LightsDriver_snek_H
+#pragma once
 
 /*
  * -------------------------- NOTE --------------------------
@@ -117,8 +116,6 @@ class LightsDriver_snek : public LightsDriver {
 
   virtual void Set(const LightsState* ls);
 };
-
-#endif
 
 /*
  * (c) 2025 din

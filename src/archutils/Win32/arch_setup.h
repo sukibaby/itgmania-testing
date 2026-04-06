@@ -1,5 +1,4 @@
-#ifndef ARCH_SETUP_WINDOWS_H
-#define ARCH_SETUP_WINDOWS_H
+#pragma once
 
 #define SUPPORT_OPENGL
 #define SUPPORT_D3D
@@ -23,8 +22,6 @@ void my_usleep(unsigned long usec);
 /* We implement the crash handler interface (though that interface isn't
  * completely uniform across platforms yet). */
 #define CRASH_HANDLER
-
-#endif
 
 /*
  * (c) 2002-2004 Glenn Maynard

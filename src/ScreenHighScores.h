@@ -1,5 +1,4 @@
-#ifndef ScreenHighScores_H
-#define ScreenHighScores_H
+#pragma once
 
 #include <string>
 #include <utility>
@@ -98,8 +97,6 @@ class ScreenHighScores : public ScreenAttract {
   ThemeMetric<int> MAX_ITEMS_TO_SHOW;
   ScoreScroller m_Scroller;
 };
-
-#endif
 
 /*
  * (c) 2001-2007 Chris Danford, Ben Nordstrom, Glenn Maynard

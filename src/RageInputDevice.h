@@ -1,6 +1,5 @@
 /* RageInputDevice - User input types. */
-#ifndef RAGE_INPUT_DEVICE_H
-#define RAGE_INPUT_DEVICE_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -442,7 +441,6 @@ inline bool operator>=(const DeviceInput& lhs, const DeviceInput& rhs) {
 
 typedef std::vector<DeviceInput> DeviceInputList;
 
-#endif
 /*
  * Copyright (c) 2001-2002 Chris Danford
  * All rights reserved.

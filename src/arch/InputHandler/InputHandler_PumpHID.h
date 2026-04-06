@@ -1,5 +1,4 @@
-#ifndef INPUT_HANDLER_PUMPHID
-#define INPUT_HANDLER_PUMPHID
+#pragma once
 
 /*
  * -------------------------- NOTE --------------------------
@@ -259,8 +258,6 @@ class InputHandler_PumpHID : public InputHandler {
 
   void CreateLightingMessage(LightsState newLS);
 };
-
-#endif
 
 /*
  * (c) 2025 din

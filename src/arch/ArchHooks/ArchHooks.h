@@ -1,5 +1,4 @@
-#ifndef ARCH_HOOKS_H
-#define ARCH_HOOKS_H
+#pragma once
 
 #include <cstdint>
 #include <ctime>
@@ -139,8 +138,6 @@ class ArchHooks {
   bool m_bHasFocus;
   bool m_bFocusChanged;
 };
-
-#endif
 
 extern ArchHooks* HOOKS;  // global and accessible from anywhere in our program
 

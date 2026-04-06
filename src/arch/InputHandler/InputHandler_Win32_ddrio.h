@@ -1,5 +1,4 @@
-#ifndef INPUT_HANDLER_WIN32_DDRIO_H
-#define INPUT_HANDLER_WIN32_DDRIO_H
+#pragma once
 
 #include <cstdint>
 #include <string>
@@ -108,5 +107,3 @@ class InputHandler_Win32_ddrio : public InputHandler {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-
-#endif

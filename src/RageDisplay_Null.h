@@ -1,7 +1,6 @@
 /* RageDisplay_Null - No-op diagnostic renderer. */
 
-#ifndef RAGE_DISPLAY_NULL_H
-#define RAGE_DISPLAY_NULL_H
+#pragma once
 
 #include <cstdint>
 #include <string>
@@ -97,7 +96,6 @@ class RageDisplay_Null : public RageDisplay {
   bool SupportsSurfaceFormat(RagePixelFormat) { return true; }
 };
 
-#endif
 /*
  * Copyright (c) 2001-2004 Chris Danford, Glenn Maynard
  * All rights reserved.

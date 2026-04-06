@@ -1,5 +1,4 @@
-#ifndef RECEPTOR_ARROW_H
-#define RECEPTOR_ARROW_H
+#pragma once
 
 #include "ActorFrame.h"
 #include "AutoActor.h"
@@ -28,8 +27,6 @@ class ReceptorArrow : public ActorFrame {
   bool m_bWasPressed;  // set in Update
   bool m_bWasReverse;
 };
-
-#endif
 
 /**
  * @file

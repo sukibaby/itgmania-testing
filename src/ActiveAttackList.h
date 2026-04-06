@@ -1,5 +1,4 @@
-#ifndef ACTIVE_ATTACK_LIST_H
-#define ACTIVE_ATTACK_LIST_H
+#pragma once
 
 #include "BitmapText.h"
 class PlayerState;
@@ -25,8 +24,6 @@ class ActiveAttackList : public BitmapText {
    */
   const PlayerState* m_pPlayerState;
 };
-
-#endif
 
 /**
  * @file

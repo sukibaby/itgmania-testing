@@ -1,5 +1,4 @@
-#ifndef LUA_REFERENCE_H
-#define LUA_REFERENCE_H
+#pragma once
 
 #include <string>
 
@@ -96,8 +95,6 @@ class LuaTable : public LuaReference {
    * off the stack. */
   void Set(Lua* L, const std::string& sKey);
 };
-
-#endif
 
 /**
  * @file

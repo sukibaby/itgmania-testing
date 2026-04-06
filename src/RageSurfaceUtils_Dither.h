@@ -1,5 +1,4 @@
-#ifndef RAGE_SURFACE_UTILS_DITHER_H
-#define RAGE_SURFACE_UTILS_DITHER_H
+#pragma once
 
 struct RageSurface;
 /** @brief Utility functions for the RageSurfaces. */
@@ -7,8 +6,6 @@ namespace RageSurfaceUtils {
 void OrderedDither(const RageSurface* src, RageSurface* dst);
 void ErrorDiffusionDither(const RageSurface* src, RageSurface* dst);
 };  // namespace RageSurfaceUtils
-
-#endif
 
 /*
  * (c) 2002-2004 Glenn Maynard, Chris Danford

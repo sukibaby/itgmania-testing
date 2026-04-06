@@ -1,5 +1,4 @@
-#ifndef RAGE_SOUND_PULSEAUDIO_H
-#define RAGE_SOUND_PULSEAUDIO_H
+#pragma once
 
 #include <pulse/pulseaudio.h>
 
@@ -44,8 +43,6 @@ class RageSoundDriver_PulseAudio : public RageSoundDriver {
   static void StaticStreamStateCb(pa_stream* s, void* user);
   static void StaticStreamWriteCb(pa_stream* s, size_t length, void* user);
 };
-
-#endif /* RAGE_SOUND_PULSEAUDIO_H */
 
 /*
  * (c) 2009 Damien Thebault

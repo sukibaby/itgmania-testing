@@ -1,5 +1,4 @@
-#ifndef ScreenInstructions_H
-#define ScreenInstructions_H
+#pragma once
 
 #include "InputQueue.h"
 #include "ScreenWithMenuElements.h"
@@ -11,8 +10,6 @@ class ScreenInstructions : public ScreenWithMenuElements {
   virtual bool MenuBack(const InputEventPlus& input);
   virtual bool MenuStart(const InputEventPlus& input);
 };
-
-#endif
 
 /*
  * (c) 2001-2004 Chris Danford

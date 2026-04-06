@@ -1,6 +1,5 @@
 /* StepsDisplayList - Shows all available difficulties for a Song/Course. */
-#ifndef DIFFICULTY_LIST_H
-#define DIFFICULTY_LIST_H
+#pragma once
 
 #include <vector>
 
@@ -73,8 +72,6 @@ class StepsDisplayList : public ActorFrame {
 
   std::vector<Row> m_Rows;
 };
-
-#endif
 
 /*
  * (c) 2003-2004 Glenn Maynard

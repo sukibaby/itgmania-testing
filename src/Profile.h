@@ -1,5 +1,4 @@
-#ifndef Profile_H
-#define Profile_H
+#pragma once
 
 #include <map>
 #include <set>
@@ -485,8 +484,6 @@ class Profile {
   const HighScoresForACourse* GetHighScoresForACourse(
       const CourseID& courseID) const;
 };
-
-#endif
 
 /**
  * @file

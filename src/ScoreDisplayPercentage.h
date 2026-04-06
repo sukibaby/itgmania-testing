@@ -1,5 +1,4 @@
-#ifndef SCORE_DISPLAY_PERCENTAGE_H
-#define SCORE_DISPLAY_PERCENTAGE_H
+#pragma once
 
 #include "AutoActor.h"
 #include "PercentageDisplay.h"
@@ -17,8 +16,6 @@ class ScoreDisplayPercentage : public ScoreDisplay {
   AutoActor m_sprFrame;
   PercentageDisplay m_Percent;
 };
-
-#endif
 
 /*
  * (c) 2003 Glenn Maynard

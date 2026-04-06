@@ -1,5 +1,4 @@
-#ifndef MemoryCardDriverThreaded_Folder_H
-#define MemoryCardDriverThreaded_Folder_H 1
+#pragma once
 
 #include <string>
 #include <vector>
@@ -23,8 +22,6 @@ class MemoryCardDriverThreaded_Folder : public MemoryCardDriver {
   int GetActivePlayerMask();
   int m_LastDevices;
 };
-
-#endif
 
 /*
  * (c) 2018-2019 Electromuis

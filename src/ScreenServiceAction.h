@@ -1,7 +1,6 @@
 /* ScreenServiceAction -  */
 
-#ifndef ScreenServiceAction_H
-#define ScreenServiceAction_H
+#pragma once
 
 #include <string>
 
@@ -13,8 +12,6 @@ class ScreenServiceAction : public ScreenPrompt {
  public:
   virtual void BeginScreen();
 };
-
-#endif
 
 /*
  * (c) 2001-2005 Chris Danford

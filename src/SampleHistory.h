@@ -1,5 +1,4 @@
-#ifndef SAMPLE_HISTORY_H
-#define SAMPLE_HISTORY_H
+#pragma once
 
 #include <vector>
 
@@ -20,8 +19,6 @@ class SampleHistory {
   float m_fHistorySeconds;
   float m_fToSample;
 };
-
-#endif
 
 /**
  * @file

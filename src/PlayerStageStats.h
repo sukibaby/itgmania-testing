@@ -1,5 +1,4 @@
-#ifndef PlayerStageStats_H
-#define PlayerStageStats_H
+#pragma once
 
 #include <map>
 #include <string>
@@ -180,8 +179,6 @@ class PlayerStageStats {
   // Lua
   void PushSelf(lua_State* L);
 };
-
-#endif
 
 /**
  * @file

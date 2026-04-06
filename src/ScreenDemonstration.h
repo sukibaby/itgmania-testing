@@ -1,7 +1,6 @@
 /* ScreenDemonstration - Jukebox adapter for the attract sequence. */
 
-#ifndef SCREEN_DEMONSTRATION_H
-#define SCREEN_DEMONSTRATION_H
+#pragma once
 
 #include "Screen.h"
 #include "ScreenJukebox.h"
@@ -17,8 +16,6 @@ class ScreenDemonstration : public ScreenJukebox {
 
   virtual ScreenType GetScreenType() const { return attract; }
 };
-
-#endif
 
 /*
  * (c) 2003-2004 Chris Danford

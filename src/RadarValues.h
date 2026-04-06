@@ -1,5 +1,4 @@
-#ifndef RARAR_VALUES_H
-#define RARAR_VALUES_H
+#pragma once
 
 #include <string>
 
@@ -69,8 +68,6 @@ struct RadarValues {
   // Lua
   void PushSelf(lua_State* L);
 };
-
-#endif
 
 /**
  * @file

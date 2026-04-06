@@ -1,5 +1,4 @@
-#ifndef TITLE_SUBSTITUTION_H
-#define TITLE_SUBSTITUTION_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -47,8 +46,6 @@ class TitleSubst {
 
   void Subst(TitleFields& tf);
 };
-
-#endif
 
 /**
  * @file

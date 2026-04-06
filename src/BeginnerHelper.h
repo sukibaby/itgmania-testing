@@ -1,5 +1,4 @@
-#ifndef BEGINNER_HELPER_H
-#define BEGINNER_HELPER_H
+#pragma once
 
 #include <array>
 
@@ -45,7 +44,6 @@ class BeginnerHelper : public ActorFrame {
 
   ThemeMetric<bool> SHOW_DANCE_PAD;
 };
-#endif
 
 /**
  * @file

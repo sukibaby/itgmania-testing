@@ -1,5 +1,4 @@
-#ifndef LUA_DEBUG_MANAGER_H
-#define LUA_DEBUG_MANAGER_H
+#pragma once
 
 #include <memory>
 #include <string>
@@ -39,8 +38,6 @@ class LuaDebugManager {
 };
 
 extern LuaDebugManager* LUADEBUG;
-
-#endif
 
 /*
  * Copyright (C) 2025  Arttu Ylä-Outinen

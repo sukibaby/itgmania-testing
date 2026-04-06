@@ -1,5 +1,4 @@
-#ifndef LightsManager_H
-#define LightsManager_H
+#pragma once
 
 #include <queue>
 #include <string>
@@ -156,8 +155,6 @@ class LightsManager {
 
 extern LightsManager*
     LIGHTSMAN;  // global and accessible from anywhere in our program
-
-#endif
 
 /*
  * (c) 2003-2004 Chris Danford

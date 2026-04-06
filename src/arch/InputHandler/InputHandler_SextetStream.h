@@ -1,5 +1,4 @@
-#ifndef INPUT_HANDLER_SEXTETSTREAM
-#define INPUT_HANDLER_SEXTETSTREAM
+#pragma once
 
 #include <vector>
 
@@ -37,8 +36,6 @@ class InputHandler_SextetStreamFromFile : public InputHandler_SextetStream {
   // determined how to disable buffering on an input file.)
   InputHandler_SextetStreamFromFile();
 };
-
-#endif
 
 /*
  * Copyright © 2014 Peter S. May

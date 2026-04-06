@@ -1,5 +1,4 @@
-#ifndef RAGEUTIL_CONVERTVALUE_H
-#define RAGEUTIL_CONVERTVALUE_H
+#pragma once
 
 /* Helper for ConvertValue(). */
 template <typename TO, typename FROM>
@@ -27,5 +26,3 @@ template <typename TO, typename FROM>
 ConvertValueHelper<TO, FROM> ConvertValue(FROM* pValue) {
   return ConvertValueHelper<TO, FROM>(pValue);
 }
-
-#endif

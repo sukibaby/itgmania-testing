@@ -1,5 +1,4 @@
-#ifndef DUAL_SCROLLBAR_H
-#define DUAL_SCROLLBAR_H
+#pragma once
 
 #include <string>
 
@@ -25,8 +24,6 @@ class DualScrollBar : public ActorFrame {
   AutoActor m_sprScrollThumbOverHalf[NUM_PLAYERS];
   AutoActor m_sprScrollThumbUnderHalf[NUM_PLAYERS];
 };
-
-#endif
 
 /**
  * @file

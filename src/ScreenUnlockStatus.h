@@ -1,5 +1,4 @@
-#ifndef ScreenUnlockStatus_H
-#define ScreenUnlockStatus_H
+#pragma once
 
 #include <vector>
 
@@ -22,8 +21,6 @@ class ScreenUnlockStatus : public ScreenAttract {
 
   std::vector<int> LastUnlocks;  // used for "last few" method
 };
-
-#endif
 
 /*
  * (c) 2003 Andrew Wong

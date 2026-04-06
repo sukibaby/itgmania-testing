@@ -1,7 +1,6 @@
 /** @brief CourseLoaderCRS - Reads a Course from an .CRS file. */
 
-#ifndef COURSE_LOADER_CRS_H
-#define COURSE_LOADER_CRS_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -133,8 +132,6 @@ bool ParseRangedValue(
 bool SetCourseSongSort(
     CourseEntry& new_entry, SongSort sort, int index, const std::string& sPath);
 }  // namespace CourseLoaderCRS
-
-#endif
 
 /**
  * @file

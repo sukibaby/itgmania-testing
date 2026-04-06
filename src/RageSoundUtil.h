@@ -1,5 +1,4 @@
-#ifndef RAGE_SOUND_UTIL_H
-#define RAGE_SOUND_UTIL_H
+#pragma once
 
 #include <cstdint>
 
@@ -14,8 +13,6 @@ void ConvertMonoToStereoInPlace(float* pBuffer, int iFrames);
 void ConvertNativeInt16ToFloat(const int16_t* pFrom, float* pTo, int iSamples);
 void ConvertFloatToNativeInt16(const float* pFrom, int16_t* pTo, int iSamples);
 };  // namespace RageSoundUtil
-
-#endif
 
 /*
  * Copyright (c) 2002-2004 Glenn Maynard

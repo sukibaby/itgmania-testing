@@ -1,6 +1,5 @@
 /** @brief SSCLoader - Reads a Song and its Steps from a .SSC file. */
-#ifndef NotesLoaderSSC_H
-#define NotesLoaderSSC_H
+#pragma once
 
 #include <string>
 
@@ -94,7 +93,6 @@ struct SSCLoader : public SMLoader {
   void ProcessScrolls(TimingData&, const std::string);
 };
 
-#endif
 /**
  * @file
  * @author Jason Felds (c) 2011

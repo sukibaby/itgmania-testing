@@ -1,5 +1,4 @@
-#ifndef SCREEN_SONG_OPTIONS_H
-#define SCREEN_SONG_OPTIONS_H
+#pragma once
 
 #include <vector>
 
@@ -13,8 +12,6 @@ class ScreenSongOptions : public ScreenOptionsMaster {
  private:
   virtual void ExportOptions(int iRow, const std::vector<PlayerNumber>& vpns);
 };
-
-#endif
 
 /*
  * (c) 2001-2004 Chris Danford

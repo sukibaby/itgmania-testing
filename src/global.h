@@ -1,5 +1,4 @@
-#ifndef GLOBAL_H
-#define GLOBAL_H
+#pragma once
 
 #include <string>
 
@@ -109,8 +108,6 @@ void ShowWarningOrTrace(
 #define SM_UNIQUE_NAME(x) SM_UNIQUE_NAME2(x, __LINE__)
 
 /* Don't include our own headers here, since they tend to change often. */
-
-#endif
 
 /**
  * @file

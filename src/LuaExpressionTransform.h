@@ -1,7 +1,6 @@
 /* LuaExpressionTransform -  */
 
-#ifndef LuaExpressionTransform_H
-#define LuaExpressionTransform_H
+#pragma once
 
 #include <map>
 
@@ -52,8 +51,6 @@ class LuaExpressionTransform {
   mutable std::map<PositionOffsetAndItemIndex, Actor::TweenState>
       m_mapPositionToTweenStateCache;
 };
-
-#endif
 
 /*
  * (c) 2003-2004 Chris Danford

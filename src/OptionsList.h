@@ -1,5 +1,4 @@
-#ifndef SCREEN_OPTIONS_LIST_H
-#define SCREEN_OPTIONS_LIST_H
+#pragma once
 
 #include <map>
 #include <set>
@@ -114,8 +113,6 @@ class OptionsList : public ActorFrame {
   GameButton m_GameButtonPreviousItem;
   GameButton m_GameButtonNextItem;
 };
-
-#endif
 
 /**
  * @file

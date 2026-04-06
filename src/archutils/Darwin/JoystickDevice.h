@@ -1,5 +1,4 @@
-#ifndef JOYSTICK_DEVICE_H
-#define JOYSTICK_DEVICE_H
+#pragma once
 
 #include <unordered_map>
 #include <vector>
@@ -43,8 +42,6 @@ class JoystickDevice : public HIDDevice {
   int AssignIDs(InputDevice startID);
   void GetDevicesAndDescriptions(std::vector<InputDeviceInfo>& vDevices) const;
 };
-
-#endif
 
 /*
  * (c) 2005-2006 Steve Checkoway

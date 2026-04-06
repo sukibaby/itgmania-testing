@@ -1,5 +1,4 @@
-#ifndef INPUT_HANDLER_WIN32_RTIO_H
-#define INPUT_HANDLER_WIN32_RTIO_H
+#pragma once
 
 #include <windows.h>
 
@@ -113,8 +112,6 @@ class InputHandler_Win32_RTIO : public InputHandler {
   RageTimer last_counter_send_;
   RageTimer last_counter_recv_;
 };
-
-#endif
 
 /*
  * Contributed by x0rbl (2019). Stepmania copyright/license:

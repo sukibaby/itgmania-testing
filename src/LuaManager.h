@@ -1,5 +1,4 @@
-#ifndef LUA_MANAGER_H
-#define LUA_MANAGER_H
+#pragma once
 
 #include "global.h"
 struct lua_State;
@@ -299,8 +298,6 @@ inline int SafeFArg(lua_State* L, int index, const std::string& err, int def) {
     lua_register(L, #func_name, LuaFunc_##func_name); \
   }                                                   \
   REGISTER_WITH_LUA_FUNCTION(LuaFunc_Register_##func_name);
-
-#endif
 
 /*
  * (c) 2004 Glenn Maynard

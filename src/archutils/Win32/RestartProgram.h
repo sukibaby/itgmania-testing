@@ -1,10 +1,7 @@
-#ifndef RESTART_PROGRAM_H
-#define RESTART_PROGRAM_H
+#pragma once
 
 [[noreturn]]
 void Win32RestartProgram();
-
-#endif
 
 /*
  * (c) 2002-2004 Chris Danford

@@ -1,9 +1,6 @@
-#ifndef ASSERTION_HANDLER_H
-#define ASSERTION_HANDLER_H
+#pragma once
 
 void InstallExceptionHandler();
-
-#endif
 
 /*
  * (c) 2004 Glenn Maynard

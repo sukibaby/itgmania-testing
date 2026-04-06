@@ -1,7 +1,6 @@
 /* RageSurface - holds a simple 2d graphic surface */
 
-#ifndef RAGE_SURFACE_H
-#define RAGE_SURFACE_H
+#pragma once
 
 #include <array>
 #include <cstdint>
@@ -85,8 +84,6 @@ RageSurface* CreateSurface(
 RageSurface* CreateSurfaceFrom(
     int width, int height, int bpp, uint32_t Rmask, uint32_t Gmask,
     uint32_t Bmask, uint32_t Amask, uint8_t* pPixels, uint32_t pitch);
-
-#endif
 
 /*
  * (c) 2001-2004 Glenn Maynard

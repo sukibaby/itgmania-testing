@@ -1,5 +1,4 @@
-#ifndef SCREEN_PROFILE_LOAD_H
-#define SCREEN_PROFILE_LOAD_H
+#pragma once
 
 #include "InputQueue.h"
 #include "ScreenWithMenuElements.h"
@@ -18,8 +17,6 @@ class ScreenProfileLoad : public ScreenWithMenuElements {
 
   ThemeMetric<bool> LOAD_EDITS;
 };
-
-#endif
 
 /*
  * (c) 2007 Glenn Maynard

@@ -1,5 +1,4 @@
-#ifndef ACTOR_SOUND_H
-#define ACTOR_SOUND_H
+#pragma once
 
 #include <string>
 
@@ -29,8 +28,6 @@ class ActorSound : public Actor {
  private:
   RageSound m_Sound;
 };
-
-#endif
 
 /**
  * @file

@@ -1,7 +1,6 @@
 /* RageBitmapTexture - Loads a static texture. */
 
-#ifndef RAGEBITMAPTEXTURE_H
-#define RAGEBITMAPTEXTURE_H
+#pragma once
 
 #include <cstddef>
 #include <cstdint>
@@ -26,8 +25,6 @@ class RageBitmapTexture : public RageTexture {
   uintptr_t
       m_uTexHandle;  // treat as unsigned in OpenGL, IDirect3DTexture9* for D3D
 };
-
-#endif
 
 /*
  * Copyright (c) 2001-2004 Chris Danford, Glenn Maynard

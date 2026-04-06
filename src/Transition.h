@@ -1,7 +1,6 @@
 /* Transition - Transition that draws an actor. */
 
-#ifndef TRANSITION_H
-#define TRANSITION_H
+#pragma once
 
 #include <string>
 
@@ -33,8 +32,6 @@ class Transition : public ActorFrame {
 
   ScreenMessage m_MessageToSendWhenDone;
 };
-
-#endif
 
 /*
  * (c) 2001-2004 Chris Danford

@@ -1,5 +1,4 @@
-#ifndef SCREEN_GAMEPLAY_H
-#define SCREEN_GAMEPLAY_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -405,8 +404,6 @@ std::vector<PlayerInfo>::iterator GetNextVisiblePlayerInfo(
   for (std::vector<PlayerInfo>::iterator pi =      \
            GetNextVisiblePlayerInfo(v.begin(), v); \
        pi != v.end(); pi = GetNextVisiblePlayerInfo(++pi, v))
-
-#endif
 
 /**
  * @file

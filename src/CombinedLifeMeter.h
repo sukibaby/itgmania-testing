@@ -1,5 +1,4 @@
-#ifndef COMBINEDLIFEMETER_H
-#define COMBINEDLIFEMETER_H
+#pragma once
 
 #include "ActorFrame.h"
 #include "GameConstantsAndTypes.h"
@@ -30,8 +29,6 @@ class CombinedLifeMeter : public ActorFrame {
   virtual void SetLife(PlayerNumber pn, float value) = 0;
   virtual void HandleTapScoreNone(PlayerNumber pn) = 0;
 };
-
-#endif
 
 /**
  * @file

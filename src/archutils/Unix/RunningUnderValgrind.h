@@ -1,11 +1,8 @@
 /* RunningUnderValgrind - Detect if the application is being run under Valgrind.
  */
-#ifndef DETECT_VALGRIND_H
-#define DETECT_VALGRIND_H
+#pragma once
 
 bool RunningUnderValgrind();
-
-#endif
 
 /*
  * (c) 2003-2004 Glenn Maynard

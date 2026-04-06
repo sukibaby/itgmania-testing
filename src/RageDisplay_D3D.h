@@ -1,7 +1,6 @@
 /* RageDisplay_D3D - Direct3D renderer. */
 
-#ifndef RAGE_DISPLAY_D3D_H
-#define RAGE_DISPLAY_D3D_H
+#pragma once
 
 #include <cstdint>
 #include <string>
@@ -82,8 +81,6 @@ class RageDisplay_D3D : public RageDisplay {
 
   void SendCurrentMatrices();
 };
-
-#endif
 
 /*
  * Copyright (c) 2001-2004 Chris Danford, Glenn Maynard

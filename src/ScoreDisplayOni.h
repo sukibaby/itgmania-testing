@@ -1,5 +1,4 @@
-#ifndef SCORE_DISPLAY_ONI_H
-#define SCORE_DISPLAY_ONI_H
+#pragma once
 
 #include "BitmapText.h"
 #include "ScoreDisplay.h"
@@ -20,8 +19,6 @@ class ScoreDisplayOni : public ScoreDisplay {
   Sprite m_sprFrame;
   BitmapText m_text;
 };
-
-#endif
 
 /*
  * (c) 2001-2004 Chris Danford

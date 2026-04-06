@@ -1,5 +1,4 @@
-#ifndef LightsDriver_SextetStream_H
-#define LightsDriver_SextetStream_H
+#pragma once
 
 /*
  * `LightsDriver_Win32Serial` (abstract): Streams the light data (in
@@ -23,8 +22,6 @@ class LightsDriver_Win32Serial : public LightsDriver {
 
   virtual void Set(const LightsState* ls);
 };
-
-#endif
 
 /*
  * Copyright © 2020 Skogaby <skogabyskogaby@gmail.com>

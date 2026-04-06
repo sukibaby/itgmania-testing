@@ -1,5 +1,4 @@
-#ifndef RAGE_TEXTURE_PRELOADER_H
-#define RAGE_TEXTURE_PRELOADER_H
+#pragma once
 
 #include <utility>
 #include <vector>
@@ -21,8 +20,6 @@ class RageTexturePreloader {
  private:
   std::vector<RageTexture*> m_apTextures;
 };
-
-#endif
 
 /*
  * (c) 2005 Glenn Maynard

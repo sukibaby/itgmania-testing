@@ -1,5 +1,4 @@
-#ifndef OPTIONS_CURSOR_H
-#define OPTIONS_CURSOR_H
+#pragma once
 
 #include <string>
 
@@ -38,8 +37,6 @@ class OptionsCursor : public ActorFrame {
   int m_iOriginalCanGoLeftX;
   int m_iOriginalCanGoRightX;
 };
-
-#endif
 
 /*
  * (c) 2001-2003 Chris Danford

@@ -1,5 +1,4 @@
-#ifndef ScreenInstallOverlay_H
-#define ScreenInstallOverlay_H
+#pragma once
 
 #include "BitmapText.h"
 #include "InputEventPlus.h"
@@ -19,8 +18,6 @@ class ScreenInstallOverlay : public Screen {
 
   BitmapText m_textStatus;
 };
-
-#endif
 
 /*
  * (c) 2001-2005 Chris Danford, Glenn Maynard

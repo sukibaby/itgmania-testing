@@ -1,5 +1,4 @@
-#ifndef ATTACK_H
-#define ATTACK_H
+#pragma once
 
 #define ATTACK_STARTS_NOW (-10000.f)
 
@@ -93,8 +92,6 @@ struct AttackArray : public std::vector<Attack> {
    * @param delta the amount to change. */
   void UpdateStartTimes(float delta);
 };
-
-#endif
 
 /**
  * @file

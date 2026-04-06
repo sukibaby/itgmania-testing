@@ -1,5 +1,4 @@
-#ifndef PeriodicCaller_H
-#define PeriodicCaller_H
+#pragma once
 
 #include <utility>
 
@@ -12,5 +11,3 @@ void CallEveryNFrames(int n, Func&& f, Args&&... args) {
     std::forward<Func>(f)(std::forward<Args>(args)...);
   }
 }
-
-#endif  // PeriodicCaller_H

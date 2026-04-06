@@ -1,6 +1,5 @@
 /* ComboGraph - A bar displaying the player's combo on Evaluation. */
-#ifndef COMBO_GRAPH_H
-#define COMBO_GRAPH_H
+#pragma once
 
 #include <string>
 
@@ -31,8 +30,6 @@ class ComboGraph : public ActorFrame {
   Actor* m_pMaxCombo;
   BitmapText* m_pComboNumber;
 };
-
-#endif
 
 /*
  * (c) 2003 Glenn Maynard

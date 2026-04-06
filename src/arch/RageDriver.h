@@ -1,5 +1,4 @@
-#ifndef RAGE_DRIVER_H
-#define RAGE_DRIVER_H
+#pragma once
 
 #include <map>
 #include <string>
@@ -25,8 +24,6 @@ struct RegisterRageDriver {
   RegisterRageDriver(
       DriverList* pDriverList, const istring& sName, CreateRageDriverFn pfn);
 };
-
-#endif
 
 /*
  * (c) 2006 Glenn Maynard

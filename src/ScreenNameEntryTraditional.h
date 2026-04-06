@@ -1,5 +1,4 @@
-#ifndef SCREEN_NAME_ENTRY_TRADITIONAL_H
-#define SCREEN_NAME_ENTRY_TRADITIONAL_H
+#pragma once
 
 #include <string>
 
@@ -35,8 +34,6 @@ class ScreenNameEntryTraditional : public ScreenWithMenuElements {
   bool m_bEnteringName[NUM_PLAYERS];
   bool m_bFinalized[NUM_PLAYERS];
 };
-
-#endif
 
 /**
  * @file

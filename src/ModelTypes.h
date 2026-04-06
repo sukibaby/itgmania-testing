@@ -1,8 +1,7 @@
 /* ModelTypes - Types defined in msLib.h.  C arrays converted to use std::vector
  */
 
-#ifndef MODEL_TYPES_H
-#define MODEL_TYPES_H
+#pragma once
 
 #include <cstdint>
 #include <string>
@@ -142,8 +141,6 @@ struct myBone_t {
   RageMatrix m_Absolute;
   RageMatrix m_Final;
 };
-
-#endif
 
 /*
  * (c) 2003-2004 Chris Danford

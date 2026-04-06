@@ -1,8 +1,7 @@
 /* TextBanner - Shows song title, subtitle, and artist.  Displayed on the
  * MusicWheel. */
 
-#ifndef TEXTBANNER_H
-#define TEXTBANNER_H
+#pragma once
 
 #include <string>
 
@@ -33,8 +32,6 @@ class TextBanner : public ActorFrame {
   BitmapText m_textTitle, m_textSubTitle, m_textArtist;
   std::string m_sArtistPrependString;
 };
-
-#endif
 
 /*
  * (c) 2001-2004 Chris Danford

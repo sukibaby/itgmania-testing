@@ -1,7 +1,6 @@
 /* LoadingWindow_Win32 - Loading window using a Windows dialog box. */
 
-#ifndef LOADING_WINDOW_WIN32_H
-#define LOADING_WINDOW_WIN32_H
+#pragma once
 
 #include <windows.h>
 
@@ -33,8 +32,6 @@ class LoadingWindow_Win32 : public LoadingWindow {
   WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 };
 #define USE_LOADING_WINDOW_WIN32
-
-#endif
 
 /*
  * (c) 2002-2004 Glenn Maynard

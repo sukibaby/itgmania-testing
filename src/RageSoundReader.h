@@ -1,7 +1,6 @@
 /* RageSoundReader - Data source for a RageSound. */
 
-#ifndef RAGE_SOUND_READER_H
-#define RAGE_SOUND_READER_H
+#pragma once
 
 #include <string>
 
@@ -49,8 +48,6 @@ class RageSoundReader {
       float* pBuffer, int iFrames, int* iSourceFrame = nullptr,
       float* fRate = nullptr);
 };
-
-#endif
 
 /*
  * Copyright (c) 2002-2003 Glenn Maynard

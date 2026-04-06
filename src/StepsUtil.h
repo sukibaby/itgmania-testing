@@ -1,5 +1,4 @@
-#ifndef STEPS_UTIL_H
-#define STEPS_UTIL_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -237,8 +236,6 @@ class StepsID {
   StepsType GetStepsType() const { return st; }
   Difficulty GetDifficulty() const { return dc; }
 };
-
-#endif
 
 /**
  * @file

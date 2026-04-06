@@ -1,5 +1,4 @@
-#ifndef SCORE_KEEPER_H
-#define SCORE_KEEPER_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -67,8 +66,6 @@ class ScoreKeeper {
       const NoteData& nd, int iRow, TapNoteScore& tnsOut,
       int& iNumTapsInRowOut);
 };
-
-#endif
 
 /**
  * @file

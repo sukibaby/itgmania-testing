@@ -1,5 +1,4 @@
-#ifndef SCREEN_SANDBOX_H
-#define SCREEN_SANDBOX_H
+#pragma once
 
 #include "Screen.h"
 #include "ScreenMessage.h"
@@ -11,8 +10,6 @@ class ScreenSandbox : public Screen {
   virtual void Update(float f);
   virtual void DrawPrimitives();
 };
-
-#endif
 
 /*
  * (c) 2004 Chris Danford

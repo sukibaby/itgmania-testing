@@ -1,5 +1,4 @@
-#ifndef ScreenOptionsEditCourse_H
-#define ScreenOptionsEditCourse_H
+#pragma once
 
 #include <vector>
 
@@ -38,8 +37,6 @@ class ScreenOptionsEditCourse : public ScreenOptions {
 
   std::vector<Song*> m_vpSongs;
 };
-
-#endif
 
 /*
  * (c) 2003-2004 Chris Danford

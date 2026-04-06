@@ -1,5 +1,4 @@
-#ifndef AdjustSync_H
-#define AdjustSync_H
+#pragma once
 
 #include <string>
 #include <utility>
@@ -56,8 +55,6 @@ class AdjustSync {
   static float s_fAverageError;
   static int s_iStepsFiltered;
 };
-
-#endif
 
 /**
  * @file

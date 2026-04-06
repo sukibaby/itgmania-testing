@@ -1,5 +1,4 @@
-#ifndef GAME_PREFERENCES_H
-#define GAME_PREFERENCES_H
+#pragma once
 
 #include "GameConstantsAndTypes.h"
 #include "Preference.h"
@@ -10,8 +9,6 @@ extern Preference<CoinMode> m_CoinMode;
 extern Preference<PlayerController> m_AutoPlay;
 extern Preference<bool> m_AxisFix;
 };  // namespace GamePreferences
-
-#endif
 
 /*
  * (c) 2001-2004 Chris Danford, Chris Gomez

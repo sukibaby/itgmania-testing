@@ -1,5 +1,4 @@
-#ifndef ScreenOptionsEditProfile_H
-#define ScreenOptionsEditProfile_H
+#pragma once
 
 #include <vector>
 
@@ -30,8 +29,6 @@ class ScreenOptionsEditProfile : public ScreenOptions {
 
   Profile m_Original;  // restore this on revert
 };
-
-#endif
 
 /*
  * (c) 2003-2004 Chris Danford

@@ -1,5 +1,4 @@
-#ifndef NOTE_DATA_WITH_SCORING_H
-#define NOTE_DATA_WITH_SCORING_H
+#pragma once
 
 #include "GameConstantsAndTypes.h"
 #include "PlayerNumber.h"
@@ -31,8 +30,6 @@ void GetActualRadarValues(
     const NoteData& in, const PlayerStageStats& pss, float song_seconds,
     RadarValues& out);
 };  // namespace NoteDataWithScoring
-
-#endif
 
 /**
  * @file

@@ -1,5 +1,4 @@
-#ifndef RAGE_UTIL_FILEDB
-#define RAGE_UTIL_FILEDB
+#pragma once
 
 #include <map>
 #include <set>
@@ -161,8 +160,6 @@ class NullFilenameDB : public FilenameDB {
   NullFilenameDB() { ExpireSeconds = -1; }
   void CacheFile(const std::string& /* sPath */) {}
 };
-
-#endif
 
 /**
  * @file

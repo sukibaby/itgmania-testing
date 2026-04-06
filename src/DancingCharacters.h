@@ -1,5 +1,4 @@
-#ifndef DancingCharacters_H
-#define DancingCharacters_H
+#pragma once
 
 #include <array>
 
@@ -64,8 +63,6 @@ class DancingCharacters : public ActorFrame {
 
   std::array<int, NUM_PLAYERS> m_i2DAnimState;
 };
-
-#endif
 
 /**
  * @file

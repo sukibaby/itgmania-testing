@@ -1,5 +1,4 @@
-#ifndef TEXTURE_FONT_H
-#define TEXTURE_FONT_H
+#pragma once
 
 #include <map>
 #include <vector>
@@ -68,8 +67,6 @@ class TextureFont {
   std::map<wchar_t, ABC> m_ABC;
   void FormatCharacter(wchar_t c, HDC hDC);
 };
-
-#endif
 
 /*
  * Copyright (c) 2003-2007 Glenn Maynard

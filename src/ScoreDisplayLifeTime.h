@@ -1,5 +1,4 @@
-#ifndef ScoreDisplayLifeTime_H
-#define ScoreDisplayLifeTime_H
+#pragma once
 
 #include "AutoActor.h"
 #include "BitmapText.h"
@@ -29,8 +28,6 @@ class ScoreDisplayLifeTime : public ScoreDisplay {
   BitmapText m_textTimeRemaining;
   BitmapText m_textDeltaSeconds;
 };
-
-#endif
 
 /*
  * (c) 2001-2004 Chris Danford

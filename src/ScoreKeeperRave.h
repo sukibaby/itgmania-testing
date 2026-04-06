@@ -1,5 +1,4 @@
-#ifndef SCORE_KEEPER_RAVE_H
-#define SCORE_KEEPER_RAVE_H
+#pragma once
 
 #include "GameConstantsAndTypes.h"
 #include "ScoreKeeper.h"
@@ -21,8 +20,6 @@ class ScoreKeeperRave : public ScoreKeeper {
   void LaunchAttack(AttackLevel al);
   void AddSuperMeterDelta(float fUnscaledPercentChange);
 };
-
-#endif
 
 /*
  * (c) 2001-2004 Chris Danford

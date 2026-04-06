@@ -1,7 +1,6 @@
 /* RageSoundReader_Filter - simplify the creation of filter RageSoundReaders. */
 
-#ifndef RAGE_SOUND_READER_FILTER_H
-#define RAGE_SOUND_READER_FILTER_H
+#pragma once
 
 #include <string>
 
@@ -36,8 +35,6 @@ class RageSoundReader_Filter : public RageSoundReader {
  protected:
   HiddenPtr<RageSoundReader> m_pSource;
 };
-
-#endif
 
 /*
  * Copyright (c) 2006 Glenn Maynard

@@ -1,5 +1,4 @@
-#ifndef ACTOR_PROXY_H
-#define ACTOR_PROXY_H
+#pragma once
 
 #include "Actor.h"
 
@@ -24,8 +23,6 @@ class ActorProxy : public Actor {
  private:
   Actor* m_pActorTarget;
 };
-
-#endif
 
 /*
  * (c) 2006 Glenn Maynard

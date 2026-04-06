@@ -1,5 +1,4 @@
-#ifndef SCREEN_NAME_ENTRY_H
-#define SCREEN_NAME_ENTRY_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -58,8 +57,6 @@ class ScreenNameEntry : public ScreenWithMenuElements {
   ScrollingText m_Text[NUM_PLAYERS];
   std::vector<int> m_ColToStringIndex[NUM_PLAYERS];
 };
-
-#endif
 
 /*
  * (c) 2001-2006 Chris Danford, Steve Checkoway

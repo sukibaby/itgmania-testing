@@ -1,5 +1,4 @@
-#ifndef INPUT_HANDLER_LINUX_JOYSTICK_H
-#define INPUT_HANDLER_LINUX_JOYSTICK_H 1
+#pragma once
 
 #include <string>
 #include <vector>
@@ -32,8 +31,6 @@ class InputHandler_Linux_Joystick : public InputHandler {
   bool m_bShutdown = false;
   bool m_bDevicesChanged = false;
 };
-
-#endif
 
 /*
  * (c) 2003-2004 Glenn Maynard

@@ -1,7 +1,6 @@
 /* LuaBinding - helpers to expose Lua bindings for C++ classes. */
 
-#ifndef LuaBinding_H
-#define LuaBinding_H
+#pragma once
 
 #include <cstdio>
 #include <string>
@@ -249,8 +248,6 @@ class LuaClass : public LuaTable {
 // This way, the stack can safely be used to store the previous values.
 void DefaultNilArgs(lua_State* L, int n);
 float FArgGTEZero(lua_State* L, int index);
-
-#endif
 
 /*
  * (c) 2001-2005 Peter Shook, Chris Danford, Glenn Maynard

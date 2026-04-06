@@ -1,5 +1,4 @@
-#ifndef RAGE_DISPLAY_GLES2_H
-#define RAGE_DISPLAY_GLES2_H
+#pragma once
 
 #include <cstdint>
 #include <string>
@@ -84,7 +83,6 @@ class RageDisplay_GLES2 : public RageDisplay {
   bool SupportsRenderToTexture() const { return true; }
 };
 
-#endif
 /*
  * Copyright (c) 2012 Colby Klein
  * All rights reserved.

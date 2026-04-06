@@ -1,5 +1,4 @@
-#ifndef THEMEMANAGER_H
-#define THEMEMANAGER_H
+#pragma once
 
 #include <set>
 #include <string>
@@ -190,8 +189,6 @@ class ThemeManager {
 
 extern ThemeManager*
     THEME;  // global and accessible from anywhere in our program
-
-#endif
 
 /*
  * (c) 2001-2004 Chris Danford

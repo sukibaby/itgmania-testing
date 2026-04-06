@@ -1,5 +1,4 @@
-#ifndef TWEEN_H
-#define TWEEN_H
+#pragma once
 
 #include "EnumHelper.h"
 
@@ -34,8 +33,6 @@ class ITween {
   static ITween* CreateFromType(TweenType iType);
   static ITween* CreateFromStack(Lua* L, int iStackPos);
 };
-
-#endif
 
 /**
  * @file

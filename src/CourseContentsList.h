@@ -1,5 +1,4 @@
-#ifndef COURSE_CONTENTS_LIST_H
-#define COURSE_CONTENTS_LIST_H
+#pragma once
 
 #include <vector>
 
@@ -25,8 +24,6 @@ class CourseContentsList : public ActorScroller {
 
   std::vector<Actor*> m_vpDisplay;
 };
-
-#endif
 
 /*
  * (c) 2001-2004 Chris Danford

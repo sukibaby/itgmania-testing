@@ -1,5 +1,4 @@
-#ifndef LightsDriver_H
-#define LightsDriver_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -38,8 +37,6 @@ class LightsDriver : public RageDriver {
   static RegisterRageDriver register_##alias_name(             \
       &LightsDriver::m_pDriverList, #alias_name,               \
       CreateClass<LightsDriver_##actual_class, RageDriver>)
-
-#endif
 
 /**
  * @file

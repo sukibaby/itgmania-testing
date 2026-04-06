@@ -1,5 +1,4 @@
-#ifndef PERCENTAGE_DISPLAY_H
-#define PERCENTAGE_DISPLAY_H
+#pragma once
 
 #include <string>
 
@@ -48,8 +47,6 @@ class PercentageDisplay : public ActorFrame {
 
   LuaReference m_FormatPercentScore;
 };
-
-#endif
 
 /*
  * (c) 2001-2003 Chris Danford

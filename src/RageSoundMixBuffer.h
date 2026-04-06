@@ -1,5 +1,4 @@
-#ifndef RAGESOUNDMIXBUFFER_H
-#define RAGESOUNDMIXBUFFER_H
+#pragma once
 
 #include <cstddef>
 #include <cstdint>
@@ -24,8 +23,6 @@ class RageSoundMixBuffer {
   std::vector<float> m_pMixbuf;
   unsigned m_iOffset;
 };
-
-#endif  // RAGESOUNDMIXBUFFER_H
 
 /*
  * Copyright (c) 2002-2004 Glenn Maynard

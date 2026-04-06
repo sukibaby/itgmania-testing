@@ -1,7 +1,6 @@
 /** @brief ScreenDimensions - defines for screen resolutions. */
 
-#ifndef SCREEN_DIMENSIONS_H
-#define SCREEN_DIMENSIONS_H
+#pragma once
 
 namespace ScreenDimensions {
 float GetThemeAspectRatio();
@@ -35,8 +34,6 @@ void ReloadScreenDimensions();
  * XXX: doesn't always have to be 64. -aj
  */
 constexpr int ARROW_SIZE = 64;
-
-#endif
 
 /**
  * @file

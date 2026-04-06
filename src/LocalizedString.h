@@ -1,5 +1,4 @@
-#ifndef LocalizedString_H
-#define LocalizedString_H
+#pragma once
 
 #include <string>
 
@@ -30,8 +29,6 @@ class LocalizedString {
   // Swallow up warnings. If they must be used, define them.
   LocalizedString& operator=(const LocalizedString& rhs);
 };
-
-#endif
 
 /**
  * @file

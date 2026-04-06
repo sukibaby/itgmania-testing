@@ -1,5 +1,4 @@
-#ifndef INPUT_HANDLER_WIN32_PUMP_H
-#define INPUT_HANDLER_WIN32_PUMP_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -26,8 +25,6 @@ class InputHandler_Win32_Pump : public InputHandler {
   void InputThreadMain();
   void HandleInput(int devno, int event);
 };
-
-#endif
 
 /*
  * (c) 2002-2004 Glenn Maynard

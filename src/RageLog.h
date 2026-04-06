@@ -1,7 +1,6 @@
 /* RageLog - Manages logging. */
 
-#ifndef RAGE_LOG_H
-#define RAGE_LOG_H
+#pragma once
 
 #include <string>
 
@@ -49,7 +48,6 @@ class RageLog {
 };
 
 extern RageLog* LOG;  // global and accessible from anywhere in our program
-#endif
 
 /*
  * Copyright (c) 2001-2004 Chris Danford, Glenn Maynard

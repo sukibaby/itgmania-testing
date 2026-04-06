@@ -1,7 +1,6 @@
 /* MeterDisplay - Display position in a song. */
 
-#ifndef METER_DISPLAY_H
-#define METER_DISPLAY_H
+#pragma once
 
 #include <string>
 
@@ -33,8 +32,6 @@ class SongMeterDisplay : public MeterDisplay {
   virtual void Update(float fDeltaTime);
   virtual SongMeterDisplay* Copy() const;
 };
-
-#endif
 
 /*
  * (c) 2003-2004 Chris Danford

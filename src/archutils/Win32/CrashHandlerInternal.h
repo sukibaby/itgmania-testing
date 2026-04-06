@@ -1,5 +1,4 @@
-#ifndef CRASH_HANDLER_INTERNAL_H
-#define CRASH_HANDLER_INTERNAL_H
+#pragma once
 
 #define BACKTRACE_MAX_SIZE 100
 
@@ -17,8 +16,6 @@ struct CrashInfo {
 };
 
 #define CHILD_MAGIC_PARAMETER "--private-do-crash-handler"
-
-#endif
 
 /*
  * (c) 2003-2006 Glenn Maynard

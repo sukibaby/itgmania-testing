@@ -1,5 +1,4 @@
-#ifndef XML_FILE_UTIL_H
-#define XML_FILE_UTIL_H
+#pragma once
 
 #include <string>
 
@@ -33,8 +32,6 @@ XNode* XNodeFromTable(lua_State* L);
 
 void MergeIniUnder(XNode* pFrom, XNode* pTo);
 }  // namespace XmlFileUtil
-
-#endif
 
 /**
  * @file

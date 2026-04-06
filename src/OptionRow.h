@@ -1,7 +1,6 @@
 /* OptionRow - One line in ScreenOptions. */
 
-#ifndef OptionRow_H
-#define OptionRow_H
+#pragma once
 
 #include <array>
 #include <cstddef>
@@ -161,8 +160,6 @@ class OptionRow : public ActorFrame {
  public:
   void SetDestination(Actor::TweenState& ts, bool bTween);
 };
-
-#endif
 
 /*
  * (c) 2001-2004 Chris Danford

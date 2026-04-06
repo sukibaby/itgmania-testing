@@ -1,5 +1,4 @@
-#ifndef ScoreDisplayAliveTime_H
-#define ScoreDisplayAliveTime_H
+#pragma once
 
 #include "Actor.h"
 #include "BitmapText.h"
@@ -32,8 +31,6 @@ class ScoreDisplayAliveTime : public BitmapText {
   PlayerNumber m_PlayerNumber;
   MultiPlayer m_MultiPlayer;
 };
-
-#endif
 
 /*
  * (c) 2001-2004 Chris Danford

@@ -1,6 +1,5 @@
 /* StreamDisplay -  */
-#ifndef StreamDisplay_H
-#define StreamDisplay_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -52,8 +51,6 @@ class StreamDisplay : public ActorFrame {
 
   bool m_bAlwaysBounce;
 };
-
-#endif
 
 /*
  * (c) 2003-2004 Chris Danford

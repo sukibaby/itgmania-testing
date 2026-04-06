@@ -1,7 +1,6 @@
 /* RageFileDriverTimeOut - manipulate files with a forced timeout. */
 
-#ifndef RAGE_FILE_DRIVER_TIMEOUT_H
-#define RAGE_FILE_DRIVER_TIMEOUT_H
+#pragma once
 
 #include <string>
 
@@ -26,8 +25,6 @@ class RageFileDriverTimeout : public RageFileDriver {
   RageFileDriver* m_pChild;
   ThreadedFileWorker* m_pWorker;
 };
-
-#endif
 
 /*
  * Copyright (c) 2005 Glenn Maynard

@@ -1,7 +1,6 @@
 /* LightsDriver_Linux_Leds: Control Linux system lights via /sys/class/leds */
 
-#ifndef LightsDriver_Linux_Leds_H
-#define LightsDriver_Linux_Leds_H
+#pragma once
 
 #include <cstdint>
 #include <string>
@@ -41,8 +40,6 @@ class LightsDriver_Linux_Leds : public LightsDriver {
   virtual void Set(const LightsState* ls) = 0;
   virtual const char* GetGameControllerLightFile() = 0;
 };
-
-#endif
 
 /*
  * (c) 2020 din

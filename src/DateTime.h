@@ -1,5 +1,4 @@
-#ifndef DATE_TIME_H
-#define DATE_TIME_H
+#pragma once
 
 #include <ctime>
 #include <string>
@@ -150,8 +149,6 @@ struct DateTime {
    * @return true if the conversion worked, or false otherwise. */
   bool FromString(const std::string sDateTime);
 };
-
-#endif
 
 /**
  * @file

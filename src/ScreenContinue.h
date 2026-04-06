@@ -1,8 +1,7 @@
 /* ScreenContinue - A screen with a countdown that allows players to
  * join/continue the game. */
 
-#ifndef ScreenContinue_H
-#define ScreenContinue_H
+#pragma once
 
 #include "InputQueue.h"
 #include "MessageManager.h"
@@ -23,8 +22,6 @@ class ScreenContinue : public ScreenWithMenuElementsSimple {
  private:
   ThemeMetric<bool> FORCE_TIMER_WAIT;
 };
-
-#endif
 
 /*
  * (c) 2004 Chris Danford

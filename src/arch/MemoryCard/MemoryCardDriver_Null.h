@@ -1,5 +1,4 @@
-#ifndef MEMORY_CARD_ENUMERATOR_NULL_H
-#define MEMORY_CARD_ENUMERATOR_NULL_H
+#pragma once
 
 #include <vector>
 
@@ -15,8 +14,6 @@ class MemoryCardDriver_Null : public MemoryCardDriver {
   virtual void Unmount(UsbStorageDevice* pDevice) {}
   virtual void Flush(UsbStorageDevice* pDevice) {}
 };
-
-#endif
 
 /*
  * (c) 2003-2004 Chris Danford

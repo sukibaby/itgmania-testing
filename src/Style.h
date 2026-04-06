@@ -1,8 +1,7 @@
 /** @brief Style - A data structure that holds the definition for one of a
  * Game's styles. */
 
-#ifndef STYLE_H
-#define STYLE_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -109,8 +108,6 @@ class Style {
   // Lua
   void PushSelf(lua_State* L);
 };
-
-#endif
 
 /**
  * @file

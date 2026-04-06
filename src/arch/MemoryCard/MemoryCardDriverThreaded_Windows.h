@@ -1,5 +1,4 @@
-#ifndef MemoryCardDriverThreaded_Windows_H
-#define MemoryCardDriverThreaded_Windows_H
+#pragma once
 
 #include <windows.h>
 
@@ -27,8 +26,6 @@ class MemoryCardDriverThreaded_Windows : public MemoryCardDriver {
 #error "More than one MemoryCardDriver included!"
 #endif
 #define ARCH_MEMORY_CARD_DRIVER MemoryCardDriverThreaded_Windows
-
-#endif
 
 /*
  * (c) 2003-2004 Chris Danford

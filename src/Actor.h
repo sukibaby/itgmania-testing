@@ -1,5 +1,4 @@
-#ifndef ACTOR_H
-#define ACTOR_H
+#pragma once
 
 #include "EnumHelper.h"
 #include "LuaReference.h"
@@ -867,8 +866,6 @@ class Actor : public MessageSubscriber {
   // commands
   std::map<std::string, apActorCommands> m_mapNameToCommands;
 };
-
-#endif
 
 /**
  * @file

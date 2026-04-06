@@ -1,7 +1,6 @@
 /* FadingBanner - Fades between two banners. */
 
-#ifndef FADING_BANNER_H
-#define FADING_BANNER_H
+#pragma once
 
 #include <string>
 
@@ -55,8 +54,6 @@ class FadingBanner : public ActorFrame {
   bool m_bMovingFast;
   bool m_bSkipNextBannerUpdate;
 };
-
-#endif
 
 /*
  * (c) 2001-2004 Chris Danford

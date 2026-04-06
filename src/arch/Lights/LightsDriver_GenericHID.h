@@ -1,5 +1,4 @@
-#ifndef LIGHTSDRIVER_LINUXPACDRIVE_H
-#define LIGHTSDRIVER_LINUXPACDRIVE_H
+#pragma once
 
 #include <libusb.h>
 
@@ -55,8 +54,6 @@ class LightsDriver_GenericHID : public LightsDriver {
   libusb_device_handle* DeviceHandle;
   int iLightsOrder;
 };
-
-#endif  // LIGHTSDRIVER_LINUXPACDRIVE_H
 
 /*
  * Copyright (c) 2008 BoXoRRoXoRs

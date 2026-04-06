@@ -1,7 +1,6 @@
 /* ControllerStateDisplay - Show the button state of a controller. */
 
-#ifndef ControllerStateDisplay_H
-#define ControllerStateDisplay_H
+#pragma once
 
 #include <string>
 
@@ -88,8 +87,6 @@ class ControllerStateDisplay : public ActorFrame {
 
   InputDeviceState m_idsLast;
 };
-
-#endif
 
 /*
  * (c) 2001-2004 Chris Danford

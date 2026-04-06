@@ -1,5 +1,4 @@
-#ifndef RAGEUTIL_RANDOMNUMBERS_H
-#define RAGEUTIL_RANDOMNUMBERS_H
+#pragma once
 
 #include <ctime>
 #include <random>
@@ -44,5 +43,3 @@ inline int RandomInt(int n) { return RandomInt(0, n - 1); }
 inline float randomf(const float low = -1.0f, const float high = 1.0f) {
   return RandomFloat(low, high);
 }
-
-#endif

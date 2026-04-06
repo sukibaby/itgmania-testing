@@ -1,5 +1,4 @@
-#ifndef NOTE_SKIN_MANAGER_H
-#define NOTE_SKIN_MANAGER_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -109,8 +108,6 @@ class LockNoteSkin {
   }
   ~LockNoteSkin() { NOTESKIN->SetCurrentNoteSkin(std::string()); }
 };
-
-#endif
 
 /**
  * @file

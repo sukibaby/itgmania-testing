@@ -1,5 +1,4 @@
-#ifndef INPUT_EVENT_PLUS_H
-#define INPUT_EVENT_PLUS_H
+#pragma once
 
 #include "GameInput.h"
 #include "InputFilter.h"
@@ -29,8 +28,6 @@ struct AlternateMapping {
   GameInput inpMain;
   GameInput inpAlt;
 };
-
-#endif
 
 /**
  * @file

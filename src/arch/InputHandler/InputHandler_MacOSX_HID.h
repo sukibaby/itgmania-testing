@@ -1,5 +1,4 @@
-#ifndef INPUT_HANDLER_MACOSX_HID_H
-#define INPUT_HANDLER_MACOSX_HID_H
+#pragma once
 
 #include <CoreFoundation/CoreFoundation.h>
 #include <IOKit/IOKitLib.h>
@@ -47,8 +46,6 @@ class InputHandler_MacOSX_HID : public InputHandler {
   static void QueueCallback(
       void* target, int result, void* refcon, void* sender);
 };
-
-#endif
 
 /*
  * (c) 2005-2006 Steve Checkoway

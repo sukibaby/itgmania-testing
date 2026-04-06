@@ -1,7 +1,6 @@
 /* ScreenBookkeeping - Show coin drop stats. */
 
-#ifndef ScreenBookkeeping_H
-#define ScreenBookkeeping_H
+#pragma once
 
 #include <vector>
 
@@ -44,8 +43,6 @@ class ScreenBookkeeping : public ScreenWithMenuElements {
   BitmapText m_textTitle;
   BitmapText m_textData[NUM_BOOKKEEPING_COLS];
 };
-
-#endif
 
 /*
  * (c) 2003-2004 Chris Danford

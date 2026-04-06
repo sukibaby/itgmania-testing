@@ -1,7 +1,6 @@
 /** @brief PlayerState - Holds per-player game state. */
 
-#ifndef PlayerState_H
-#define PlayerState_H
+#pragma once
 
 #include <vector>
 
@@ -142,8 +141,6 @@ class PlayerState {
   // Lua
   void PushSelf(lua_State* L);
 };
-
-#endif
 
 /**
  * @file

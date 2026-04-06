@@ -1,5 +1,4 @@
-#ifndef ScreenGameplayLesson_H
-#define ScreenGameplayLesson_H
+#pragma once
 
 #include <vector>
 
@@ -32,8 +31,6 @@ class ScreenGameplayLesson : public ScreenGameplayNormal {
   enum Try { Try_1, Try_2, Try_3, NUM_Try };
   Try m_Try;
 };
-
-#endif
 
 /*
  * (c) 2003-2004 Chris Danford

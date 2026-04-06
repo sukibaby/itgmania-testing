@@ -1,5 +1,4 @@
-#ifndef GROOVE_RADAR_H
-#define GROOVE_RADAR_H
+#pragma once
 
 #include <vector>
 
@@ -70,8 +69,6 @@ class GrooveRadar : public ActorFrame {
   Sprite m_sprRadarLabels[NUM_RadarCategory];
   ActorFrame m_Frame;
 };
-
-#endif
 
 /**
  * @file

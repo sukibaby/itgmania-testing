@@ -1,7 +1,6 @@
 /* CircBuf - A fast, thread-safe, lockless circular buffer. */
 
-#ifndef RAGE_UTIL_CIRCULAR_BUFFER
-#define RAGE_UTIL_CIRCULAR_BUFFER
+#pragma once
 
 #include <algorithm>
 #include <cstring>
@@ -250,8 +249,6 @@ class CircBuf {
     return true;
   }
 };
-
-#endif
 
 /*
  * Copyright (c) 2004 Glenn Maynard

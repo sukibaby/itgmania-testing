@@ -1,8 +1,7 @@
 /* LightsDriver_PacDrive: Control lights for the PacDrive by Ultimarc using
  * hidapi */
 
-#ifndef LightsDriver_PacDrive_H
-#define LightsDriver_PacDrive_H
+#pragma once
 
 /*
  * -------------------------- NOTE --------------------------
@@ -98,8 +97,6 @@ class LightsDriver_PacDrive : public LightsDriver {
 
   virtual void Set(const LightsState* ls);
 };
-
-#endif
 
 /*
  * (c) 2025 din

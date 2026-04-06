@@ -1,5 +1,4 @@
-#ifndef SCORE_DISPLAY_H
-#define SCORE_DISPLAY_H
+#pragma once
 
 #include "ActorFrame.h"
 #include "GameConstantsAndTypes.h"
@@ -26,8 +25,6 @@ class ScoreDisplay : public ActorFrame {
   const PlayerState* m_pPlayerState;            // needed to look up stats
   const PlayerStageStats* m_pPlayerStageStats;  // needed to look up stats
 };
-
-#endif
 
 /*
  * (c) 2001-2003 Chris Danford

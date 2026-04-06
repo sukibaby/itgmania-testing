@@ -1,5 +1,4 @@
-#ifndef SCORE_DISPLAY_NORMAL_H
-#define SCORE_DISPLAY_NORMAL_H
+#pragma once
 
 #include <string>
 
@@ -23,8 +22,6 @@ class ScoreDisplayNormal : public ScoreDisplay {
   AutoActor m_sprFrame;
   RollingNumbers m_text;
 };
-
-#endif
 
 /*
  * (c) 2001-2004 Chris Danford

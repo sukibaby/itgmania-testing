@@ -1,5 +1,4 @@
-#ifndef LUA_DEBUGGEE_STATE_H
-#define LUA_DEBUGGEE_STATE_H
+#pragma once
 
 #include <string>
 #include <unordered_map>
@@ -109,8 +108,6 @@ class DebuggeeState {
   int m_nextId = 1;
 };
 }  // namespace LuaDebug
-
-#endif
 
 /*
  * Copyright (C) 2025  Arttu Ylä-Outinen

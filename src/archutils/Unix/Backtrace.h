@@ -1,5 +1,4 @@
-#ifndef BACKTRACE_H
-#define BACKTRACE_H
+#pragma once
 
 #include <sys/types.h>
 
@@ -53,8 +52,6 @@ void GetSignalBacktraceContext(BacktraceContext* ctx, const ucontext_t* uc);
 #endif
 
 #define BACKTRACE_METHOD_NOT_AVAILABLE ((void*)-1)
-
-#endif
 
 /**
  * @file

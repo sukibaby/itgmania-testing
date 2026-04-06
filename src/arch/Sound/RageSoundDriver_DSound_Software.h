@@ -1,5 +1,4 @@
-#ifndef RAGE_SOUND_GENERIC_TEST
-#define RAGE_SOUND_GENERIC_TEST
+#pragma once
 
 #include <cstdint>
 #include <string>
@@ -32,8 +31,6 @@ class RageSoundDriver_DSound_Software : public RageSoundDriver {
   void MixerThread();
   RageThread m_MixingThread;
 };
-
-#endif
 
 /*
  * (c) 2002-2004 Glenn Maynard

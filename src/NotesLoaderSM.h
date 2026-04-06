@@ -1,5 +1,4 @@
-#ifndef NotesLoaderSM_H
-#define NotesLoaderSM_H
+#pragma once
 
 #include <string>
 #include <utility>
@@ -237,8 +236,6 @@ struct SMLoader {
 
   std::vector<std::string> m_SongDirFiles;
 };
-
-#endif
 
 /**
  * @file

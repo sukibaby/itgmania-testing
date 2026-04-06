@@ -1,5 +1,4 @@
-#ifndef SCREEN_OPTIONS_MASTER_H
-#define SCREEN_OPTIONS_MASTER_H
+#pragma once
 
 #include <vector>
 
@@ -22,8 +21,6 @@ class ScreenOptionsMaster : public ScreenOptions {
   virtual void ImportOptions(int iRow, const std::vector<PlayerNumber>& vpns);
   virtual void ExportOptions(int iRow, const std::vector<PlayerNumber>& vpns);
 };
-
-#endif
 
 /*
  * (c) 2003-2004 Glenn Maynard

@@ -1,5 +1,4 @@
-#ifndef MEMORY_CARD_DISPLAY_H
-#define MEMORY_CARD_DISPLAY_H
+#pragma once
 
 #include "Actor.h"
 #include "ActorFrame.h"
@@ -21,8 +20,6 @@ class MemoryCardDisplay : public ActorFrame {
   // todo: make this an AutoActor eventually -aj
   Sprite m_spr[NUM_MemoryCardState];
 };
-
-#endif
 
 /*
  * (c) 2003 Chris Danford

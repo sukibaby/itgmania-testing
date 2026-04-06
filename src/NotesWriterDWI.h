@@ -1,5 +1,4 @@
-#ifndef NOTES_WRITER_DWI_H
-#define NOTES_WRITER_DWI_H
+#pragma once
 
 #include <string>
 
@@ -13,8 +12,6 @@ namespace NotesWriterDWI {
  * @return its success or failure. */
 bool Write(std::string sPath, const Song& out);
 }  // namespace NotesWriterDWI
-
-#endif
 
 /**
  * @file

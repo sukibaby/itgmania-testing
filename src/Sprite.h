@@ -1,5 +1,4 @@
-#ifndef SPRITE_H
-#define SPRITE_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -152,8 +151,6 @@ class Sprite : public Actor {
   float m_fTexCoordVelocityX;
   float m_fTexCoordVelocityY;
 };
-
-#endif
 
 /**
  * @file
