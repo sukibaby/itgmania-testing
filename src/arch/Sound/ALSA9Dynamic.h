@@ -1,4 +1,4 @@
-#ifndef ALSA9_DYNAMIC_H
+#pragma once
 
 #include <alsa/asoundlib.h>
 
@@ -42,8 +42,6 @@
 
 std::string LoadALSA();
 void UnloadALSA();
-
-#endif
 
 /*
  * (c) 2003-2004 Glenn Maynard
