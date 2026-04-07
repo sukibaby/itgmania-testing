@@ -1,6 +1,7 @@
 #include "StepMania.h"
 
 #include <cstdlib>
+#include <memory>
 #include <utility>
 
 #include "DateTime.h"
@@ -764,6 +765,140 @@ static void ApplyLogPreferences() {
 static LocalizedString COULDNT_OPEN_LOADING_WINDOW(
     "LoadingWindow", "Couldn't open any loading windows.");
 
+namespace {
+template <typename T>
+void ClearGlobalIfOwned(T*& globalPtr, const std::unique_ptr<T>& ownedPtr) {
+  if (globalPtr == ownedPtr.get()) {
+    globalPtr = nullptr;
+  }
+}
+
+struct CoreSystemsBootstrapOwner {
+  std::unique_ptr<RageSoundManager> soundMan;
+  std::unique_ptr<GameSoundManager> sound;
+  std::unique_ptr<Bookkeeper> bookkeeper;
+  std::unique_ptr<LightsManager> lightsMan;
+  std::unique_ptr<InputFilter> inputFilter;
+  std::unique_ptr<InputMapper> inputMapper;
+  std::unique_ptr<InputQueue> inputQueue;
+  std::unique_ptr<SongCacheIndex> songIndex;
+  std::unique_ptr<ImageCache> imageCache;
+  std::unique_ptr<SongManager> songMan;
+  std::unique_ptr<CryptManager> cryptMan;
+  std::unique_ptr<MemoryCardManager> memCardMan;
+  std::unique_ptr<CharacterManager> charMan;
+  std::unique_ptr<ProfileManager> profileMan;
+  std::unique_ptr<UnlockManager> unlockMan;
+  std::unique_ptr<NetworkManager> network;
+  std::unique_ptr<StatsManager> statsMan;
+
+  ~CoreSystemsBootstrapOwner() {
+    // Keep globals from pointing at freed objects if startup exits early.
+    ClearGlobalIfOwned(STATSMAN, statsMan);
+    ClearGlobalIfOwned(NETWORK, network);
+    ClearGlobalIfOwned(UNLOCKMAN, unlockMan);
+    ClearGlobalIfOwned(PROFILEMAN, profileMan);
+    ClearGlobalIfOwned(CHARMAN, charMan);
+    ClearGlobalIfOwned(MEMCARDMAN, memCardMan);
+    ClearGlobalIfOwned(CRYPTMAN, cryptMan);
+    ClearGlobalIfOwned(SONGMAN, songMan);
+    ClearGlobalIfOwned(IMAGECACHE, imageCache);
+    ClearGlobalIfOwned(SONGINDEX, songIndex);
+    ClearGlobalIfOwned(INPUTQUEUE, inputQueue);
+    ClearGlobalIfOwned(INPUTMAPPER, inputMapper);
+    ClearGlobalIfOwned(INPUTFILTER, inputFilter);
+    ClearGlobalIfOwned(LIGHTSMAN, lightsMan);
+    ClearGlobalIfOwned(BOOKKEEPER, bookkeeper);
+    ClearGlobalIfOwned(SOUND, sound);
+    ClearGlobalIfOwned(SOUNDMAN, soundMan);
+  }
+
+  void ReleaseToGlobals() {
+    (void)statsMan.release();
+    (void)network.release();
+    (void)unlockMan.release();
+    (void)profileMan.release();
+    (void)charMan.release();
+    (void)memCardMan.release();
+    (void)cryptMan.release();
+    (void)songMan.release();
+    (void)imageCache.release();
+    (void)songIndex.release();
+    (void)inputQueue.release();
+    (void)inputMapper.release();
+    (void)inputFilter.release();
+    (void)lightsMan.release();
+    (void)bookkeeper.release();
+    (void)sound.release();
+    (void)soundMan.release();
+  }
+};
+
+bool InitializeCoreSystems(LoadingWindow* pLoadingWindow) {
+  CoreSystemsBootstrapOwner owner;
+
+  owner.soundMan = std::make_unique<RageSoundManager>();
+  SOUNDMAN = owner.soundMan.get();
+  SOUNDMAN->Init();
+  SOUNDMAN->SetMixVolume();
+
+  owner.sound = std::make_unique<GameSoundManager>();
+  SOUND = owner.sound.get();
+  owner.bookkeeper = std::make_unique<Bookkeeper>();
+  BOOKKEEPER = owner.bookkeeper.get();
+  owner.lightsMan = std::make_unique<LightsManager>();
+  LIGHTSMAN = owner.lightsMan.get();
+  owner.inputFilter = std::make_unique<InputFilter>();
+  INPUTFILTER = owner.inputFilter.get();
+  owner.inputMapper = std::make_unique<InputMapper>();
+  INPUTMAPPER = owner.inputMapper.get();
+
+  StepMania::InitializeCurrentGame(*GAMESTATE->GetCurrentGame());
+
+  owner.inputQueue = std::make_unique<InputQueue>();
+  INPUTQUEUE = owner.inputQueue.get();
+  owner.songIndex = std::make_unique<SongCacheIndex>();
+  SONGINDEX = owner.songIndex.get();
+  owner.imageCache = std::make_unique<ImageCache>();
+  IMAGECACHE = owner.imageCache.get();
+
+  owner.songMan = std::make_unique<SongManager>();
+  SONGMAN = owner.songMan.get();
+  SONGMAN->InitAll(
+      pLoadingWindow, /*onlyAdditions=*/false);  // this takes a long time
+
+  owner.cryptMan = std::make_unique<CryptManager>();
+  CRYPTMAN = owner.cryptMan.get();
+  if (PREFSMAN->m_bSignProfileData) {
+    CRYPTMAN->GenerateGlobalKeys();
+  }
+
+  owner.memCardMan = std::make_unique<MemoryCardManager>();
+  MEMCARDMAN = owner.memCardMan.get();
+  owner.charMan = std::make_unique<CharacterManager>();
+  CHARMAN = owner.charMan.get();
+  owner.profileMan = std::make_unique<ProfileManager>();
+  PROFILEMAN = owner.profileMan.get();
+  PROFILEMAN->Init();  // must load after SONGMAN
+  owner.unlockMan = std::make_unique<UnlockManager>();
+  UNLOCKMAN = owner.unlockMan.get();
+
+  SONGMAN->UpdatePopular();
+  SONGMAN->UpdatePreferredSort();
+
+  owner.network = std::make_unique<NetworkManager>();
+  NETWORK = owner.network.get();
+  owner.statsMan = std::make_unique<StatsManager>();
+  STATSMAN = owner.statsMan.get();
+
+  // Initialize which courses are ranking courses here.
+  SONGMAN->UpdateRankingCourses();
+
+  owner.ReleaseToGlobals();
+  return true;
+}
+}  // namespace
+
 int sm_main(int argc, char* argv[]) {
   RageThreadRegister thread("Main thread");
   RageException::SetCleanupHandler(HandleException);
@@ -909,41 +1044,10 @@ int sm_main(int argc, char* argv[]) {
         PREFSMAN->m_iSoundWriteAhead.Get());
   }
 
-  SOUNDMAN = new RageSoundManager;
-  SOUNDMAN->Init();
-  SOUNDMAN->SetMixVolume();
-  SOUND = new GameSoundManager;
-  BOOKKEEPER = new Bookkeeper;
-  LIGHTSMAN = new LightsManager;
-  INPUTFILTER = new InputFilter;
-  INPUTMAPPER = new InputMapper;
-
-  StepMania::InitializeCurrentGame(*GAMESTATE->GetCurrentGame());
-
-  INPUTQUEUE = new InputQueue;
-  SONGINDEX = new SongCacheIndex;
-  IMAGECACHE = new ImageCache;
-
-  // depends on SONGINDEX:
-  SONGMAN = new SongManager;
-  SONGMAN->InitAll(
-      pLoadingWindow, /*onlyAdditions=*/false);  // this takes a long time
-  CRYPTMAN = new CryptManager;  // need to do this before ProfileMan
-  if (PREFSMAN->m_bSignProfileData) {
-    CRYPTMAN->GenerateGlobalKeys();
+  if (!InitializeCoreSystems(pLoadingWindow)) {
+    ShutdownGame();
+    return 0;
   }
-  MEMCARDMAN = new MemoryCardManager;
-  CHARMAN = new CharacterManager;
-  PROFILEMAN = new ProfileManager;
-  PROFILEMAN->Init();  // must load after SONGMAN
-  UNLOCKMAN = new UnlockManager;
-  SONGMAN->UpdatePopular();
-  SONGMAN->UpdatePreferredSort();
-  NETWORK = new NetworkManager;
-  STATSMAN = new StatsManager;
-
-  // Initialize which courses are ranking courses here.
-  SONGMAN->UpdateRankingCourses();
 
   RageUtil::SafeDelete(pLoadingWindow);  // destroy this before init'ing Display
 
