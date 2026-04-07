@@ -23,7 +23,7 @@ class ProfileManager {
   ProfileManager();
   ~ProfileManager();
 
-  void Init();
+  int Init();  // Returns 0 on success, non-zero on failure
 
   bool FixedProfiles() const;  // If true, profiles shouldn't be added/deleted
 

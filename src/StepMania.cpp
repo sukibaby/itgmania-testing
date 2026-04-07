@@ -774,8 +774,8 @@ void ClearGlobalIfOwned(T*& globalPtr, const std::unique_ptr<T>& ownedPtr) {
 }
 
 struct CoreSystemsBootstrapOwner {
-  std::unique_ptr<RageSoundManager> soundMan;
-  std::unique_ptr<GameSoundManager> sound;
+  std::unique_ptr<RageSoundManager> rageSoundMan;
+  std::unique_ptr<GameSoundManager> gameSoundMan;
   std::unique_ptr<Bookkeeper> bookkeeper;
   std::unique_ptr<LightsManager> lightsMan;
   std::unique_ptr<InputFilter> inputFilter;
@@ -809,8 +809,8 @@ struct CoreSystemsBootstrapOwner {
     ClearGlobalIfOwned(INPUTFILTER, inputFilter);
     ClearGlobalIfOwned(LIGHTSMAN, lightsMan);
     ClearGlobalIfOwned(BOOKKEEPER, bookkeeper);
-    ClearGlobalIfOwned(SOUND, sound);
-    ClearGlobalIfOwned(SOUNDMAN, soundMan);
+    ClearGlobalIfOwned(SOUND, gameSoundMan);
+    ClearGlobalIfOwned(SOUNDMAN, rageSoundMan);
   }
 
   void ReleaseToGlobals() {
@@ -829,21 +829,26 @@ struct CoreSystemsBootstrapOwner {
     (void)inputFilter.release();
     (void)lightsMan.release();
     (void)bookkeeper.release();
-    (void)sound.release();
-    (void)soundMan.release();
+    (void)gameSoundMan.release();
+    (void)rageSoundMan.release();
   }
 };
 
 bool InitializeCoreSystems(LoadingWindow* pLoadingWindow) {
   CoreSystemsBootstrapOwner owner;
 
-  owner.soundMan = std::make_unique<RageSoundManager>();
-  SOUNDMAN = owner.soundMan.get();
-  SOUNDMAN->Init();
+  ASSERT(GAMESTATE != nullptr);
+
+  owner.rageSoundMan = std::make_unique<RageSoundManager>();
+  SOUNDMAN = owner.rageSoundMan.get();
+  if (SOUNDMAN->Init() != 0) {
+    LOG->Warn("Failed to initialize RageSoundManager");
+    return false;
+  }
   SOUNDMAN->SetMixVolume();
 
-  owner.sound = std::make_unique<GameSoundManager>();
-  SOUND = owner.sound.get();
+  owner.gameSoundMan = std::make_unique<GameSoundManager>();
+  SOUND = owner.gameSoundMan.get();
   owner.bookkeeper = std::make_unique<Bookkeeper>();
   BOOKKEEPER = owner.bookkeeper.get();
   owner.lightsMan = std::make_unique<LightsManager>();
@@ -864,8 +869,11 @@ bool InitializeCoreSystems(LoadingWindow* pLoadingWindow) {
 
   owner.songMan = std::make_unique<SongManager>();
   SONGMAN = owner.songMan.get();
-  SONGMAN->InitAll(
-      pLoadingWindow, /*onlyAdditions=*/false);  // this takes a long time
+  if (SONGMAN->InitAll(
+      pLoadingWindow, /*onlyAdditions=*/false) != 0) {  // this takes a long time
+    LOG->Warn("Failed to initialize SongManager");
+    return false;
+  }
 
   owner.cryptMan = std::make_unique<CryptManager>();
   CRYPTMAN = owner.cryptMan.get();
@@ -879,7 +887,10 @@ bool InitializeCoreSystems(LoadingWindow* pLoadingWindow) {
   CHARMAN = owner.charMan.get();
   owner.profileMan = std::make_unique<ProfileManager>();
   PROFILEMAN = owner.profileMan.get();
-  PROFILEMAN->Init();  // must load after SONGMAN
+  if (PROFILEMAN->Init() != 0) {  // must load after SONGMAN
+    LOG->Warn("Failed to initialize ProfileManager");
+    return false;
+  }
   owner.unlockMan = std::make_unique<UnlockManager>();
   UNLOCKMAN = owner.unlockMan.get();
 

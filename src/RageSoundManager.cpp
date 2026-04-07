@@ -50,11 +50,13 @@ RageSoundManager::RageSoundManager()
 
 static LocalizedString COULDNT_FIND_SOUND_DRIVER(
     "RageSoundManager", "Couldn't find a sound driver that works");
-void RageSoundManager::Init() {
+int RageSoundManager::Init() {
   m_pDriver = RageSoundDriver::Create(g_sSoundDrivers);
   if (m_pDriver == nullptr) {
-    RageException::Throw("%s", COULDNT_FIND_SOUND_DRIVER.GetValue().c_str());
+    LOG->Warn("%s", COULDNT_FIND_SOUND_DRIVER.GetValue().c_str());
+    return 1;  // Return error code instead of throwing
   }
+  return 0;  // Success
 }
 
 RageSoundManager::~RageSoundManager() {

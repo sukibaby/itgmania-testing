@@ -151,7 +151,7 @@ SongManager::~SongManager() {
   FreeSongs();
 }
 
-void SongManager::InitAll(LoadingWindow* ld, bool onlyAdditions) {
+int SongManager::InitAll(LoadingWindow* ld, bool onlyAdditions) {
   std::vector<std::string> never_cache;
   split(PREFSMAN->m_NeverCacheList, ",", never_cache);
   for (std::vector<std::string>::iterator group = never_cache.begin();
@@ -165,6 +165,7 @@ void SongManager::InitAll(LoadingWindow* ld, bool onlyAdditions) {
   }
   InitAutogenCourses();
   InitRandomAttacks();
+  return 0;  // Success
 }
 
 static LocalizedString RELOADING("SongManager", "Reloading...");

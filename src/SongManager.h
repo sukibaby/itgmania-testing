@@ -91,8 +91,9 @@ class SongManager {
    * @param ld the loading window to be updated, or nullptr
    * @param onlyAdditions only load songs and courses added after the
    *        last invocation of this function
+   * @return 0 on success, non-zero on failure
    */
-  void InitAll(LoadingWindow* ld, bool onlyAdditions);
+  int InitAll(LoadingWindow* ld, bool onlyAdditions);
   void Reload(bool bAllowFastLoad, LoadingWindow* ld = nullptr);
   void LoadAdditions(LoadingWindow* ld = nullptr);
   void PreloadSongImages();

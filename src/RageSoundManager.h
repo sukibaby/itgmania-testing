@@ -26,7 +26,7 @@ class RageSoundManager {
    * start sounds will do nothing, and threads may be shut down. */
   void Shutdown();
 
-  void Init();
+  int Init();  // Returns 0 on success, non-zero on failure
 
   void SetMixVolume();
   float GetVolumeOfNonCriticalSounds() const {

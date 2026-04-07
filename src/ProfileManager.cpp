@@ -110,7 +110,7 @@ ProfileManager::~ProfileManager() {
   FOREACH_PlayerNumber(pn) RageUtil::SafeDelete(m_pMemoryCardProfile[pn]);
 }
 
-void ProfileManager::Init() {
+int ProfileManager::Init() {
   FOREACH_PlayerNumber(p) {
     m_bWasLoadedFromMemoryCard[p] = false;
     m_bLastLoadWasTamperedOrCorrupt[p] = false;
@@ -145,6 +145,7 @@ void ProfileManager::Init() {
 
     ASSERT((int)g_vLocalProfile.size() == NUM_FIXED_PROFILES);
   }
+  return 0;  // Success
 }
 
 bool ProfileManager::FixedProfiles() const { return FIXED_PROFILES; }
