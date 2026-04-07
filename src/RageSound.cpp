@@ -22,6 +22,7 @@
 #include "RageSound.h"
 
 #include <cstdint>
+#include <functional>
 #include <string>
 
 #include "LuaManager.h"
@@ -82,7 +83,19 @@ RageSound::RageSound(const RageSound& cpy)
 }
 
 RageSound& RageSound::operator=(const RageSound& cpy) {
-  LockMut(cpy.m_Mutex);
+  if (this == &cpy) {
+    return *this;
+  }
+
+  // guarantee consistent lock ordering
+  const bool lockThisFirst = std::less<const RageSound*>()(this, &cpy);
+  if (lockThisFirst) {
+    m_Mutex.Lock();
+    cpy.m_Mutex.Lock();
+  } else {
+    cpy.m_Mutex.Lock();
+    m_Mutex.Lock();
+  }
 
   /* If m_bDeleteWhenFinished, then nobody that has a reference to the sound
    * should be making copies. */
@@ -104,6 +117,9 @@ RageSound& RageSound::operator=(const RageSound& cpy) {
   }
 
   m_sFilePath = cpy.m_sFilePath;
+
+  cpy.m_Mutex.Unlock();
+  m_Mutex.Unlock();
 
   return *this;
 }
@@ -127,16 +143,19 @@ void RageSound::Unload() {
  * playing, the sound will be deleted immediately. The caller loses ownership
  * of the sound. */
 void RageSound::DeleteSelfWhenFinishedPlaying() {
-  m_Mutex.Lock();
-
-  if (!m_bPlaying) {
-    m_Mutex.Unlock();
-    delete this;
-    return;
+  bool bDeleteNow = false;
+  {
+    LockMut(m_Mutex);
+    if (!m_bPlaying) {
+      bDeleteNow = true;
+    } else {
+      m_bDeleteWhenFinished = true;
+    }
   }
 
-  m_bDeleteWhenFinished = true;
-  m_Mutex.Unlock();
+  if (bDeleteNow) {
+    delete this;
+  }
 }
 
 bool RageSound::IsLoaded() const { return m_pSource != nullptr; }
@@ -401,6 +420,9 @@ void RageSound::SoundIsFinishedPlaying() {
     // untouched.
     if (m_bDeleteWhenFinished) {
       m_bDeleteWhenFinished = false;
+      m_bPlaying = false;
+      m_HardwareToStreamMap.Clear();
+      m_StreamToSourceMap.Clear();
       bDeleteThis = true;
     } else {
       if (!m_HardwareToStreamMap.IsEmpty() && !m_StreamToSourceMap.IsEmpty()) {
@@ -505,6 +527,10 @@ int RageSound::GetSourceFrameFromHardwareFrame(int64_t iHardwareFrame) const {
  * grabbing it, when releasing SOUNDMAN.
  */
 float RageSound::GetPositionSeconds(RageTimer* pTimestamp) const {
+  if (m_pSource == nullptr) {
+    return 0.0f;
+  }
+
   // Get our current hardware position.
   int64_t iCurrentHardwareFrame = SOUNDMAN->GetPosition(pTimestamp);
 
@@ -598,6 +624,12 @@ void RageSound::ApplyParams() {
 }
 
 bool RageSound::SetProperty(const std::string& sProperty, float fValue) {
+  if (m_pSource == nullptr) {
+    LOG->Warn(
+        "RageSound::SetProperty(%s): sound not loaded", sProperty.c_str());
+    return false;
+  }
+
   return m_pSource->SetProperty(sProperty, fValue);
 }
 
