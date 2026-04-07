@@ -1,3 +1,5 @@
+#pragma once
+
 #include <vector>
 
 // A very simple pair floats that represent the pixels of the left and right

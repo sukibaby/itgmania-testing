@@ -1,3 +1,5 @@
+#pragma once
+
 // This file is intended to be included in the middle of a function after
 // defining the macro to do what you want.
 

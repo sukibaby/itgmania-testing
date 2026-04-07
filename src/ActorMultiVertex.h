@@ -1,3 +1,5 @@
+#pragma once
+
 /** @brief ActorMultiVertex - An actor with mutiple vertices. Can be used to
  * create shapes that quads can't. */
 

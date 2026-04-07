@@ -1,3 +1,5 @@
+#pragma once
+
 #if defined(ANDROID)
 #include "Android/SpecialDirs.h"
 #elif defined(_WIN32)
