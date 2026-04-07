@@ -15,7 +15,7 @@ void ResetPreferences();
 void ResetGame();
 std::string GetInitialScreen();
 std::string GetSelectMusicScreen();
-void InitializeCurrentGame(const Game* g);
+void InitializeCurrentGame(const Game& g);
 
 // If successful, return filename of screenshot in sDir, else return ""
 std::string SaveScreenshot(

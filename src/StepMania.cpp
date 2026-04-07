@@ -622,17 +622,13 @@ static void SwitchToLastPlayedGame() {
 
   ASSERT(GAMEMAN->IsGameEnabled(pGame));
 
-  StepMania::InitializeCurrentGame(pGame);
+  StepMania::InitializeCurrentGame(*pGame);
 }
 
 // This function is meant to only be called during start up.
-void StepMania::InitializeCurrentGame(const Game* g) {
-  ASSERT(g != nullptr);
-  ASSERT(GAMESTATE != nullptr);
-  ASSERT(ANNOUNCER != nullptr);
-  ASSERT(THEME != nullptr);
-
-  GAMESTATE->SetCurGame(g);
+// At the least, GAMESTATE, ANNOUNCER, and THEME must be initialized before calling.
+void StepMania::InitializeCurrentGame(const Game& g) {
+  GAMESTATE->SetCurGame(&g);
 
   std::string sAnnouncer = PREFSMAN->m_sAnnouncer;
   std::string sTheme = PREFSMAN->m_sTheme;
@@ -678,7 +674,7 @@ void StepMania::InitializeCurrentGame(const Game* g) {
 
   // Set the input scheme for the new game, and load keymaps.
   if (INPUTMAPPER) {
-    INPUTMAPPER->SetInputScheme(&g->m_InputScheme);
+    INPUTMAPPER->SetInputScheme(&g.m_InputScheme);
     INPUTMAPPER->ReadMappingsFromDisk();
   }
 }
@@ -922,7 +918,7 @@ int sm_main(int argc, char* argv[]) {
   INPUTFILTER = new InputFilter;
   INPUTMAPPER = new InputMapper;
 
-  StepMania::InitializeCurrentGame(GAMESTATE->GetCurrentGame());
+  StepMania::InitializeCurrentGame(*GAMESTATE->GetCurrentGame());
 
   INPUTQUEUE = new InputQueue;
   SONGINDEX = new SongCacheIndex;

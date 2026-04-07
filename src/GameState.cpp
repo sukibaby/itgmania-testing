@@ -1532,8 +1532,10 @@ int GameState::GetNumSidesJoined() const {
 }
 
 const Game* GameState::GetCurrentGame() const {
-  ASSERT(m_pCurGame != nullptr);  // the game must be set before calling this
-  return m_pCurGame;
+  if (m_pCurGame != nullptr) {
+    return m_pCurGame;
+  }
+  return GAMEMAN->GetDefaultGame();
 }
 
 const Style* GameState::GetCurrentStyle(PlayerNumber pn) const {
