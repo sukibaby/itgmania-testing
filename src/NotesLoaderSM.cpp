@@ -115,10 +115,12 @@ void SMSetInstrumentTrack(SMSongTagInfo& info) {
   info.loader->ProcessInstrumentTracks(*info.song, (*info.params)[1]);
 }
 void SMSetSampleStart(SMSongTagInfo& info) {
-  info.song->m_fMusicSampleStartSeconds = HHMMSSToSeconds((*info.params)[1]);
+  info.song->m_fMusicSampleStartSeconds =
+      HHMMSSToSeconds((*info.params)[1], "NotesLoaderSM::#SAMPLESTART");
 }
 void SMSetSampleLength(SMSongTagInfo& info) {
-  info.song->m_fMusicSampleLengthSeconds = HHMMSSToSeconds((*info.params)[1]);
+  info.song->m_fMusicSampleLengthSeconds =
+      HHMMSSToSeconds((*info.params)[1], "NotesLoaderSM::#SAMPLELENGTH");
 }
 void SMSetDisplayBPM(SMSongTagInfo& info) {
   // #DISPLAYBPM:[xxx][xxx:xxx]|[*];

@@ -588,7 +588,8 @@ static bool LoadGlobalData(
     }
     // New cases noted in Aldo_MX's code:
     else if (sValueName == "MUSICINTRO" || sValueName == "INTRO") {
-      out.m_fMusicSampleStartSeconds = HHMMSSToSeconds(sParams[1]);
+      out.m_fMusicSampleStartSeconds =
+          HHMMSSToSeconds(sParams[1], "NotesLoaderKSF::#INTRO");
     } else if (sValueName == "TITLEFILE") {
       out.m_sBackgroundFile = sParams[1];
     } else if (sValueName == "DISCFILE") {

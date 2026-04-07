@@ -187,10 +187,9 @@ bool RageSound::Load(
       "RageSound: Load \"%s\" (precache: %i)", sSoundFilePath.c_str(),
       bPrecache);
 
-  if (pParams == nullptr) {
-    static const RageSoundLoadParams Defaults;
-    pParams = &Defaults;
-  }
+  static const RageSoundLoadParams Defaults;
+  const RageSoundLoadParams& params =
+      (pParams != nullptr) ? *pParams : Defaults;
 
   /* If this sound is already preloaded and held by SOUNDMAN, just make a copy
    * of that.  Since RageSoundReader_Preload is refcounted, this is cheap. */
@@ -239,13 +238,13 @@ bool RageSound::Load(
   }
   m_pSource = new RageSoundReader_PostBuffering(m_pSource);
 
-  if (pParams->m_bSupportRateChanging) {
+  if (params.m_bSupportRateChanging) {
     RageSoundReader_PitchChange* pRate =
         new RageSoundReader_PitchChange(m_pSource);
     m_pSource = pRate;
   }
 
-  if (pParams->m_bSupportPan) {
+  if (params.m_bSupportPan) {
     m_pSource = new RageSoundReader_Pan(m_pSource);
   }
 

@@ -260,11 +260,13 @@ bool SMALoader::LoadFromSimfile(
     }
 
     else if (sValueName == "SAMPLESTART") {
-      out.m_fMusicSampleStartSeconds = HHMMSSToSeconds(sParams[1]);
+      out.m_fMusicSampleStartSeconds =
+          HHMMSSToSeconds(sParams[1], "NotesLoaderSMA::#SAMPLESTART");
     }
 
     else if (sValueName == "SAMPLELENGTH") {
-      out.m_fMusicSampleLengthSeconds = HHMMSSToSeconds(sParams[1]);
+      out.m_fMusicSampleLengthSeconds =
+          HHMMSSToSeconds(sParams[1], "NotesLoaderSMA::#SAMPLELENGTH");
     }
 
     // SamplePath is used when the song has a separate preview clip. -aj

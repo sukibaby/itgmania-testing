@@ -146,10 +146,12 @@ void SetLastSecondHint(SongTagInfo& info) {
   info.song->SetSpecifiedLastSecond(StringToFloat((*info.params)[1]));
 }
 void SetSampleStart(SongTagInfo& info) {
-  info.song->m_fMusicSampleStartSeconds = HHMMSSToSeconds((*info.params)[1]);
+  info.song->m_fMusicSampleStartSeconds =
+      HHMMSSToSeconds((*info.params)[1], "NotesLoaderSSC::#SAMPLESTART");
 }
 void SetSampleLength(SongTagInfo& info) {
-  info.song->m_fMusicSampleLengthSeconds = HHMMSSToSeconds((*info.params)[1]);
+  info.song->m_fMusicSampleLengthSeconds =
+      HHMMSSToSeconds((*info.params)[1], "NotesLoaderSSC::#SAMPLELENGTH");
 }
 void SetDisplayBPM(SongTagInfo& info) {
   // #DISPLAYBPM:[xxx][xxx:xxx]|[*];

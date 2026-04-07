@@ -4,10 +4,13 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <array>
 #include <atomic>
+#include <cerrno>
 #include <cctype>
 #include <cfloat>
 #include <cinttypes>
+#include <climits>
 #include <cmath>
 #include <cstdarg>
 #include <cstddef>
@@ -151,20 +154,107 @@ bool HexToBinary(const std::string& s, std::string& sOut) {
   return HexToBinary(s, (unsigned char*)sOut.data());
 }
 
-float HHMMSSToSeconds(const std::string& sHHMMSS) {
-  std::vector<std::string> arrayBits;
-  split(sHHMMSS, ":", arrayBits, false);
-
-  while (arrayBits.size() < 3) {
-    arrayBits.insert(arrayBits.begin(), "0");  // pad missing bits
+namespace {
+bool ParseTimeIntPart(const std::string& value, int& out) {
+  std::string trimmed = value;
+  Trim(trimmed);
+  if (trimmed.empty()) {
+    out = 0;
+    return true;
   }
 
-  float fSeconds = 0;
-  fSeconds += StringToInt(arrayBits[0]) * 60 * 60;
-  fSeconds += StringToInt(arrayBits[1]) * 60;
-  fSeconds += StringToFloat(arrayBits[2]);
+  errno = 0;
+  char* end = nullptr;
+  long parsed = std::strtol(trimmed.c_str(), &end, 10);
+  if (end == trimmed.c_str()) {
+    return false;
+  }
 
-  return fSeconds;
+  while (*end != '\0' &&
+         std::isspace(static_cast<unsigned char>(*end)) != 0) {
+    ++end;
+  }
+  if (*end != '\0' || errno == ERANGE || parsed < INT_MIN ||
+      parsed > INT_MAX) {
+    return false;
+  }
+
+  out = static_cast<int>(parsed);
+  return true;
+}
+
+bool ParseTimeFloatPart(const std::string& value, float& out) {
+  std::string trimmed = value;
+  Trim(trimmed);
+  if (trimmed.empty()) {
+    out = 0.0f;
+    return true;
+  }
+
+  char* end = nullptr;
+  out = std::strtof(trimmed.c_str(), &end);
+  if (end == trimmed.c_str()) {
+    return false;
+  }
+
+  while (*end != '\0' &&
+         std::isspace(static_cast<unsigned char>(*end)) != 0) {
+    ++end;
+  }
+  if (*end != '\0' || !std::isfinite(out)) {
+    return false;
+  }
+
+  return true;
+}
+
+void LogInvalidTimestampPart(
+    const char* context, const char* partName, const std::string& part,
+    const std::string& fullInput) {
+  if (context != nullptr && *context != '\0') {
+    LOG->Warn(
+        "HHMMSSToSeconds[%s]: invalid %s component \"%s\" in \"%s\"; "
+        "defaulting to 0",
+        context, partName, part.c_str(), fullInput.c_str());
+  } else {
+    LOG->Warn(
+        "HHMMSSToSeconds: invalid %s component \"%s\" in \"%s\"; "
+        "defaulting to 0",
+        partName, part.c_str(), fullInput.c_str());
+  }
+}
+}  // namespace
+
+float HHMMSSToSeconds(const std::string& sHHMMSS, const char* context) {
+  std::vector<std::string> rawParts;
+  split(sHHMMSS, ":", rawParts, false);
+
+  std::array<std::string, 3> parts = {"0", "0", "0"};
+  if (!rawParts.empty()) {
+    const size_t srcStart =
+        (rawParts.size() > parts.size()) ? rawParts.size() - parts.size() : 0;
+    size_t dst = parts.size() - (rawParts.size() - srcStart);
+    for (size_t src = srcStart; src < rawParts.size() && dst < parts.size();
+         ++src, ++dst) {
+      parts[dst] = rawParts[src];
+    }
+  }
+
+  int hours = 0;
+  int minutes = 0;
+  float seconds = 0.0f;
+
+  if (!ParseTimeIntPart(parts[0], hours)) {
+    LogInvalidTimestampPart(context, "hours", parts[0], sHHMMSS);
+  }
+  if (!ParseTimeIntPart(parts[1], minutes)) {
+    LogInvalidTimestampPart(context, "minutes", parts[1], sHHMMSS);
+  }
+  if (!ParseTimeFloatPart(parts[2], seconds)) {
+    LogInvalidTimestampPart(context, "seconds", parts[2], sHHMMSS);
+  }
+
+  return static_cast<float>(hours * 60 * 60 + minutes * 60) + seconds;
 }
 
 std::string SecondsToHHMMSS(float fSecs) {

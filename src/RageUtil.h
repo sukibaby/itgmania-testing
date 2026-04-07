@@ -214,7 +214,7 @@ std::string BinaryToHex(const void* pData_, size_t iNumBytes);
 std::string BinaryToHex(const std::string& sString);
 bool HexToBinary(const std::string& s, unsigned char* stringOut);
 bool HexToBinary(const std::string& s, std::string* sOut);
-float HHMMSSToSeconds(const std::string& sHMS);
+float HHMMSSToSeconds(const std::string& sHMS, const char* context = nullptr);
 std::string SecondsToHHMMSS(float fSecs);
 std::string SecondsToMSSMsMs(float fSecs);
 std::string SecondsToMMSSMsMs(float fSecs);
