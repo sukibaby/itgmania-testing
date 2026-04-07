@@ -7,6 +7,7 @@
 #include <atomic>
 #include <cctype>
 #include <cfloat>
+#include <charconv>
 #include <cinttypes>
 #include <cmath>
 #include <cstdarg>
@@ -1487,25 +1488,17 @@ std::string FloatToString(const float& num) {
 }
 
 int StringToInt(const std::string& str, size_t* pos, int base, int exceptVal) {
-  try {
-    return std::stoi(str, pos, base);
-  } catch (const std::invalid_argument& e) {
-    LOG->Warn("stoi(%s): %s", str.c_str(), e.what());
-  } catch (const std::out_of_range& e) {
-    LOG->Warn("stoi(%s): %s", str.c_str(), e.what());
+  const char* start = str.c_str();
+  char* end = nullptr;
+  errno = 0;
+  long value = std::strtol(start, &end, base);
+  
+  if (end != start && errno != ERANGE && value >= INT_MIN && value <= INT_MAX) {
+    if (pos) *pos = end - start;
+    return static_cast<int>(value);
   }
-  return exceptVal;
-}
-
-long StringToLong(
-    const std::string& str, size_t* pos, int base, long exceptVal) {
-  try {
-    return std::stol(str, pos, base);
-  } catch (const std::invalid_argument& e) {
-    LOG->Warn("stol(%s): %s", str.c_str(), e.what());
-  } catch (const std::out_of_range& e) {
-    LOG->Warn("stol(%s): %s", str.c_str(), e.what());
-  }
+  LOG->Warn("strtol(%s): %s", str.c_str(), 
+            errno == ERANGE ? "out_of_range" : "invalid_argument");
   return exceptVal;
 }
 
