@@ -102,7 +102,7 @@ bool LyricsLoader::LoadFromLRCFile(const std::string& sPath, Song& out) {
     if (timestamp.Compare(sValueName, dummy)) {
       LyricSegment seg;
       seg.m_Color = CurrentColor;
-      seg.m_fStartTime = HHMMSSToSeconds(sValueName, "LyricsLoader::LRC");
+      seg.m_fStartTime = HHMMSSToSeconds(sValueName);
       seg.m_sLyric = sValueData;
 
       Replace(

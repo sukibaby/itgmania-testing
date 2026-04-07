@@ -569,14 +569,11 @@ static float ParseBrokenDWITimestamp(
 
   /* 2+ args */
   if (arg3.empty()) {
-    return HHMMSSToSeconds(
-        arg1 + ":" + arg2, "NotesLoaderDWI::ParseBrokenDWITimestamp");
+    return HHMMSSToSeconds(arg1 + ":" + arg2);
   }
 
   /* 3+ args */
-  return HHMMSSToSeconds(
-      arg1 + ":" + arg2 + ":" + arg3,
-      "NotesLoaderDWI::ParseBrokenDWITimestamp");
+  return HHMMSSToSeconds(arg1 + ":" + arg2 + ":" + arg3);
 }
 
 void DWILoader::GetApplicableFiles(
