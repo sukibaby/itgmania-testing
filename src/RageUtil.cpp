@@ -1486,120 +1486,38 @@ std::string FloatToString(const float& num) {
   return ss.str();
 }
 
-namespace {
-enum class ParseIntegerError {
-  kNone,
-  kInvalidArgument,
-  kOutOfRange,
-};
-
-bool IsValidIntegerBase(int base) { return base == 0 || (base >= 2 && base <= 36); }
-
-void LogIntegerParseError(
-    const char* functionName, const std::string& str, ParseIntegerError error) {
-  if (error == ParseIntegerError::kInvalidArgument) {
-    LOG->Warn("%s(%s): invalid argument", functionName, str.c_str());
-  } else if (error == ParseIntegerError::kOutOfRange) {
-    LOG->Warn("%s(%s): out of range", functionName, str.c_str());
-  }
-}
-
-ParseIntegerError ParseLongNoThrow(
-    const std::string& str, int base, long& out, size_t& parsedChars) {
-  if (!IsValidIntegerBase(base)) {
-    return ParseIntegerError::kInvalidArgument;
-  }
-
-  errno = 0;
-  char* end = nullptr;
-  const long value = std::strtol(str.c_str(), &end, base);
-  if (end == str.c_str()) {
-    return ParseIntegerError::kInvalidArgument;
-  }
-  if (errno == ERANGE) {
-    return ParseIntegerError::kOutOfRange;
-  }
-
-  parsedChars = static_cast<size_t>(end - str.c_str());
-  out = value;
-  return ParseIntegerError::kNone;
-}
-
-ParseIntegerError ParseLongLongNoThrow(
-    const std::string& str, int base, long long& out, size_t& parsedChars) {
-  if (!IsValidIntegerBase(base)) {
-    return ParseIntegerError::kInvalidArgument;
-  }
-
-  errno = 0;
-  char* end = nullptr;
-  const long long value = std::strtoll(str.c_str(), &end, base);
-  if (end == str.c_str()) {
-    return ParseIntegerError::kInvalidArgument;
-  }
-  if (errno == ERANGE) {
-    return ParseIntegerError::kOutOfRange;
-  }
-
-  parsedChars = static_cast<size_t>(end - str.c_str());
-  out = value;
-  return ParseIntegerError::kNone;
-}
-}  // namespace
-
 int StringToInt(const std::string& str, size_t* pos, int base, int exceptVal) {
-  long parsed = 0;
-  size_t parsedChars = 0;
-  const ParseIntegerError error =
-      ParseLongNoThrow(str, base, parsed, parsedChars);
-  if (error == ParseIntegerError::kNone) {
-    if (parsed < INT_MIN || parsed > INT_MAX) {
-      LogIntegerParseError("stoi", str, ParseIntegerError::kOutOfRange);
-      return exceptVal;
-    }
-
-    if (pos != nullptr) {
-      *pos = parsedChars;
-    }
-
-    return static_cast<int>(parsed);
+  try {
+    return std::stoi(str, pos, base);
+  } catch (const std::invalid_argument& e) {
+    LOG->Warn("stoi(%s): %s", str.c_str(), e.what());
+  } catch (const std::out_of_range& e) {
+    LOG->Warn("stoi(%s): %s", str.c_str(), e.what());
   }
-
-  LogIntegerParseError("stoi", str, error);
   return exceptVal;
 }
 
 long StringToLong(
     const std::string& str, size_t* pos, int base, long exceptVal) {
-  long parsed = 0;
-  size_t parsedChars = 0;
-  const ParseIntegerError error =
-      ParseLongNoThrow(str, base, parsed, parsedChars);
-  if (error == ParseIntegerError::kNone) {
-    if (pos != nullptr) {
-      *pos = parsedChars;
-    }
-    return parsed;
+  try {
+    return std::stol(str, pos, base);
+  } catch (const std::invalid_argument& e) {
+    LOG->Warn("stol(%s): %s", str.c_str(), e.what());
+  } catch (const std::out_of_range& e) {
+    LOG->Warn("stol(%s): %s", str.c_str(), e.what());
   }
-
-  LogIntegerParseError("stol", str, error);
   return exceptVal;
 }
 
 long long StringToLLong(
     const std::string& str, size_t* pos, int base, long long exceptVal) {
-  long long parsed = 0;
-  size_t parsedChars = 0;
-  const ParseIntegerError error =
-      ParseLongLongNoThrow(str, base, parsed, parsedChars);
-  if (error == ParseIntegerError::kNone) {
-    if (pos != nullptr) {
-      *pos = parsedChars;
-    }
-    return parsed;
+  try {
+    return std::stoll(str, pos, base);
+  } catch (const std::invalid_argument& e) {
+    LOG->Warn("stoll(%s): %s", str.c_str(), e.what());
+  } catch (const std::out_of_range& e) {
+    LOG->Warn("stoll(%s): %s", str.c_str(), e.what());
   }
-
-  LogIntegerParseError("stoll", str, error);
   return exceptVal;
 }
 

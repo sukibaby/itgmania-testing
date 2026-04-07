@@ -285,9 +285,9 @@ inline bool operator>>(const std::string& lhs, T& rhs) {
   return !!(std::istringstream(lhs) >> rhs);
 }
 
-// Non-throwing wrappers around integer parsing helpers.
+// Exception-safe wrappers around stoi and friends
 // Additional argument exceptVal will be returned if the conversion couldn't be
-// performed.
+// performed
 int StringToInt(
     const std::string& str, size_t* pos = 0, int base = 10, int exceptVal = 0);
 long StringToLong(
