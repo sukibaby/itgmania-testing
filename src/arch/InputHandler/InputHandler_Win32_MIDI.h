@@ -1,4 +1,5 @@
-#pragma once
+#ifndef INPUTHANDLER_WIN32_MIDI_H
+#define INPUTHANDLER_WIN32_MIDI_H
 
 #include <vector>
 
@@ -42,3 +43,4 @@ class InputHandler_Win32_MIDI : public InputHandler {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

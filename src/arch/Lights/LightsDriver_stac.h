@@ -1,7 +1,8 @@
 /* LightsDriver_stac: Control lights for the stac by icedragon.io using hidapi
  */
 
-#pragma once
+#ifndef LIGHTSDRIVER_STAC_H
+#define LIGHTSDRIVER_STAC_H
 
 /*
  * -------------------------- NOTE --------------------------
@@ -98,3 +99,4 @@ class LightsDriver_stac : public LightsDriver {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

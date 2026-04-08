@@ -1,4 +1,5 @@
-#pragma once
+#ifndef BGANIMATION_H
+#define BGANIMATION_H
 
 #include <string>
 
@@ -47,3 +48,4 @@ class BGAnimation : public ActorFrameAutoDeleteChildren {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

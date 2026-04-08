@@ -1,4 +1,5 @@
-#pragma once
+#ifndef RECEPTORARROWROW_H
+#define RECEPTORARROWROW_H
 
 #include <vector>
 
@@ -62,3 +63,4 @@ class ReceptorArrowRow : public ActorFrame {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

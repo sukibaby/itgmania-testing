@@ -1,4 +1,5 @@
-#pragma once
+#ifndef ACTORUTIL_H
+#define ACTORUTIL_H
 
 #include <string>
 #include <vector>
@@ -225,3 +226,4 @@ FileType GetFileType(const std::string& sPath);
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

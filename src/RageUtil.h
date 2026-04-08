@@ -1,6 +1,7 @@
 /** @brief RageUtil - Miscellaneous helper macros and functions. */
 
-#pragma once
+#ifndef RAGEUTIL_H
+#define RAGEUTIL_H
 
 #include <cmath>
 #include <cstdarg>
@@ -617,3 +618,4 @@ void GetConnectsDisconnects(
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

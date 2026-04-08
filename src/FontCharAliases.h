@@ -1,4 +1,5 @@
-#pragma once
+#ifndef FONTCHARALIASES_H
+#define FONTCHARALIASES_H
 
 #include <string>
 
@@ -32,3 +33,4 @@ bool GetChar(std::string& codepoint, wchar_t& ch);
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

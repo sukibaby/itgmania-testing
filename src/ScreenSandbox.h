@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SCREENSANDBOX_H
+#define SCREENSANDBOX_H
 
 #include "Screen.h"
 #include "ScreenMessage.h"
@@ -35,3 +36,4 @@ class ScreenSandbox : public Screen {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

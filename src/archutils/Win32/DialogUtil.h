@@ -1,4 +1,5 @@
-#pragma once
+#ifndef DIALOGUTIL_H
+#define DIALOGUTIL_H
 
 #include <windows.h>
 
@@ -31,3 +32,4 @@ void LocalizeDialogAndContents(HWND hdlg);
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

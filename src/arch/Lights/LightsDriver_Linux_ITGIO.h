@@ -1,4 +1,5 @@
-#pragma once
+#ifndef LIGHTSDRIVER_LINUX_ITGIO_H
+#define LIGHTSDRIVER_LINUX_ITGIO_H
 
 #include "LightsManager.h"
 #include "arch/Lights/LightsDriver_Linux_Leds.h"
@@ -41,3 +42,4 @@ class LightsDriver_Linux_ITGIO : public LightsDriver_Linux_Leds {
  *
  * i love lamp
  */
+#endif

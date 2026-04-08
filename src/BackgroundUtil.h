@@ -1,4 +1,5 @@
-#pragma once
+#ifndef BACKGROUNDUTIL_H
+#define BACKGROUNDUTIL_H
 
 #include <string>
 #include <vector>
@@ -130,3 +131,4 @@ void BakeAllBackgroundChanges(Song* pSong);
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

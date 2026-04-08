@@ -1,4 +1,5 @@
-#pragma once
+#ifndef LUAMANAGER_H
+#define LUAMANAGER_H
 
 #include "global.h"
 struct lua_State;
@@ -323,3 +324,4 @@ inline int SafeFArg(lua_State* L, int index, const std::string& err, int def) {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

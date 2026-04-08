@@ -1,6 +1,7 @@
 /* GameCommand */
 
-#pragma once
+#ifndef GAMECOMMAND_H
+#define GAMECOMMAND_H
 
 #include <map>
 #include <string>
@@ -174,3 +175,4 @@ class GameCommand {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

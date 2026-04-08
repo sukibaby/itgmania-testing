@@ -1,4 +1,5 @@
-#pragma once
+#ifndef COMMANDLINE_H
+#define COMMANDLINE_H
 
 /** @brief Helper to simulate standard argv[] semantics with WinMain. */
 int GetWin32CmdLine(char**& argv);
@@ -27,3 +28,4 @@ int GetWin32CmdLine(char**& argv);
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

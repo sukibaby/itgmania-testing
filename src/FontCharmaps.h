@@ -1,4 +1,5 @@
-#pragma once
+#ifndef FONTCHARMAPS_H
+#define FONTCHARMAPS_H
 
 #include <string>
 /** @brief Defines common frame to character mappings for Fonts. */
@@ -31,3 +32,4 @@ const wchar_t* get_char_map(std::string name);
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

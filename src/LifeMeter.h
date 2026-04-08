@@ -1,4 +1,5 @@
-#pragma once
+#ifndef LIFEMETER_H
+#define LIFEMETER_H
 
 #include "ActorFrame.h"
 #include "GameConstantsAndTypes.h"
@@ -78,3 +79,4 @@ class LifeMeter : public ActorFrame {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

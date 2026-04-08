@@ -1,4 +1,5 @@
-#pragma once
+#ifndef MODSGROUP_H
+#define MODSGROUP_H
 
 #include <cstddef>
 #include <string>
@@ -140,3 +141,4 @@ class ModsGroup {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

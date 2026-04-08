@@ -1,4 +1,5 @@
-#pragma once
+#ifndef TECHCOUNTS_H
+#define TECHCOUNTS_H
 
 #include <string>
 #include <vector>
@@ -105,3 +106,4 @@ struct TechCounts {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

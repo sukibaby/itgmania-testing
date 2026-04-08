@@ -1,4 +1,5 @@
-#pragma once
+#ifndef LYRICDISPLAY_H
+#define LYRICDISPLAY_H
 
 #include "ActorFrame.h"
 #include "BitmapText.h"
@@ -45,3 +46,4 @@ class LyricDisplay : public ActorFrame {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef DISPLAYRESOLUTIONS_H
+#define DISPLAYRESOLUTIONS_H
 
 #include <set>
 /** @brief The dimensions of the program. */
@@ -58,3 +59,4 @@ typedef std::set<DisplayResolution> DisplayResolutions;
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

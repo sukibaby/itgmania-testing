@@ -1,7 +1,8 @@
 /* LightsDriver_PacDrive: Control lights for the PacDrive by Ultimarc using
  * hidapi */
 
-#pragma once
+#ifndef LIGHTSDRIVER_PACDRIVE_H
+#define LIGHTSDRIVER_PACDRIVE_H
 
 /*
  * -------------------------- NOTE --------------------------
@@ -122,3 +123,4 @@ class LightsDriver_PacDrive : public LightsDriver {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

@@ -2,7 +2,8 @@
  *	http://www.google.com/search?hl=en&lr=&ie=UTF-8&oe=UTF-8&q=kit+74+relay
  * */
 
-#pragma once
+#ifndef LIGHTSDRIVER_WIN32PARALLEL_H
+#define LIGHTSDRIVER_WIN32PARALLEL_H
 
 #include "arch/Lights/LightsDriver.h"
 
@@ -38,3 +39,4 @@ class LightsDriver_Win32Parallel : public LightsDriver {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

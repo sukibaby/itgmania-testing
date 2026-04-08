@@ -1,6 +1,7 @@
 /* RageTextureManager - Interface for loading textures. */
 
-#pragma once
+#ifndef RAGETEXTUREMANAGER_H
+#define RAGETEXTUREMANAGER_H
 
 #include "RageSurface.h"
 #include "RageTexture.h"
@@ -127,3 +128,4 @@ extern RageTextureManager*
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

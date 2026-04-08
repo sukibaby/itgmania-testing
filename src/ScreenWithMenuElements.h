@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SCREENWITHMENUELEMENTS_H
+#define SCREENWITHMENUELEMENTS_H
 
 #include <string>
 #include <vector>
@@ -104,3 +105,4 @@ class ScreenWithMenuElementsSimple : public ScreenWithMenuElements {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef BITMAPTEXT_H
+#define BITMAPTEXT_H
 
 #include <cstddef>
 #include <map>
@@ -189,3 +190,4 @@ class BitmapText : public Actor {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

@@ -1,6 +1,7 @@
 /* RageTexture - Abstract class for a texture and metadata.  */
 
-#pragma once
+#ifndef RAGETEXTURE_H
+#define RAGETEXTURE_H
 
 #include <cstdint>
 #include <string>
@@ -127,3 +128,4 @@ class RageTexture {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

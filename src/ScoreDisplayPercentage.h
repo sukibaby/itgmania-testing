@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SCOREDISPLAYPERCENTAGE_H
+#define SCOREDISPLAYPERCENTAGE_H
 
 #include "AutoActor.h"
 #include "PercentageDisplay.h"
@@ -41,3 +42,4 @@ class ScoreDisplayPercentage : public ScoreDisplay {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

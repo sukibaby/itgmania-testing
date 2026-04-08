@@ -1,4 +1,5 @@
-#pragma once
+#ifndef ARCH_DEFAULT_H
+#define ARCH_DEFAULT_H
 
 #include <string>
 #include <vector>
@@ -122,3 +123,4 @@ inline const std::vector<std::string>& GetDefaultSoundDriverList() {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

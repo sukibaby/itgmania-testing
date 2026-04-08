@@ -1,7 +1,8 @@
 /* GameConstantsAndTypes - Things used in many places that don't change often.
  */
 
-#pragma once
+#ifndef GAMECONSTANTSANDTYPES_H
+#define GAMECONSTANTSANDTYPES_H
 
 #include <cfloat>
 #include <string>
@@ -744,3 +745,4 @@ LuaDeclareType(FailType);
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

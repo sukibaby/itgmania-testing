@@ -1,4 +1,5 @@
-#pragma once
+#ifndef RAGESOUNDDRIVER_JACK_H
+#define RAGESOUNDDRIVER_JACK_H
 
 #include <jack/jack.h>
 
@@ -60,3 +61,4 @@ class RageSoundDriver_JACK : public RageSoundDriver {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

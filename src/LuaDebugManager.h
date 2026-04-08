@@ -1,4 +1,5 @@
-#pragma once
+#ifndef LUADEBUGMANAGER_H
+#define LUADEBUGMANAGER_H
 
 #include <memory>
 #include <string>
@@ -55,3 +56,4 @@ extern LuaDebugManager* LUADEBUG;
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+#endif

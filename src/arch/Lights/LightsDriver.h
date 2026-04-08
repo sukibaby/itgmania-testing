@@ -1,4 +1,5 @@
-#pragma once
+#ifndef LIGHTSDRIVER_H
+#define LIGHTSDRIVER_H
 
 #include <string>
 #include <vector>
@@ -64,3 +65,4 @@ class LightsDriver : public RageDriver {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

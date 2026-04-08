@@ -1,7 +1,8 @@
 /* Initializes a USB Para controller so that it will function as a regular HID
  * joystick. */
 
-#pragma once
+#ifndef INPUTHANDLER_WIN32_PARA_H
+#define INPUTHANDLER_WIN32_PARA_H
 
 #include <vector>
 
@@ -38,3 +39,4 @@ class InputHandler_Win32_Para : public InputHandler {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

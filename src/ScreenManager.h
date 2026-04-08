@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SCREENMANAGER_H
+#define SCREENMANAGER_H
 
 #include <string>
 
@@ -150,3 +151,4 @@ extern ScreenManager*
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

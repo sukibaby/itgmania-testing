@@ -1,4 +1,5 @@
-#pragma once
+#ifndef MOVIETEXTURE_GENERIC_H
+#define MOVIETEXTURE_GENERIC_H
 
 #include <cstdint>
 #include <memory>
@@ -164,3 +165,4 @@ class MovieTexture_Generic : public RageMovieTexture {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef NOTESWRITERDWI_H
+#define NOTESWRITERDWI_H
 
 #include <string>
 
@@ -39,3 +40,4 @@ bool Write(std::string sPath, const Song& out);
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

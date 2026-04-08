@@ -1,7 +1,8 @@
 /* ScreenGameplay - The music plays, the notes scroll, and the Player is
  * pressing buttons. */
 
-#pragma once
+#ifndef SCREENGAMEPLAYNORMAL_H
+#define SCREENGAMEPLAYNORMAL_H
 
 #include <vector>
 
@@ -36,3 +37,4 @@ class ScreenGameplayNormal : public ScreenGameplay {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef HOLDJUDGMENT_H
+#define HOLDJUDGMENT_H
 
 #include <string>
 
@@ -52,3 +53,4 @@ class HoldJudgment : public ActorFrame {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

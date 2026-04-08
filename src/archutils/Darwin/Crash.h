@@ -1,4 +1,5 @@
-#pragma once
+#ifndef CRASH_H
+#define CRASH_H
 #include <string>
 
 namespace CrashHandler {
@@ -32,3 +33,4 @@ void DebugBreak();
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

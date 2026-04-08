@@ -1,4 +1,5 @@
-#pragma once
+#ifndef COURSE_H
+#define COURSE_H
 
 #include <map>
 #include <set>
@@ -267,3 +268,4 @@ class Course {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

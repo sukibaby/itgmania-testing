@@ -1,4 +1,5 @@
-#pragma once
+#ifndef LIGHTSDRIVER_SEXTETSTREAM_H
+#define LIGHTSDRIVER_SEXTETSTREAM_H
 
 /*
  * `LightsDriver_SextetStream` (abstract): Streams the light data (in
@@ -66,3 +67,4 @@ class LightsDriver_SextetStreamToFile : public LightsDriver_SextetStream {
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+#endif

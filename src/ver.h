@@ -1,4 +1,5 @@
-#pragma once
+#ifndef VER_H
+#define VER_H
 
 extern const char* const product_version;
 
@@ -10,3 +11,4 @@ extern const unsigned long version_num;
 extern const char* const version_time;
 extern const char* const version_date;
 extern const char* const sm_version_git_hash;
+#endif

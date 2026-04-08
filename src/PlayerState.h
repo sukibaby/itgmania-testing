@@ -1,6 +1,7 @@
 /** @brief PlayerState - Holds per-player game state. */
 
-#pragma once
+#ifndef PLAYERSTATE_H
+#define PLAYERSTATE_H
 
 #include <vector>
 
@@ -168,3 +169,4 @@ class PlayerState {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

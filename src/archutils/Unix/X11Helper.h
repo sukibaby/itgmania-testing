@@ -1,5 +1,6 @@
 /* Manages our X connection and window. */
-#pragma once
+#ifndef X11HELPER_H
+#define X11HELPER_H
 
 #include <DisplaySpec.h>
 #include <X11/Xlib.h>  // Window
@@ -63,3 +64,4 @@ bool SetWMFullscreenMonitors(const DisplaySpec& target);
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

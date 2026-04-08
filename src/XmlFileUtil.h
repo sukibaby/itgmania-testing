@@ -1,4 +1,5 @@
-#pragma once
+#ifndef XMLFILEUTIL_H
+#define XMLFILEUTIL_H
 
 #include <string>
 
@@ -59,3 +60,4 @@ void MergeIniUnder(XNode* pFrom, XNode* pTo);
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

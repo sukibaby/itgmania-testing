@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SCOREDISPLAYBATTLE_H
+#define SCOREDISPLAYBATTLE_H
 
 #include <string>
 
@@ -49,3 +50,4 @@ class ScoreDisplayBattle : public ScoreDisplay {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

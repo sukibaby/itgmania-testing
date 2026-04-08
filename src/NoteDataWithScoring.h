@@ -1,4 +1,5 @@
-#pragma once
+#ifndef NOTEDATAWITHSCORING_H
+#define NOTEDATAWITHSCORING_H
 
 #include "GameConstantsAndTypes.h"
 #include "PlayerNumber.h"
@@ -57,3 +58,4 @@ void GetActualRadarValues(
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

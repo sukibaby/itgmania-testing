@@ -1,4 +1,5 @@
-#pragma once
+#ifndef ACTORPROXY_H
+#define ACTORPROXY_H
 
 #include "Actor.h"
 
@@ -48,3 +49,4 @@ class ActorProxy : public Actor {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

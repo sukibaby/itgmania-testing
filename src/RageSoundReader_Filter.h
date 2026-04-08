@@ -1,6 +1,7 @@
 /* RageSoundReader_Filter - simplify the creation of filter RageSoundReaders. */
 
-#pragma once
+#ifndef RAGESOUNDREADER_FILTER_H
+#define RAGESOUNDREADER_FILTER_H
 
 #include <string>
 
@@ -60,3 +61,4 @@ class RageSoundReader_Filter : public RageSoundReader {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef MESSAGEMANAGER_H
+#define MESSAGEMANAGER_H
 
 #include <string>
 #include <vector>
@@ -323,3 +324,4 @@ class BroadcastOnChangePtr1D {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef MEMORYCARDDRIVERTHREADED_WINDOWS_H
+#define MEMORYCARDDRIVERTHREADED_WINDOWS_H
 
 #include <windows.h>
 
@@ -51,3 +52,4 @@ class MemoryCardDriverThreaded_Windows : public MemoryCardDriver {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

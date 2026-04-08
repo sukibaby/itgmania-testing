@@ -1,6 +1,7 @@
 /* ScreenServiceAction -  */
 
-#pragma once
+#ifndef SCREENSERVICEACTION_H
+#define SCREENSERVICEACTION_H
 
 #include <string>
 
@@ -37,3 +38,4 @@ class ScreenServiceAction : public ScreenPrompt {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

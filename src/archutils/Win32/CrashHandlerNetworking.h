@@ -1,4 +1,5 @@
-#pragma once
+#ifndef CRASHHANDLERNETWORKING_H
+#define CRASHHANDLERNETWORKING_H
 
 #include <map>
 #include <string>
@@ -84,3 +85,4 @@ class NetworkPostData {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

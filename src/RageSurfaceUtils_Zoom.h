@@ -1,4 +1,5 @@
-#pragma once
+#ifndef RAGESURFACEUTILS_ZOOM_H
+#define RAGESURFACEUTILS_ZOOM_H
 
 struct RageSurface;
 /** @brief Utility functions for the RageSurfaces. */
@@ -33,3 +34,4 @@ void Zoom(RageSurface*& src, int width, int height);
  * This is based on code from SDL_rotozoom, under the above license with
  * permission from Andreas Schiffler.
  */
+#endif

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef DIRECTXERRORLIST_H
+#define DIRECTXERRORLIST_H
 
 // This file is intended to be included in the middle of a function after
 // defining the macro to do what you want.
@@ -339,4 +340,5 @@ DXERRMSG(
 DXERRMSG(
     D3D11_ERROR_DEFERRED_CONTEXT_MAP_WITHOUT_INITIAL_DISCARD,
     "Deferred context requires Map-Discard usage pattern")
+#endif
 #endif

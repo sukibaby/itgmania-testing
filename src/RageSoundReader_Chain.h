@@ -1,6 +1,7 @@
 /* RageSoundReader_Chain - Chain sounds together */
 
-#pragma once
+#ifndef RAGESOUNDREADER_CHAIN_H
+#define RAGESOUNDREADER_CHAIN_H
 
 #include <cstdint>
 #include <map>
@@ -101,3 +102,4 @@ class RageSoundReader_Chain : public RageSoundReader {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

@@ -1,6 +1,7 @@
 /* FadingBanner - Fades between two banners. */
 
-#pragma once
+#ifndef FADINGBANNER_H
+#define FADINGBANNER_H
 
 #include <string>
 
@@ -79,3 +80,4 @@ class FadingBanner : public ActorFrame {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

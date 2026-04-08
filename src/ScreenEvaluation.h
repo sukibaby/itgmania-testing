@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SCREENEVALUATION_H
+#define SCREENEVALUATION_H
 
 #include <string>
 
@@ -152,3 +153,4 @@ class ScreenEvaluation : public ScreenWithMenuElements {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

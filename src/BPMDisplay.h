@@ -1,4 +1,5 @@
-#pragma once
+#ifndef BPMDISPLAY_H
+#define BPMDISPLAY_H
 
 #include <string>
 #include <vector>
@@ -145,3 +146,4 @@ class BPMDisplay : public BitmapText {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

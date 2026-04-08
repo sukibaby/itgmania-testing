@@ -1,7 +1,8 @@
 /* RandomSample - Holds multiple sounds samples and can play a random sound
  * easily. */
 
-#pragma once
+#ifndef RANDOMSAMPLE_H
+#define RANDOMSAMPLE_H
 
 #include <string>
 #include <vector>
@@ -52,3 +53,4 @@ class RandomSample {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

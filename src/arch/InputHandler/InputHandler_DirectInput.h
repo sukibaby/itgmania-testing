@@ -1,4 +1,5 @@
-#pragma once
+#ifndef INPUTHANDLER_DIRECTINPUT_H
+#define INPUTHANDLER_DIRECTINPUT_H
 
 #include <vector>
 
@@ -66,3 +67,4 @@ class InputHandler_DInput : public InputHandler {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

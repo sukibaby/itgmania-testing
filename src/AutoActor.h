@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AUTOACTOR_H
+#define AUTOACTOR_H
 
 #include <string>
 
@@ -66,3 +67,4 @@ class AutoActor {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

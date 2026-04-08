@@ -1,4 +1,5 @@
-#pragma once
+#ifndef RAGEDISPLAY_OGL_HELPERS_H
+#define RAGEDISPLAY_OGL_HELPERS_H
 
 /* Import RageDisplay, for types.  Do not include RageDisplay_Legacy.h. */
 #include <cstdint>
@@ -71,3 +72,4 @@ class RenderTarget {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

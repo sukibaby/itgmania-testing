@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SCOREKEEPERSHARED_H
+#define SCOREKEEPERSHARED_H
 
 #include <vector>
 
@@ -55,3 +56,4 @@ class ScoreKeeperShared : public ScoreKeeperNormal {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

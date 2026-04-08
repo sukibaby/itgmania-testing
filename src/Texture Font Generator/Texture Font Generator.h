@@ -1,4 +1,5 @@
-#pragma once
+#ifndef TEXTURE_FONT_GENERATOR_H
+#define TEXTURE_FONT_GENERATOR_H
 
 #include "resource.h"  // main symbols
 #include "stdafx.h"
@@ -41,3 +42,4 @@ extern CTextureFontGeneratorApp theApp;
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

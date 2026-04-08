@@ -1,4 +1,5 @@
-#pragma once
+#ifndef RAGEFILEDRIVERZIP_H
+#define RAGEFILEDRIVERZIP_H
 
 #include <string>
 #include <vector>
@@ -84,3 +85,4 @@ class RageFileDriverZip : public RageFileDriver {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

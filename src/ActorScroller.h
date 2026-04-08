@@ -1,4 +1,5 @@
-#pragma once
+#ifndef ACTORSCROLLER_H
+#define ACTORSCROLLER_H
 
 #include <string>
 
@@ -136,3 +137,4 @@ class ActorScrollerAutoDeleteChildren : public ActorScroller {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

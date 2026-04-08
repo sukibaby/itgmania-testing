@@ -1,7 +1,8 @@
 /* ModelTypes - Types defined in msLib.h.  C arrays converted to use std::vector
  */
 
-#pragma once
+#ifndef MODELTYPES_H
+#define MODELTYPES_H
 
 #include <cstdint>
 #include <string>
@@ -166,3 +167,4 @@ struct myBone_t {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

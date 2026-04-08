@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SCREENRELOADSONGS_H
+#define SCREENRELOADSONGS_H
 
 #include "BitmapText.h"
 #include "Screen.h"
@@ -43,3 +44,4 @@ class ScreenReloadSongs : public Screen {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

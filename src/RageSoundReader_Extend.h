@@ -1,6 +1,7 @@
 /* RageSoundReader_Extend - Add looping, delay and truncation and fading. */
 
-#pragma once
+#ifndef RAGESOUNDREADER_EXTEND_H
+#define RAGESOUNDREADER_EXTEND_H
 
 #include <string>
 
@@ -59,3 +60,4 @@ class RageSoundReader_Extend : public RageSoundReader_Filter {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

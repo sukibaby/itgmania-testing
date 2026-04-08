@@ -1,4 +1,5 @@
-#pragma once
+#ifndef RAGEFILEDRIVERDIRECT_H
+#define RAGEFILEDRIVERDIRECT_H
 
 #include <cstddef>
 #include <string>
@@ -90,3 +91,4 @@ class RageFileObjDirect : public RageFileObj {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

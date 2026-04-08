@@ -1,4 +1,5 @@
-#pragma once
+#ifndef INPUTHANDLER_MACOSX_HID_H
+#define INPUTHANDLER_MACOSX_HID_H
 
 #include <CoreFoundation/CoreFoundation.h>
 #include <IOKit/IOKitLib.h>
@@ -71,3 +72,4 @@ class InputHandler_MacOSX_HID : public InputHandler {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

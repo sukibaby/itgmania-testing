@@ -1,6 +1,7 @@
 /* RageModelGeometry - Stores mesh data. */
 
-#pragma once
+#ifndef RAGEMODELGEOMETRY_H
+#define RAGEMODELGEOMETRY_H
 
 #include <string>
 #include <vector>
@@ -54,3 +55,4 @@ class RageModelGeometry {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

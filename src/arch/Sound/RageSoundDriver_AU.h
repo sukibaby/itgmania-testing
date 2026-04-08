@@ -1,4 +1,5 @@
-#pragma once
+#ifndef RAGESOUNDDRIVER_AU_H
+#define RAGESOUNDDRIVER_AU_H
 
 #include <AudioUnit/AudioUnit.h>
 #include <CoreFoundation/CoreFoundation.h>
@@ -63,3 +64,4 @@ class RageSoundDriver_AU : public RageSoundDriver {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

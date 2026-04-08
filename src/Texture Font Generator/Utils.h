@@ -1,4 +1,5 @@
-#pragma once
+#ifndef UTILS_H
+#define UTILS_H
 
 #include <cstdio>
 
@@ -45,3 +46,4 @@ bool SavePNG(FILE* f, char szErrorbuf[1024], const Surface* pSurf);
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

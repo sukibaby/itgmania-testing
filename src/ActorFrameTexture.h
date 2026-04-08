@@ -1,4 +1,5 @@
-#pragma once
+#ifndef ACTORFRAMETEXTURE_H
+#define ACTORFRAMETEXTURE_H
 
 #include <string>
 
@@ -83,3 +84,4 @@ class ActorFrameTextureAutoDeleteChildren : public ActorFrameTexture {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

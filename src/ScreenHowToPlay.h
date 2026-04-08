@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SCREENHOWTOPLAY_H
+#define SCREENHOWTOPLAY_H
 
 #include "NoteData.h"
 #include "Player.h"
@@ -58,3 +59,4 @@ class ScreenHowToPlay : public ScreenAttract {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef RAGESOUNDREADER_MERGE_H
+#define RAGESOUNDREADER_MERGE_H
 
 #include <string>
 #include <vector>
@@ -74,3 +75,4 @@ class RageSoundReader_Merge : public RageSoundReader {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

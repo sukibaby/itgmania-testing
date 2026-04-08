@@ -1,6 +1,7 @@
 /* RageSound - High-level sound object. */
 
-#pragma once
+#ifndef RAGESOUND_H
+#define RAGESOUND_H
 
 #include <cstdint>
 #include <string>
@@ -223,3 +224,4 @@ class RageSound : public RageSoundBase {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

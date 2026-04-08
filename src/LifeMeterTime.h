@@ -1,4 +1,5 @@
-#pragma once
+#ifndef LIFEMETERTIME_H
+#define LIFEMETERTIME_H
 
 #include "AutoActor.h"
 #include "GameConstantsAndTypes.h"
@@ -72,3 +73,4 @@ class LifeMeterTime : public LifeMeter {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

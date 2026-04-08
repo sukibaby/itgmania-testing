@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SCREENJUKEBOX_H
+#define SCREENJUKEBOX_H
 
 #include "InputEventPlus.h"
 #include "ScreenGameplayNormal.h"
@@ -47,3 +48,4 @@ class ScreenJukebox : public ScreenGameplayNormal {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SCREENTEXTENTRY_H
+#define SCREENTEXTENTRY_H
 
 #include <string>
 
@@ -206,3 +207,4 @@ class ScreenTextEntryVisual : public ScreenTextEntry {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

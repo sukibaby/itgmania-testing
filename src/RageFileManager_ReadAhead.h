@@ -1,4 +1,5 @@
-#pragma once
+#ifndef RAGEFILEMANAGER_READAHEAD_H
+#define RAGEFILEMANAGER_READAHEAD_H
 
 #include "RageFileBasic.h"
 /** @brief Utilities for reading the RageFiles. */
@@ -41,3 +42,4 @@ void CacheHintStreaming(RageFileBasic* pFile);
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

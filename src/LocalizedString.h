@@ -1,4 +1,5 @@
-#pragma once
+#ifndef LOCALIZEDSTRING_H
+#define LOCALIZEDSTRING_H
 
 #include <string>
 
@@ -56,3 +57,4 @@ class LocalizedString {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

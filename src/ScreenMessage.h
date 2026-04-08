@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SCREENMESSAGE_H
+#define SCREENMESSAGE_H
 
 #include <string>
 /** @brief Definition of common ScreenMessages and helpers. */
@@ -52,3 +53,4 @@ std::string ScreenMessageToString(ScreenMessage SM);
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

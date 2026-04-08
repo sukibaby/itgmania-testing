@@ -1,4 +1,5 @@
-#pragma once
+#ifndef LUADEBUGHELPERS_H
+#define LUADEBUGHELPERS_H
 
 #include <string>
 #include <vector>
@@ -48,3 +49,4 @@ std::vector<std::string> UnresolvePath(const std::string& absolutePath);
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+#endif

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef HELPDISPLAY_H
+#define HELPDISPLAY_H
 
 #include <string>
 #include <vector>
@@ -67,3 +68,4 @@ class HelpDisplay : public BitmapText {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

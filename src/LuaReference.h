@@ -1,4 +1,5 @@
-#pragma once
+#ifndef LUAREFERENCE_H
+#define LUAREFERENCE_H
 
 #include <string>
 
@@ -122,3 +123,4 @@ class LuaTable : public LuaReference {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

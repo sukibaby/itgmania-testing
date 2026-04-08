@@ -1,4 +1,5 @@
-#pragma once
+#ifndef RAGESOUNDDRIVER_WAVEOUT_H
+#define RAGESOUNDDRIVER_WAVEOUT_H
 
 // clang-format off
 #include <windows.h>
@@ -70,3 +71,4 @@ class RageSoundDriver_WaveOut : public RageSoundDriver {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

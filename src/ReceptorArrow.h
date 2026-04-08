@@ -1,4 +1,5 @@
-#pragma once
+#ifndef RECEPTORARROW_H
+#define RECEPTORARROW_H
 
 #include "ActorFrame.h"
 #include "AutoActor.h"
@@ -54,3 +55,4 @@ class ReceptorArrow : public ActorFrame {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

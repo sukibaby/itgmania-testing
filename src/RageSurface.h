@@ -1,6 +1,7 @@
 /* RageSurface - holds a simple 2d graphic surface */
 
-#pragma once
+#ifndef RAGESURFACE_H
+#define RAGESURFACE_H
 
 #include <array>
 #include <cstdint>
@@ -109,3 +110,4 @@ RageSurface* CreateSurfaceFrom(
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

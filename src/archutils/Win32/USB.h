@@ -1,6 +1,7 @@
 /* WindowsFileIO - Windows device I/O. */
 
-#pragma once
+#ifndef USB_H
+#define USB_H
 
 #include <windows.h>
 
@@ -66,3 +67,4 @@ class USBDevice {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

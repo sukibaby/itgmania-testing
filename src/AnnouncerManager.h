@@ -1,4 +1,5 @@
-#pragma once
+#ifndef ANNOUNCERMANAGER_H
+#define ANNOUNCERMANAGER_H
 
 #include <string>
 #include <vector>
@@ -73,3 +74,4 @@ extern AnnouncerManager*
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

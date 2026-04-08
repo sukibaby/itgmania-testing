@@ -1,6 +1,7 @@
 /* Windows-specific file helpers. */
 
-#pragma once
+#ifndef GETFILEINFORMATION_H
+#define GETFILEINFORMATION_H
 
 #include <cstdint>
 #include <string>
@@ -33,3 +34,4 @@ bool GetProcessFileName(uint32_t iProcessID, std::string& sName);
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

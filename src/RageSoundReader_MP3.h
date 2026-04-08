@@ -1,6 +1,7 @@
 /* RageSoundReader_MP3 - An interface to read MP3s via MAD. */
 
-#pragma once
+#ifndef RAGESOUNDREADER_MP3_H
+#define RAGESOUNDREADER_MP3_H
 
 #include <string>
 
@@ -76,3 +77,4 @@ class RageSoundReader_MP3 : public RageSoundReader_FileReader {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

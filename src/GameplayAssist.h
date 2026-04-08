@@ -1,4 +1,5 @@
-#pragma once
+#ifndef GAMEPLAYASSIST_H
+#define GAMEPLAYASSIST_H
 
 #include "PlayerState.h"
 #include "RageSound.h"
@@ -52,3 +53,4 @@ class GameplayAssist {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

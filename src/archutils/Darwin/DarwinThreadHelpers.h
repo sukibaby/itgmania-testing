@@ -1,4 +1,5 @@
-#pragma once
+#ifndef DARWINTHREADHELPERS_H
+#define DARWINTHREADHELPERS_H
 
 #include <cstdint>
 #include <string>
@@ -51,3 +52,4 @@ std::string SetThreadPrecedence(float prec);
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

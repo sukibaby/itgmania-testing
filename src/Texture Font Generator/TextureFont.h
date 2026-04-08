@@ -1,4 +1,5 @@
-#pragma once
+#ifndef TEXTUREFONT_H
+#define TEXTUREFONT_H
 
 #include <map>
 #include <vector>
@@ -92,3 +93,4 @@ class TextureFont {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

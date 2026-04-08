@@ -1,7 +1,8 @@
 /* ScreenStatsOverlay - credits and statistics drawn on top of everything else.
  */
 
-#pragma once
+#ifndef SCREENSTATSOVERLAY_H
+#define SCREENSTATSOVERLAY_H
 
 #include <array>
 #include <string>
@@ -62,3 +63,4 @@ class ScreenStatsOverlay : public Screen {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

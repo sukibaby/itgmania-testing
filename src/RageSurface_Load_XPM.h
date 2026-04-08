@@ -1,6 +1,7 @@
 /* RageSurface_Load_XPM - XPM file loader */
 
-#pragma once
+#ifndef RAGESURFACE_LOAD_XPM_H
+#define RAGESURFACE_LOAD_XPM_H
 
 #include <string>
 
@@ -31,3 +32,4 @@ RageSurface* RageSurface_Load_XPM(char* const* xpm, std::string& error);
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

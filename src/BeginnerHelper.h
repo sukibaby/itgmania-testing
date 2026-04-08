@@ -1,4 +1,5 @@
-#pragma once
+#ifndef BEGINNERHELPER_H
+#define BEGINNERHELPER_H
 
 #include <array>
 
@@ -71,3 +72,4 @@ class BeginnerHelper : public ActorFrame {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

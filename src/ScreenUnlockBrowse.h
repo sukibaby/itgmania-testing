@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SCREENUNLOCKBROWSE_H
+#define SCREENUNLOCKBROWSE_H
 
 #include "FadingBanner.h"
 #include "InputQueue.h"
@@ -41,3 +42,4 @@ class ScreenUnlockBrowse : public ScreenSelectMaster {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

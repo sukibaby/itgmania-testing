@@ -1,6 +1,7 @@
 /* RageDisplay_D3D - Direct3D renderer. */
 
-#pragma once
+#ifndef RAGEDISPLAY_D3D_H
+#define RAGEDISPLAY_D3D_H
 
 #include <cstdint>
 #include <string>
@@ -106,3 +107,4 @@ class RageDisplay_D3D : public RageDisplay {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

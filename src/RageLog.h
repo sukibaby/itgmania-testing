@@ -1,6 +1,7 @@
 /* RageLog - Manages logging. */
 
-#pragma once
+#ifndef RAGELOG_H
+#define RAGELOG_H
 
 #include <string>
 
@@ -73,3 +74,4 @@ extern RageLog* LOG;  // global and accessible from anywhere in our program
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

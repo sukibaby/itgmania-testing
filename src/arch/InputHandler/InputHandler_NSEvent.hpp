@@ -5,7 +5,8 @@
 //  Created by heshuimu on 12/22/19.
 //
 
-#pragma once
+#ifndef INPUTHANDLER_NSEVENT_HPP
+#define INPUTHANDLER_NSEVENT_HPP
 
 #include "InputHandler.h"
 #include "archutils/Darwin/CocoaEventDispatcher.h"
@@ -25,3 +26,4 @@ class InputHandler_NSEvent : public InputHandler {
   DeviceButton m_NSKeyCodeMap[0x100];
   unsigned m_ResponderID;
 };
+#endif

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SCREENTESTLIGHTS_H
+#define SCREENTESTLIGHTS_H
 
 #include "BitmapText.h"
 #include "InputQueue.h"
@@ -49,3 +50,4 @@ class ScreenTestLights : public ScreenWithMenuElements {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

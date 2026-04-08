@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SCREENGAMEPLAYLESSON_H
+#define SCREENGAMEPLAYLESSON_H
 
 #include <vector>
 
@@ -56,3 +57,4 @@ class ScreenGameplayLesson : public ScreenGameplayNormal {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

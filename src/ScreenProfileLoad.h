@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SCREENPROFILELOAD_H
+#define SCREENPROFILELOAD_H
 
 #include "InputQueue.h"
 #include "ScreenWithMenuElements.h"
@@ -42,3 +43,4 @@ class ScreenProfileLoad : public ScreenWithMenuElements {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

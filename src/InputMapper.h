@@ -1,4 +1,5 @@
-#pragma once
+#ifndef INPUTMAPPER_H
+#define INPUTMAPPER_H
 
 #include <string>
 #include <vector>
@@ -295,3 +296,4 @@ extern InputMapper*
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

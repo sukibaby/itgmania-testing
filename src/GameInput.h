@@ -1,4 +1,5 @@
-#pragma once
+#ifndef GAMEINPUT_H
+#define GAMEINPUT_H
 
 #include <string>
 
@@ -259,3 +260,4 @@ struct GameInput {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

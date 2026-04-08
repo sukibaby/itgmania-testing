@@ -1,6 +1,7 @@
 /* Utility functions for RageSurfaces. */
 
-#pragma once
+#ifndef RAGESURFACEUTILS_H
+#define RAGESURFACEUTILS_H
 
 #include <cstdint>
 #include <string>
@@ -93,3 +94,4 @@ void FlipVertically(RageSurface* img);
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

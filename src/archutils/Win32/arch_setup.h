@@ -1,4 +1,5 @@
-#pragma once
+#ifndef ARCH_SETUP_H
+#define ARCH_SETUP_H
 
 #define SUPPORT_OPENGL
 #define SUPPORT_D3D
@@ -47,3 +48,4 @@ void my_usleep(unsigned long usec);
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

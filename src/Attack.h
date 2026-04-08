@@ -1,4 +1,5 @@
-#pragma once
+#ifndef ATTACK_H
+#define ATTACK_H
 
 #define ATTACK_STARTS_NOW (-10000.f)
 
@@ -119,3 +120,4 @@ struct AttackArray : public std::vector<Attack> {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

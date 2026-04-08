@@ -1,7 +1,8 @@
 /* ScreenDebugOverlay - credits and statistics drawn on top of everything else.
  */
 
-#pragma once
+#ifndef SCREENDEBUGOVERLAY_H
+#define SCREENDEBUGOVERLAY_H
 
 #include <string>
 #include <vector>
@@ -61,3 +62,4 @@ class ScreenDebugOverlay : public Screen {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

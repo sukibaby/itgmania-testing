@@ -1,6 +1,7 @@
 /* RageSurface_Load_BMP - simple BMP file loader */
 
-#pragma once
+#ifndef RAGESURFACE_LOAD_BMP_H
+#define RAGESURFACE_LOAD_BMP_H
 
 #include <string>
 
@@ -33,3 +34,4 @@ RageSurfaceUtils::OpenResult RageSurface_Load_BMP(
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

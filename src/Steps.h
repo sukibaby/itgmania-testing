@@ -1,4 +1,5 @@
-#pragma once
+#ifndef STEPS_H
+#define STEPS_H
 
 #include <string>
 #include <vector>
@@ -382,3 +383,4 @@ class Steps {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

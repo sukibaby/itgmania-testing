@@ -1,6 +1,7 @@
 /* LuaBinding - helpers to expose Lua bindings for C++ classes. */
 
-#pragma once
+#ifndef LUABINDING_H
+#define LUABINDING_H
 
 #include <cstdio>
 #include <string>
@@ -273,3 +274,4 @@ float FArgGTEZero(lua_State* L, int index);
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

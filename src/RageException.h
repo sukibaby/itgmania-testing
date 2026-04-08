@@ -1,4 +1,5 @@
-#pragma once
+#ifndef RAGEEXCEPTION_H
+#define RAGEEXCEPTION_H
 
 #include <string>
 
@@ -39,3 +40,4 @@ void SetCleanupHandler(void (*pHandler)(const std::string& sError));
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

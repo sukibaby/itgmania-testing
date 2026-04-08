@@ -1,6 +1,7 @@
 /* ScreenPrompt - Displays a prompt on top of another screen. */
 
-#pragma once
+#ifndef SCREENPROMPT_H
+#define SCREENPROMPT_H
 
 #include <string>
 
@@ -83,3 +84,4 @@ class ScreenPrompt : public ScreenWithMenuElements {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

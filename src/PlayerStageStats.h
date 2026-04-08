@@ -1,4 +1,5 @@
-#pragma once
+#ifndef PLAYERSTAGESTATS_H
+#define PLAYERSTAGESTATS_H
 
 #include <map>
 #include <string>
@@ -206,3 +207,4 @@ class PlayerStageStats {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

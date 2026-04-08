@@ -1,6 +1,7 @@
 /* RageFileDriverReadAhead - Read-ahead hinting for seamless rewinding. */
 
-#pragma once
+#ifndef RAGEFILEDRIVERREADAHEAD_H
+#define RAGEFILEDRIVERREADAHEAD_H
 
 #include <cstddef>
 #include <string>
@@ -68,3 +69,4 @@ class RageFileDriverReadAhead : public RageFileObj {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

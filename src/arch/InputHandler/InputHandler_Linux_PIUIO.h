@@ -1,4 +1,5 @@
-#pragma once
+#ifndef INPUTHANDLER_LINUX_PIUIO_H
+#define INPUTHANDLER_LINUX_PIUIO_H
 
 #include <vector>
 
@@ -49,3 +50,4 @@ class InputHandler_Linux_PIUIO : public InputHandler {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

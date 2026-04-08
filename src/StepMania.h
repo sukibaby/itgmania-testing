@@ -1,4 +1,5 @@
-#pragma once
+#ifndef STEPMANIA_H
+#define STEPMANIA_H
 
 #include <string>
 
@@ -54,3 +55,4 @@ bool GetHighResolutionTextures();
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

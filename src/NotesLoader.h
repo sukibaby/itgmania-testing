@@ -1,4 +1,5 @@
-#pragma once
+#ifndef NOTESLOADER_H
+#define NOTESLOADER_H
 
 #include <set>
 #include <string>
@@ -52,3 +53,4 @@ bool LoadFromDir(
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef RAGESURFACEUTILS_DITHER_H
+#define RAGESURFACEUTILS_DITHER_H
 
 struct RageSurface;
 /** @brief Utility functions for the RageSurfaces. */
@@ -31,3 +32,4 @@ void ErrorDiffusionDither(const RageSurface* src, RageSurface* dst);
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

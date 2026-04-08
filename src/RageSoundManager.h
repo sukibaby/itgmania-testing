@@ -1,7 +1,8 @@
 /* RageSoundManager - A global singleton to interface RageSound and
  * RageSoundDriver. */
 
-#pragma once
+#ifndef RAGESOUNDMANAGER_H
+#define RAGESOUNDMANAGER_H
 
 #include <cstdint>
 #include <map>
@@ -84,3 +85,4 @@ extern RageSoundManager* SOUNDMAN;
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

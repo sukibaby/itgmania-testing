@@ -1,6 +1,7 @@
 /* LoadingWindow_Win32 - Loading window using a Windows dialog box. */
 
-#pragma once
+#ifndef LOADINGWINDOW_WIN32_H
+#define LOADINGWINDOW_WIN32_H
 
 #include <windows.h>
 
@@ -57,3 +58,4 @@ class LoadingWindow_Win32 : public LoadingWindow {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

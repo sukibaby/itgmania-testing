@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SCREENUNLOCKCELEBRATE_H
+#define SCREENUNLOCKCELEBRATE_H
 
 #include "InputQueue.h"
 #include "ScreenUnlockBrowse.h"
@@ -41,3 +42,4 @@ class ScreenUnlockCelebrate : public ScreenUnlockBrowse {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

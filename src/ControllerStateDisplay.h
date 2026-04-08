@@ -1,6 +1,7 @@
 /* ControllerStateDisplay - Show the button state of a controller. */
 
-#pragma once
+#ifndef CONTROLLERSTATEDISPLAY_H
+#define CONTROLLERSTATEDISPLAY_H
 
 #include <string>
 
@@ -112,3 +113,4 @@ class ControllerStateDisplay : public ActorFrame {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

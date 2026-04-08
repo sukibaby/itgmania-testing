@@ -1,6 +1,7 @@
 /* RageFile - High-level file access. */
 
-#pragma once
+#ifndef RAGEFILE_H
+#define RAGEFILE_H
 
 #include <cstddef>
 #include <cstdint>
@@ -138,3 +139,4 @@ uint32_t read_u32_le(RageFileBasic& f, std::string& sError);
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

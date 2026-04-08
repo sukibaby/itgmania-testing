@@ -1,4 +1,5 @@
-#pragma once
+#ifndef NOTEDATA_H
+#define NOTEDATA_H
 
 #include <map>
 #include <set>
@@ -484,3 +485,4 @@ inline void swap<NoteData>(NoteData& nd1, NoteData& nd2) noexcept {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

@@ -1,6 +1,7 @@
 /* Palettize an RGBA surface. */
 
-#pragma once
+#ifndef RAGESURFACEUTILS_PALETTIZE_H
+#define RAGESURFACEUTILS_PALETTIZE_H
 
 struct RageSurface;
 /** @brief Utility functions for the RageSurfaces. */
@@ -32,3 +33,4 @@ void Palettize(RageSurface*& pImg, int iColors = 256, bool bDither = true);
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

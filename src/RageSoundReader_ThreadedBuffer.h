@@ -1,6 +1,7 @@
 /* RageSoundReader_ThreadedBuffer - Buffer sounds into memory. */
 
-#pragma once
+#ifndef RAGESOUNDREADER_THREADEDBUFFER_H
+#define RAGESOUNDREADER_THREADEDBUFFER_H
 
 #include <list>
 #include <string>
@@ -109,3 +110,4 @@ class RageSoundReader_ThreadedBuffer : public RageSoundReader_Filter {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

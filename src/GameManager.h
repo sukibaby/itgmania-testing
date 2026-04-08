@@ -1,6 +1,7 @@
 /** @brief GameManager - Manages Games and Styles. */
 
-#pragma once
+#ifndef GAMEMANAGER_H
+#define GAMEMANAGER_H
 
 class Style;
 struct Game;
@@ -90,3 +91,4 @@ extern GameManager*
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

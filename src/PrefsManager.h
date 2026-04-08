@@ -1,4 +1,5 @@
-#pragma once
+#ifndef PREFSMANAGER_H
+#define PREFSMANAGER_H
 
 #include <map>
 #include <string>
@@ -429,3 +430,4 @@ extern PrefsManager*
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

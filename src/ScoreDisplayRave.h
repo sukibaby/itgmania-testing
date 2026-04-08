@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SCOREDISPLAYRAVE_H
+#define SCOREDISPLAYRAVE_H
 
 #include "AutoActor.h"
 #include "BitmapText.h"
@@ -49,3 +50,4 @@ class ScoreDisplayRave : public ScoreDisplay {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

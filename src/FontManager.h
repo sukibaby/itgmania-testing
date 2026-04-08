@@ -1,6 +1,7 @@
 /* FontManager - Interface for loading and releasing fonts. */
 
-#pragma once
+#ifndef FONTMANAGER_H
+#define FONTMANAGER_H
 
 #include <string>
 
@@ -45,3 +46,4 @@ extern FontManager* FONT;  // global and accessible from anywhere in our program
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

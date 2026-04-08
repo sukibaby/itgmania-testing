@@ -1,4 +1,5 @@
-#pragma once
+#ifndef ARCHHOOKS_UNIX_H
+#define ARCHHOOKS_UNIX_H
 
 #include <cstdint>
 #include <ctime>
@@ -52,3 +53,4 @@ class ArchHooks_Unix : public ArchHooks {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

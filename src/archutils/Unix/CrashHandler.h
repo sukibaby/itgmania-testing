@@ -1,4 +1,5 @@
-#pragma once
+#ifndef CRASHHANDLER_H
+#define CRASHHANDLER_H
 
 #include <sys/signal.h>
 
@@ -38,3 +39,4 @@ void ForceDeadlock(std::string reason, uint64_t CrashHandle);
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

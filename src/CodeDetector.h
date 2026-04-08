@@ -1,6 +1,7 @@
 /* CodeDetector - Uses InputQueue to detect input of codes. */
 
-#pragma once
+#ifndef CODEDETECTOR_H
+#define CODEDETECTOR_H
 
 #include <string>
 
@@ -98,3 +99,4 @@ class CodeDetector {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

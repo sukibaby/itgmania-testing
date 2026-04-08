@@ -1,6 +1,7 @@
 /* RageFileDriver - File driver base classes. */
 
-#pragma once
+#ifndef RAGEFILEDRIVER_H
+#define RAGEFILEDRIVER_H
 
 #include <string>
 #include <vector>
@@ -77,3 +78,4 @@ RageFileDriver* MakeFileDriver(
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

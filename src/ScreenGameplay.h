@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SCREENGAMEPLAY_H
+#define SCREENGAMEPLAY_H
 
 #include <string>
 #include <vector>
@@ -431,3 +432,4 @@ std::vector<PlayerInfo>::iterator GetNextVisiblePlayerInfo(
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

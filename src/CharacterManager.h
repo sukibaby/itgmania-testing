@@ -1,4 +1,5 @@
-#pragma once
+#ifndef CHARACTERMANAGER_H
+#define CHARACTERMANAGER_H
 
 #include <string>
 #include <vector>
@@ -60,3 +61,4 @@ extern CharacterManager*
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

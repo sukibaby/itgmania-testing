@@ -1,7 +1,8 @@
 /** @brief Style - A data structure that holds the definition for one of a
  * Game's styles. */
 
-#pragma once
+#ifndef STYLE_H
+#define STYLE_H
 
 #include <string>
 #include <vector>
@@ -135,3 +136,4 @@ class Style {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

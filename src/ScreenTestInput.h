@@ -1,6 +1,7 @@
 /* ScreenTestInput - Display pressed keys. */
 
-#pragma once
+#ifndef SCREENTESTINPUT_H
+#define SCREENTESTINPUT_H
 
 #include "InputQueue.h"
 #include "ScreenWithMenuElements.h"
@@ -37,3 +38,4 @@ class ScreenTestInput : public ScreenWithMenuElements {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

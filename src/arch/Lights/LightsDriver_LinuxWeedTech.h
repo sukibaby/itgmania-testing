@@ -2,7 +2,8 @@
  * Technologies http://www.weedtech.com / http://www.weedtech.com/wtdio-m.html
  * */
 
-#pragma once
+#ifndef LIGHTSDRIVER_LINUXWEEDTECH_H
+#define LIGHTSDRIVER_LINUXWEEDTECH_H
 
 #include "arch/Lights/LightsDriver.h"
 
@@ -38,3 +39,4 @@ class LightsDriver_LinuxWeedTech : public LightsDriver {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

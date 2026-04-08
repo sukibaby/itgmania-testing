@@ -1,6 +1,7 @@
 /* RageFileDriverDirectHelpers - Internal helpers for RageFileDriverDirect. */
 
-#pragma once
+#ifndef RAGEFILEDRIVERDIRECTHELPERS_H
+#define RAGEFILEDRIVERDIRECTHELPERS_H
 
 #include <string>
 
@@ -79,3 +80,4 @@ class DirectFilenameDB : public FilenameDB {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

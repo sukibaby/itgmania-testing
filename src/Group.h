@@ -1,4 +1,5 @@
-#pragma once
+#ifndef GROUP_H
+#define GROUP_H
 
 #include <string>
 #include <vector>
@@ -135,3 +136,4 @@ class Group {
   /** @brief The version of the Pack.ini info */
   int m_iVersion;
 };
+#endif

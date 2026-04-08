@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SONG_H
+#define SONG_H
 
 #include <array>
 #include <set>
@@ -526,3 +527,4 @@ class Song {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

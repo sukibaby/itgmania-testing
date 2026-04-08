@@ -1,6 +1,7 @@
 /* LoadingWindow_Gtk - Loading window for GTK (usually X) */
 
-#pragma once
+#ifndef LOADINGWINDOW_GTK_H
+#define LOADINGWINDOW_GTK_H
 
 #include <string>
 
@@ -44,3 +45,4 @@ class LoadingWindow_Gtk : public LoadingWindow {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

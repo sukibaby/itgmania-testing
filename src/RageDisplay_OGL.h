@@ -1,6 +1,7 @@
 /* RageDisplay_Legacy: OpenGL renderer. */
 
-#pragma once
+#ifndef RAGEDISPLAY_OGL_H
+#define RAGEDISPLAY_OGL_H
 
 #ifdef __APPLE__
 #define GL_SILENCE_DEPRECATION 1
@@ -164,3 +165,4 @@ class RageDisplay_Legacy : public RageDisplay {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

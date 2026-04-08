@@ -5,7 +5,8 @@
 // it doesn't need to be. DefaultNilArgs would be in here, but then there would
 // need to be a .cpp file, and DefaultNilArgs is more widely useful.
 
-#pragma once
+#ifndef OPTIONSBINDING_H
+#define OPTIONSBINDING_H
 
 #include <cstddef>
 
@@ -138,3 +139,4 @@
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

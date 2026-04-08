@@ -1,4 +1,5 @@
-#pragma once
+#ifndef ARCHHOOKS_H
+#define ARCHHOOKS_H
 
 #include <cstdint>
 #include <ctime>
@@ -167,3 +168,4 @@ extern ArchHooks* HOOKS;  // global and accessible from anywhere in our program
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

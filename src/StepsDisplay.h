@@ -1,4 +1,5 @@
-#pragma once
+#ifndef STEPSDISPLAY_H
+#define STEPSDISPLAY_H
 
 #include <string>
 
@@ -97,3 +98,4 @@ class StepsDisplay : public ActorFrame {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

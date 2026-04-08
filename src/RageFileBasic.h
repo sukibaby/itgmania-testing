@@ -1,6 +1,7 @@
 /* RageFileBasic - simple file interface. */
 
-#pragma once
+#ifndef RAGEFILEBASIC_H
+#define RAGEFILEBASIC_H
 
 #include <cstddef>
 #include <cstdint>
@@ -190,3 +191,4 @@ class RageFileObj : public RageFileBasic {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

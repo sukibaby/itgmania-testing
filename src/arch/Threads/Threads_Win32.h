@@ -1,4 +1,5 @@
-#pragma once
+#ifndef THREADS_WIN32_H
+#define THREADS_WIN32_H
 
 #include <cstdint>
 
@@ -99,3 +100,4 @@ class SemaImpl_Win32 : public SemaImpl {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

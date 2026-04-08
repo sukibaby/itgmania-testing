@@ -1,4 +1,5 @@
-#pragma once
+#ifndef REGEX_H
+#define REGEX_H
 
 #include <string>
 #include <vector>
@@ -25,3 +26,4 @@ class Regex {
   unsigned m_iBackrefs;
   std::string m_sPattern;
 };
+#endif

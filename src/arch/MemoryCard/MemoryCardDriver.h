@@ -1,4 +1,5 @@
-#pragma once
+#ifndef MEMORYCARDDRIVER_H
+#define MEMORYCARDDRIVER_H
 
 #include <string>
 #include <vector>
@@ -116,3 +117,4 @@ class MemoryCardDriver {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef QUAD_H
+#define QUAD_H
 
 #include "Actor.h"
 #include "Sprite.h"
@@ -43,3 +44,4 @@ class Quad : public Sprite {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

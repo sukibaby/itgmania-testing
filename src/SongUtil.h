@@ -1,6 +1,7 @@
 /** @brief SongUtil - Utility functions that deal with Song. */
 
-#pragma once
+#ifndef SONGUTIL_H
+#define SONGUTIL_H
 #include <set>
 #include <string>
 #include <vector>
@@ -267,3 +268,4 @@ class SongID {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

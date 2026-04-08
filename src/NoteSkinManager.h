@@ -1,4 +1,5 @@
-#pragma once
+#ifndef NOTESKINMANAGER_H
+#define NOTESKINMANAGER_H
 
 #include <string>
 #include <vector>
@@ -135,3 +136,4 @@ class LockNoteSkin {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

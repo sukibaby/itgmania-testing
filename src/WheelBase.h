@@ -1,4 +1,5 @@
-#pragma once
+#ifndef WHEELBASE_H
+#define WHEELBASE_H
 
 #include <climits>
 #include <string>
@@ -157,3 +158,4 @@ class WheelBase : public ActorFrame {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

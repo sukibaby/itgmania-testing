@@ -1,4 +1,5 @@
-#pragma once
+#ifndef PANEDISPLAY_H
+#define PANEDISPLAY_H
 
 #include "ActorFrame.h"
 #include "ActorUtil.h"
@@ -88,3 +89,4 @@ class PaneDisplay : public ActorFrame {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

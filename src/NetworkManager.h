@@ -1,4 +1,5 @@
-#pragma once
+#ifndef NETWORKMANAGER_H
+#define NETWORKMANAGER_H
 
 #include <ixwebsocket/IXHttp.h>
 #include <ixwebsocket/IXHttpClient.h>
@@ -200,3 +201,4 @@ extern NetworkManager* NETWORK;
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

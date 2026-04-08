@@ -1,4 +1,5 @@
-#pragma once
+#ifndef THREADS_H
+#define THREADS_H
 
 #include <cstdint>
 
@@ -101,3 +102,4 @@ uint64_t GetInvalidThreadId();
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

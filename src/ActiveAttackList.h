@@ -1,4 +1,5 @@
-#pragma once
+#ifndef ACTIVEATTACKLIST_H
+#define ACTIVEATTACKLIST_H
 
 #include "BitmapText.h"
 class PlayerState;
@@ -51,3 +52,4 @@ class ActiveAttackList : public BitmapText {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

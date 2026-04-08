@@ -1,4 +1,5 @@
-#pragma once
+#ifndef GAMESOUNDMANAGER_H
+#define GAMESOUNDMANAGER_H
 
 #include <string>
 
@@ -91,3 +92,4 @@ extern GameSoundManager* SOUND;
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

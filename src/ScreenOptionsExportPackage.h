@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SCREENOPTIONSEXPORTPACKAGE_H
+#define SCREENOPTIONSEXPORTPACKAGE_H
 
 #include <string>
 #include <vector>
@@ -68,3 +69,4 @@ class ScreenOptionsExportPackageSubPage : public ScreenOptions {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef INPUTEVENTPLUS_H
+#define INPUTEVENTPLUS_H
 
 #include "GameInput.h"
 #include "InputFilter.h"
@@ -55,3 +56,4 @@ struct AlternateMapping {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

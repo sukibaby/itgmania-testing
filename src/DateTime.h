@@ -1,4 +1,5 @@
-#pragma once
+#ifndef DATETIME_H
+#define DATETIME_H
 
 #include <ctime>
 #include <string>
@@ -176,3 +177,4 @@ struct DateTime {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SCREENINSTALLOVERLAY_H
+#define SCREENINSTALLOVERLAY_H
 
 #include "BitmapText.h"
 #include "InputEventPlus.h"
@@ -43,3 +44,4 @@ class ScreenInstallOverlay : public Screen {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

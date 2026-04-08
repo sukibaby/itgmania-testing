@@ -1,6 +1,7 @@
 /* RageTypes - vector and matrix types. */
 
-#pragma once
+#ifndef RAGETYPES_H
+#define RAGETYPES_H
 
 #include <algorithm>
 #include <array>
@@ -544,3 +545,4 @@ struct RageMatrix {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

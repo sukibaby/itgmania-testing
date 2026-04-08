@@ -1,4 +1,5 @@
-#pragma once
+#ifndef RAGEDRIVER_H
+#define RAGEDRIVER_H
 
 #include <map>
 #include <string>
@@ -49,3 +50,4 @@ struct RegisterRageDriver {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

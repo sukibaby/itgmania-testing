@@ -1,4 +1,5 @@
-#pragma once
+#ifndef BACKTRACE_H
+#define BACKTRACE_H
 
 #include <sys/types.h>
 
@@ -79,3 +80,4 @@ void GetSignalBacktraceContext(BacktraceContext* ctx, const ucontext_t* uc);
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

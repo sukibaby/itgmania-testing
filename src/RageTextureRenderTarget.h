@@ -1,7 +1,8 @@
 /* RageTextureRenderTarget - RageTexture interface for creating render targets.
  */
 
-#pragma once
+#ifndef RAGETEXTURERENDERTARGET_H
+#define RAGETEXTURERENDERTARGET_H
 
 #include <cstdint>
 
@@ -55,3 +56,4 @@ class RageTextureRenderTarget : public RageTexture {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

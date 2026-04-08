@@ -1,6 +1,7 @@
 /* WindowsDialogBox - Simplifies the creation of modal Windows dialog boxes. */
 
-#pragma once
+#ifndef WINDOWSDIALOGBOX_H
+#define WINDOWSDIALOGBOX_H
 
 #include <windows.h>
 
@@ -47,3 +48,4 @@ class WindowsDialogBox {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

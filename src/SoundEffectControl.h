@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SOUNDEFFECTCONTROL_H
+#define SOUNDEFFECTCONTROL_H
 
 #include <string>
 
@@ -66,3 +67,4 @@ class SoundEffectControl {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

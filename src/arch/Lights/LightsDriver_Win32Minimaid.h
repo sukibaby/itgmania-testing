@@ -1,6 +1,7 @@
 /* LightsDriver_Win32Minimaid - Minimaid based lights with libmmmagic */
 
-#pragma once
+#ifndef LIGHTSDRIVER_WIN32MINIMAID_H
+#define LIGHTSDRIVER_WIN32MINIMAID_H
 
 #include "LightsDriver.h"
 
@@ -94,3 +95,4 @@ class LightsDriver_Win32Minimaid : public LightsDriver {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef TRAIL_H
+#define TRAIL_H
 
 #include <string>
 #include <vector>
@@ -123,3 +124,4 @@ class Trail {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

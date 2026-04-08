@@ -1,4 +1,5 @@
-#pragma once
+#ifndef LOWLEVELWINDOW_MACOSX_H
+#define LOWLEVELWINDOW_MACOSX_H
 
 #include <objc/objc.h>
 
@@ -74,3 +75,4 @@ class LowLevelWindow_MacOSX : public LowLevelWindow {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

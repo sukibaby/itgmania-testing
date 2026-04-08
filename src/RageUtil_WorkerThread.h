@@ -1,7 +1,8 @@
 /* RageWorkerThread - a worker thread for operations that are allowed to time
  * out. */
 
-#pragma once
+#ifndef RAGEUTIL_WORKERTHREAD_H
+#define RAGEUTIL_WORKERTHREAD_H
 
 #include <string>
 
@@ -99,3 +100,4 @@ class RageWorkerThread {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

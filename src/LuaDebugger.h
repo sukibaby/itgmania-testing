@@ -1,4 +1,5 @@
-#pragma once
+#ifndef LUADEBUGGER_H
+#define LUADEBUGGER_H
 
 #include <memory>
 
@@ -42,3 +43,4 @@ class Debugger {
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+#endif

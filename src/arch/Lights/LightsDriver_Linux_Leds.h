@@ -1,6 +1,7 @@
 /* LightsDriver_Linux_Leds: Control Linux system lights via /sys/class/leds */
 
-#pragma once
+#ifndef LIGHTSDRIVER_LINUX_LEDS_H
+#define LIGHTSDRIVER_LINUX_LEDS_H
 
 #include <cstdint>
 #include <string>
@@ -67,3 +68,4 @@ class LightsDriver_Linux_Leds : public LightsDriver {
  *
  * i love lamp
  */
+#endif

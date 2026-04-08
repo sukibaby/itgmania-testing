@@ -1,4 +1,5 @@
-#pragma once
+#ifndef PLAYEROPTIONS_H
+#define PLAYEROPTIONS_H
 
 #include "EnumHelper.h"
 #include "RageUtil.h"
@@ -567,3 +568,4 @@ class PlayerOptions {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

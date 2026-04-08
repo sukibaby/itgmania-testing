@@ -1,4 +1,5 @@
-#pragma once
+#ifndef INPUTQUEUE_H
+#define INPUTQUEUE_H
 
 #include <cstring>
 #include <string>
@@ -85,3 +86,4 @@ extern InputQueue*
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

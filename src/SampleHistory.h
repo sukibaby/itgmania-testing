@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SAMPLEHISTORY_H
+#define SAMPLEHISTORY_H
 
 #include <vector>
 
@@ -46,3 +47,4 @@ class SampleHistory {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

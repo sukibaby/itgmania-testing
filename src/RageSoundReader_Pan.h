@@ -1,6 +1,7 @@
 /* RageSoundReader_Pan - Pan a sound left and right. */
 
-#pragma once
+#ifndef RAGESOUNDREADER_PAN_H
+#define RAGESOUNDREADER_PAN_H
 
 #include <string>
 
@@ -43,3 +44,4 @@ class RageSoundReader_Pan : public RageSoundReader_Filter {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

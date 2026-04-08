@@ -1,4 +1,5 @@
-#pragma once
+#ifndef RAGEFILEMANAGER_H
+#define RAGEFILEMANAGER_H
 
 #include <string>
 #include <unordered_set>
@@ -125,3 +126,4 @@ extern RageFileManager* FILEMAN;
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

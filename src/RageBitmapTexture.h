@@ -1,6 +1,7 @@
 /* RageBitmapTexture - Loads a static texture. */
 
-#pragma once
+#ifndef RAGEBITMAPTEXTURE_H
+#define RAGEBITMAPTEXTURE_H
 
 #include <cstddef>
 #include <cstdint>
@@ -50,3 +51,4 @@ class RageBitmapTexture : public RageTexture {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

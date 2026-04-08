@@ -1,4 +1,5 @@
-#pragma once
+#ifndef GAMEPLAYHELPERS_H
+#define GAMEPLAYHELPERS_H
 
 #include <vector>
 
@@ -17,3 +18,4 @@ struct NotefieldMargins {
 // By default points to GameplayMargins in Themes/_fallback/Scripts/03
 // Gameplay.lua
 std::vector<NotefieldMargins> GetNotefieldMargins();
+#endif

@@ -1,6 +1,7 @@
 /* DifficultyIcon - Graphical representation of the difficulty class. */
 
-#pragma once
+#ifndef DIFFICULTYICON_H
+#define DIFFICULTYICON_H
 
 #include <string>
 
@@ -62,3 +63,4 @@ class DifficultyIcon : public Sprite {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

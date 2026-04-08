@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SCREENOPTIONSEDITCOURSE_H
+#define SCREENOPTIONSEDITCOURSE_H
 
 #include <vector>
 
@@ -62,3 +63,4 @@ class ScreenOptionsEditCourse : public ScreenOptions {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

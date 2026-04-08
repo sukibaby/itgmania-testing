@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SCOREKEEPER_H
+#define SCOREKEEPER_H
 
 #include <string>
 #include <vector>
@@ -93,3 +94,4 @@ class ScoreKeeper {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

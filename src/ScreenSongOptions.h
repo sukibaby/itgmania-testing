@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SCREENSONGOPTIONS_H
+#define SCREENSONGOPTIONS_H
 
 #include <vector>
 
@@ -37,3 +38,4 @@ class ScreenSongOptions : public ScreenOptionsMaster {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

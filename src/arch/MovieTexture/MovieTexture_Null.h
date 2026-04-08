@@ -1,4 +1,5 @@
-#pragma once
+#ifndef MOVIETEXTURE_NULL_H
+#define MOVIETEXTURE_NULL_H
 
 #include <string>
 
@@ -34,3 +35,4 @@ class RageMovieTextureDriver_Null : public RageMovieTextureDriver {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

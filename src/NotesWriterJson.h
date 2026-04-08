@@ -1,6 +1,7 @@
 /* NotesWriterJson - Writes a Song to a .json file. */
 
-#pragma once
+#ifndef NOTESWRITERJSON_H
+#define NOTESWRITERJSON_H
 
 #include <string>
 
@@ -36,3 +37,4 @@ bool WriteSteps(const std::string& sFile, const Steps& out);
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

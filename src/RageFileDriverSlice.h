@@ -1,6 +1,7 @@
 /* RageFileDriverSlice - Treat a portion of a file as a file. */
 
-#pragma once
+#ifndef RAGEFILEDRIVERSLICE_H
+#define RAGEFILEDRIVERSLICE_H
 
 #include <cstddef>
 
@@ -56,3 +57,4 @@ class RageFileDriverSlice : public RageFileObj {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

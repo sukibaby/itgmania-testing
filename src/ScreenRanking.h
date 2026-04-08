@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SCREENRANKING_H
+#define SCREENRANKING_H
 
 #include <string>
 #include <utility>
@@ -122,3 +123,4 @@ class ScreenRanking : public ScreenAttract {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

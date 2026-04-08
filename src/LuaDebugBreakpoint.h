@@ -1,4 +1,5 @@
-#pragma once
+#ifndef LUADEBUGBREAKPOINT_H
+#define LUADEBUGBREAKPOINT_H
 
 #include <cstdint>
 #include <string>
@@ -101,3 +102,4 @@ class Breakpoint {
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+#endif

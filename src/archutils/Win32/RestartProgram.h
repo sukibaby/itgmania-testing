@@ -1,4 +1,5 @@
-#pragma once
+#ifndef RESTARTPROGRAM_H
+#define RESTARTPROGRAM_H
 
 [[noreturn]]
 void Win32RestartProgram();
@@ -27,3 +28,4 @@ void Win32RestartProgram();
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

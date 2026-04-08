@@ -1,4 +1,5 @@
-#pragma once
+#ifndef GETSYSINFO_H
+#define GETSYSINFO_H
 
 #include <string>
 
@@ -28,3 +29,4 @@ void GetKernel(std::string& sys, int& vers);
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

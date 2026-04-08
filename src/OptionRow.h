@@ -1,6 +1,7 @@
 /* OptionRow - One line in ScreenOptions. */
 
-#pragma once
+#ifndef OPTIONROW_H
+#define OPTIONROW_H
 
 #include <array>
 #include <cstddef>
@@ -185,3 +186,4 @@ class OptionRow : public ActorFrame {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

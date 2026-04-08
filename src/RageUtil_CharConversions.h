@@ -1,6 +1,7 @@
 /* ConvertString - Convert a string to UTF-8. */
 
-#pragma once
+#ifndef RAGEUTIL_CHARCONVERSIONS_H
+#define RAGEUTIL_CHARCONVERSIONS_H
 
 #include <string>
 
@@ -10,3 +11,4 @@
  * Return false and leave the string unchanged if the conversion was
  * unsuccessful. */
 bool ConvertString(std::string& str, const std::string& encodings);
+#endif

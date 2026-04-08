@@ -1,6 +1,7 @@
 /* CsvFile - Reading and writing .CSV files. */
 
-#pragma once
+#ifndef CSVFILE_H
+#define CSVFILE_H
 
 #include <string>
 #include <vector>
@@ -49,3 +50,4 @@ class CsvFile {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

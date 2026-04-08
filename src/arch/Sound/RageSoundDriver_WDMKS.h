@@ -1,4 +1,5 @@
-#pragma once
+#ifndef RAGESOUNDDRIVER_WDMKS_H
+#define RAGESOUNDDRIVER_WDMKS_H
 
 #include <windows.h>
 
@@ -62,3 +63,4 @@ class RageSoundDriver_WDMKS : public RageSoundDriver {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

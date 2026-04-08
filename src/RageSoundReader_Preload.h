@@ -1,6 +1,7 @@
 /* RageSoundReader_Preload - Preload sounds from another reader into memory. */
 
-#pragma once
+#ifndef RAGESOUNDREADER_PRELOAD_H
+#define RAGESOUNDREADER_PRELOAD_H
 
 #include <string>
 
@@ -71,3 +72,4 @@ class RageSoundReader_Preload : public RageSoundReader {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

@@ -1,6 +1,7 @@
 /* InputHandler_X11 - X-based keyboard input handler. */
 
-#pragma once
+#ifndef INPUTHANDLER_X11_H
+#define INPUTHANDLER_X11_H
 
 #include <vector>
 
@@ -44,3 +45,4 @@ class InputHandler_X11 : public InputHandler {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

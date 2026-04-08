@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SCREENTESTSOUND_H
+#define SCREENTESTSOUND_H
 
 #include <vector>
 
@@ -56,3 +57,4 @@ class ScreenTestSound : public Screen {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

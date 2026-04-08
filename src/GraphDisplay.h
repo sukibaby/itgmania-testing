@@ -1,4 +1,5 @@
-#pragma once
+#ifndef GRAPHDISPLAY_H
+#define GRAPHDISPLAY_H
 
 #include <string>
 #include <vector>
@@ -65,3 +66,4 @@ class GraphDisplay : public ActorFrame {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

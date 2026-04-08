@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SCREENEXIT_H
+#define SCREENEXIT_H
 
 #include "Screen.h"
 
@@ -34,3 +35,4 @@ class ScreenExit : public Screen {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SCOREDISPLAYALIVETIME_H
+#define SCOREDISPLAYALIVETIME_H
 
 #include "Actor.h"
 #include "BitmapText.h"
@@ -56,3 +57,4 @@ class ScoreDisplayAliveTime : public BitmapText {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

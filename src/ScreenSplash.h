@@ -1,6 +1,7 @@
 /* ScreenSplash - A loading screen. */
 
-#pragma once
+#ifndef SCREENSPLASH_H
+#define SCREENSPLASH_H
 
 #include "InputQueue.h"
 #include "ScreenMessage.h"
@@ -45,3 +46,4 @@ class ScreenSplash : public ScreenWithMenuElements {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef NOTEDISPLAY_H
+#define NOTEDISPLAY_H
 
 #include <string>
 #include <vector>
@@ -388,3 +389,4 @@ struct NoteColumnRenderer : public Actor {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

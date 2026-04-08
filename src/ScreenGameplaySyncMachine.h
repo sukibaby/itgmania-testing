@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SCREENGAMEPLAYSYNCMACHINE_H
+#define SCREENGAMEPLAYSYNCMACHINE_H
 
 #include "BitmapText.h"
 #include "InputEventPlus.h"
@@ -58,3 +59,4 @@ class ScreenGameplaySyncMachine : public ScreenGameplayNormal {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

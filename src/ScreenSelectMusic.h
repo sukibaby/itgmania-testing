@@ -1,6 +1,7 @@
 /* ScreenSelectMusic - Choose a Song and Steps. */
 
-#pragma once
+#ifndef SCREENSELECTMUSIC_H
+#define SCREENSELECTMUSIC_H
 
 #include <string>
 #include <vector>
@@ -213,3 +214,4 @@ class ScreenSelectMusic : public ScreenWithMenuElements {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

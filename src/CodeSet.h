@@ -1,4 +1,5 @@
-#pragma once
+#ifndef CODESET_H
+#define CODESET_H
 
 #include <string>
 #include <vector>
@@ -41,3 +42,4 @@ class InputQueueCodeSet {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

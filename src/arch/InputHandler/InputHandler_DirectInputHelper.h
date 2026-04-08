@@ -1,4 +1,5 @@
-#pragma once
+#ifndef INPUTHANDLER_DIRECTINPUTHELPER_H
+#define INPUTHANDLER_DIRECTINPUTHELPER_H
 
 #include <string>
 #include <vector>
@@ -83,3 +84,4 @@ struct XIDevice {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

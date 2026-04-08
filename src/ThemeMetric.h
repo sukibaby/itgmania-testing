@@ -1,6 +1,7 @@
 /* ThemeMetric - Theme specific data. */
 
-#pragma once
+#ifndef THEMEMETRIC_H
+#define THEMEMETRIC_H
 
 #include <cstddef>
 #include <map>
@@ -314,3 +315,4 @@ class ThemeMetricMap : public IThemeMetric {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

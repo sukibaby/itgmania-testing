@@ -1,4 +1,5 @@
-#pragma once
+#ifndef OPTIONSLIST_H
+#define OPTIONSLIST_H
 
 #include <map>
 #include <set>
@@ -140,3 +141,4 @@ class OptionsList : public ActorFrame {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

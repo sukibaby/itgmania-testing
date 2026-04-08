@@ -1,4 +1,5 @@
-#pragma once
+#ifndef COLUMNCUES_H
+#define COLUMNCUES_H
 
 #include <vector>
 
@@ -46,3 +47,4 @@ struct ColumnCue {
       const NoteData& in, TimingData* timing, std::vector<ColumnCue>& out,
       float minDuration);
 };
+#endif

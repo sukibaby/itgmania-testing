@@ -1,4 +1,5 @@
-#pragma once
+#ifndef GHOSTARROWROW_H
+#define GHOSTARROWROW_H
 
 #include <vector>
 
@@ -59,3 +60,4 @@ class GhostArrowRow : public ActorFrame {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

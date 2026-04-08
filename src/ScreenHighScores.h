@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SCREENHIGHSCORES_H
+#define SCREENHIGHSCORES_H
 
 #include <string>
 #include <utility>
@@ -122,3 +123,4 @@ class ScreenHighScores : public ScreenAttract {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

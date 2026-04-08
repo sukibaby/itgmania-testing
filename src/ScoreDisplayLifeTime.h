@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SCOREDISPLAYLIFETIME_H
+#define SCOREDISPLAYLIFETIME_H
 
 #include "AutoActor.h"
 #include "BitmapText.h"
@@ -53,3 +54,4 @@ class ScoreDisplayLifeTime : public ScoreDisplay {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

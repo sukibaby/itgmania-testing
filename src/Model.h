@@ -1,6 +1,7 @@
 /* Model - A 3D model. */
 
-#pragma once
+#ifndef MODEL_H
+#define MODEL_H
 
 #include <map>
 #include <string>
@@ -119,3 +120,4 @@ class Model : public Actor {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

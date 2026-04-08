@@ -1,4 +1,5 @@
-#pragma once
+#ifndef MUSICWHEELITEM_H
+#define MUSICWHEELITEM_H
 
 #include <string>
 
@@ -117,3 +118,4 @@ struct MusicWheelItemData : public WheelItemBaseData {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

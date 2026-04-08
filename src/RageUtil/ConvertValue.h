@@ -1,4 +1,5 @@
-#pragma once
+#ifndef CONVERTVALUE_H
+#define CONVERTVALUE_H
 
 /* Helper for ConvertValue(). */
 template <typename TO, typename FROM>
@@ -26,3 +27,4 @@ template <typename TO, typename FROM>
 ConvertValueHelper<TO, FROM> ConvertValue(FROM* pValue) {
   return ConvertValueHelper<TO, FROM>(pValue);
 }
+#endif

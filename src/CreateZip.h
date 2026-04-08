@@ -1,6 +1,7 @@
 // Adapted from http://www.codeproject.com/KB/files/zip_utils.aspx
 
-#pragma once
+#ifndef CREATEZIP_H
+#define CREATEZIP_H
 
 #include <string>
 
@@ -85,3 +86,4 @@ class CreateZip {
 //                     CloseHandle(hread);
 //                     return 0;
 //                   }
+#endif

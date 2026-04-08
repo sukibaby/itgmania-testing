@@ -1,4 +1,5 @@
-#pragma once
+#ifndef RAGESOUNDUTIL_H
+#define RAGESOUNDUTIL_H
 
 #include <cstdint>
 
@@ -38,3 +39,4 @@ void ConvertFloatToNativeInt16(const float* pFrom, int16_t* pTo, int iSamples);
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef DISPLAYSPEC_H
+#define DISPLAYSPEC_H
 
 #include <set>
 #include <sstream>
@@ -190,3 +191,4 @@ DisplaySpecs* pushDisplaySpecs(lua_State* L, const DisplaySpecs& specs);
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

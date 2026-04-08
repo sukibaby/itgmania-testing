@@ -1,7 +1,8 @@
 /* TextBanner - Shows song title, subtitle, and artist.  Displayed on the
  * MusicWheel. */
 
-#pragma once
+#ifndef TEXTBANNER_H
+#define TEXTBANNER_H
 
 #include <string>
 
@@ -57,3 +58,4 @@ class TextBanner : public ActorFrame {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

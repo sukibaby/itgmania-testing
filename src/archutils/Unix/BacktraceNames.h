@@ -1,4 +1,5 @@
-#pragma once
+#ifndef BACKTRACENAMES_H
+#define BACKTRACENAMES_H
 
 #include <cstdint>
 #include <string>
@@ -38,3 +39,4 @@ struct BacktraceNames {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

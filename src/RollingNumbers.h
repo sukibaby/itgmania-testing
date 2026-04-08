@@ -1,4 +1,5 @@
-#pragma once
+#ifndef ROLLINGNUMBERS_H
+#define ROLLINGNUMBERS_H
 
 #include <string>
 
@@ -71,3 +72,4 @@ class RollingNumbers : public BitmapText {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

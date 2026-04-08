@@ -1,6 +1,7 @@
 /* Transition - Transition that draws an actor. */
 
-#pragma once
+#ifndef TRANSITION_H
+#define TRANSITION_H
 
 #include <string>
 
@@ -57,3 +58,4 @@ class Transition : public ActorFrame {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

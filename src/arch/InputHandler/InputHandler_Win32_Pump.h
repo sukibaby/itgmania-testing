@@ -1,4 +1,5 @@
-#pragma once
+#ifndef INPUTHANDLER_WIN32_PUMP_H
+#define INPUTHANDLER_WIN32_PUMP_H
 
 #include <string>
 #include <vector>
@@ -50,3 +51,4 @@ class InputHandler_Win32_Pump : public InputHandler {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

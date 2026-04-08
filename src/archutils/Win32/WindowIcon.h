@@ -1,5 +1,6 @@
 /* Win32 helper - load an HICON */
-#pragma once
+#ifndef WINDOWICON_H
+#define WINDOWICON_H
 
 #include <windows.h>
 
@@ -33,3 +34,4 @@ HICON IconFromFile(const std::string& sIconFile);
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

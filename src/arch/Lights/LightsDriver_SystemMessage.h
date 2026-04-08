@@ -1,5 +1,6 @@
 /* LightsDriver_SystemMessage: Outputs light state as a system message. */
-#pragma once
+#ifndef LIGHTSDRIVER_SYSTEMMESSAGE_H
+#define LIGHTSDRIVER_SYSTEMMESSAGE_H
 
 #include "LightsDriver.h"
 
@@ -35,3 +36,4 @@ class LightsDriver_SystemMessage : public LightsDriver {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

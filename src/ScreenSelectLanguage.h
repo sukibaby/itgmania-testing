@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SCREENSELECTLANGUAGE_H
+#define SCREENSELECTLANGUAGE_H
 
 #include <string>
 
@@ -38,3 +39,4 @@ class ScreenSelectLanguage : public ScreenSelectMaster {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

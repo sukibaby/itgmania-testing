@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SCREENEDITMENU_H
+#define SCREENEDITMENU_H
 
 #include "BitmapText.h"
 #include "EditMenu.h"
@@ -55,3 +56,4 @@ class ScreenEditMenu : public ScreenWithMenuElements {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

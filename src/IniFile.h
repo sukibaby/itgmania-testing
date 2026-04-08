@@ -1,6 +1,7 @@
 /** @brief IniFile - Reading and writing .INI files. */
 
-#pragma once
+#ifndef INIFILE_H
+#define INIFILE_H
 
 #include <string>
 
@@ -97,3 +98,4 @@ class IniFile : public XNode {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

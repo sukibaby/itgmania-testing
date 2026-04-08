@@ -1,6 +1,7 @@
 /* PlayerNumber - A simple type representing a player. */
 
-#pragma once
+#ifndef PLAYERNUMBER_H
+#define PLAYERNUMBER_H
 
 #include <string>
 
@@ -89,3 +90,4 @@ LuaDeclareType(MultiPlayer);
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

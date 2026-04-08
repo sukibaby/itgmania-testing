@@ -1,6 +1,7 @@
 /* RageFileDriverMemory: Simple memory-based "filesystem". */
 
-#pragma once
+#ifndef RAGEFILEDRIVERMEMORY_H
+#define RAGEFILEDRIVERMEMORY_H
 
 #include <cstddef>
 #include <string>
@@ -71,3 +72,4 @@ class RageFileDriverMem : public RageFileDriver {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

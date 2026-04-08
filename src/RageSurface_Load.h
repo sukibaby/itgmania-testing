@@ -1,4 +1,5 @@
-#pragma once
+#ifndef RAGESURFACE_LOAD_H
+#define RAGESURFACE_LOAD_H
 
 #include <string>
 
@@ -41,3 +42,4 @@ RageSurface* LoadFile(
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

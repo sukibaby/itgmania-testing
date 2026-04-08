@@ -1,4 +1,5 @@
-#pragma once
+#ifndef LIGHTSMANAGER_H
+#define LIGHTSMANAGER_H
 
 #include <queue>
 #include <string>
@@ -180,3 +181,4 @@ extern LightsManager*
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

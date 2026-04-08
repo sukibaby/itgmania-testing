@@ -1,6 +1,7 @@
 /* Commands - Actor command parsing and reading helpers. */
 
-#pragma once
+#ifndef COMMAND_H
+#define COMMAND_H
 
 #include <string>
 #include <vector>
@@ -67,3 +68,4 @@ Commands ParseCommands(const std::string& sCmds);
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

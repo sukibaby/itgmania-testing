@@ -1,4 +1,5 @@
-#pragma once
+#ifndef GAMELOOP_H
+#define GAMELOOP_H
 
 #include <string>
 /** @brief Main rendering and update loop. */
@@ -38,3 +39,4 @@ void FinishConcurrentRendering();
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

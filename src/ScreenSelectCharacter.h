@@ -1,6 +1,7 @@
 /* ScreenSelectCharacter - Deprecated. Replaced by ScreenSelectMaster. */
 
-#pragma once
+#ifndef SCREENSELECTCHARACTER_H
+#define SCREENSELECTCHARACTER_H
 
 #include "Banner.h"
 #include "GameConstantsAndTypes.h"
@@ -92,3 +93,4 @@ class ScreenSelectCharacter : public ScreenWithMenuElements {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

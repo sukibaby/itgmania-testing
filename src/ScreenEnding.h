@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SCREENENDING_H
+#define SCREENENDING_H
 
 #include "InputQueue.h"
 #include "PlayerNumber.h"
@@ -41,3 +42,4 @@ class ScreenEnding : public ScreenAttract {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

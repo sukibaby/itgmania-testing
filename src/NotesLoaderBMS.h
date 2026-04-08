@@ -1,4 +1,5 @@
-#pragma once
+#ifndef NOTESLOADERBMS_H
+#define NOTESLOADERBMS_H
 
 #include <string>
 #include <vector>
@@ -37,3 +38,4 @@ bool LoadNoteDataFromSimfile(const std::string& cachePath, Steps& out);
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

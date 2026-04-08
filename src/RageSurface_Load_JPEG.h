@@ -1,6 +1,7 @@
 /* RageSurface_Load_JPEG - JPEG file loader */
 
-#pragma once
+#ifndef RAGESURFACE_LOAD_JPEG_H
+#define RAGESURFACE_LOAD_JPEG_H
 
 #include <string>
 
@@ -33,3 +34,4 @@ RageSurfaceUtils::OpenResult RageSurface_Load_JPEG(
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

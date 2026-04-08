@@ -1,6 +1,7 @@
 /* JsonLoader - Reads a Song from a .json file. */
 
-#pragma once
+#ifndef NOTESLOADERJSON_H
+#define NOTESLOADERJSON_H
 
 #include <string>
 #include <vector>
@@ -40,3 +41,4 @@ bool LoadFromJsonFile(const std::string& sPath, Song& out);
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SONGMANAGER_H
+#define SONGMANAGER_H
 
 #include <map>
 #include <set>
@@ -348,3 +349,4 @@ extern SongManager*
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

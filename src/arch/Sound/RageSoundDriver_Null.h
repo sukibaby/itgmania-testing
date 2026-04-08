@@ -1,4 +1,5 @@
-#pragma once
+#ifndef RAGESOUNDDRIVER_NULL_H
+#define RAGESOUNDDRIVER_NULL_H
 
 #include <cstdint>
 
@@ -41,3 +42,4 @@ class RageSoundDriver_Null : public RageSoundDriver {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

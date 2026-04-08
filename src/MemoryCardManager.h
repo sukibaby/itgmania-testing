@@ -1,4 +1,5 @@
-#pragma once
+#ifndef MEMORYCARDMANAGER_H
+#define MEMORYCARDMANAGER_H
 
 #include <string>
 #include <vector>
@@ -109,3 +110,4 @@ extern MemoryCardManager*
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

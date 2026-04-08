@@ -1,6 +1,7 @@
 /* RegistryAccess - Windows registry helpers */
 
-#pragma once
+#ifndef REGISTRYACCESS_H
+#define REGISTRYACCESS_H
 
 #include <string>
 #include <vector>
@@ -49,3 +50,4 @@ bool CreateKey(const std::string& sKey);
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

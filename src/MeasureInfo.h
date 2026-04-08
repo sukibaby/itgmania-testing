@@ -1,4 +1,5 @@
-#pragma once
+#ifndef MEASUREINFO_H
+#define MEASUREINFO_H
 
 #include <string>
 #include <vector>
@@ -26,3 +27,4 @@ struct MeasureInfo {
   static void CalculateMeasureInfo(
       const NoteData& in, TimingData* timing, MeasureInfo& out);
 };
+#endif

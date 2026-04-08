@@ -1,4 +1,5 @@
-#pragma once
+#ifndef ERRORSTRINGS_H
+#define ERRORSTRINGS_H
 
 #include <string>
 
@@ -32,3 +33,4 @@ std::string ConvertACPToUTF8(const std::string& s);
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

@@ -1,7 +1,8 @@
 /* RageFileObjInflate - decompress streams compressed with "deflate"
  * compression. */
 
-#pragma once
+#ifndef RAGEFILEDRIVERDEFLATE_H
+#define RAGEFILEDRIVERDEFLATE_H
 
 #include <cstddef>
 #include <cstdint>
@@ -107,3 +108,4 @@ bool GunzipString(
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

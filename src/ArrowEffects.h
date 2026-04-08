@@ -1,4 +1,5 @@
-#pragma once
+#ifndef ARROWEFFECTS_H
+#define ARROWEFFECTS_H
 
 #include "PlayerNumber.h"
 #include "RageTypes.h"
@@ -164,3 +165,4 @@ class ArrowEffects {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef MEMORYCARDDRIVERTHREADED_LINUX_H
+#define MEMORYCARDDRIVERTHREADED_LINUX_H
 
 #include <string>
 #include <vector>
@@ -47,3 +48,4 @@ class MemoryCardDriverThreaded_Linux : public MemoryCardDriver {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

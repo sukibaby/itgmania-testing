@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SONGCACHEINDEX_H
+#define SONGCACHEINDEX_H
 
 #include <string>
 
@@ -51,3 +52,4 @@ extern SongCacheIndex*
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

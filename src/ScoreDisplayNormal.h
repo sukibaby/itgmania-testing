@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SCOREDISPLAYNORMAL_H
+#define SCOREDISPLAYNORMAL_H
 
 #include <string>
 
@@ -47,3 +48,4 @@ class ScoreDisplayNormal : public ScoreDisplay {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

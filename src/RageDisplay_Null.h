@@ -1,6 +1,7 @@
 /* RageDisplay_Null - No-op diagnostic renderer. */
 
-#pragma once
+#ifndef RAGEDISPLAY_NULL_H
+#define RAGEDISPLAY_NULL_H
 
 #include <cstdint>
 #include <string>
@@ -120,3 +121,4 @@ class RageDisplay_Null : public RageDisplay {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

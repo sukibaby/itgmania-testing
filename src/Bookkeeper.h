@@ -1,4 +1,5 @@
-#pragma once
+#ifndef BOOKKEEPER_H
+#define BOOKKEEPER_H
 
 #include <ctime>
 #include <map>
@@ -93,3 +94,4 @@ extern Bookkeeper*
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

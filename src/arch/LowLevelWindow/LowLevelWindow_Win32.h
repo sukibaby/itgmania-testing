@@ -1,4 +1,5 @@
-#pragma once
+#ifndef LOWLEVELWINDOW_WIN32_H
+#define LOWLEVELWINDOW_WIN32_H
 
 #include <string>
 
@@ -54,3 +55,4 @@ class LowLevelWindow_Win32 : public LowLevelWindow {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

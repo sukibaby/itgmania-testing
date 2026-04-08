@@ -1,6 +1,7 @@
 /* WorkoutGraph - A bar graph of the Steps in a Trail. */
 
-#pragma once
+#ifndef WORKOUTGRAPH_H
+#define WORKOUTGRAPH_H
 
 #include <vector>
 
@@ -58,3 +59,4 @@ class WorkoutGraph : public ActorFrame {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

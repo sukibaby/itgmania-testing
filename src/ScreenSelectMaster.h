@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SCREENSELECTMASTER_H
+#define SCREENSELECTMASTER_H
 
 #include <map>
 #include <string>
@@ -157,3 +158,4 @@ class ScreenSelectMaster : public ScreenSelect {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

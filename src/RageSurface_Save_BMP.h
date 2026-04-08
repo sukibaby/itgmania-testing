@@ -1,6 +1,7 @@
 /* RageSurface_Save_BMP - Save a RageSurface to a BMP. */
 
-#pragma once
+#ifndef RAGESURFACE_SAVE_BMP_H
+#define RAGESURFACE_SAVE_BMP_H
 
 struct RageSurface;
 class RageFile;
@@ -33,3 +34,4 @@ bool SaveBMP(RageSurface* surface, RageFile& f);
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

@@ -1,7 +1,8 @@
 /* Preference - Holds user-chosen preferences that are saved between sessions.
  */
 
-#pragma once
+#ifndef PREFERENCE_H
+#define PREFERENCE_H
 
 #include <cstddef>
 #include <string>
@@ -187,3 +188,4 @@ class Preference1D {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

@@ -1,6 +1,7 @@
 /* RageTimer - Timer services. */
 
-#pragma once
+#ifndef RAGETIMER_H
+#define RAGETIMER_H
 
 #include <cstdint>
 
@@ -79,3 +80,4 @@ extern const RageTimer RageZeroTimer;
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

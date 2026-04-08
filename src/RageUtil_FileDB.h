@@ -1,4 +1,5 @@
-#pragma once
+#ifndef RAGEUTIL_FILEDB_H
+#define RAGEUTIL_FILEDB_H
 
 #include <map>
 #include <set>
@@ -187,3 +188,4 @@ class NullFilenameDB : public FilenameDB {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

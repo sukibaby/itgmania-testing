@@ -1,4 +1,5 @@
-#pragma once
+#ifndef STEPPARITYGENERATOR_H
+#define STEPPARITYGENERATOR_H
 
 #include <cstdint>
 #include <unordered_map>
@@ -116,3 +117,4 @@ class StepParityGenerator {
   StepParityNode* addNode(State* state, float second, int rowIndex);
 };
 };  // namespace StepParity
+#endif

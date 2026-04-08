@@ -1,6 +1,7 @@
 /* XmlFile - Simple XML reading and writing. */
 
-#pragma once
+#ifndef XMLFILE_H
+#define XMLFILE_H
 
 #include <map>
 #include <string>
@@ -172,3 +173,4 @@ class XNode {
   void Free();
   XNode& operator=(const XNode& cpy);  // don't use
 };
+#endif

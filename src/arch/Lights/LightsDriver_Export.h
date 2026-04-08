@@ -1,7 +1,8 @@
 /* LightsDriver_Export - Export lights data for other devices that supply lights
  * as a secondary service. */
 
-#pragma once
+#ifndef LIGHTSDRIVER_EXPORT_H
+#define LIGHTSDRIVER_EXPORT_H
 
 #include "LightsDriver.h"
 #include "RageThreads.h"
@@ -44,3 +45,4 @@ class LightsDriver_Export : public LightsDriver {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

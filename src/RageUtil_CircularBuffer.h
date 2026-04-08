@@ -1,6 +1,7 @@
 /* CircBuf - A fast, thread-safe, lockless circular buffer. */
 
-#pragma once
+#ifndef RAGEUTIL_CIRCULARBUFFER_H
+#define RAGEUTIL_CIRCULARBUFFER_H
 
 #include <algorithm>
 #include <cstring>
@@ -274,3 +275,4 @@ class CircBuf {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef GRADE_H
+#define GRADE_H
 
 #include <string>
 
@@ -118,3 +119,4 @@ Grade GetNextPossibleGrade(Grade g);
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

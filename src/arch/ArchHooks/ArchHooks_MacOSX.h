@@ -1,4 +1,5 @@
-#pragma once
+#ifndef ARCHHOOKS_MACOSX_H
+#define ARCHHOOKS_MACOSX_H
 
 #include <string>
 
@@ -42,3 +43,4 @@ class ArchHooks_MacOSX : public ArchHooks {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

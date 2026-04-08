@@ -1,6 +1,7 @@
 /* SubscriptionManager - Object that accepts subscriptions. */
 
-#pragma once
+#ifndef SUBSCRIPTIONMANAGER_H
+#define SUBSCRIPTIONMANAGER_H
 
 #include <set>
 
@@ -69,3 +70,4 @@ class SubscriptionManager {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

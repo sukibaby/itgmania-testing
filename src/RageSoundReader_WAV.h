@@ -1,6 +1,7 @@
 /* RageSoundReader_WAV - WAV reader. */
 
-#pragma once
+#ifndef RAGESOUNDREADER_WAV_H
+#define RAGESOUNDREADER_WAV_H
 
 #include <cstdint>
 #include <string>
@@ -62,3 +63,4 @@ class RageSoundReader_WAV : public RageSoundReader_FileReader {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

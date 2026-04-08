@@ -1,6 +1,7 @@
 /* SoundReader_FileReader - base class for SoundReaders that read from files. */
 
-#pragma once
+#ifndef RAGESOUNDREADER_FILEREADER_H
+#define RAGESOUNDREADER_FILEREADER_H
 
 #include <string>
 
@@ -72,3 +73,4 @@ class RageSoundReader_FileReader : public RageSoundReader {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

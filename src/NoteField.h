@@ -1,4 +1,5 @@
-#pragma once
+#ifndef NOTEFIELD_H
+#define NOTEFIELD_H
 
 #include <map>
 #include <string>
@@ -177,3 +178,4 @@ class NoteField : public ActorFrame {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef INPUTHANDLER_MONKEYKEYBOARD_H
+#define INPUTHANDLER_MONKEYKEYBOARD_H
 
 #include <vector>
 
@@ -42,3 +43,4 @@ class InputHandler_MonkeyKeyboard : public InputHandler {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

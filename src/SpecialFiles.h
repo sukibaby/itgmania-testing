@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SPECIALFILES_H
+#define SPECIALFILES_H
 
 #include <string>
 
@@ -61,3 +62,4 @@ extern const std::string COINS_INI;
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

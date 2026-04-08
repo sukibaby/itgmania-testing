@@ -1,4 +1,5 @@
-#pragma once
+#ifndef STAGESTATS_H
+#define STAGESTATS_H
 
 #include <vector>
 
@@ -112,3 +113,4 @@ class StageStats {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

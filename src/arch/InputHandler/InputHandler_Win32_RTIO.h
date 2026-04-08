@@ -1,4 +1,5 @@
-#pragma once
+#ifndef INPUTHANDLER_WIN32_RTIO_H
+#define INPUTHANDLER_WIN32_RTIO_H
 
 #include <windows.h>
 
@@ -139,3 +140,4 @@ class InputHandler_Win32_RTIO : public InputHandler {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef WHEELNOTIFYICON_H
+#define WHEELNOTIFYICON_H
 
 #include <vector>
 
@@ -71,3 +72,4 @@ class WheelNotifyIcon : public Sprite {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

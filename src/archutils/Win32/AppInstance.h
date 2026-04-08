@@ -1,4 +1,5 @@
-#pragma once
+#ifndef APPINSTANCE_H
+#define APPINSTANCE_H
 
 #include <windows.h>
 
@@ -38,3 +39,4 @@ class AppInstance {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef RAGETEXTUREPRELOADER_H
+#define RAGETEXTUREPRELOADER_H
 
 #include <utility>
 #include <vector>
@@ -45,3 +46,4 @@ class RageTexturePreloader {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SCREENOPTIONS_H
+#define SCREENOPTIONS_H
 
 #include <string>
 #include <vector>
@@ -219,3 +220,4 @@ class ScreenOptions : public ScreenWithMenuElements {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

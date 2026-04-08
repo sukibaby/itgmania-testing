@@ -1,4 +1,5 @@
-#pragma once
+#ifndef TIMINGDATA_H
+#define TIMINGDATA_H
 
 #include <array>
 #include <cfloat>
@@ -619,3 +620,4 @@ class TimingData {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

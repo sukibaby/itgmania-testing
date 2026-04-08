@@ -1,7 +1,8 @@
 /* MessageWindow - simplifies creation of windows that exist only to receive
  * messages. */
 
-#pragma once
+#ifndef MESSAGEWINDOW_H
+#define MESSAGEWINDOW_H
 
 #include <windows.h>
 
@@ -55,3 +56,4 @@ class MessageWindow {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

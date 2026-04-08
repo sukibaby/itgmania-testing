@@ -1,4 +1,5 @@
-#pragma once
+#ifndef TIMINGSEGMENTS_H
+#define TIMINGSEGMENTS_H
 
 #include <cmath>
 #include <string>
@@ -796,3 +797,4 @@ struct DelaySegment : public TimingSegment {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

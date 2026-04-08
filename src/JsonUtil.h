@@ -1,5 +1,6 @@
 /** @brief Utilities for handling JSON data. */
-#pragma once
+#ifndef JSONUTIL_H
+#define JSONUTIL_H
 
 #include <map>
 #include <string>
@@ -284,3 +285,4 @@ static void DeserializeVectorValues(
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

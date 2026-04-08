@@ -1,4 +1,5 @@
-#pragma once
+#ifndef LOADINGWINDOW_MACOSX_H
+#define LOADINGWINDOW_MACOSX_H
 
 #include <string>
 
@@ -42,3 +43,4 @@ class LoadingWindow_MacOSX : public LoadingWindow {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

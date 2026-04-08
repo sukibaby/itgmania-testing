@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SCREENSETTIME_H
+#define SCREENSETTIME_H
 
 #include <ctime>
 
@@ -70,3 +71,4 @@ class ScreenSetTime : public ScreenWithMenuElements {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

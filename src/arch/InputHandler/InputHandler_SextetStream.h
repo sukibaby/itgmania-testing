@@ -1,4 +1,5 @@
-#pragma once
+#ifndef INPUTHANDLER_SEXTETSTREAM_H
+#define INPUTHANDLER_SEXTETSTREAM_H
 
 #include <vector>
 
@@ -59,3 +60,4 @@ class InputHandler_SextetStreamFromFile : public InputHandler_SextetStream {
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+#endif

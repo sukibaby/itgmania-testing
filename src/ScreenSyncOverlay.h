@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SCREENSYNCOVERLAY_H
+#define SCREENSYNCOVERLAY_H
 
 #include "AutoActor.h"
 #include "Screen.h"
@@ -44,3 +45,4 @@ class ScreenSyncOverlay : public Screen {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

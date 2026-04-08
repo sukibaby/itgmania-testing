@@ -1,4 +1,5 @@
-#pragma once
+#ifndef RAGESOUNDDRIVER_PULSEAUDIO_H
+#define RAGESOUNDDRIVER_PULSEAUDIO_H
 
 #include <pulse/pulseaudio.h>
 
@@ -68,3 +69,4 @@ class RageSoundDriver_PulseAudio : public RageSoundDriver {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

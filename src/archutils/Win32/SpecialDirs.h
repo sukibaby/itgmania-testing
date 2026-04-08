@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SPECIALDIRS_H
+#define SPECIALDIRS_H
 
 #include <string>
 
@@ -34,3 +35,4 @@ std::string GetDesktopDir();
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

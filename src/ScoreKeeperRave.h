@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SCOREKEEPERRAVE_H
+#define SCOREKEEPERRAVE_H
 
 #include "GameConstantsAndTypes.h"
 #include "ScoreKeeper.h"
@@ -45,3 +46,4 @@ class ScoreKeeperRave : public ScoreKeeper {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

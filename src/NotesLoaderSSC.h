@@ -1,5 +1,6 @@
 /** @brief SSCLoader - Reads a Song and its Steps from a .SSC file. */
-#pragma once
+#ifndef NOTESLOADERSSC_H
+#define NOTESLOADERSSC_H
 
 #include <string>
 
@@ -120,3 +121,4 @@ struct SSCLoader : public SMLoader {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

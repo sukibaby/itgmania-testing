@@ -1,4 +1,5 @@
-#pragma once
+#ifndef COMMANDLINEACTIONS_H
+#define COMMANDLINEACTIONS_H
 
 #include <string>
 #include <vector>
@@ -51,3 +52,4 @@ extern std::vector<CommandLineArgs> ToProcess;
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

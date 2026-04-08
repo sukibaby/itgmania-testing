@@ -1,6 +1,7 @@
 /* UnlockManager - Unlocks handling. */
 
-#pragma once
+#ifndef UNLOCKMANAGER_H
+#define UNLOCKMANAGER_H
 
 #include <set>
 #include <string>
@@ -225,3 +226,4 @@ extern UnlockManager*
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

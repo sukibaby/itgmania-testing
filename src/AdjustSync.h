@@ -1,4 +1,5 @@
-#pragma once
+#ifndef ADJUSTSYNC_H
+#define ADJUSTSYNC_H
 
 #include <string>
 #include <utility>
@@ -82,3 +83,4 @@ class AdjustSync {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

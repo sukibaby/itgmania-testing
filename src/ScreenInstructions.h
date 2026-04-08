@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SCREENINSTRUCTIONS_H
+#define SCREENINSTRUCTIONS_H
 
 #include "InputQueue.h"
 #include "ScreenWithMenuElements.h"
@@ -35,3 +36,4 @@ class ScreenInstructions : public ScreenWithMenuElements {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

@@ -1,5 +1,6 @@
 /* StreamDisplay -  */
-#pragma once
+#ifndef STREAMDISPLAY_H
+#define STREAMDISPLAY_H
 
 #include <string>
 #include <vector>
@@ -76,3 +77,4 @@ class StreamDisplay : public ActorFrame {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

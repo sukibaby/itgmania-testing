@@ -1,6 +1,7 @@
 /* ModIconRow - Shows a row of ModIcons. */
 
-#pragma once
+#ifndef MODICONROW_H
+#define MODICONROW_H
 
 #include <string>
 #include <vector>
@@ -65,3 +66,4 @@ class ModIconRow : public ActorFrame {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

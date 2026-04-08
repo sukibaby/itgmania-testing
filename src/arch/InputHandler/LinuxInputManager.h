@@ -1,4 +1,5 @@
-#pragma once
+#ifndef LINUXINPUTMANAGER_H
+#define LINUXINPUTMANAGER_H
 
 #include <string>
 #include <vector>
@@ -63,3 +64,4 @@ extern LinuxInputManager*
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

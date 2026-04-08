@@ -1,4 +1,5 @@
-#pragma once
+#ifndef BACKGROUND_H
+#define BACKGROUND_H
 
 #include <vector>
 
@@ -66,3 +67,4 @@ class Background : public ActorFrame {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

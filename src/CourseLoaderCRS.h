@@ -1,6 +1,7 @@
 /** @brief CourseLoaderCRS - Reads a Course from an .CRS file. */
 
-#pragma once
+#ifndef COURSELOADERCRS_H
+#define COURSELOADERCRS_H
 
 #include <string>
 #include <vector>
@@ -159,3 +160,4 @@ bool SetCourseSongSort(
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

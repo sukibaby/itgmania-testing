@@ -1,4 +1,5 @@
-#pragma once
+#ifndef MSDFILE_H
+#define MSDFILE_H
 
 #include <string>
 #include <vector>
@@ -140,3 +141,4 @@ class MsdFile {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

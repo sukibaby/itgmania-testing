@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SCOREDISPLAYCALORIES_H
+#define SCOREDISPLAYCALORIES_H
 
 #include <string>
 
@@ -54,3 +55,4 @@ class ScoreDisplayCalories : public RollingNumbers {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

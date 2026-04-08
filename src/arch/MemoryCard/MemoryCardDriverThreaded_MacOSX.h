@@ -1,4 +1,5 @@
-#pragma once
+#ifndef MEMORYCARDDRIVERTHREADED_MACOSX_H
+#define MEMORYCARDDRIVERTHREADED_MACOSX_H
 
 #include <vector>
 
@@ -57,3 +58,4 @@ class MemoryCardDriverThreaded_MacOSX : public MemoryCardDriver {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

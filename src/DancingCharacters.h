@@ -1,4 +1,5 @@
-#pragma once
+#ifndef DANCINGCHARACTERS_H
+#define DANCINGCHARACTERS_H
 
 #include <array>
 
@@ -90,3 +91,4 @@ class DancingCharacters : public ActorFrame {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

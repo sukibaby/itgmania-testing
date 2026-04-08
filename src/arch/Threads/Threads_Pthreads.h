@@ -1,4 +1,5 @@
-#pragma once
+#ifndef THREADS_PTHREADS_H
+#define THREADS_PTHREADS_H
 
 #include <cstdint>
 
@@ -113,3 +114,4 @@ class SemaImpl_Pthreads : public SemaImpl {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

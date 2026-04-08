@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SCREENNAMEENTRY_H
+#define SCREENNAMEENTRY_H
 
 #include <string>
 #include <vector>
@@ -82,3 +83,4 @@ class ScreenNameEntry : public ScreenWithMenuElements {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

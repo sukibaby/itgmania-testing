@@ -1,4 +1,5 @@
-#pragma once
+#ifndef PRODUCTINFO_H
+#define PRODUCTINFO_H
 
 /**
  * @brief A friendly string to refer to the product in crash dialogs, etc.
@@ -56,3 +57,4 @@
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

@@ -1,7 +1,8 @@
 /* RageSoundReader_PitchChange - change the pitch and speed of an audio stream
  * independently. */
 
-#pragma once
+#ifndef RAGESOUNDREADER_PITCHCHANGE_H
+#define RAGESOUNDREADER_PITCHCHANGE_H
 
 #include <string>
 
@@ -64,3 +65,4 @@ class RageSoundReader_PitchChange : public RageSoundReader_Filter {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

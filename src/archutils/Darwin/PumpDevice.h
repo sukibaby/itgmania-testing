@@ -1,4 +1,5 @@
-#pragma once
+#ifndef PUMPDEVICE_H
+#define PUMPDEVICE_H
 
 #include <vector>
 
@@ -50,3 +51,4 @@ class PumpDevice : public HIDDevice {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

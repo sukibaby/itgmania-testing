@@ -1,4 +1,5 @@
-#pragma once
+#ifndef DIALOG_H
+#define DIALOG_H
 
 #include <string>
 
@@ -46,3 +47,4 @@ void IgnoreMessage(std::string sID);
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

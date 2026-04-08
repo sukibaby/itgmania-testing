@@ -1,4 +1,5 @@
-#pragma once
+#ifndef TWEEN_H
+#define TWEEN_H
 
 #include "EnumHelper.h"
 
@@ -60,3 +61,4 @@ class ITween {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

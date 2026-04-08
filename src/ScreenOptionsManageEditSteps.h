@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SCREENOPTIONSMANAGEEDITSTEPS_H
+#define SCREENOPTIONSMANAGEEDITSTEPS_H
 
 #include <string>
 #include <vector>
@@ -56,3 +57,4 @@ class ScreenOptionsManageEditSteps : public ScreenOptions {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

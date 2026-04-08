@@ -1,4 +1,5 @@
-#pragma once
+#ifndef TITLESUBSTITUTION_H
+#define TITLESUBSTITUTION_H
 
 #include <string>
 #include <vector>
@@ -73,3 +74,4 @@ class TitleSubst {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

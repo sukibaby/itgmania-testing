@@ -1,4 +1,5 @@
-#pragma once
+#ifndef BGANIMATIONLAYER_H
+#define BGANIMATIONLAYER_H
 
 #include <string>
 #include <vector>
@@ -75,3 +76,4 @@ class BGAnimationLayer : public ActorFrame {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

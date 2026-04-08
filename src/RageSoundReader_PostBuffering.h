@@ -1,6 +1,7 @@
 /* RageSoundReader_PostBuffering - Apply low-latency effects. */
 
-#pragma once
+#ifndef RAGESOUNDREADER_POSTBUFFERING_H
+#define RAGESOUNDREADER_POSTBUFFERING_H
 
 #include <string>
 
@@ -45,3 +46,4 @@ class RageSoundReader_PostBuffering : public RageSoundReader_Filter {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

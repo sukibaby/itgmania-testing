@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SCREENPLAYEROPTIONS_H
+#define SCREENPLAYEROPTIONS_H
 
 #include <vector>
 
@@ -58,3 +59,4 @@ class ScreenPlayerOptions : public ScreenOptionsMaster {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef DYNAMICACTORSCROLLER_H
+#define DYNAMICACTORSCROLLER_H
 
 #include "Actor.h"
 #include "ActorScroller.h"
@@ -49,3 +50,4 @@ class DynamicActorScrollerAutoDeleteChildren : public DynamicActorScroller {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

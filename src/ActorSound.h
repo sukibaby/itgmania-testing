@@ -1,4 +1,5 @@
-#pragma once
+#ifndef ACTORSOUND_H
+#define ACTORSOUND_H
 
 #include <string>
 
@@ -55,3 +56,4 @@ class ActorSound : public Actor {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

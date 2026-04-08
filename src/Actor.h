@@ -1,4 +1,5 @@
-#pragma once
+#ifndef ACTOR_H
+#define ACTOR_H
 
 #include "EnumHelper.h"
 #include "LuaReference.h"
@@ -893,3 +894,4 @@ class Actor : public MessageSubscriber {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

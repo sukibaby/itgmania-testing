@@ -1,6 +1,7 @@
 /* RageInput - Starts up InputHandlers, which generate InputEvents. */
 
-#pragma once
+#ifndef RAGEINPUT_H
+#define RAGEINPUT_H
 
 #include <string>
 #include <vector>
@@ -63,3 +64,4 @@ extern RageInput*
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

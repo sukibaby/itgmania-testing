@@ -1,5 +1,6 @@
 /* RageInputDevice - User input types. */
-#pragma once
+#ifndef RAGEINPUTDEVICE_H
+#define RAGEINPUTDEVICE_H
 
 #include <string>
 #include <vector>
@@ -465,3 +466,4 @@ typedef std::vector<DeviceInput> DeviceInputList;
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

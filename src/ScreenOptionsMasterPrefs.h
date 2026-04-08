@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SCREENOPTIONSMASTERPREFS_H
+#define SCREENOPTIONSMASTERPREFS_H
 
 #include <string>
 #include <vector>
@@ -138,3 +139,4 @@ struct ConfOption {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

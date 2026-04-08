@@ -1,4 +1,5 @@
-#pragma once
+#ifndef GAMEPREFERENCES_H
+#define GAMEPREFERENCES_H
 
 #include "GameConstantsAndTypes.h"
 #include "Preference.h"
@@ -34,3 +35,4 @@ extern Preference<bool> m_AxisFix;
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

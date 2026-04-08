@@ -1,4 +1,5 @@
-#pragma once
+#ifndef MEMORYCARDDRIVER_NULL_H
+#define MEMORYCARDDRIVER_NULL_H
 
 #include <vector>
 
@@ -39,3 +40,4 @@ class MemoryCardDriver_Null : public MemoryCardDriver {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SCOREDISPLAYONI_H
+#define SCOREDISPLAYONI_H
 
 #include "BitmapText.h"
 #include "ScoreDisplay.h"
@@ -44,3 +45,4 @@ class ScoreDisplayOni : public ScoreDisplay {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

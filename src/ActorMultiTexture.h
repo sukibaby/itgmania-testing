@@ -1,6 +1,7 @@
 /** @brief ActorMultiTexture - A texture created from multiple textures. */
 
-#pragma once
+#ifndef ACTORMULTITEXTURE_H
+#define ACTORMULTITEXTURE_H
 
 #include <vector>
 
@@ -69,3 +70,4 @@ class ActorMultiTexture : public Actor {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

@@ -1,6 +1,7 @@
 /* RageDisplay - Renderer base class. */
 
-#pragma once
+#ifndef RAGEDISPLAY_H
+#define RAGEDISPLAY_H
 
 #include <cstddef>
 #include <cstdint>
@@ -524,3 +525,4 @@ extern RageDisplay*
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef DIRECTXHELPERS_H
+#define DIRECTXHELPERS_H
 
 // clang-format off
 #include <windows.h>
@@ -39,3 +40,4 @@ std::string GetErrorString(HRESULT hr);
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

@@ -1,6 +1,7 @@
 /* MeterDisplay - Display position in a song. */
 
-#pragma once
+#ifndef METERDISPLAY_H
+#define METERDISPLAY_H
 
 #include <string>
 
@@ -57,3 +58,4 @@ class SongMeterDisplay : public MeterDisplay {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

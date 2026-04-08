@@ -1,6 +1,7 @@
 /* ScreenDemonstration - Jukebox adapter for the attract sequence. */
 
-#pragma once
+#ifndef SCREENDEMONSTRATION_H
+#define SCREENDEMONSTRATION_H
 
 #include "Screen.h"
 #include "ScreenJukebox.h"
@@ -41,3 +42,4 @@ class ScreenDemonstration : public ScreenJukebox {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

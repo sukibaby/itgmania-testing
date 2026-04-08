@@ -1,6 +1,7 @@
 /* LowLevelWindow_X11 - OpenGL GLX window driver. */
 
-#pragma once
+#ifndef LOWLEVELWINDOW_X11_H
+#define LOWLEVELWINDOW_X11_H
 
 #include <string>
 
@@ -74,3 +75,4 @@ class LowLevelWindow_X11 : public LowLevelWindow {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

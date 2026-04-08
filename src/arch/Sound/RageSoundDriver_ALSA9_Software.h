@@ -1,4 +1,5 @@
-#pragma once
+#ifndef RAGESOUNDDRIVER_ALSA9_SOFTWARE_H
+#define RAGESOUNDDRIVER_ALSA9_SOFTWARE_H
 
 #include <cstdint>
 #include <string>
@@ -56,3 +57,4 @@ class RageSoundDriver_ALSA9_Software : public RageSoundDriver {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

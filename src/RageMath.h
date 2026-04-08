@@ -1,6 +1,7 @@
 /* RageMath - vector/matrix math utilities. */
 
-#pragma once
+#ifndef RAGEMATH_H
+#define RAGEMATH_H
 
 #include <vector>
 
@@ -127,3 +128,4 @@ class RageBezier2D {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SCREENPROFILESAVE_H
+#define SCREENPROFILESAVE_H
 
 #include "InputQueue.h"
 #include "ScreenWithMenuElements.h"
@@ -36,3 +37,4 @@ class ScreenProfileSave : public ScreenWithMenuElements {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

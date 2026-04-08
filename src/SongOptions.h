@@ -1,6 +1,7 @@
 /* SongOptions - Options that apply to an entire song (not per-player). */
 
-#pragma once
+#ifndef SONGOPTIONS_H
+#define SONGOPTIONS_H
 
 #include <string>
 #include <vector>
@@ -102,3 +103,4 @@ class SongOptions {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

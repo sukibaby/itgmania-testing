@@ -1,6 +1,7 @@
 /** @brief Font - stores a font, used by BitmapText. */
 
-#pragma once
+#ifndef FONT_H
+#define FONT_H
 
 #include <cstddef>
 #include <map>
@@ -265,3 +266,4 @@ const wchar_t FONT_DEFAULT_GLYPH = 0xF8FF;
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

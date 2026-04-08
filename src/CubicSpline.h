@@ -1,4 +1,5 @@
-#pragma once
+#ifndef CUBICSPLINE_H
+#define CUBICSPLINE_H
 
 #include <cstddef>
 #include <vector>
@@ -120,3 +121,4 @@ struct CubicSplineN {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

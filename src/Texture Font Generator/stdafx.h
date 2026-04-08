@@ -2,7 +2,8 @@
 // or project specific include files that are used frequently,
 // but are changed infrequently
 
-#pragma once
+#ifndef STDAFX_H
+#define STDAFX_H
 
 #ifndef VC_EXTRALEAN
 #define VC_EXTRALEAN  // Exclude rarely-used stuff from Windows headers
@@ -97,3 +98,4 @@
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

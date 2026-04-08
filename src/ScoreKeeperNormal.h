@@ -1,6 +1,7 @@
 /* ScoreKeeperNormal -  */
 
-#pragma once
+#ifndef SCOREKEEPERNORMAL_H
+#define SCOREKEEPERNORMAL_H
 
 #include <vector>
 
@@ -147,3 +148,4 @@ class ScoreKeeperNormal : public ScoreKeeper {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

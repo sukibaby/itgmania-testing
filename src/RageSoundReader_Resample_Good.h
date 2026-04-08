@@ -1,6 +1,7 @@
 /* RageSoundReader_Resample_Good - fast audio resampling. */
 
-#pragma once
+#ifndef RAGESOUNDREADER_RESAMPLE_GOOD_H
+#define RAGESOUNDREADER_RESAMPLE_GOOD_H
 
 #include <string>
 #include <vector>
@@ -72,3 +73,4 @@ class RageSoundReader_Resample_Good : public RageSoundReader_Filter {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

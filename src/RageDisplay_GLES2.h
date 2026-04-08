@@ -1,4 +1,5 @@
-#pragma once
+#ifndef RAGEDISPLAY_GLES2_H
+#define RAGEDISPLAY_GLES2_H
 
 #include <cstdint>
 #include <string>
@@ -107,3 +108,4 @@ class RageDisplay_GLES2 : public RageDisplay {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

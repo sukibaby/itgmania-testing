@@ -1,4 +1,5 @@
-#pragma once
+#ifndef GROOVERADAR_H
+#define GROOVERADAR_H
 
 #include <vector>
 
@@ -96,3 +97,4 @@ class GrooveRadar : public ActorFrame {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

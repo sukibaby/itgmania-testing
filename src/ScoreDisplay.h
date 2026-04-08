@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SCOREDISPLAY_H
+#define SCOREDISPLAY_H
 
 #include "ActorFrame.h"
 #include "GameConstantsAndTypes.h"
@@ -50,3 +51,4 @@ class ScoreDisplay : public ActorFrame {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef CRASHHANDLERINTERNAL_H
+#define CRASHHANDLERINTERNAL_H
 
 #include <signal.h>
 
@@ -60,3 +61,4 @@ const char* SignalCodeName(int signo, int code);
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

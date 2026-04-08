@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SCREENGAMEPLAYSHARED_H
+#define SCREENGAMEPLAYSHARED_H
 
 #include <vector>
 
@@ -35,3 +36,4 @@ class ScreenGameplayShared : public ScreenGameplay {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

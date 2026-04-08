@@ -1,4 +1,5 @@
-#pragma once
+#ifndef DIALOGDRIVER_H
+#define DIALOGDRIVER_H
 
 #include <cstdio>
 #include <map>
@@ -68,3 +69,4 @@ struct RegisterDialogDriver {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

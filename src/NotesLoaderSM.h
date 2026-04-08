@@ -1,4 +1,5 @@
-#pragma once
+#ifndef NOTESLOADERSM_H
+#define NOTESLOADERSM_H
 
 #include <string>
 #include <utility>
@@ -263,3 +264,4 @@ struct SMLoader {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

@@ -1,6 +1,7 @@
 /* BackgroundLoader - Loads files in a thread. */
 
-#pragma once
+#ifndef RAGEUTIL_BACKGROUNDLOADER_H
+#define RAGEUTIL_BACKGROUNDLOADER_H
 
 #include <map>
 #include <string>
@@ -88,3 +89,4 @@ class BackgroundLoader {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

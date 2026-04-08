@@ -1,4 +1,5 @@
-#pragma once
+#ifndef IMAGECACHE_H
+#define IMAGECACHE_H
 
 #include <string>
 
@@ -63,3 +64,4 @@ extern ImageCache*
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef LYRICSLOADER_H
+#define LYRICSLOADER_H
 
 #include <string>
 
@@ -39,3 +40,4 @@ class LyricsLoader {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

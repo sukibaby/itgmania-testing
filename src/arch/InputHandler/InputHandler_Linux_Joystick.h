@@ -1,4 +1,5 @@
-#pragma once
+#ifndef INPUTHANDLER_LINUX_JOYSTICK_H
+#define INPUTHANDLER_LINUX_JOYSTICK_H
 
 #include <string>
 #include <vector>
@@ -56,3 +57,4 @@ class InputHandler_Linux_Joystick : public InputHandler {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

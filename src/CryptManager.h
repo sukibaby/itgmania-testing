@@ -1,4 +1,5 @@
-#pragma once
+#ifndef CRYPTMANAGER_H
+#define CRYPTMANAGER_H
 
 #include <string>
 
@@ -73,3 +74,4 @@ extern CryptManager*
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

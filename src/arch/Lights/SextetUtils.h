@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SEXTETUTILS_H
+#define SEXTETUTILS_H
 
 #include <cstddef>
 #include <cstdint>
@@ -156,3 +157,4 @@ inline size_t packLine(uint8_t* buffer, const LightsState* ls) {
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+#endif

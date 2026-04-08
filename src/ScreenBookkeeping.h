@@ -1,6 +1,7 @@
 /* ScreenBookkeeping - Show coin drop stats. */
 
-#pragma once
+#ifndef SCREENBOOKKEEPING_H
+#define SCREENBOOKKEEPING_H
 
 #include <vector>
 
@@ -68,3 +69,4 @@ class ScreenBookkeeping : public ScreenWithMenuElements {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

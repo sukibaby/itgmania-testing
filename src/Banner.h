@@ -1,6 +1,7 @@
 /** @brief Banner - The song/course's banner displayed in SelectMusic/Course. */
 
-#pragma once
+#ifndef BANNER_H
+#define BANNER_H
 
 #include <string>
 
@@ -84,3 +85,4 @@ class Banner : public Sprite {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

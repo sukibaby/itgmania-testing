@@ -1,4 +1,5 @@
-#pragma once
+#ifndef PROFILEMANAGER_H
+#define PROFILEMANAGER_H
 
 #include <string>
 #include <vector>
@@ -204,3 +205,4 @@ extern ProfileManager*
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

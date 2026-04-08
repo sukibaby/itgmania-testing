@@ -1,4 +1,5 @@
-#pragma once
+#ifndef THEMEMANAGER_H
+#define THEMEMANAGER_H
 
 #include <set>
 #include <string>
@@ -214,3 +215,4 @@ extern ThemeManager*
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

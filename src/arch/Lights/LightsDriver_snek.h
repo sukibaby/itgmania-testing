@@ -1,7 +1,8 @@
 /* LightsDriver_snek: Control lights for the snek board by icedragon.io using
  * hidapi */
 
-#pragma once
+#ifndef LIGHTSDRIVER_SNEK_H
+#define LIGHTSDRIVER_SNEK_H
 
 /*
  * -------------------------- NOTE --------------------------
@@ -141,3 +142,4 @@ class LightsDriver_snek : public LightsDriver {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

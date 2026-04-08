@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SCREENEDIT_H
+#define SCREENEDIT_H
 
 #include <string>
 #include <vector>
@@ -786,3 +787,4 @@ class ScreenEdit : public ScreenWithMenuElements {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

@@ -1,6 +1,7 @@
 /* MenuTimer - A timer on the menu that ticks down. */
 
-#pragma once
+#ifndef MENUTIMER_H
+#define MENUTIMER_H
 
 #include <cstddef>
 #include <string>
@@ -86,3 +87,4 @@ class MenuTimer : public ActorFrame {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SONGPOSITION_H
+#define SONGPOSITION_H
 
 #include "RageTimer.h"
 #include "TimingData.h"
@@ -89,3 +90,4 @@ class SongPosition {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

@@ -1,7 +1,8 @@
 /* ScreenAttract - Base class for all attraction screens. This class handles
  * input and coin logic. */
 
-#pragma once
+#ifndef SCREENATTRACT_H
+#define SCREENATTRACT_H
 
 #include <string>
 
@@ -62,3 +63,4 @@ class ScreenAttract : public ScreenWithMenuElements {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

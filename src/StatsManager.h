@@ -1,4 +1,5 @@
-#pragma once
+#ifndef STATSMANAGER_H
+#define STATSMANAGER_H
 
 #include <set>
 #include <vector>
@@ -75,3 +76,4 @@ extern StatsManager*
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef ASSERTIONHANDLER_H
+#define ASSERTIONHANDLER_H
 
 void InstallExceptionHandler();
 
@@ -26,3 +27,4 @@ void InstallExceptionHandler();
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

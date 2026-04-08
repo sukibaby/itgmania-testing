@@ -1,4 +1,5 @@
-#pragma once
+#ifndef MOVIETEXTURE_H
+#define MOVIETEXTURE_H
 
 #include <string>
 
@@ -64,3 +65,4 @@ class RageMovieTextureDriver : public RageDriver {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

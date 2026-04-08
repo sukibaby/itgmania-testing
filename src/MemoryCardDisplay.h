@@ -1,4 +1,5 @@
-#pragma once
+#ifndef MEMORYCARDDISPLAY_H
+#define MEMORYCARDDISPLAY_H
 
 #include "Actor.h"
 #include "ActorFrame.h"
@@ -45,3 +46,4 @@ class MemoryCardDisplay : public ActorFrame {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

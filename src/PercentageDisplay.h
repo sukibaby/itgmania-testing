@@ -1,4 +1,5 @@
-#pragma once
+#ifndef PERCENTAGEDISPLAY_H
+#define PERCENTAGEDISPLAY_H
 
 #include <string>
 
@@ -72,3 +73,4 @@ class PercentageDisplay : public ActorFrame {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef ALSA9DYNAMIC_H
+#define ALSA9DYNAMIC_H
 
 #include <alsa/asoundlib.h>
 
@@ -67,3 +68,4 @@ void UnloadALSA();
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

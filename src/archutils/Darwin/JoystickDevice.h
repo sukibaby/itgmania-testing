@@ -1,4 +1,5 @@
-#pragma once
+#ifndef JOYSTICKDEVICE_H
+#define JOYSTICKDEVICE_H
 
 #include <unordered_map>
 #include <vector>
@@ -67,3 +68,4 @@ class JoystickDevice : public HIDDevice {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

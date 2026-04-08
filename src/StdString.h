@@ -1,4 +1,5 @@
-#pragma once
+#ifndef STDSTRING_H
+#define STDSTRING_H
 
 #include <cctype>
 #include <cstdarg>
@@ -100,3 +101,4 @@ inline void Replace(std::string& s, char a, char b) {
     }
   }
 }
+#endif

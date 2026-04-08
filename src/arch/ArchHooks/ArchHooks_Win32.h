@@ -1,4 +1,5 @@
-#pragma once
+#ifndef ARCHHOOKS_WIN32_H
+#define ARCHHOOKS_WIN32_H
 
 #include <ctime>
 #include <string>
@@ -54,3 +55,4 @@ class ArchHooks_Win32 : public ArchHooks {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

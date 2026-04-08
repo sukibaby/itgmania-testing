@@ -1,6 +1,7 @@
 /* RageSoundReader - Data source for a RageSound. */
 
-#pragma once
+#ifndef RAGESOUNDREADER_H
+#define RAGESOUNDREADER_H
 
 #include <string>
 
@@ -73,3 +74,4 @@ class RageSoundReader {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

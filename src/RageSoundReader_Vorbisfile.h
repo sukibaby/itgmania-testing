@@ -1,6 +1,7 @@
 /* RageSoundReader_Vorbisfile - Read from a Vorbisfile interface. */
 
-#pragma once
+#ifndef RAGESOUNDREADER_VORBISFILE_H
+#define RAGESOUNDREADER_VORBISFILE_H
 
 #include <string>
 
@@ -56,3 +57,4 @@ class RageSoundReader_Vorbisfile : public RageSoundReader_FileReader {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

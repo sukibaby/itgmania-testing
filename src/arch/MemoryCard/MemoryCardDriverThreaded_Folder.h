@@ -1,4 +1,5 @@
-#pragma once
+#ifndef MEMORYCARDDRIVERTHREADED_FOLDER_H
+#define MEMORYCARDDRIVERTHREADED_FOLDER_H
 
 #include <string>
 #include <vector>
@@ -47,3 +48,4 @@ class MemoryCardDriverThreaded_Folder : public MemoryCardDriver {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

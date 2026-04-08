@@ -1,4 +1,5 @@
-#pragma once
+#ifndef LIGHTSDRIVER_WIN32SERIAL_H
+#define LIGHTSDRIVER_WIN32SERIAL_H
 
 /*
  * `LightsDriver_Win32Serial` (abstract): Streams the light data (in
@@ -45,3 +46,4 @@ class LightsDriver_Win32Serial : public LightsDriver {
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+#endif

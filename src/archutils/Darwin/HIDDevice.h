@@ -1,4 +1,5 @@
-#pragma once
+#ifndef HIDDEVICE_H
+#define HIDDEVICE_H
 
 #include <CoreFoundation/CoreFoundation.h>
 #include <IOKit/IOCFPlugIn.h>
@@ -162,3 +163,4 @@ class HIDDevice {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

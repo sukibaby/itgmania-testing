@@ -1,4 +1,5 @@
-#pragma once
+#ifndef OPTIONSCURSOR_H
+#define OPTIONSCURSOR_H
 
 #include <string>
 
@@ -62,3 +63,4 @@ class OptionsCursor : public ActorFrame {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

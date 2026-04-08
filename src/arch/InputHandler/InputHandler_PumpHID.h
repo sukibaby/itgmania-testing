@@ -1,4 +1,5 @@
-#pragma once
+#ifndef INPUTHANDLER_PUMPHID_H
+#define INPUTHANDLER_PUMPHID_H
 
 /*
  * -------------------------- NOTE --------------------------
@@ -283,3 +284,4 @@ class InputHandler_PumpHID : public InputHandler {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

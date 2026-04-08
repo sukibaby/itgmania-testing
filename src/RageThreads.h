@@ -1,4 +1,5 @@
-#pragma once
+#ifndef RAGETHREADS_H
+#define RAGETHREADS_H
 
 #include <atomic>
 #include <cstdint>
@@ -234,3 +235,4 @@ class RageSemaphore {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

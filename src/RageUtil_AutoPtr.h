@@ -1,6 +1,7 @@
 /* AutoPtrCopyOnWrite - Simple smart pointer template. */
 
-#pragma once
+#ifndef RAGEUTIL_AUTOPTR_H
+#define RAGEUTIL_AUTOPTR_H
 
 #include <utility>
 
@@ -206,3 +207,4 @@ inline void swap(HiddenPtr<T>& a, HiddenPtr<T>& b) {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

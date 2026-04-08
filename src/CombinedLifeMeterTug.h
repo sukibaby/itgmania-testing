@@ -1,4 +1,5 @@
-#pragma once
+#ifndef COMBINEDLIFEMETERTUG_H
+#define COMBINEDLIFEMETERTUG_H
 
 #include <array>
 
@@ -53,3 +54,4 @@ class CombinedLifeMeterTug : public CombinedLifeMeter {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

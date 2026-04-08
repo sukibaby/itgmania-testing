@@ -1,6 +1,7 @@
 /* LightsDriver_LinuxParallel - Parallel port-based lights for Linux */
 
-#pragma once
+#ifndef LIGHTSDRIVER_LINUXPARALLEL_H
+#define LIGHTSDRIVER_LINUXPARALLEL_H
 
 #include "LightsDriver.h"
 
@@ -36,3 +37,4 @@ class LightsDriver_LinuxParallel : public LightsDriver {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

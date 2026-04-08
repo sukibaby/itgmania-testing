@@ -1,5 +1,6 @@
 /* StepsDisplayList - Shows all available difficulties for a Song/Course. */
-#pragma once
+#ifndef DIFFICULTYLIST_H
+#define DIFFICULTYLIST_H
 
 #include <vector>
 
@@ -97,3 +98,4 @@ class StepsDisplayList : public ActorFrame {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

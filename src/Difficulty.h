@@ -1,4 +1,5 @@
-#pragma once
+#ifndef DIFFICULTY_H
+#define DIFFICULTY_H
 
 #include <string>
 
@@ -68,3 +69,4 @@ std::string TrailToCustomDifficulty(const Trail* pTrail);
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

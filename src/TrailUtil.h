@@ -1,4 +1,5 @@
-#pragma once
+#ifndef TRAILUTIL_H
+#define TRAILUTIL_H
 
 #include <string>
 
@@ -68,3 +69,4 @@ class TrailID {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

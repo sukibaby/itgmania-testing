@@ -1,4 +1,5 @@
-#pragma once
+#ifndef COMMONMETRICS_H
+#define COMMONMETRICS_H
 
 #include <string>
 #include <vector>
@@ -108,3 +109,4 @@ std::string LocalizeOptionItem(const std::string& s, bool bOptional);
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

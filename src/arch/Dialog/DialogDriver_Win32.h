@@ -1,4 +1,5 @@
-#pragma once
+#ifndef DIALOGDRIVER_WIN32_H
+#define DIALOGDRIVER_WIN32_H
 
 #include <string>
 
@@ -39,3 +40,4 @@ class DialogDriver_Win32 : public DialogDriver {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

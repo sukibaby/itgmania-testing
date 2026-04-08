@@ -1,6 +1,7 @@
 /* RunningUnderValgrind - Detect if the application is being run under Valgrind.
  */
-#pragma once
+#ifndef RUNNINGUNDERVALGRIND_H
+#define RUNNINGUNDERVALGRIND_H
 
 bool RunningUnderValgrind();
 
@@ -28,3 +29,4 @@ bool RunningUnderValgrind();
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

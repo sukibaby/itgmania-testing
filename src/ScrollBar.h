@@ -1,6 +1,7 @@
 /* ScrollBar - A simple scrollbar. */
 
-#pragma once
+#ifndef SCROLLBAR_H
+#define SCROLLBAR_H
 
 #include "ActorFrame.h"
 #include "AutoActor.h"
@@ -46,3 +47,4 @@ class ScrollBar : public ActorFrame {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

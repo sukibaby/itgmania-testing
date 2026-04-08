@@ -1,4 +1,5 @@
-#pragma once
+#ifndef NOTESWRITERSSC_H
+#define NOTESWRITERSSC_H
 
 #include <string>
 #include <vector>
@@ -67,3 +68,4 @@ bool WriteEditFileToMachine(
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

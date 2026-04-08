@@ -1,4 +1,5 @@
-#pragma once
+#ifndef ARCH_SETUP_H
+#define ARCH_SETUP_H
 
 #define HAVE_CXA_DEMANGLE
 /* This must be defined to 1 because autoconf's AC_CHECK_DECLS macro decides to
@@ -45,3 +46,4 @@
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

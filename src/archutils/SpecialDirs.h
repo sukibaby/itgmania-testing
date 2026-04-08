@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SPECIALDIRS_H
+#define SPECIALDIRS_H
 
 #if defined(ANDROID)
 #include "Android/SpecialDirs.h"
@@ -33,3 +34,4 @@
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

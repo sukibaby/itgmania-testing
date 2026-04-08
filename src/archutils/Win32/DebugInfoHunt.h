@@ -1,4 +1,5 @@
-#pragma once
+#ifndef DEBUGINFOHUNT_H
+#define DEBUGINFOHUNT_H
 
 /** @brief We want debug information; Windows makes us hunt for it. */
 void SearchForDebugInfo();
@@ -27,3 +28,4 @@ void SearchForDebugInfo();
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

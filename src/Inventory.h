@@ -1,4 +1,5 @@
-#pragma once
+#ifndef INVENTORY_H
+#define INVENTORY_H
 
 #include <vector>
 
@@ -61,3 +62,4 @@ class Inventory : public Actor {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

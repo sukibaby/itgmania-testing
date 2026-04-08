@@ -1,4 +1,5 @@
-#pragma once
+#ifndef ALSA9HELPERS_H
+#define ALSA9HELPERS_H
 
 #include <cstdint>
 #include <string>
@@ -74,3 +75,4 @@ class Alsa9Buf {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

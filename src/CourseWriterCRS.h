@@ -1,6 +1,7 @@
 /** @brief CourseWriterCRS - Writes a Course to an .CRS file. */
 
-#pragma once
+#ifndef COURSEWRITERCRS_H
+#define COURSEWRITERCRS_H
 
 #include <string>
 
@@ -69,3 +70,4 @@ bool WriteSongSelectCourseEntry(const CourseEntry& entry, RageFileBasic& f);
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

@@ -1,6 +1,7 @@
 /* ScreenTitleMenu - The main title screen and menu. */
 
-#pragma once
+#ifndef SCREENTITLEMENU_H
+#define SCREENTITLEMENU_H
 
 #include "InputQueue.h"
 #include "MessageManager.h"
@@ -40,3 +41,4 @@ class ScreenTitleMenu : public ScreenSelectMaster {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

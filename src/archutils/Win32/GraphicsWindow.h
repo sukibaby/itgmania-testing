@@ -1,4 +1,5 @@
-#pragma once
+#ifndef GRAPHICSWINDOW_H
+#define GRAPHICSWINDOW_H
 
 #include <windows.h>
 
@@ -64,3 +65,4 @@ HWND GetHwnd();
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

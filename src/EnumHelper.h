@@ -1,4 +1,5 @@
-#pragma once
+#ifndef ENUMHELPER_H
+#define ENUMHELPER_H
 
 #include <memory>
 #include <string>
@@ -205,3 +206,4 @@ const std::string& EnumToString(
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

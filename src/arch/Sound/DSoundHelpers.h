@@ -1,4 +1,5 @@
-#pragma once
+#ifndef DSOUNDHELPERS_H
+#define DSOUNDHELPERS_H
 
 #include <cstdint>
 #include <string>
@@ -109,3 +110,4 @@ class DSoundBuf {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

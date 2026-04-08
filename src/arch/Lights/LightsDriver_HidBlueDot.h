@@ -1,4 +1,5 @@
-#pragma once
+#ifndef LIGHTSDRIVER_HIDBLUEDOT_H
+#define LIGHTSDRIVER_HIDBLUEDOT_H
 
 #include <cstdint>
 
@@ -45,3 +46,4 @@ class LightsDriver_HidBlueDot : public LightsDriver {
 
   virtual void Set(const LightsState* ls);
 };
+#endif

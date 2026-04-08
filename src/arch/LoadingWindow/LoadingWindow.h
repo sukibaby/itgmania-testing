@@ -1,4 +1,5 @@
-#pragma once
+#ifndef LOADINGWINDOW_H
+#define LOADINGWINDOW_H
 
 #include <string>
 
@@ -52,3 +53,4 @@ class LoadingWindow {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

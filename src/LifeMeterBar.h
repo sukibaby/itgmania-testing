@@ -1,4 +1,5 @@
-#pragma once
+#ifndef LIFEMETERBAR_H
+#define LIFEMETERBAR_H
 
 #include "AutoActor.h"
 #include "GameConstantsAndTypes.h"
@@ -89,3 +90,4 @@ class LifeMeterBar : public LifeMeter {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

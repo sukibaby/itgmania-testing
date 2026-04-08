@@ -1,4 +1,5 @@
-#pragma once
+#ifndef LIFEMETERBATTERY_H
+#define LIFEMETERBATTERY_H
 
 #include <string>
 
@@ -97,3 +98,4 @@ class LifeMeterBattery : public LifeMeter {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

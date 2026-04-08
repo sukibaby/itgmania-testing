@@ -1,6 +1,7 @@
 /* MusicWheel - A wheel with song names used in the Select Music screen. */
 
-#pragma once
+#ifndef MUSICWHEEL_H
+#define MUSICWHEEL_H
 
 #include <string>
 #include <vector>
@@ -155,3 +156,4 @@ class MusicWheel : public WheelBase {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

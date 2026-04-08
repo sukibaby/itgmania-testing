@@ -1,4 +1,5 @@
-#pragma once
+#ifndef RADARVALUES_H
+#define RADARVALUES_H
 
 #include <string>
 
@@ -95,3 +96,4 @@ struct RadarValues {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

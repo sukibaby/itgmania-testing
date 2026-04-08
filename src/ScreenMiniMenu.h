@@ -1,6 +1,7 @@
 /* ScreenMiniMenu - Displays a simple menu over the top of another screen. */
 
-#pragma once
+#ifndef SCREENMINIMENU_H
+#define SCREENMINIMENU_H
 
 #include <string>
 #include <vector>
@@ -313,3 +314,4 @@ class ScreenMiniMenu : public ScreenOptions {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

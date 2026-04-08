@@ -1,4 +1,5 @@
-#pragma once
+#ifndef LUADEBUGDAP_H
+#define LUADEBUGDAP_H
 
 #include <cstdint>
 #include <string>
@@ -79,3 +80,4 @@ Response CreateNotStoppedResponse(const Request& request);
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+#endif

@@ -1,7 +1,8 @@
 /* LightsDriver_gpb: Control lights for the gpb board by icedragon.io
  * using hidapi */
 
-#pragma once
+#ifndef LIGHTSDRIVER_GPB_H
+#define LIGHTSDRIVER_GPB_H
 
 /*
  * -------------------------- NOTE --------------------------
@@ -103,3 +104,4 @@ class LightsDriver_gpb : public LightsDriver {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

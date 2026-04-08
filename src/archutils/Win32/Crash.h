@@ -1,4 +1,5 @@
-#pragma once
+#ifndef CRASH_H
+#define CRASH_H
 
 #include <windows.h>
 
@@ -52,3 +53,4 @@ void CrashHandlerHandleArgs(int argc, char* argv[]);
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

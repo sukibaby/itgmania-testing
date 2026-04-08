@@ -1,4 +1,5 @@
-#pragma once
+#ifndef STYLEUTIL_H
+#define STYLEUTIL_H
 
 #include <string>
 
@@ -47,3 +48,4 @@ class StyleID {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

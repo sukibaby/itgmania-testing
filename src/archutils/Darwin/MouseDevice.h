@@ -1,4 +1,5 @@
-#pragma once
+#ifndef MOUSEDEVICE_H
+#define MOUSEDEVICE_H
 
 #include <unordered_map>
 #include <vector>
@@ -63,3 +64,4 @@ class MouseDevice : public HIDDevice {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

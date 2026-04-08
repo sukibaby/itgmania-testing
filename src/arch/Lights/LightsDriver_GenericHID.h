@@ -1,4 +1,5 @@
-#pragma once
+#ifndef LIGHTSDRIVER_GENERICHID_H
+#define LIGHTSDRIVER_GENERICHID_H
 
 #include <libusb.h>
 
@@ -79,3 +80,4 @@ class LightsDriver_GenericHID : public LightsDriver {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

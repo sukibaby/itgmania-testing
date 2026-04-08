@@ -1,4 +1,5 @@
-#pragma once
+#ifndef OPTIONROWHANDLER_H
+#define OPTIONROWHANDLER_H
 
 #include <cstddef>
 #include <limits>
@@ -308,3 +309,4 @@ inline void VerifySelected(
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef PTHREADHELPERS_H
+#define PTHREADHELPERS_H
 
 #include <cstdint>
 #include <string>
@@ -41,3 +42,4 @@ int GetThreadContext(uint64_t ThreadID, BacktraceContext* ctx);
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

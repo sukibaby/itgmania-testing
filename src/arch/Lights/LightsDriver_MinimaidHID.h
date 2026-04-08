@@ -1,6 +1,7 @@
 /* LightsDriver_MinimaidHID: Control lights minimaid using hidapi */
 
-#pragma once
+#ifndef LIGHTSDRIVER_MINIMAIDHID_H
+#define LIGHTSDRIVER_MINIMAIDHID_H
 
 /*
  * -------------------------- NOTE --------------------------
@@ -149,3 +150,4 @@ class LightsDriver_MinimaidHID : public LightsDriver {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

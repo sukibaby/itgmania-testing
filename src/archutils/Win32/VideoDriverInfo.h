@@ -1,6 +1,7 @@
 /* GetVideoDriverInfo - Get information about Win32 video drivers. */
 
-#pragma once
+#ifndef VIDEODRIVERINFO_H
+#define VIDEODRIVERINFO_H
 
 #include <string>
 
@@ -40,3 +41,4 @@ std::string GetPrimaryVideoDriverName();
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

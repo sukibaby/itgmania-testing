@@ -1,6 +1,7 @@
 /* InputHandler_Linux_Event - evdev-based input driver */
 
-#pragma once
+#ifndef INPUTHANDLER_LINUX_EVENT_H
+#define INPUTHANDLER_LINUX_EVENT_H
 
 #include <string>
 #include <vector>
@@ -59,3 +60,4 @@ class InputHandler_Linux_Event : public InputHandler {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

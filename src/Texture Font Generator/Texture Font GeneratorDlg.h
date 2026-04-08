@@ -1,4 +1,5 @@
-#pragma once
+#ifndef TEXTURE_FONT_GENERATORDLG_H
+#define TEXTURE_FONT_GENERATORDLG_H
 
 #include <vector>
 
@@ -100,3 +101,4 @@ class CTextureFontGeneratorDlg : public CDialog {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

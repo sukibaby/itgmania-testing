@@ -1,6 +1,7 @@
 /* MovieTexture_FFMpeg - FFMpeg movie renderer. */
 
-#pragma once
+#ifndef MOVIETEXTURE_FFMPEG_H
+#define MOVIETEXTURE_FFMPEG_H
 
 #include <cstdint>
 #include <limits>
@@ -275,3 +276,4 @@ static struct AVPixelFormat_t {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

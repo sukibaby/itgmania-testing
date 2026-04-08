@@ -1,4 +1,5 @@
-#pragma once
+#ifndef RAGESOUNDMIXBUFFER_H
+#define RAGESOUNDMIXBUFFER_H
 
 #include <cstddef>
 #include <cstdint>
@@ -48,3 +49,4 @@ class RageSoundMixBuffer {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

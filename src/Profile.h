@@ -1,4 +1,5 @@
-#pragma once
+#ifndef PROFILE_H
+#define PROFILE_H
 
 #include <map>
 #include <set>
@@ -511,3 +512,4 @@ class Profile {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

@@ -1,6 +1,7 @@
 /* ScreenSaveSync -  */
 
-#pragma once
+#ifndef SCREENSAVESYNC_H
+#define SCREENSAVESYNC_H
 
 #include "ScreenMessage.h"
 #include "ScreenPrompt.h"
@@ -36,3 +37,4 @@ class ScreenSaveSync : public ScreenPrompt {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

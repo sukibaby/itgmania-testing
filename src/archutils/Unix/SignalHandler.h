@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SIGNALHANDLER_H
+#define SIGNALHANDLER_H
 
 #include <signal.h>
 
@@ -43,3 +44,4 @@ void OnClose(handler);
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

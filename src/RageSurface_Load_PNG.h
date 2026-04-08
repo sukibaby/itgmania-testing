@@ -1,6 +1,7 @@
 /* RageSurface_Load_PNG - PNG file loader */
 
-#pragma once
+#ifndef RAGESURFACE_LOAD_PNG_H
+#define RAGESURFACE_LOAD_PNG_H
 
 #include <string>
 
@@ -33,3 +34,4 @@ RageSurfaceUtils::OpenResult RageSurface_Load_PNG(
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

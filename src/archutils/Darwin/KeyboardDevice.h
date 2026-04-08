@@ -1,4 +1,5 @@
-#pragma once
+#ifndef KEYBOARDDEVICE_H
+#define KEYBOARDDEVICE_H
 
 #include <unordered_map>
 #include <vector>
@@ -52,3 +53,4 @@ class KeyboardDevice : public HIDDevice {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

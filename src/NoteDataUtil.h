@@ -1,4 +1,5 @@
-#pragma once
+#ifndef NOTEDATAUTIL_H
+#define NOTEDATAUTIL_H
 
 #include <string>
 #include <vector>
@@ -263,3 +264,4 @@ unsigned int GetTotalHoldTicks(NoteData* nd, const TimingData* td);
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

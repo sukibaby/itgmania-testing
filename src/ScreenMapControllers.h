@@ -1,6 +1,7 @@
 /* ScreenMapControllers - Maps device input to instrument buttons. */
 
-#pragma once
+#ifndef SCREENMAPCONTROLLERS_H
+#define SCREENMAPCONTROLLERS_H
 
 #include <set>
 #include <string>
@@ -157,3 +158,4 @@ class ScreenMapControllers : public ScreenWithMenuElements {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

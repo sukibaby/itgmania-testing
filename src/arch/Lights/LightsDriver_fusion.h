@@ -1,7 +1,8 @@
 /* LightsDriver_fusion: Control lights for the fusion board by icedragon.io
  * using hidapi */
 
-#pragma once
+#ifndef LIGHTSDRIVER_FUSION_H
+#define LIGHTSDRIVER_FUSION_H
 
 /*
  * -------------------------- NOTE --------------------------
@@ -109,3 +110,4 @@ class LightsDriver_fusion : public LightsDriver {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

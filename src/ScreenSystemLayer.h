@@ -1,7 +1,8 @@
 /* ScreenSystemLayer - credits and statistics drawn on top of everything else.
  */
 
-#pragma once
+#ifndef SCREENSYSTEMLAYER_H
+#define SCREENSYSTEMLAYER_H
 
 #include "AutoActor.h"
 #include "Screen.h"
@@ -39,3 +40,4 @@ class ScreenSystemLayer : public Screen {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

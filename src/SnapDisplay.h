@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SNAPDISPLAY_H
+#define SNAPDISPLAY_H
 
 #include "ActorFrame.h"
 #include "NoteTypes.h"
@@ -57,3 +58,4 @@ class SnapDisplay : public ActorFrame {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

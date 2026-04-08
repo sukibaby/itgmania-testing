@@ -1,4 +1,5 @@
-#pragma once
+#ifndef MODICON_H
+#define MODICON_H
 
 #include <string>
 #include <vector>
@@ -50,3 +51,4 @@ class ModIcon : public ActorFrame {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

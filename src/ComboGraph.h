@@ -1,5 +1,6 @@
 /* ComboGraph - A bar displaying the player's combo on Evaluation. */
-#pragma once
+#ifndef COMBOGRAPH_H
+#define COMBOGRAPH_H
 
 #include <string>
 
@@ -55,3 +56,4 @@ class ComboGraph : public ActorFrame {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

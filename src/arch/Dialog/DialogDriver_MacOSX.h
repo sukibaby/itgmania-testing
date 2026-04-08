@@ -1,4 +1,5 @@
-#pragma once
+#ifndef DIALOGDRIVER_MACOSX_H
+#define DIALOGDRIVER_MACOSX_H
 
 #include <string>
 
@@ -40,3 +41,4 @@ class DialogDriver_MacOSX : public DialogDriver {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif

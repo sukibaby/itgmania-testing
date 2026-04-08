@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SCREENOPTIONSMANAGEPROFILES_H
+#define SCREENOPTIONSMANAGEPROFILES_H
 
 #include <string>
 #include <vector>
@@ -54,3 +55,4 @@ class ScreenOptionsManageProfiles : public ScreenOptions {
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#endif
