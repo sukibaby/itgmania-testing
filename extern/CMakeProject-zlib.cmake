@@ -1,32 +1,18 @@
-set(ZLIB_SRC "zlib/adler32.c"
-             "zlib/compress.c"
-             "zlib/crc32.c"
-             "zlib/deflate.c"
-             "zlib/gzclose.c"
-             "zlib/gzlib.c"
-             "zlib/gzread.c"
-             "zlib/gzwrite.c"
-             "zlib/infback.c"
-             "zlib/inffast.c"
-             "zlib/inflate.c"
-             "zlib/inftrees.c"
-             "zlib/trees.c"
-             "zlib/uncompr.c"
-             "zlib/zutil.c")
+set(ZLIB_ROOT "${SM_EXTERN_DIR}/zlib")
+set(ZLIB_GENERATED_DIR "${CMAKE_CURRENT_BINARY_DIR}/zlib")
+set(ZLIB_GENERATED_HPP "${ZLIB_GENERATED_DIR}/zconf.h")
 
-set(ZLIB_HPP "zlib/crc32.h"
-             "zlib/deflate.h"
-             "zlib/gzguts.h"
-             "zlib/inffast.h"
-             "zlib/inffixed.h"
-             "zlib/inflate.h"
-             "zlib/inftrees.h"
-             "zlib/trees.h"
-             "zlib/zconf.h"
-             "zlib/zlib.h"
-             "zlib/zutil.h")
+sm_glob_files(ZLIB_SRC BASE_DIR "${ZLIB_ROOT}" PATTERNS "*.c")
+sm_glob_files(ZLIB_SOURCE_HPP BASE_DIR "${ZLIB_ROOT}" PATTERNS "*.h")
 
-source_group("" FILES ${ZLIB_SRC} ${ZLIB_HPP})
+configure_file("${ZLIB_ROOT}/zconf.h.in"
+               "${ZLIB_GENERATED_HPP}"
+               COPYONLY)
+
+set(ZLIB_HPP ${ZLIB_SOURCE_HPP} "${ZLIB_GENERATED_HPP}")
+
+source_group(TREE "${ZLIB_ROOT}" FILES ${ZLIB_SRC} ${ZLIB_SOURCE_HPP})
+source_group("Generated Files" FILES "${ZLIB_GENERATED_HPP}")
 
 add_library("zlib" STATIC ${ZLIB_SRC} ${ZLIB_HPP})
 
@@ -44,4 +30,7 @@ if(MSVC)
   target_compile_definitions("zlib" PRIVATE _MBCS)
 endif(MSVC)
 
-target_include_directories("zlib" PUBLIC "zlib")
+target_include_directories("zlib" PUBLIC
+  "${ZLIB_ROOT}"
+  "${ZLIB_GENERATED_DIR}"
+)

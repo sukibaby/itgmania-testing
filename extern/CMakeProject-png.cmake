@@ -1,34 +1,21 @@
-set(PNG_SRC "libpng/png.c"
-            "libpng/pngerror.c"
-            "libpng/pngget.c"
-            "libpng/pngmem.c"
-            "libpng/pngpread.c"
-            "libpng/pngread.c"
-            "libpng/pngrio.c"
-            "libpng/pngrtran.c"
-            "libpng/pngrutil.c"
-            "libpng/pngset.c"
-            "libpng/pngtest.c"
-            "libpng/pngtrans.c"
-            "libpng/pngwio.c"
-            "libpng/pngwrite.c"
-            "libpng/pngwtran.c"
-            "libpng/pngwutil.c")
+set(PNG_ROOT "${SM_EXTERN_DIR}/libpng")
+set(PNG_GENERATED_DIR "${CMAKE_CURRENT_BINARY_DIR}/libpng")
+set(PNG_GENERATED_HPP "${PNG_GENERATED_DIR}/pnglibconf.h")
 
-configure_file("libpng/scripts/pnglibconf.h.prebuilt"
-               "libpng/pnglibconf.h"
+sm_glob_files(PNG_SRC
+              BASE_DIR "${PNG_ROOT}"
+              PATTERNS "*.c"
+              EXCLUDE_PATTERNS "example.c")
+sm_glob_files(PNG_SOURCE_HPP BASE_DIR "${PNG_ROOT}" PATTERNS "*.h")
+
+configure_file("${PNG_ROOT}/scripts/pnglibconf.h.prebuilt"
+               "${PNG_GENERATED_HPP}"
                COPYONLY)
 
-set(PNG_HPP "libpng/png.h"
-            "libpng/pngconf.h"
-            "libpng/pngdebug.h"
-            "libpng/pnginfo.h"
-            "libpng/pnglibconf.h"
-            "libpng/pngpriv.h"
-            "libpng/pngstruct.h")
+set(PNG_HPP ${PNG_SOURCE_HPP} "${PNG_GENERATED_HPP}")
 
-source_group("" FILES ${PNG_SRC})
-source_group("" FILES ${PNG_HPP})
+source_group(TREE "${PNG_ROOT}" FILES ${PNG_SRC} ${PNG_SOURCE_HPP})
+source_group("Generated Files" FILES "${PNG_GENERATED_HPP}")
 
 add_library("png" STATIC ${PNG_SRC} ${PNG_HPP})
 
@@ -36,15 +23,18 @@ set_property(TARGET "png" PROPERTY FOLDER "External Libraries")
 
 disable_project_warnings("png")
 
+# This wrapper only builds the generic libpng sources, so disable all
+# architecture-specific SIMD entry points unless we migrate to upstream CMake.
 target_compile_definitions("png" PRIVATE PNG_ARM_NEON_OPT=0
-                                         PNG_INTEL_SSE_OPT=0)
+                                         PNG_INTEL_SSE_OPT=0
+                                         PNG_POWERPC_VSX_OPT=0)
 
 if(MSVC)
   target_compile_definitions("png" PRIVATE _CRT_SECURE_NO_WARNINGS)
 endif()
 
 target_include_directories("png" PUBLIC
-  "zlib"
-  "libpng"
-  "${CMAKE_CURRENT_BINARY_DIR}/libpng"
+  "${SM_EXTERN_DIR}/zlib"
+  "${PNG_ROOT}"
+  "${PNG_GENERATED_DIR}"
 )
