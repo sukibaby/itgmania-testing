@@ -1,0 +1,21 @@
+name: Lint YAML
+
+on:
+    pull_request:
+        paths:
+            - ".github/**"
+    push:
+        paths:
+            - ".github/**"
+jobs:
+    yamllint:
+        # note: ubuntu-slim is container-based, rather than being a full VM
+        runs-on: ubuntu-slim
+        steps:
+            - uses: actions/checkout@v6
+            - run: |
+                  sudo apt-get update
+                  sudo apt-get install -y yamllint
+            - run: |
+                  set -e
+                  yamllint -d "{extends: relaxed, rules: {line-length: disable}}" .github
