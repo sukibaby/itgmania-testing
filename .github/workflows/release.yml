@@ -41,7 +41,9 @@ jobs:
           - os: windows-2022
             name: Windows
             flags: -DWITH_FFMPEG_JOBS="$env:NUMBER_OF_PROCESSORS"
-            path: build/ITGmania-*.exe
+            path: |
+              build/ITGmania-*.msi
+              build/ITGmania-*.exe
 
     name: "${{ matrix.name }} - ClubFantastic: ${{ matrix.club_fantastic }}"
 
