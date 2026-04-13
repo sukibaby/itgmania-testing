@@ -26,28 +26,81 @@
 #endif                          // _MSC_VER
 
 namespace {
-void RageFile_png_read(png_struct* png, png_byte* p, png_size_t size) {
-  CHECKPOINT_M("Reading the png file.");
-  RageFile* f = (RageFile*)png_get_io_ptr(png);
-
-  int got = f->Read(p, size);
-  if (got == -1) {
-    /* png_error will call PNG_Error, which will longjmp.  If we just pass
-     * GetError().c_str() to it, a temporary may be created; since control
-     * never returns here, it may never be destructed and we could leak. */
-    static char error[256];
-    strncpy(error, f->GetError().c_str(), sizeof(error));
-    error[sizeof(error) - 1] = 0;
-    png_error(png, error);
-  } else if (got != (int)size) {
-    png_error(png, "Unexpected EOF");
-  }
-}
 
 struct error_info {
   char* err;
   const char* fn;
 };
+
+struct png_read_state {
+  RageFile* file;
+  png_size_t buffer_offset;
+  png_size_t buffer_size;
+  png_byte buffer[kPngReadBufferSize];
+};
+
+void PNG_CopyFileError(png_struct* png, RageFile* file) {
+  thread_local char error[256];
+  snprintf(error, sizeof(error), "%s", file->GetError().c_str());
+  png_error(png, error);
+}
+
+void PNG_ReadFile(
+    png_struct* png, RageFile* file, png_byte* dst, png_size_t size) {
+  while (size != 0) {
+    size_t request_size = static_cast<size_t>(size);
+    if (request_size > static_cast<size_t>(INT_MAX)) {
+      request_size = INT_MAX;
+    }
+
+    const int got = file->Read(dst, request_size);
+    if (got == -1) {
+      PNG_CopyFileError(png, file);
+    }
+    if (got <= 0) {
+      png_error(png, "Unexpected EOF");
+    }
+
+    dst += got;
+    size -= got;
+  }
+}
+
+void RageFile_png_read(png_struct* png, png_byte* p, png_size_t size) {
+  png_read_state* state = (png_read_state*)png_get_io_ptr(png);
+
+  while (size != 0) {
+    png_size_t available = state->buffer_size - state->buffer_offset;
+    if (available == 0) {
+      if (size >= kPngReadBufferSize) {
+        PNG_ReadFile(png, state->file, p, size);
+        return;
+      }
+
+      const int got = state->file->Read(state->buffer, sizeof(state->buffer));
+      if (got == -1) {
+        PNG_CopyFileError(png, state->file);
+      }
+      if (got <= 0) {
+        png_error(png, "Unexpected EOF");
+      }
+
+      state->buffer_offset = 0;
+      state->buffer_size = static_cast<png_size_t>(got);
+      available = state->buffer_size;
+    }
+
+    png_size_t copy_size = available;
+    if (copy_size > size) {
+      copy_size = size;
+    }
+
+    std::memcpy(p, state->buffer + state->buffer_offset, copy_size);
+    state->buffer_offset += copy_size;
+    p += copy_size;
+    size -= copy_size;
+  }
+}
 
 void PNG_Error(png_struct* png, const char* error) {
   CHECKPOINT_M(ssprintf("PNG error during processing: %s", error));
