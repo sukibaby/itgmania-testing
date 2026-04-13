@@ -60,7 +60,7 @@ if(WIN32)
   # WiX (MSI) configuration:
   # https://cmake.org/cmake/help/latest/cpack_gen/wix.html
   # WiX represents the version in the x.x.x.x format, so we append a .0 
-  set(CPACK_PACKAGE_VERSION
+  set(CPACK_WIX_PACKAGE_VERSION
       "${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}.0")
   # The GUID is meant to be static; do not change it!
   set(CPACK_WIX_UPGRADE_GUID "a1dcf4ac-e756-4625-8b53-2584e8b7a69a")
@@ -77,7 +77,7 @@ if(WIN32)
   set(CPACK_WIX_UI_DIALOG "${SM_INSTALLER_DIR}/wix/welcome.bmp")
   set(CPACK_WIX_PROGRAM_MENU_FOLDER "ITGmania")
   set(CPACK_WIX_HELP_LINK "https://github.com/itgmania/itgmania/issues")
-  set(CPACK_WIX_PRODUCT_NAME "${SM_EXE_NAME} ${CPACK_PACKAGE_VERSION}")
+  set(CPACK_WIX_PRODUCT_NAME "${SM_EXE_NAME} ${CPACK_WIX_PACKAGE_VERSION}")
   set(CPACK_WIX_URL_INFO_ABOUT "https://www.itgmania.com/")
   set(CPACK_WIX_PROPERTY_ARPURLINFOABOUT "https://www.itgmania.com/")
 elseif(MACOSX)
