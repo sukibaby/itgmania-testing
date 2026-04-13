@@ -37,6 +37,11 @@ static Preference<bool> g_bNeverBoostAppPriority(
 static Preference<float> g_fConstantUpdateDeltaSeconds(
     "ConstantUpdateDeltaSeconds", 0);
 
+// TODO: break out input/update hooks to break dependency on free functions in
+// StepMania.cpp. Ideally we would do this to resolve the circular dependency
+// between StepMania and GameLoop. The main module should handle things like the
+// while loop, focus checks, transitions, and then decouple input handling from
+// UpdateAllButDraw.
 void HandleInputEvents(float fDeltaTime);
 
 static float g_fUpdateRate = 1;
