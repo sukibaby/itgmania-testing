@@ -32,6 +32,7 @@ constexpr png_size_t kPngReadBufferSize = 64 * 1024;
 
 struct error_info {
   char* err;
+  size_t err_size;
   const char* fn;
 };
 
@@ -123,20 +124,28 @@ static RageSurface* RageSurface_Load_PNG(
     RageFile* f, const char* fn, char errorbuf[1024], bool bHeaderOnly) {
   error_info error;
   error.err = errorbuf;
+  error.err_size = 1024;
   error.fn = fn;
+
+  png_read_state read_state;
+  read_state.file = f;
+  read_state.buffer_offset = 0;
+  read_state.buffer_size = 0;
 
   png_struct* png = png_create_read_struct(
       PNG_LIBPNG_VER_STRING, &error, PNG_Error, PNG_Warning);
 
   if (png == nullptr) {
-    sprintf(errorbuf, "creating png_create_read_struct failed");
+    snprintf(
+        errorbuf, error.err_size, "creating png_create_read_struct failed");
     return nullptr;
   }
 
   png_info* info_ptr = png_create_info_struct(png);
   if (info_ptr == nullptr) {
     png_destroy_read_struct(&png, nullptr, nullptr);
-    sprintf(errorbuf, "creating png_create_info_struct failed");
+    snprintf(
+        errorbuf, error.err_size, "creating png_create_info_struct failed");
     return nullptr;
   }
 
