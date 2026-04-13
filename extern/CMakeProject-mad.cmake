@@ -1,20 +1,39 @@
-set(MAD_ROOT "${SM_EXTERN_DIR}/libmad")
-set(MAD_GENERATED_DIR "${CMAKE_CURRENT_BINARY_DIR}/libmad")
-set(MAD_GENERATED_HPP "${MAD_GENERATED_DIR}/config.h")
+set(MAD_SRC "libmad/bit.c"
+            "libmad/decoder.c"
+            "libmad/fixed.c"
+            "libmad/frame.c"
+            "libmad/huffman.c"
+            "libmad/layer12.c"
+            "libmad/layer3.c"
+            "libmad/stream.c"
+            "libmad/synth.c"
+            "libmad/timer.c"
+            "libmad/version.c")
 
-sm_glob_files(MAD_SRC
-              BASE_DIR "${MAD_ROOT}"
-              PATTERNS "*.c"
-              EXCLUDE_PATTERNS "minimad.c")
-sm_glob_files(MAD_SOURCE_HPP BASE_DIR "${MAD_ROOT}" PATTERNS "*.h")
-sm_glob_files(MAD_DAT BASE_DIR "${MAD_ROOT}" PATTERNS "*.dat")
+set(MAD_HPP "libmad/bit.h"
+            "libmad/config.h"
+            "libmad/decoder.h"
+            "libmad/fixed.h"
+            "libmad/frame.h"
+            "libmad/global.h"
+            "libmad/huffman.h"
+            "libmad/layer12.h"
+            "libmad/layer3.h"
+            "libmad/mad.h"
+            "libmad/stream.h"
+            "libmad/synth.h"
+            "libmad/timer.h"
+            "libmad/version.h")
 
-configure_file("${CMAKE_CURRENT_SOURCE_DIR}/config.mad.in.h" "${MAD_GENERATED_HPP}")
+set(MAD_DAT "libmad/D.dat"
+            "libmad/imdct_s.dat"
+            "libmad/qc_table.dat"
+            "libmad/rq_table.dat"
+            "libmad/sf_table.dat")
 
-set(MAD_HPP ${MAD_SOURCE_HPP} "${MAD_GENERATED_HPP}")
-
-source_group(TREE "${MAD_ROOT}" FILES ${MAD_SRC} ${MAD_SOURCE_HPP} ${MAD_DAT})
-source_group("Generated Files" FILES "${MAD_GENERATED_HPP}")
+source_group("Source Files" FILES ${MAD_SRC})
+source_group("Header Files" FILES ${MAD_HPP})
+source_group("Data Files" FILES ${MAD_DAT})
 
 add_library("mad" STATIC ${MAD_SRC} ${MAD_HPP} ${MAD_DAT})
 
@@ -50,5 +69,7 @@ elseif(APPLE OR UNIX)
   target_compile_definitions("mad" PRIVATE FPM_64BIT=1)
 endif(MSVC)
 
-target_include_directories("mad" PRIVATE "${MAD_GENERATED_DIR}")
-target_include_directories("mad" PUBLIC "${MAD_ROOT}")
+target_include_directories("mad" PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/libmad")
+target_include_directories("mad" PUBLIC "libmad")
+
+configure_file("config.mad.in.h" "libmad/config.h")

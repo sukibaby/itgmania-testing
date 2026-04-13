@@ -36,46 +36,6 @@ function(disable_project_warnings projectName)
   endif()
 endfunction()
 
-function(sm_glob_files out_var)
-  set(options RECURSE)
-  set(oneValueArgs BASE_DIR)
-  set(multiValueArgs PATTERNS EXCLUDE_PATTERNS)
-  cmake_parse_arguments(ARG "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
-
-  if(NOT ARG_BASE_DIR)
-    message(FATAL_ERROR "sm_glob_files requires BASE_DIR")
-  endif()
-
-  if(NOT ARG_PATTERNS)
-    message(FATAL_ERROR "sm_glob_files requires at least one PATTERN")
-  endif()
-
-  set(globbed_files)
-  foreach(pattern IN LISTS ARG_PATTERNS)
-    if(ARG_RECURSE)
-      file(GLOB_RECURSE matched_files CONFIGURE_DEPENDS "${ARG_BASE_DIR}/${pattern}")
-    else()
-      file(GLOB matched_files CONFIGURE_DEPENDS "${ARG_BASE_DIR}/${pattern}")
-    endif()
-    list(APPEND globbed_files ${matched_files})
-  endforeach()
-
-  foreach(pattern IN LISTS ARG_EXCLUDE_PATTERNS)
-    if(ARG_RECURSE)
-      file(GLOB_RECURSE excluded_files CONFIGURE_DEPENDS "${ARG_BASE_DIR}/${pattern}")
-    else()
-      file(GLOB excluded_files CONFIGURE_DEPENDS "${ARG_BASE_DIR}/${pattern}")
-    endif()
-    if(excluded_files)
-      list(REMOVE_ITEM globbed_files ${excluded_files})
-    endif()
-  endforeach()
-
-  list(REMOVE_DUPLICATES globbed_files)
-  list(SORT globbed_files)
-  set(${out_var} ${globbed_files} PARENT_SCOPE)
-endfunction()
-
 macro(check_compile_features
       BIN_DIR
       SOURCE_FILE
