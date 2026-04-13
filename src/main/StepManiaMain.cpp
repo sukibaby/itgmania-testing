@@ -128,7 +128,7 @@ static void ApplyLogPreferences();
 
 // Bootstrap and runtime startup live in a dedicated module so later threading
 // work can move independently from StepMania.cpp gameplay utilities.
-class MainProjectBootstrap {
+class GeneralBootstrap {
  public:
   int Run(int argc, char* argv[]);
 
@@ -602,7 +602,7 @@ static void ApplyLogPreferences() {
 }
 
 // startup point for the main game 1
-int MainProjectBootstrap::Run(int argc, char* argv[]) {
+int GeneralBootstrap::Run(int argc, char* argv[]) {
   RageThreadRegister thread("Main thread");
   RageException::SetCleanupHandler(HandleException);
 
@@ -627,7 +627,7 @@ int MainProjectBootstrap::Run(int argc, char* argv[]) {
 }
 
 // startup point for the main game 2
-bool MainProjectBootstrap::InitializeFoundation(int argc, char* argv[]) {
+bool GeneralBootstrap::InitializeFoundation(int argc, char* argv[]) {
   SetCommandlineArguments(argc, argv);
 
   HOOKS = ArchHooks::Create();
@@ -707,7 +707,7 @@ bool MainProjectBootstrap::InitializeFoundation(int argc, char* argv[]) {
 }
 
 // startup point for the main game 3
-void MainProjectBootstrap::InitializeGameSystems() {
+void GeneralBootstrap::InitializeGameSystems() {
   GAMEMAN = new GameManager;
   THEME = new ThemeManager;
   ANNOUNCER = new AnnouncerManager;
@@ -765,7 +765,7 @@ void MainProjectBootstrap::InitializeGameSystems() {
 }
 
 // startup point for the main game 4
-bool MainProjectBootstrap::StartForegroundRuntime() {
+bool GeneralBootstrap::StartForegroundRuntime() {
   DestroyLoadingWindow();
 
   if (ArchHooks::UserQuit()) {
@@ -798,7 +798,7 @@ bool MainProjectBootstrap::StartForegroundRuntime() {
   return true;
 }
 
-void MainProjectBootstrap::LoadThemeAssetsIntoLoadingWindow() {
+void GeneralBootstrap::LoadThemeAssetsIntoLoadingWindow() {
   if (g_pLoadingWindow == nullptr) {
     return;
   }
@@ -819,19 +819,19 @@ void MainProjectBootstrap::LoadThemeAssetsIntoLoadingWindow() {
   delete pSurface;
 }
 
-void MainProjectBootstrap::DestroyLoadingWindow() {
+void GeneralBootstrap::DestroyLoadingWindow() {
   RageUtil::SafeDelete(g_pLoadingWindow);
 }
 
-namespace StepMania::MainProject {
+namespace StepMania::General {
 int Run(int argc, char* argv[]) {
-  MainProjectBootstrap bootstrap;
+  GeneralBootstrap bootstrap;
   return bootstrap.Run(argc, argv);
 }
-}  // namespace StepMania::MainProject
+}  // namespace StepMania::General
 
 int sm_main(int argc, char* argv[]) {
-  return StepMania::MainProject::Run(argc, argv);
+  return StepMania::General::Run(argc, argv);
 }
 
 static int LuaFunc_update_centering(lua_State* L) {
