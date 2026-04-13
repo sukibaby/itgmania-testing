@@ -296,6 +296,15 @@ static RageSurface* RageSurface_Load_PNG(
       FAIL_M(ssprintf("%i", type));
   }
   ASSERT(img != nullptr);
+  ASSERT(
+      static_cast<png_uint_32>(img->pitch) >= png_get_rowbytes(png, info_ptr));
+
+  png_byte* pixels = (png_byte*)img->pixels;
+  for (int pass = 0; pass < passes; ++pass) {
+    for (png_uint_32 y = 0; y < height; ++y) {
+      png_byte* row = pixels + img->pitch * y;
+      png_read_row(png, row, nullptr);
+    }
   }
 
   png_destroy_read_struct(&png, &info_ptr, nullptr);
