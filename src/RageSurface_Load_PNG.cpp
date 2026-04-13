@@ -2,9 +2,9 @@
 
 #include <png.h>
 
+#include <climits>
 #include <csetjmp>
 #include <cstdint>
-#include <cstdio>
 #include <cstring>
 #include <string>
 
@@ -12,7 +12,6 @@
 #include "RageLog.h"
 #include "RageSurface.h"
 #include "RageSurface_Load.h"
-#include "RageThreads.h"
 #include "RageUtil.h"
 #include "RageUtil/Endian.h"
 #include "global.h"
