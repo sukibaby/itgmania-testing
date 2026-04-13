@@ -180,7 +180,6 @@ void StepMania::InitializeCurrentGame(const Game* g) {
   }
 }
 
-
 std::string StepMania::SaveScreenshot(
     std::string Dir, bool SaveCompressed, bool MakeSignature,
     std::string NamePrefix, std::string NameSuffix) {
