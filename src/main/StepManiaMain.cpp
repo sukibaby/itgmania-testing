@@ -598,7 +598,14 @@ static void ApplyLogPreferences() {
   Checkpoints::LogCheckpoints(PREFSMAN->m_bLogCheckpoints);
 }
 
-// startup point for the main game 1
+/** @brief Lifecycle Phase 1 of 4
+ *
+ * Bootstrap and main runtime lifecycle.
+ *
+ * Coordinates all startup phases (foundation, game systems, foreground
+ * runtime), runs the main game loop, and ensures proper shutdown. Entry point
+ * for the program after platform-specific main() implementation.
+ */
 int GeneralBootstrap::Run(int argc, char* argv[]) {
   RageThreadRegister thread("Main thread");
   RageException::SetCleanupHandler(HandleException);
@@ -623,7 +630,15 @@ int GeneralBootstrap::Run(int argc, char* argv[]) {
   return 0;
 }
 
-// startup point for the main game 2
+/** @brief Lifecycle Phase 2 of 4
+ *
+ * Initialize core platform, filesystem, and logging infrastructure.
+ *
+ * Command-line handling, platform hooks, Lua manager, file systems, logging,
+ * and preferences are set up in this phase. Everything in this phase must
+ * complete before any game systems can be initialized. Returns false if startup
+ * cannot continue.
+ */
 bool GeneralBootstrap::InitializeFoundation(int argc, char* argv[]) {
   SetCommandlineArguments(argc, argv);
 
@@ -701,7 +716,13 @@ bool GeneralBootstrap::InitializeFoundation(int argc, char* argv[]) {
   return true;
 }
 
-// startup point for the main game 3
+/** @brief Lifecycle Phase 3 of 4
+ *
+ * Create and initialize all game managers and subsystems.
+ *
+ * Initialize most singletons and managers. Everything here requires Phase 2 to
+ * have completed.
+ */
 void GeneralBootstrap::InitializeGameSystems() {
   GAMEMAN = new GameManager;
   THEME = new ThemeManager;
@@ -758,7 +779,16 @@ void GeneralBootstrap::InitializeGameSystems() {
   SONGMAN->UpdateRankingCourses();
 }
 
-// startup point for the main game 4
+/** @brief Lifecycle Phase 4 of 4
+ *
+ * Initialize display, input, screen manager, and enter ready state.
+ *
+ * Creates and runs the renderer, preloads assets, initializes remaining
+ * screens, and validates input device configuration. After this phase, the
+ * application is ready for the main game loop. Returns false if display
+ * initialization fails or user quit is signaled. Everything here requires Phase
+ * 3 to have completed.
+ */
 bool GeneralBootstrap::StartForegroundRuntime() {
   DestroyLoadingWindow();
 
