@@ -26,6 +26,9 @@
 #endif                          // _MSC_VER
 
 namespace {
+constexpr png_size_t kPngReadBufferSize = 64 * 1024;
+
+
 
 struct error_info {
   char* err;
