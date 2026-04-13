@@ -224,7 +224,6 @@ static RageSurface* RageSurface_Load_PNG(
       FAIL_M(ssprintf("%i", color_type));
   }
 
-  CHECKPOINT_M("PNG color analysis about to begin.");
   if (color_type == PNG_COLOR_TYPE_GRAY) {
     png_color_16* trans;
     if (png_get_tRNS(png, info_ptr, nullptr, nullptr, &trans) ==
