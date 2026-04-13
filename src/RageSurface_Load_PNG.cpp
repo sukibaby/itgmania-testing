@@ -88,9 +88,6 @@ static RageSurface* RageSurface_Load_PNG(
   }
 
   RageSurface* volatile img = nullptr;
-  CHECKPOINT_M("Potential issue with png jump about to be analyzed.");
-
-  png_byte** row_pointers = nullptr;
 
   // Throwing an exception in the error callback would make the exception
   // pass through C code, which is undefined behavior.  Works fine on Linux,
@@ -98,9 +95,6 @@ static RageSurface* RageSurface_Load_PNG(
   if (setjmp(png_jmpbuf(png))) {
     png_destroy_read_struct(&png, &info_ptr, nullptr);
     delete img;
-    if (row_pointers != nullptr) {
-      delete[] row_pointers;
-    }
     return nullptr;
   }
 
@@ -233,23 +227,9 @@ static RageSurface* RageSurface_Load_PNG(
       FAIL_M(ssprintf("%i", type));
   }
   ASSERT(img != nullptr);
-
-  row_pointers = new png_byte*[height];
-  CHECKPOINT_M(ssprintf("%p", static_cast<void*>(row_pointers)));
-
-  for (unsigned y = 0; y < height; ++y) {
-    png_byte* p = (png_byte*)img->pixels;
-    row_pointers[y] = p + img->pitch * y;
   }
 
-  png_read_image(png, row_pointers);
-
-  png_read_end(png, info_ptr);
   png_destroy_read_struct(&png, &info_ptr, nullptr);
-
-  if (row_pointers != nullptr) {
-    delete[] row_pointers;
-  }
 
   return img;
 }
