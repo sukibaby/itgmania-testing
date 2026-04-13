@@ -165,16 +165,15 @@ static RageSurface* RageSurface_Load_PNG(
   png_read_info(png, info_ptr);
 
   png_uint_32 width, height;
-  int bit_depth, color_type;
+  int bit_depth, color_type, interlace_type;
   png_get_IHDR(
-      png, info_ptr, &width, &height, &bit_depth, &color_type, nullptr, nullptr,
-      nullptr);
+      png, info_ptr, &width, &height, &bit_depth, &color_type, &interlace_type,
+      nullptr, nullptr);
 
   /* If bHeaderOnly is true, don't allocate the pixel storage space or
    * decompress the image.  Just return an empty surface with only the width and
    * height set. */
   if (bHeaderOnly) {
-    CHECKPOINT_M("Header only png about to be processed.");
     img = CreateSurfaceFrom(width, height, 32, 0, 0, 0, 0, nullptr, width * 4);
     png_destroy_read_struct(&png, &info_ptr, nullptr);
     return img;
@@ -264,7 +263,10 @@ static RageSurface* RageSurface_Load_PNG(
     png_set_filler(png, 0xff, PNG_FILLER_AFTER);
   }
 
-  png_set_interlace_handling(png);
+  int passes = 1;
+  if (interlace_type != PNG_INTERLACE_NONE) {
+    passes = png_set_interlace_handling(png);
+  }
 
   png_read_update_info(png, info_ptr);
 
