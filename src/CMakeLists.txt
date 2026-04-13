@@ -567,8 +567,17 @@ elseif(APPLE)
 else()
   install(TARGETS "${SM_EXE_NAME}" DESTINATION "${SM_INSTALL_DESTINATION}")
   if(LINUX)
+    configure_file("${SM_ROOT_DIR}/CMake/itgmania.appimage.desktop.in"
+       "${CMAKE_CURRENT_BINARY_DIR}/itgmania.appimage.desktop"
+       @ONLY)
     install(FILES "${SM_ROOT_DIR}/itgmania.desktop"
             DESTINATION "${SM_INSTALL_DESTINATION}")
+    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/itgmania.appimage.desktop"
+      DESTINATION "share/applications"
+      RENAME "itgmania.desktop")
+    install(FILES "${SM_ROOT_DIR}/Data/logo.svg"
+      DESTINATION "share/icons/hicolor/scalable/apps"
+      RENAME "itgmania.svg")
     install(PROGRAMS "${SM_ROOT_DIR}/Installer/setup.sh" DESTINATION ".")
   endif()
 endif()

@@ -1,0 +1,42 @@
+set(appimage_executable "${CMAKE_INSTALL_PREFIX}/itgmania/@SM_EXE_NAME@")
+
+if(NOT EXISTS "${appimage_executable}")
+  message(FATAL_ERROR "AppImage executable not found: ${appimage_executable}")
+endif()
+
+set(appimage_lib_dir "${CMAKE_INSTALL_PREFIX}/lib")
+file(MAKE_DIRECTORY "${appimage_lib_dir}")
+
+file(GET_RUNTIME_DEPENDENCIES
+     EXECUTABLES "${appimage_executable}"
+     RESOLVED_DEPENDENCIES_VAR appimage_resolved_deps
+     UNRESOLVED_DEPENDENCIES_VAR appimage_unresolved_deps
+     POST_EXCLUDE_REGEXES
+     ".*/ld-linux[^/]*\\.so[^/]*$"
+     ".*/ld64[^/]*\\.so[^/]*$"
+     ".*/libc\\.so[^/]*$"
+     ".*/libdl\\.so[^/]*$"
+     ".*/libm\\.so[^/]*$"
+     ".*/libpthread\\.so[^/]*$"
+     ".*/librt\\.so[^/]*$"
+     ".*/libresolv\\.so[^/]*$"
+     ".*/libutil\\.so[^/]*$"
+     ".*/libnss_.*\\.so[^/]*$"
+     ".*/libanl\\.so[^/]*$")
+
+if(appimage_unresolved_deps)
+  list(JOIN appimage_unresolved_deps "\n  " appimage_unresolved_deps_text)
+  message(WARNING "Unresolved AppImage runtime dependencies:\n  ${appimage_unresolved_deps_text}")
+endif()
+
+list(REMOVE_DUPLICATES appimage_resolved_deps)
+
+foreach(appimage_dep IN LISTS appimage_resolved_deps)
+  if(appimage_dep MATCHES "^${CMAKE_INSTALL_PREFIX}/")
+    continue()
+  endif()
+
+  file(COPY "${appimage_dep}"
+       DESTINATION "${appimage_lib_dir}"
+       FOLLOW_SYMLINK_CHAIN)
+endforeach()

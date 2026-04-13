@@ -12,12 +12,20 @@ endif()
 set(CPACK_PACKAGE_EXECUTABLES "${SM_EXE_NAME}" "ITGmania")
 set(CPACK_RESOURCE_FILE_README "${SM_ROOT_DIR}/README.md")
 set(CPACK_RESOURCE_FILE_LICENSE "${SM_CMAKE_DIR}/license_install.txt")
+set(CPACK_PROJECT_CONFIG_FILE "${CMAKE_CURRENT_LIST_DIR}/CPackOverrides.cmake")
+
+if(LINUX)
+configure_file("${CMAKE_CURRENT_LIST_DIR}/CPackAppImageDependencies.cmake.in"
+         "${CMAKE_CURRENT_BINARY_DIR}/CPackAppImageDependencies.cmake"
+         @ONLY)
+set(CPACK_APPIMAGE_DEPENDENCIES_SCRIPT
+  "${CMAKE_CURRENT_BINARY_DIR}/CPackAppImageDependencies.cmake")
+endif()
 
 if(WIN32)
   set(CPACK_SYSTEM_NAME "Windows")
   # Generate both NSIS (EXE) and WIX (MSI) installers
   set(CPACK_GENERATOR "NSIS;WIX")
-  set(CPACK_PROJECT_CONFIG_FILE "${CMAKE_CURRENT_LIST_DIR}/CPackOverrides.cmake")
 
   # NSIS (EXE) configuration:
   # By setting these install keys manually, The default directory of "StepMania
@@ -91,7 +99,7 @@ elseif(MACOSX)
     )
   endif()
 else()
-  set(CPACK_GENERATOR TGZ)
+  set(CPACK_GENERATOR "TGZ;AppImage")
   if(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
     set(CPACK_SYSTEM_NAME "Linux")
   elseif(CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
