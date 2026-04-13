@@ -106,10 +106,8 @@ void RageFile_png_read(png_struct* png, png_byte* p, png_size_t size) {
 }
 
 void PNG_Error(png_struct* png, const char* error) {
-  CHECKPOINT_M(ssprintf("PNG error during processing: %s", error));
   error_info* info = (error_info*)png_get_error_ptr(png);
-  strncpy(info->err, error, 1024);
-  info->err[1023] = 0;
+  snprintf(info->err, info->err_size, "%s", error);
   LOG->Trace("loading \"%s\": err: %s", info->fn, info->err);
   longjmp(png_jmpbuf(png), 1);
 }
