@@ -1,3 +1,5 @@
+// StepMania.cpp - Game facing utilities, screenshots, input handling, etc.
+
 #include "StepMania.h"
 
 #include <cstdlib>
