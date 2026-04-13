@@ -229,6 +229,12 @@ static RageSurface* RageSurface_Load_PNG(
     if (png_get_tRNS(png, info_ptr, nullptr, nullptr, &trans) ==
         PNG_INFO_tRNS) {
       iColorKey = trans->gray;
+      if (bit_depth == 16) {
+        iColorKey >>= 8;
+      } else if (bit_depth < 8) {
+        const int max_value = (1 << bit_depth) - 1;
+        iColorKey = (iColorKey * 255 + max_value / 2) / max_value;
+      }
     }
   } else if (color_type == PNG_COLOR_TYPE_PALETTE) {
     int num_palette;
