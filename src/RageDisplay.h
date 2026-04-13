@@ -369,8 +369,8 @@ class RageDisplay {
   enum GraphicsFileFormat {
     SAVE_LOSSLESS,           // bmp
     SAVE_LOSSLESS_SENSIBLE,  // png
-    SAVE_LOSSY_LOW_QUAL,     // jpg
-    SAVE_LOSSY_HIGH_QUAL     // jpg
+    SAVE_LOSSY_LOW_QUAL,     // legacy alias, saved as png
+    SAVE_LOSSY_HIGH_QUAL     // legacy alias, saved as png
   };
   bool SaveScreenshot(const std::string& sPath, GraphicsFileFormat format);
 
