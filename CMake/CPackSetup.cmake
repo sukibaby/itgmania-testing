@@ -17,14 +17,13 @@ if(WIN32)
   set(CPACK_SYSTEM_NAME "Windows")
   # Generate both NSIS (EXE) and WIX (MSI) installers
   set(CPACK_GENERATOR "NSIS;WIX")
+  set(CPACK_PROJECT_CONFIG_FILE "${CMAKE_CURRENT_LIST_DIR}/CPackOverrides.cmake")
 
   # NSIS (EXE) configuration:
   # By setting these install keys manually, The default directory of "StepMania
   # major.minor.patch" is lost. This is currently done to maintain backwards
   # compatibility. However, removing these two will allow for multiple versions
   # of StepMania to be installed relatively cleanly.
-  set(CPACK_PACKAGE_INSTALL_DIRECTORY "ITGmania")
-  set(CPACK_PACKAGE_INSTALL_REGISTRY_KEY "ITGmania")
   set(CPACK_NSIS_EXECUTABLES_DIRECTORY "Program")
   set(CPACK_NSIS_INSTALL_ROOT "C:\\\\Games")
 
@@ -64,9 +63,6 @@ if(WIN32)
       "${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}.0")
   # The GUID is meant to be static; do not change it!
   set(CPACK_WIX_UPGRADE_GUID "a1dcf4ac-e756-4625-8b53-2584e8b7a69a")
-  set(CPACK_WIX_SKIP_PROGRAM_FOLDER ON)
-  set(INSTALL_ROOT "C:/Games/ITGmania")
-  set(CPACK_PACKAGE_INSTALL_DIRECTORY "${INSTALL_ROOT}")
   # WixUI_InstallDir is the template used as the basis for this
   # installer. It provides a typical MSI installer interface.
   # The user experience is identical to that of the NSIS installer
