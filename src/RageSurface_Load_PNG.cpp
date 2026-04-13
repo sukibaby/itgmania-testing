@@ -160,7 +160,7 @@ static RageSurface* RageSurface_Load_PNG(
     return nullptr;
   }
 
-  png_set_read_fn(png, f, RageFile_png_read);
+  png_set_read_fn(png, &read_state, RageFile_png_read);
 
   png_read_info(png, info_ptr);
 
