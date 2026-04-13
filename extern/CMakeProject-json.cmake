@@ -1,7 +1,6 @@
 set(JSON_SRC "jsoncpp/jsoncpp.cpp")
 
-set(JSON_HPP "jsoncpp/json/json-forwards.h"
-             "jsoncpp/json/json.h")
+set(JSON_HPP "jsoncpp/json/json-forwards.h" "jsoncpp/json/json.h")
 
 source_group("" FILES ${JSON_SRC} ${JSON_HPP})
 
@@ -17,5 +16,5 @@ disable_project_warnings("jsoncpp")
 target_include_directories("jsoncpp" PUBLIC "jsoncpp")
 
 if(MSVC)
-  target_compile_definitions("jsoncpp" PRIVATE _CRT_SECURE_NO_WARNINGS)
+    target_compile_definitions("jsoncpp" PRIVATE _CRT_SECURE_NO_WARNINGS)
 endif()

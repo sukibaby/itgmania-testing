@@ -10,7 +10,7 @@ set_property(TARGET "miniz" PROPERTY FOLDER "External Libraries")
 disable_project_warnings("miniz")
 
 if(MSVC)
-  target_compile_definitions("miniz" PRIVATE _MBCS)
+    target_compile_definitions("miniz" PRIVATE _MBCS)
 endif(MSVC)
 
 target_include_directories("miniz" PUBLIC "miniz")
