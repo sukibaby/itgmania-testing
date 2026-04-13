@@ -2,9 +2,9 @@
 
 #include <png.h>
 
+#include <climits>
 #include <csetjmp>
 #include <cstdint>
-#include <cstdio>
 #include <cstring>
 #include <string>
 
@@ -12,7 +12,6 @@
 #include "RageLog.h"
 #include "RageSurface.h"
 #include "RageSurface_Load.h"
-#include "RageThreads.h"
 #include "RageUtil.h"
 #include "RageUtil/Endian.h"
 #include "global.h"
@@ -27,41 +26,114 @@
 #endif                          // _MSC_VER
 
 namespace {
-void RageFile_png_read(png_struct* png, png_byte* p, png_size_t size) {
-  CHECKPOINT_M("Reading the png file.");
-  RageFile* f = (RageFile*)png_get_io_ptr(png);
+constexpr png_size_t kPngReadBufferSize = 64 * 1024;
 
-  int got = f->Read(p, size);
-  if (got == -1) {
-    /* png_error will call PNG_Error, which will longjmp.  If we just pass
-     * GetError().c_str() to it, a temporary may be created; since control
-     * never returns here, it may never be destructed and we could leak. */
-    static char error[256];
-    strncpy(error, f->GetError().c_str(), sizeof(error));
-    error[sizeof(error) - 1] = 0;
-    png_error(png, error);
-  } else if (got != (int)size) {
-    png_error(png, "Unexpected EOF");
+void CopyStringZ(char* dst, size_t dst_size, const char* src) {
+  if (dst_size == 0) {
+    return;
   }
+
+  if (src == nullptr) {
+    dst[0] = 0;
+    return;
+  }
+
+  size_t len = std::strlen(src);
+  if (len >= dst_size) {
+    len = dst_size - 1;
+  }
+
+  if (len != 0) {
+    std::memcpy(dst, src, len);
+  }
+  dst[len] = 0;
 }
 
 struct error_info {
   char* err;
+  size_t err_size;
   const char* fn;
 };
 
+struct png_read_state {
+  RageFile* file;
+  png_size_t buffer_offset;
+  png_size_t buffer_size;
+  png_byte buffer[kPngReadBufferSize];
+};
+
+void PNG_CopyFileError(png_struct* png, RageFile* file) {
+  thread_local char error[256];
+  CopyStringZ(error, sizeof(error), file->GetError().c_str());
+  png_error(png, error);
+}
+
+void PNG_ReadFile(
+    png_struct* png, RageFile* file, png_byte* dst, png_size_t size) {
+  while (size != 0) {
+    size_t request_size = static_cast<size_t>(size);
+    if (request_size > static_cast<size_t>(INT_MAX)) {
+      request_size = INT_MAX;
+    }
+
+    const int got = file->Read(dst, request_size);
+    if (got == -1) {
+      PNG_CopyFileError(png, file);
+    }
+    if (got <= 0) {
+      png_error(png, "Unexpected EOF");
+    }
+
+    dst += got;
+    size -= got;
+  }
+}
+
+void RageFile_png_read(png_struct* png, png_byte* p, png_size_t size) {
+  png_read_state* state = (png_read_state*)png_get_io_ptr(png);
+
+  while (size != 0) {
+    png_size_t available = state->buffer_size - state->buffer_offset;
+    if (available == 0) {
+      if (size >= kPngReadBufferSize) {
+        PNG_ReadFile(png, state->file, p, size);
+        return;
+      }
+
+      const int got = state->file->Read(state->buffer, sizeof(state->buffer));
+      if (got == -1) {
+        PNG_CopyFileError(png, state->file);
+      }
+      if (got <= 0) {
+        png_error(png, "Unexpected EOF");
+      }
+
+      state->buffer_offset = 0;
+      state->buffer_size = static_cast<png_size_t>(got);
+      available = state->buffer_size;
+    }
+
+    png_size_t copy_size = available;
+    if (copy_size > size) {
+      copy_size = size;
+    }
+
+    std::memcpy(p, state->buffer + state->buffer_offset, copy_size);
+    state->buffer_offset += copy_size;
+    p += copy_size;
+    size -= copy_size;
+  }
+}
+
 void PNG_Error(png_struct* png, const char* error) {
-  CHECKPOINT_M(ssprintf("PNG error during processing: %s", error));
   error_info* info = (error_info*)png_get_error_ptr(png);
-  strncpy(info->err, error, 1024);
-  info->err[1023] = 0;
+  CopyStringZ(info->err, info->err_size, error);
   LOG->Trace("loading \"%s\": err: %s", info->fn, info->err);
   longjmp(png_jmpbuf(png), 1);
 }
 
 void PNG_Warning(png_struct* png, const char* warning) {
-  CHECKPOINT_M(ssprintf("PNG warning during processing: %s", warning));
-  error_info* info = (error_info*)png_get_io_ptr(png);
+  error_info* info = (error_info*)png_get_error_ptr(png);
   LOG->Trace("loading \"%s\": warning: %s", info->fn, warning);
 }
 
@@ -71,27 +143,32 @@ static RageSurface* RageSurface_Load_PNG(
     RageFile* f, const char* fn, char errorbuf[1024], bool bHeaderOnly) {
   error_info error;
   error.err = errorbuf;
+  error.err_size = 1024;
   error.fn = fn;
+
+  png_read_state read_state;
+  read_state.file = f;
+  read_state.buffer_offset = 0;
+  read_state.buffer_size = 0;
 
   png_struct* png = png_create_read_struct(
       PNG_LIBPNG_VER_STRING, &error, PNG_Error, PNG_Warning);
 
   if (png == nullptr) {
-    sprintf(errorbuf, "creating png_create_read_struct failed");
+    CopyStringZ(
+        errorbuf, error.err_size, "creating png_create_read_struct failed");
     return nullptr;
   }
 
   png_info* info_ptr = png_create_info_struct(png);
   if (info_ptr == nullptr) {
     png_destroy_read_struct(&png, nullptr, nullptr);
-    sprintf(errorbuf, "creating png_create_info_struct failed");
+    CopyStringZ(
+        errorbuf, error.err_size, "creating png_create_info_struct failed");
     return nullptr;
   }
 
   RageSurface* volatile img = nullptr;
-  CHECKPOINT_M("Potential issue with png jump about to be analyzed.");
-
-  png_byte** row_pointers = nullptr;
 
   // Throwing an exception in the error callback would make the exception
   // pass through C code, which is undefined behavior.  Works fine on Linux,
@@ -99,27 +176,23 @@ static RageSurface* RageSurface_Load_PNG(
   if (setjmp(png_jmpbuf(png))) {
     png_destroy_read_struct(&png, &info_ptr, nullptr);
     delete img;
-    if (row_pointers != nullptr) {
-      delete[] row_pointers;
-    }
     return nullptr;
   }
 
-  png_set_read_fn(png, f, RageFile_png_read);
+  png_set_read_fn(png, &read_state, RageFile_png_read);
 
   png_read_info(png, info_ptr);
 
   png_uint_32 width, height;
-  int bit_depth, color_type;
+  int bit_depth, color_type, interlace_type;
   png_get_IHDR(
-      png, info_ptr, &width, &height, &bit_depth, &color_type, nullptr, nullptr,
-      nullptr);
+      png, info_ptr, &width, &height, &bit_depth, &color_type, &interlace_type,
+      nullptr, nullptr);
 
   /* If bHeaderOnly is true, don't allocate the pixel storage space or
    * decompress the image.  Just return an empty surface with only the width and
    * height set. */
   if (bHeaderOnly) {
-    CHECKPOINT_M("Header only png about to be processed.");
     img = CreateSurfaceFrom(width, height, 32, 0, 0, 0, 0, nullptr, width * 4);
     png_destroy_read_struct(&png, &info_ptr, nullptr);
     return img;
@@ -134,7 +207,7 @@ static RageSurface* RageSurface_Load_PNG(
   }
 
   /* These are set for type == PALETTE. */
-  RageSurfaceColor colors[256];
+  RageSurfaceColor colors[256] = {};
   int iColorKey = -1;
 
   /* We import three types of files: paletted, RGBX and RGBA.  The only
@@ -170,12 +243,17 @@ static RageSurface* RageSurface_Load_PNG(
       FAIL_M(ssprintf("%i", color_type));
   }
 
-  CHECKPOINT_M("PNG color analysis about to begin.");
   if (color_type == PNG_COLOR_TYPE_GRAY) {
     png_color_16* trans;
     if (png_get_tRNS(png, info_ptr, nullptr, nullptr, &trans) ==
         PNG_INFO_tRNS) {
       iColorKey = trans->gray;
+      if (bit_depth == 16) {
+        iColorKey >>= 8;
+      } else if (bit_depth < 8) {
+        const int max_value = (1 << bit_depth) - 1;
+        iColorKey = (iColorKey * 255 + max_value / 2) / max_value;
+      }
     }
   } else if (color_type == PNG_COLOR_TYPE_PALETTE) {
     int num_palette;
@@ -209,7 +287,10 @@ static RageSurface* RageSurface_Load_PNG(
     png_set_filler(png, 0xff, PNG_FILLER_AFTER);
   }
 
-  png_set_interlace_handling(png);
+  int passes = 1;
+  if (interlace_type != PNG_INTERLACE_NONE) {
+    passes = png_set_interlace_handling(png);
+  }
 
   png_read_update_info(png, info_ptr);
 
@@ -234,23 +315,18 @@ static RageSurface* RageSurface_Load_PNG(
       FAIL_M(ssprintf("%i", type));
   }
   ASSERT(img != nullptr);
+  ASSERT(
+      static_cast<png_uint_32>(img->pitch) >= png_get_rowbytes(png, info_ptr));
 
-  row_pointers = new png_byte*[height];
-  CHECKPOINT_M(ssprintf("%p", static_cast<void*>(row_pointers)));
-
-  for (unsigned y = 0; y < height; ++y) {
-    png_byte* p = (png_byte*)img->pixels;
-    row_pointers[y] = p + img->pitch * y;
+  png_byte* pixels = (png_byte*)img->pixels;
+  for (int pass = 0; pass < passes; ++pass) {
+    for (png_uint_32 y = 0; y < height; ++y) {
+      png_byte* row = pixels + img->pitch * y;
+      png_read_row(png, row, nullptr);
+    }
   }
 
-  png_read_image(png, row_pointers);
-
-  png_read_end(png, info_ptr);
   png_destroy_read_struct(&png, &info_ptr, nullptr);
-
-  if (row_pointers != nullptr) {
-    delete[] row_pointers;
-  }
 
   return img;
 }
