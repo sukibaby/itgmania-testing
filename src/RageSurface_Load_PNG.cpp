@@ -2,6 +2,7 @@
 
 #include <png.h>
 
+#include <algorithm>
 #include <climits>
 #include <csetjmp>
 #include <cstdint>
@@ -52,12 +53,7 @@ void PNG_CopyFileError(png_struct* png, RageFile* file) {
 void PNG_ReadFile(
     png_struct* png, RageFile* file, png_byte* dst, png_size_t size) {
   while (size != 0) {
-    size_t request_size = static_cast<size_t>(size);
-    if (request_size > static_cast<size_t>(INT_MAX)) {
-      request_size = INT_MAX;
-    }
-
-    const int got = file->Read(dst, request_size);
+    const int got = file->Read(dst, std::min<size_t>(size, INT_MAX));
     if (got == -1) {
       PNG_CopyFileError(png, file);
     }
@@ -94,11 +90,7 @@ void RageFile_png_read(png_struct* png, png_byte* p, png_size_t size) {
       available = state->buffer_size;
     }
 
-    png_size_t copy_size = available;
-    if (copy_size > size) {
-      copy_size = size;
-    }
-
+    const png_size_t copy_size = std::min(available, size);
     std::memcpy(p, state->buffer + state->buffer_offset, copy_size);
     state->buffer_offset += copy_size;
     p += copy_size;
