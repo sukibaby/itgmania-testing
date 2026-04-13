@@ -20,6 +20,7 @@
 #include "RageSurface.h"
 #include "RageSurfaceUtils_Zoom.h"
 #include "RageSurface_Save_BMP.h"
+#include "RageSurface_Save_JPEG.h"
 #include "RageSurface_Save_PNG.h"
 #include "RageTimer.h"
 #include "RageTypes.h"
@@ -709,14 +710,16 @@ bool RageDisplay::SaveScreenshot(
   std::string strError = "";
   switch (format) {
     case SAVE_LOSSLESS:
-      bSuccess = RageSurfaceUtils::SaveBMP(surface, out, strError);
+      bSuccess = RageSurfaceUtils::SaveBMP(surface, out);
       break;
     case SAVE_LOSSLESS_SENSIBLE:
       bSuccess = RageSurfaceUtils::SavePNG(surface, out, strError);
       break;
     case SAVE_LOSSY_LOW_QUAL:
+      bSuccess = RageSurfaceUtils::SaveJPEG(surface, out, false);
+      break;
     case SAVE_LOSSY_HIGH_QUAL:
-      bSuccess = RageSurfaceUtils::SavePNG(surface, out, strError);
+      bSuccess = RageSurfaceUtils::SaveJPEG(surface, out, true);
       break;
     default:
       LOG->Warn(
@@ -729,8 +732,8 @@ bool RageDisplay::SaveScreenshot(
 
   if (!bSuccess) {
     LOG->Warn(
-    "SaveScreenshot: Failed to save screenshot to %s: %s", sPath.c_str(),
-    strError.empty() ? out.GetError().c_str() : strError.c_str());
+        "SaveScreenshot: Failed to save screenshot to %s: %s", sPath.c_str(),
+        out.GetError().c_str());
   }
 
   return bSuccess;

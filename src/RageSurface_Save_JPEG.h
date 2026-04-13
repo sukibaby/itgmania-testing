@@ -1,19 +1,19 @@
-/* RageSurface_Save_BMP - Save a RageSurface to a BMP. */
+/* RageSurface_Save_JPEG - Save a RageSurface to a JPEG. */
 
-#ifndef RAGE_SURFACE_SAVE_BMP_H
-#define RAGE_SURFACE_SAVE_BMP_H
+#ifndef RAGE_SURFACE_SAVE_JPEG_H
+#define RAGE_SURFACE_SAVE_JPEG_H
 
 struct RageSurface;
 class RageFile;
 /** @brief Utility functions for the RageSurfaces. */
 namespace RageSurfaceUtils {
-bool SaveBMP(RageSurface* surface, RageFile& f);
+bool SaveJPEG(RageSurface* surface, RageFile& f, bool bHighQual = true);
 };
 
 #endif
 
 /*
- * (c) 2004 Glenn Maynard
+ * (c) 2004 Chris Danford
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
