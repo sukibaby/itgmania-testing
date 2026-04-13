@@ -204,7 +204,8 @@ std::string StepMania::SaveScreenshot(
     fmt = RageDisplay::SAVE_LOSSLESS_SENSIBLE;
   }
 
-  std::string FileName = FileNameNoExtension + ".png";
+  std::string FileName =
+      FileNameNoExtension + "." + (SaveCompressed ? "jpg" : "png");
   std::string Path = Dir + FileName;
 
   if (!DISPLAY->SaveScreenshot(Path, fmt)) {
