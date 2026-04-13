@@ -25,21 +25,21 @@
 # the License.
 # =============================================================================
 
-find_path(XRANDR_INCLUDE_DIRS
-          NAMES X11/extensions/Xrandr.h
-          PATH_SUFFIXES X11/extensions
-          PATHS /opt/X11/include
-          DOC "The XRANDR include directory")
+find_path(
+    XRANDR_INCLUDE_DIRS
+    NAMES X11/extensions/Xrandr.h
+    PATH_SUFFIXES X11/extensions
+    PATHS /opt/X11/include
+    DOC "The XRANDR include directory")
 
-find_library(XRANDR_LIBRARIES
-             NAMES Xrandr
-             PATHS /opt/X11/lib
-             DOC "The XRANDR library")
+find_library(
+    XRANDR_LIBRARIES
+    NAMES Xrandr
+    PATHS /opt/X11/lib
+    DOC "The XRANDR library")
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(XRANDR
-                                  DEFAULT_MSG
-                                  XRANDR_LIBRARIES
+find_package_handle_standard_args(XRANDR DEFAULT_MSG XRANDR_LIBRARIES
                                   XRANDR_INCLUDE_DIRS)
 
 mark_as_advanced(XRANDR_INCLUDE_DIRS XRANDR_LIBRARIES)

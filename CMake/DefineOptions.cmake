@@ -24,8 +24,7 @@ option(WITH_CLUB_FANTASTIC "Include Club Fantastic songs." OFF)
 # Turn this on for portable macOS builds that keep game resources outside the
 # .app bundle.
 option(WITH_MACOS_PORTABLE_APP
-       "Build a macOS .app without bundling Contents/Resources game data."
-       OFF)
+       "Build a macOS .app without bundling Contents/Resources game data." OFF)
 
 # Turn this on to compile tomcrypt with no assembly data. This is a portable
 # mode.
@@ -34,41 +33,39 @@ option(WITH_PORTABLE_TOMCRYPT
 
 # Turn this on to not use the ROLC assembly featurs of tomcrypt. If
 # WITH_PORTABLE_TOMCRYPT is ON, this will automatically have no effect.
-option(
-  WITH_NO_ROLC_TOMCRYPT
-  "Build without the ROLC assembly instructions for tomcrypt."
-  OFF)
+option(WITH_NO_ROLC_TOMCRYPT
+       "Build without the ROLC assembly instructions for tomcrypt." OFF)
 
 # Turn this option on to log every segment added or removed.
 option(WITH_LOGGING_TIMING_DATA
        "Build with logging all Add and Erase Segment calls." OFF)
 
 if(NOT MSVC)
-  # Change this number to utilize a different number of jobs for building
-  # FFMPEG.
-  option(WITH_FFMPEG_JOBS "Build FFMPEG with this many jobs." 2)
+    # Change this number to utilize a different number of jobs for building
+    # FFMPEG.
+    option(WITH_FFMPEG_JOBS "Build FFMPEG with this many jobs." 2)
 else()
-  # Turn this option on to enable using the Texture Font Generator.
-  option(
-    WITH_TEXTURE_GENERATOR
-    "Build with the Texture Font Generator. Ensure the MFC library is installed."
-    OFF)
+    # Turn this option on to enable using the Texture Font Generator.
+    option(
+        WITH_TEXTURE_GENERATOR
+        "Build with the Texture Font Generator. Ensure the MFC library is installed."
+        OFF)
 endif()
 
 if(LINUX)
-  option(WITH_PROFILING "Build with Profiling Support." OFF)
-  option(WITH_GLES2 "Build with OpenGL ES 2.0 Support." ON)
-  option(WITH_GTK3 "Build with GTK3 Support." ON)
-  option(WITH_PARALLEL_PORT "Build with Parallel Lights I/O Support." OFF)
-  option(WITH_CRASH_HANDLER "Build with Crash Handler Support." ON)
-  option(WITH_XINERAMA
-         "Build using libXinerama to query for monitor numbers (if available)."
-         ON)
-  option(WITH_ALSA "Build with ALSA support" ON)
-  option(WITH_PULSEAUDIO "Build with PulseAudio support" ON)
-  option(WITH_JACK "Build with JACK support" OFF)
-  option(WITH_XRANDR "Build with Xrandr support" ON)
-  option(WITH_LIBXTST "Build with libXtst support" ON)
-  option(WITH_X11 "Build with X11 support" ON)
+    option(WITH_PROFILING "Build with Profiling Support." OFF)
+    option(WITH_GLES2 "Build with OpenGL ES 2.0 Support." ON)
+    option(WITH_GTK3 "Build with GTK3 Support." ON)
+    option(WITH_PARALLEL_PORT "Build with Parallel Lights I/O Support." OFF)
+    option(WITH_CRASH_HANDLER "Build with Crash Handler Support." ON)
+    option(
+        WITH_XINERAMA
+        "Build using libXinerama to query for monitor numbers (if available)."
+        ON)
+    option(WITH_ALSA "Build with ALSA support" ON)
+    option(WITH_PULSEAUDIO "Build with PulseAudio support" ON)
+    option(WITH_JACK "Build with JACK support" OFF)
+    option(WITH_XRANDR "Build with Xrandr support" ON)
+    option(WITH_LIBXTST "Build with libXtst support" ON)
+    option(WITH_X11 "Build with X11 support" ON)
 endif()
-

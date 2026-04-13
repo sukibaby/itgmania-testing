@@ -2,13 +2,13 @@
 # are done.
 
 if(UNIX)
-  if(CMAKE_SYSTEM_NAME MATCHES "Linux")
-    set(OSS_HDR_NAME "linux/soundcard.h")
-  else(CMAKE_SYSTEM_NAME MATCHES "Linux")
-    if(CMAKE_SYSTEM_NAME MATCHES "FreeBSD")
-      set(OSS_HDR_NAME "sys/soundcard.h")
-    endif(CMAKE_SYSTEM_NAME MATCHES "FreeBSD")
-  endif(CMAKE_SYSTEM_NAME MATCHES "Linux")
+    if(CMAKE_SYSTEM_NAME MATCHES "Linux")
+        set(OSS_HDR_NAME "linux/soundcard.h")
+    else(CMAKE_SYSTEM_NAME MATCHES "Linux")
+        if(CMAKE_SYSTEM_NAME MATCHES "FreeBSD")
+            set(OSS_HDR_NAME "sys/soundcard.h")
+        endif(CMAKE_SYSTEM_NAME MATCHES "FreeBSD")
+    endif(CMAKE_SYSTEM_NAME MATCHES "Linux")
 endif(UNIX)
 
 find_path(OSS_INCLUDE_DIR "${OSS_HDR_NAME}" "/usr/include" "/usr/local/include")
