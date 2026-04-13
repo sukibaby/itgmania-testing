@@ -14,9 +14,11 @@ set(CPACK_RESOURCE_FILE_README "${SM_ROOT_DIR}/README.md")
 set(CPACK_RESOURCE_FILE_LICENSE "${SM_CMAKE_DIR}/license_install.txt")
 
 if(WIN32)
-  set(CPACK_GENERATOR NSIS)
   set(CPACK_SYSTEM_NAME "Windows")
+  # Generate both NSIS (EXE) and WIX (MSI) installers
+  set(CPACK_GENERATOR "NSIS;WIX")
 
+  # NSIS (EXE) configuration:
   # By setting these install keys manually, The default directory of "StepMania
   # major.minor.patch" is lost. This is currently done to maintain backwards
   # compatibility. However, removing these two will allow for multiple versions
@@ -50,10 +52,34 @@ if(WIN32)
                  CPACK_NSIS_MUI_WELCOMEFINISHPAGE_BITMAP
                  "${CPACK_NSIS_MUI_WELCOMEFINISHPAGE_BITMAP}")
 
-  # Custom items for nsis go here.
+  # Custom items for NSIS go here.
   set(CPACK_SM_NSIS_PRODUCT_ID "ITGmania")
   set(CPACK_SM_NSIS_PRODUCT_VERSION "${SM_VERSION_TRADITIONAL}.0")
   set(CPACK_SM_NSIS_GIT_VERSION "${SM_VERSION_GIT}")
+
+  # WiX (MSI) configuration:
+  # https://cmake.org/cmake/help/latest/cpack_gen/wix.html
+  # WiX represents the version in the x.x.x.x format, so we append a .0 
+  set(CPACK_PACKAGE_VERSION
+      "${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}.0")
+  # The GUID is meant to be static; do not change it!
+  set(CPACK_WIX_UPGRADE_GUID "a1dcf4ac-e756-4625-8b53-2584e8b7a69a")
+  set(CPACK_WIX_SKIP_PROGRAM_FOLDER ON)
+  set(INSTALL_ROOT "C:/Games/ITGmania")
+  set(CPACK_PACKAGE_INSTALL_DIRECTORY "${INSTALL_ROOT}")
+  # WixUI_InstallDir is the template used as the basis for this
+  # installer. It provides a typical MSI installer interface.
+  # The user experience is identical to that of the NSIS installer
+  # in exe format as traditionally used in SM5/ITGm.
+  set(CPACK_WIX_UI_REF "WixUI_InstallDir")
+  set(CPACK_WIX_PRODUCT_ICON "${SM_INSTALLER_DIR}/wix/install.ico")
+  set(CPACK_WIX_UI_BANNER "${SM_INSTALLER_DIR}/wix/header.bmp")
+  set(CPACK_WIX_UI_DIALOG "${SM_INSTALLER_DIR}/wix/welcome.bmp")
+  set(CPACK_WIX_PROGRAM_MENU_FOLDER "ITGmania")
+  set(CPACK_WIX_HELP_LINK "https://github.com/itgmania/itgmania/issues")
+  set(CPACK_WIX_PRODUCT_NAME "${SM_EXE_NAME} ${CPACK_PACKAGE_VERSION}")
+  set(CPACK_WIX_URL_INFO_ABOUT "https://www.itgmania.com/")
+  set(CPACK_WIX_PROPERTY_ARPURLINFOABOUT "https://www.itgmania.com/")
 elseif(MACOSX)
   set(CPACK_GENERATOR DragNDrop)
   set(CPACK_DMG_VOLUME_NAME "${CPACK_PACKAGE_NAME} ${CPACK_PACKAGE_VERSION}")
