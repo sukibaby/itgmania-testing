@@ -329,13 +329,26 @@ void GetGlobalRandomMoviePaths(
     const Song* pSong, const std::string& sMatch,
     std::vector<std::string>& vsPathsOut,
     bool bTryInsideOfSongGroupAndGenreFirst, bool bTryInsideOfSongGroupFirst) {
+  LOG->Trace(
+      "GetGlobalRandomMoviePaths: sMatch=%s, "
+      "bTryInsideOfSongGroupAndGenreFirst=%d, "
+      "bTryInsideOfSongGroupFirst=%d, Song=%s",
+      sMatch.c_str(), bTryInsideOfSongGroupAndGenreFirst,
+      bTryInsideOfSongGroupFirst,
+      (pSong ? pSong->m_sGroupName.c_str() : "(null)"));
+  
   // Check for an exact match
   if (!sMatch.empty()) {
+    LOG->Trace("Searching for exact match: %s", sMatch.c_str());
     GetDirListing(
         SONG_MOVIES_DIR + pSong->m_sGroupName + "/" + sMatch, vsPathsOut, false,
         true);  // search in SongMovies/SongGroupName/ first
+    LOG->Trace("  After SongMovies/SongGroupName search: %d results",
+               (int)vsPathsOut.size());
     GetDirListing(SONG_MOVIES_DIR + sMatch, vsPathsOut, false, true);
+    LOG->Trace("  After SongMovies search: %d results", (int)vsPathsOut.size());
     GetDirListing(RANDOMMOVIES_DIR + sMatch, vsPathsOut, false, true);
+    LOG->Trace("  After RandomMovies search: %d results", (int)vsPathsOut.size());
     if (vsPathsOut.empty() && sMatch != NO_SONG_BG_FILE) {
       LOG->Warn("Background missing: %s", sMatch.c_str());
     }
@@ -345,23 +358,33 @@ void GetGlobalRandomMoviePaths(
   // Search for the most appropriate background
   std::set<std::string> ssFileNameWhitelist;
   if (bTryInsideOfSongGroupAndGenreFirst && pSong && !pSong->m_sGenre.empty()) {
+    LOG->Trace("Attempting genre-based filtering for genre: %s",
+               pSong->m_sGenre.c_str());
     GetFilterToFileNames(RANDOMMOVIES_DIR, pSong, ssFileNameWhitelist);
+    LOG->Trace("  Genre filter whitelist size: %d", (int)ssFileNameWhitelist.size());
   }
 
   std::vector<std::string> vsDirsToTry;
   if (bTryInsideOfSongGroupFirst && pSong) {
     ASSERT(!pSong->m_sGroupName.empty());
     vsDirsToTry.push_back(RANDOMMOVIES_DIR + pSong->m_sGroupName + "/");
+    LOG->Trace("Added song group dir to search: %s",
+               (RANDOMMOVIES_DIR + pSong->m_sGroupName + "/").c_str());
   }
   vsDirsToTry.push_back(RANDOMMOVIES_DIR);
+  LOG->Trace("Will search %d directories", (int)vsDirsToTry.size());
 
   for (const std::string& sDir : vsDirsToTry) {
+    LOG->Trace("Searching directory: %s", sDir.c_str());
+    size_t uBefore = vsPathsOut.size();
     GetDirListing(sDir + "*.ogv", vsPathsOut, false, true);
     GetDirListing(sDir + "*.avi", vsPathsOut, false, true);
     GetDirListing(sDir + "*.mpg", vsPathsOut, false, true);
     GetDirListing(sDir + "*.mpeg", vsPathsOut, false, true);
+    LOG->Trace("  Found %d files", (int)(vsPathsOut.size() - uBefore));
 
     if (!ssFileNameWhitelist.empty()) {
+      LOG->Trace("  Applying whitelist filter...");
       std::vector<std::string> vsMatches;
       for (const std::string& s : vsPathsOut) {
         std::string sBasename = Basename(s);
@@ -371,18 +394,25 @@ void GetGlobalRandomMoviePaths(
           vsMatches.push_back(s);
         }
       }
+      LOG->Trace("    Whitelist matches: %d", (int)vsMatches.size());
       // If we found any that match the whitelist, use only them.
       // If none match the whitelist, ignore the whitelist..
       if (!vsMatches.empty()) {
         vsPathsOut = vsMatches;
+        LOG->Trace("    Using whitelist-filtered results");
+      } else {
+        LOG->Trace("    No whitelist matches; keeping all results");
       }
     }
 
     if (!vsPathsOut.empty()) {
       // Return only the first directory found
+      LOG->Trace("Found videos in %s, returning %d paths", sDir.c_str(),
+                 (int)vsPathsOut.size());
       return;
     }
   }
+  LOG->Trace("No random movies found in any directory");
 }
 
 }  // namespace
@@ -397,12 +427,17 @@ void BackgroundUtil::GetGlobalRandomMovies(
   GetGlobalRandomMoviePaths(
       pSong, sMatch, vsPathsOut, bTryInsideOfSongGroupAndGenreFirst,
       bTryInsideOfSongGroupFirst);
+  LOG->Trace("After GetGlobalRandomMoviePaths: %d paths found",
+             (int)vsPathsOut.size());
 
   for (const std::string& s : vsPathsOut) {
     std::string sName = Right(s, s.size() - RANDOMMOVIES_DIR.size() - 1);
     vsNamesOut.push_back(sName);
   }
+  LOG->Trace("After name extraction: %d names", (int)vsNamesOut.size());
+  
   StripCvsAndSvn(vsPathsOut, vsNamesOut);
+  LOG->Trace("After StripCvsAndSvn: %d paths remaining", (int)vsPathsOut.size());
 }
 
 void BackgroundUtil::BakeAllBackgroundChanges(Song* pSong) {
