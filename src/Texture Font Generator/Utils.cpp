@@ -1,7 +1,11 @@
 #include "Utils.h"
 
 #include <algorithm>
+#include <cerrno>
 #include <cstddef>
+#include <cstring>
+
+#include "stb_image_write.h"
 
 Surface::Surface(const Surface& cpy) {
   iWidth = cpy.iWidth;
@@ -93,88 +97,85 @@ void GetBounds(const Surface* pSurf, RECT* out) {
   }
 }
 
-#pragma include_alias("zlib/zlib.h", "../zlib/zlib.h")
-#include "png.h"
-#if defined(_MSC_VER)
-#pragma warning(disable : 4611) /* interaction between '_setjmp' and C++ \
-                                   object destruction is non-portable */
-#endif
-
-static void File_png_write(
-    png_struct* pPng, png_byte* pData, png_size_t iSize) {
-  FILE* f = (FILE*)png_get_io_ptr(pPng);
-  size_t iGot = fwrite(pData, (int)iSize, 1, f);
-  if (iGot == 0) {
-    png_error(pPng, strerror(errno));
+namespace {
+void CopyStringZ(char* dst, size_t dst_size, const char* src) {
+  if (dst_size == 0) {
+    return;
   }
+
+  if (src == NULL) {
+    dst[0] = 0;
+    return;
+  }
+
+  size_t len = std::strlen(src);
+  if (len >= dst_size) {
+    len = dst_size - 1;
+  }
+
+  if (len != 0) {
+    std::memcpy(dst, src, len);
+  }
+  dst[len] = 0;
 }
 
-static void File_png_flush(png_struct* pPng) {
-  FILE* f = (FILE*)png_get_io_ptr(pPng);
-  int iGot = fflush(f);
-  if (iGot == -1) {
-    png_error(pPng, strerror(errno));
-  }
-}
-
-struct error_info {
-  char* szErr;
+struct StbWriteState {
+  FILE* file;
+  char* error;
+  bool failed;
 };
 
-static void PNG_Error(png_struct* pPng, const char* szError) {
-  error_info* pInfo = (error_info*)png_get_error_ptr(pPng);
-  strncpy(pInfo->szErr, szError, 1024);
-  pInfo->szErr[1023] = 0;
-  longjmp(png_jmpbuf(pPng), 1);
+void FileWriteCallback(void* context, void* data, int size) {
+  StbWriteState* state = (StbWriteState*)context;
+  if (state->failed || size <= 0) {
+    return;
+  }
+
+  size_t wrote = fwrite(data, 1, (size_t)size, state->file);
+  if (wrote == (size_t)size) {
+    return;
+  }
+
+  state->failed = true;
+  CopyStringZ(state->error, 1024, std::strerror(errno));
 }
+}  // namespace
 
-static void PNG_Warning(png_struct* png, const char* warning) {}
-
-/* Since libpng forces us to use longjmp, this function shouldn't create any C++
- * objects, and needs to watch out for memleaks. */
 bool SavePNG(FILE* f, char szErrorbuf[1024], const Surface* pSurf) {
-  /*	RageSurfaceUtils::ConvertSurface( pImgIn, pImg, pImgIn->w, pImgIn->h,
-     32, Swap32BE( 0xFF000000 ), Swap32BE( 0x00FF0000 ), Swap32BE( 0x0000FF00 ),
-                          Swap32BE( 0x000000FF ) );
-  */
-  error_info error;
-  error.szErr = szErrorbuf;
+  szErrorbuf[0] = 0;
 
-  png_struct* pPng = png_create_write_struct(
-      PNG_LIBPNG_VER_STRING, &error, PNG_Error, PNG_Warning);
-  if (pPng == NULL) {
-    sprintf(szErrorbuf, "creating png_create_write_struct failed");
+  if (f == NULL) {
+    CopyStringZ(szErrorbuf, 1024, "file is not open");
     return false;
   }
 
-  png_info* pInfo = png_create_info_struct(pPng);
-  if (pInfo == NULL) {
-    png_destroy_write_struct(&pPng, NULL);
-    sprintf(szErrorbuf, "creating png_create_info_struct failed");
+  StbWriteState state;
+  state.file = f;
+  state.error = szErrorbuf;
+  state.failed = false;
+
+  int previous_compression = stbi_write_png_compression_level;
+  stbi_write_png_compression_level = 1;
+
+  int wrote = stbi_write_png_to_func(
+      FileWriteCallback, &state, pSurf->iWidth, pSurf->iHeight, 4, pSurf->pRGBA,
+      pSurf->iPitch);
+
+  stbi_write_png_compression_level = previous_compression;
+
+  if (state.failed) {
     return false;
   }
 
-  if (setjmp(png_jmpbuf(pPng))) {
-    png_destroy_write_struct(&pPng, &pInfo);
+  if (wrote == 0) {
+    CopyStringZ(szErrorbuf, 1024, "stb_image_write failed to write PNG");
     return false;
   }
 
-  png_set_write_fn(pPng, f, File_png_write, File_png_flush);
-  png_set_compression_level(pPng, 1);
-
-  png_set_IHDR(
-      pPng, pInfo, pSurf->iWidth, pSurf->iHeight, 8, PNG_COLOR_TYPE_RGBA,
-      PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
-
-  png_write_info(pPng, pInfo);
-
-  png_byte* pixels = (png_byte*)pSurf->pRGBA;
-  for (int y = 0; y < pSurf->iHeight; y++) {
-    png_write_row(pPng, pixels + pSurf->iPitch * y);
+  if (fflush(f) != 0) {
+    CopyStringZ(szErrorbuf, 1024, std::strerror(errno));
+    return false;
   }
-
-  png_write_end(pPng, pInfo);
-  png_destroy_write_struct(&pPng, &pInfo);
 
   return true;
 }
