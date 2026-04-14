@@ -322,6 +322,18 @@ void BackgroundUtil::GetGlobalBGAnimations(
 }
 
 namespace {
+void GetMovieDirListing(
+    const std::string& sDir, std::vector<std::string>& vsPathsOut) {
+  std::vector<std::string> vsCandidates;
+  GetDirListing(sDir + "*", vsCandidates, false, true);
+
+  for (const std::string& sPath : vsCandidates) {
+    if (ActorUtil::GetFileType(sPath) == FT_Movie) {
+      vsPathsOut.push_back(sPath);
+    }
+  }
+}
+
 /**
  * @brief Fetches the appropriate path(s) for global random movies.
  */
