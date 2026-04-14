@@ -564,7 +564,9 @@ void BackgroundImpl::LoadFromSong(const Song* pSong) {
 
   // Choose a bunch of backgrounds that we'll use for the random file marker
   {
-    LOG->Warn("Determining random backgrounds for song '%s'", pSong->GetSongDir().c_str());
+    LOG->Warn(
+        "Determining random backgrounds for song '%s'",
+        pSong->GetSongDir().c_str());
     std::vector<std::string> vsThrowAway, vsNames;
     switch (g_RandomBackgroundMode) {
       default:
@@ -582,11 +584,11 @@ void BackgroundImpl::LoadFromSong(const Song* pSong) {
         BackgroundUtil::GetGlobalRandomMovies(
             pSong, "", vsThrowAway, vsNames, true, true);
         break;
-
     }
 
-
-LOG->Warn("Found %i random backgrounds for song '%s'", (int)vsNames.size(), pSong->GetSongDir().c_str());
+    LOG->Warn(
+        "Found %i random backgrounds for song '%s'", (int)vsNames.size(),
+        pSong->GetSongDir().c_str());
 
     // Pick the same random items every time the song is played.
     RandomGen rnd(GetHashForString(pSong->GetSongDir()));

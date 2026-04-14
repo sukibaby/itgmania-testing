@@ -322,6 +322,7 @@ void BackgroundUtil::GetGlobalBGAnimations(
 }
 
 namespace {
+
 std::string NormalizeRandomMoviePath(const std::string& sPath) {
   const std::string sMountedRandomMoviesDir = "/" + RANDOMMOVIES_DIR;
   size_t iMountedDir = sPath.find(sMountedRandomMoviesDir);
@@ -355,18 +356,15 @@ void GetGlobalRandomMoviePaths(
     const Song* pSong, const std::string& sMatch,
     std::vector<std::string>& vsPathsOut,
     bool bTryInsideOfSongGroupAndGenreFirst, bool bTryInsideOfSongGroupFirst) {
-  const std::string sNormalizedMatch = NormalizeRandomMoviePath(sMatch);
-
   // Check for an exact match
-  if (!sNormalizedMatch.empty()) {
+  if (!sMatch.empty()) {
     GetDirListing(
-        SONG_MOVIES_DIR + pSong->m_sGroupName + "/" + sNormalizedMatch,
-        vsPathsOut, false,
+        SONG_MOVIES_DIR + pSong->m_sGroupName + "/" + sMatch, vsPathsOut, false,
         true);  // search in SongMovies/SongGroupName/ first
-    GetDirListing(SONG_MOVIES_DIR + sNormalizedMatch, vsPathsOut, false, true);
-    GetDirListing(RANDOMMOVIES_DIR + sNormalizedMatch, vsPathsOut, false, true);
-    if (vsPathsOut.empty() && sNormalizedMatch != NO_SONG_BG_FILE) {
-      LOG->Warn("Background missing: %s", sNormalizedMatch.c_str());
+    GetDirListing(SONG_MOVIES_DIR + sMatch, vsPathsOut, false, true);
+    GetDirListing(RANDOMMOVIES_DIR + sMatch, vsPathsOut, false, true);
+    if (vsPathsOut.empty() && sMatch != NO_SONG_BG_FILE) {
+      LOG->Warn("Background missing: %s", sMatch.c_str());
     }
     return;
   }
