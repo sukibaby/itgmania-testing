@@ -356,32 +356,15 @@ void GetGlobalRandomMoviePaths(
     std::vector<std::string>& vsPathsOut,
     bool bTryInsideOfSongGroupAndGenreFirst, bool bTryInsideOfSongGroupFirst) {
   const std::string sNormalizedMatch = NormalizeRandomMoviePath(sMatch);
-  LOG->Trace(
-      "GetGlobalRandomMoviePaths: sMatch=%s, "
-      "bTryInsideOfSongGroupAndGenreFirst=%d, "
-      "bTryInsideOfSongGroupFirst=%d, Song=%s",
-      sNormalizedMatch.c_str(), bTryInsideOfSongGroupAndGenreFirst,
-      bTryInsideOfSongGroupFirst,
-      (pSong ? pSong->m_sGroupName.c_str() : "(null)"));
 
   // Check for an exact match
   if (!sNormalizedMatch.empty()) {
-    if (sNormalizedMatch != sMatch) {
-      LOG->Trace("Normalized random movie match from %s to %s", sMatch.c_str(),
-                 sNormalizedMatch.c_str());
-    }
-    LOG->Trace("Searching for exact match: %s", sNormalizedMatch.c_str());
     GetDirListing(
         SONG_MOVIES_DIR + pSong->m_sGroupName + "/" + sNormalizedMatch,
         vsPathsOut, false,
         true);  // search in SongMovies/SongGroupName/ first
-    LOG->Trace("  After SongMovies/SongGroupName search: %d results",
-               (int)vsPathsOut.size());
     GetDirListing(SONG_MOVIES_DIR + sNormalizedMatch, vsPathsOut, false, true);
-    LOG->Trace("  After SongMovies search: %d results", (int)vsPathsOut.size());
     GetDirListing(RANDOMMOVIES_DIR + sNormalizedMatch, vsPathsOut, false, true);
-    LOG->Trace("  After RandomMovies search: %d results",
-               (int)vsPathsOut.size());
     if (vsPathsOut.empty() && sNormalizedMatch != NO_SONG_BG_FILE) {
       LOG->Warn("Background missing: %s", sNormalizedMatch.c_str());
     }
@@ -391,37 +374,27 @@ void GetGlobalRandomMoviePaths(
   // Search for the most appropriate background
   std::set<std::string> ssFileNameWhitelist;
   if (bTryInsideOfSongGroupAndGenreFirst && pSong && !pSong->m_sGenre.empty()) {
-    LOG->Trace("Attempting genre-based filtering for genre: %s",
-               pSong->m_sGenre.c_str());
     GetFilterToFileNames(RANDOMMOVIES_DIR, pSong, ssFileNameWhitelist);
-    LOG->Trace("  Genre filter whitelist size: %d",
-               (int)ssFileNameWhitelist.size());
   }
 
   std::vector<std::string> vsDirsToTry;
   if (bTryInsideOfSongGroupFirst && pSong) {
     ASSERT(!pSong->m_sGroupName.empty());
     vsDirsToTry.push_back(RANDOMMOVIES_DIR + pSong->m_sGroupName + "/");
-    LOG->Trace("Added song group dir to search: %s",
-               (RANDOMMOVIES_DIR + pSong->m_sGroupName + "/").c_str());
   }
   vsDirsToTry.push_back(RANDOMMOVIES_DIR);
-  LOG->Trace("Will search %d directories", (int)vsDirsToTry.size());
 
   std::vector<std::string> vsFallbackPaths;
 
   for (const std::string& sDir : vsDirsToTry) {
-    LOG->Trace("Searching directory: %s", sDir.c_str());
     std::vector<std::string> vsDirPaths;
     GetMovieDirListing(sDir, vsDirPaths);
-    LOG->Trace("  Found %d files", (int)vsDirPaths.size());
 
     if (vsDirPaths.empty()) {
       continue;
     }
 
     if (!ssFileNameWhitelist.empty()) {
-      LOG->Trace("  Applying whitelist filter...");
       std::vector<std::string> vsMatches;
       for (const std::string& s : vsDirPaths) {
         std::string sBasename = Basename(s);
@@ -431,59 +404,30 @@ void GetGlobalRandomMoviePaths(
           vsMatches.push_back(s);
         }
       }
-      LOG->Trace("    Whitelist matches: %d", (int)vsMatches.size());
       if (!vsMatches.empty()) {
         vsPathsOut = vsMatches;
-        LOG->Trace("    Using whitelist-filtered results");
-        LOG->Trace("Found videos in %s, returning %d paths", sDir.c_str(),
-                   (int)vsPathsOut.size());
         return;
       }
 
       if (sDir == RANDOMMOVIES_DIR) {
         vsPathsOut = vsDirPaths;
-        LOG->Trace(
-            "    No whitelist matches in base random directory; using %d "
-            "unfiltered fallback paths",
-            (int)vsPathsOut.size());
         return;
       }
 
       if (vsFallbackPaths.empty()) {
         vsFallbackPaths = vsDirPaths;
-        LOG->Trace(
-            "    No whitelist matches in %s; saving %d unfiltered fallback "
-            "paths and continuing",
-            sDir.c_str(), (int)vsFallbackPaths.size());
       }
 
       continue;
     }
 
     vsPathsOut = vsDirPaths;
-    LOG->Trace("Found videos in %s, returning %d paths", sDir.c_str(),
-               (int)vsPathsOut.size());
     return;
   }
 
   if (!vsFallbackPaths.empty()) {
     vsPathsOut = vsFallbackPaths;
-    LOG->Trace(
-        "Using saved unfiltered group fallback because no better random "
-        "videos were found: %d paths",
-        (int)vsPathsOut.size());
-    return;
   }
-
-  const std::string sGroupPath =
-      (pSong && bTryInsideOfSongGroupFirst)
-          ? "/RandomMovies/" + pSong->m_sGroupName
-          : "(group search disabled)";
-  LOG->Warn(
-      "No random movies found for song group '%s'. Checked /RandomMovies and "
-      "%s for engine-supported movie files.",
-      (pSong ? pSong->m_sGroupName.c_str() : "(none)"), sGroupPath.c_str());
-  LOG->Trace("No random movies found in any directory");
 }
 
 }  // namespace
@@ -498,17 +442,13 @@ void BackgroundUtil::GetGlobalRandomMovies(
   GetGlobalRandomMoviePaths(
       pSong, sMatch, vsPathsOut, bTryInsideOfSongGroupAndGenreFirst,
       bTryInsideOfSongGroupFirst);
-  LOG->Trace("After GetGlobalRandomMoviePaths: %d paths found",
-             (int)vsPathsOut.size());
 
   for (const std::string& s : vsPathsOut) {
     std::string sName = NormalizeRandomMoviePath(s);
     vsNamesOut.push_back(sName);
   }
-  LOG->Trace("After name extraction: %d names", (int)vsNamesOut.size());
-  
+
   StripCvsAndSvn(vsPathsOut, vsNamesOut);
-  LOG->Trace("After StripCvsAndSvn: %d paths remaining", (int)vsPathsOut.size());
 }
 
 void BackgroundUtil::BakeAllBackgroundChanges(Song* pSong) {
