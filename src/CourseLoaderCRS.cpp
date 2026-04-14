@@ -191,7 +191,6 @@ bool CourseLoaderCRS::LoadFromMsd(
     GetDirListing(sFName + "*.jpeg", arrayPossibleBanners, false, false);
     GetDirListing(sFName + "*.bmp", arrayPossibleBanners, false, false);
     GetDirListing(sFName + "*.gif", arrayPossibleBanners, false, false);
-    GetDirListing(sFName + "*.tga", arrayPossibleBanners, false, false);
     if (!arrayPossibleBanners.empty()) {
       out.m_sBannerPath = arrayPossibleBanners[0];
     }

@@ -10,7 +10,6 @@ enum class RageSurfaceSTBWriteFormat {
   BMP,
   JPEG,
   PNG,
-  TGA,
 };
 
 bool RageSurface_Save_STB(

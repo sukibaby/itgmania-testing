@@ -11,7 +11,6 @@
 #include "RageSurface_Load_GIF.h"
 #include "RageSurface_Load_JPEG.h"
 #include "RageSurface_Load_PNG.h"
-#include "RageSurface_Load_TGA.h"
 #include "RageUtil.h"
 #include "StdString.h"
 #include "global.h"
@@ -29,8 +28,6 @@ static RageSurface* TryOpenFile(
     result = RageSurface_Load_JPEG(sPath, ret, bHeaderOnly, error);
   } else if (!CompareNoCase(format, "bmp")) {
     result = RageSurface_Load_BMP(sPath, ret, bHeaderOnly, error);
-  } else if (!CompareNoCase(format, "tga")) {
-    result = RageSurface_Load_TGA(sPath, ret, bHeaderOnly, error);
   } else {
     error = "Unsupported format";
     bKeepTrying = true;

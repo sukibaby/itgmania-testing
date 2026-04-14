@@ -12,79 +12,6 @@
 #include "stb_image.h"
 
 namespace {
-bool IsTgaTypeSupported(uint8_t image_type) {
-  switch (image_type) {
-    case 1:
-    case 2:
-    case 3:
-    case 9:
-    case 10:
-    case 11:
-      return true;
-    default:
-      return false;
-  }
-}
-
-bool LooksLikeTgaHeader(const unsigned char* header, int bytes_read) {
-  if (bytes_read < 18) {
-    return false;
-  }
-
-  const uint8_t color_map_type = header[1];
-  const uint8_t image_type = header[2];
-  const uint16_t color_map_length = header[5] | (header[6] << 8);
-  const uint8_t color_map_entry_size = header[7];
-  const uint16_t width = header[12] | (header[13] << 8);
-  const uint16_t height = header[14] | (header[15] << 8);
-  const uint8_t pixel_depth = header[16];
-  const uint8_t attribute_bits = header[17] & 0x0F;
-
-  if (color_map_type > 1 || !IsTgaTypeSupported(image_type) || width == 0 ||
-      height == 0 || attribute_bits > pixel_depth) {
-    return false;
-  }
-
-  const bool is_color_mapped = image_type == 1 || image_type == 9;
-  const bool is_grayscale = image_type == 3 || image_type == 11;
-
-  if (is_color_mapped) {
-    if (color_map_type != 1 || color_map_length == 0) {
-      return false;
-    }
-
-    switch (color_map_entry_size) {
-      case 15:
-      case 16:
-      case 24:
-      case 32:
-        break;
-      default:
-        return false;
-    }
-
-    return pixel_depth == 8 || pixel_depth == 16;
-  }
-
-  if (color_map_type != 0) {
-    return false;
-  }
-
-  if (is_grayscale) {
-    return pixel_depth == 8 || pixel_depth == 16;
-  }
-
-  switch (pixel_depth) {
-    case 15:
-    case 16:
-    case 24:
-    case 32:
-      return true;
-    default:
-      return false;
-  }
-}
-
 const char* GetFormatName(RageSurfaceSTBFormat format) {
   switch (format) {
     case RageSurfaceSTBFormat::BMP:
@@ -95,8 +22,6 @@ const char* GetFormatName(RageSurfaceSTBFormat format) {
       return "JPEG";
     case RageSurfaceSTBFormat::PNG:
       return "PNG";
-    case RageSurfaceSTBFormat::TGA:
-      return "TGA";
   }
 
   return "image";
@@ -112,8 +37,6 @@ int GetSignatureSize(RageSurfaceSTBFormat format) {
       return 3;
     case RageSurfaceSTBFormat::PNG:
       return 8;
-    case RageSurfaceSTBFormat::TGA:
-      return 18;
   }
 
   return 0;
@@ -135,8 +58,6 @@ bool SignatureMatches(
                                                      0x0D, 0x0A, 0x1A, 0x0A};
       return bytes_read >= 8 && !std::memcmp(header, kPngSignature, 8);
     }
-    case RageSurfaceSTBFormat::TGA:
-      return LooksLikeTgaHeader(header, bytes_read);
   }
 
   return false;
@@ -160,7 +81,7 @@ bool RewindFile(RageFile& file, std::string& error) {
 
 RageSurfaceUtils::OpenResult ProbeFileFormat(
     RageFile& file, RageSurfaceSTBFormat format, std::string& error) {
-  unsigned char header[18] = {};
+  unsigned char header[8] = {};
   const int expected = GetSignatureSize(format);
   const int got = file.Read(header, expected);
   if (got == -1) {
