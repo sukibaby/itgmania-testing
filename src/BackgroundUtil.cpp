@@ -322,21 +322,6 @@ void BackgroundUtil::GetGlobalBGAnimations(
 }
 
 namespace {
-
-std::string NormalizeRandomMoviePath(const std::string& sPath) {
-  const std::string sMountedRandomMoviesDir = "/" + RANDOMMOVIES_DIR;
-  size_t iMountedDir = sPath.find(sMountedRandomMoviesDir);
-  if (iMountedDir != std::string::npos) {
-    return sPath.substr(iMountedDir + sMountedRandomMoviesDir.size());
-  }
-
-  if (BeginsWith(sPath, RANDOMMOVIES_DIR)) {
-    return sPath.substr(RANDOMMOVIES_DIR.size());
-  }
-
-  return sPath;
-}
-
 void GetMovieDirListing(
     const std::string& sDir, std::vector<std::string>& vsPathsOut) {
   std::vector<std::string> vsCandidates;
@@ -385,16 +370,16 @@ void GetGlobalRandomMoviePaths(
   std::vector<std::string> vsFallbackPaths;
 
   for (const std::string& sDir : vsDirsToTry) {
-    std::vector<std::string> vsDirPaths;
-    GetMovieDirListing(sDir, vsDirPaths);
+    std::vector<std::string> vsPathsOut;
+    GetMovieDirListing(sDir, vsPathsOut);
 
-    if (vsDirPaths.empty()) {
+    if (vsPathsOut.empty()) {
       continue;
     }
 
     if (!ssFileNameWhitelist.empty()) {
       std::vector<std::string> vsMatches;
-      for (const std::string& s : vsDirPaths) {
+      for (const std::string& s : vsPathsOut) {
         std::string sBasename = Basename(s);
         bool bFound =
             ssFileNameWhitelist.find(sBasename) != ssFileNameWhitelist.end();
@@ -402,24 +387,26 @@ void GetGlobalRandomMoviePaths(
           vsMatches.push_back(s);
         }
       }
+      // If we found any that match the whitelist, use only them.
+      // If none match the whitelist, ignore the whitelist..
       if (!vsMatches.empty()) {
         vsPathsOut = vsMatches;
         return;
       }
 
       if (sDir == RANDOMMOVIES_DIR) {
-        vsPathsOut = vsDirPaths;
+        vsPathsOut = vsPathsOut;
         return;
       }
 
       if (vsFallbackPaths.empty()) {
-        vsFallbackPaths = vsDirPaths;
+        vsFallbackPaths = vsPathsOut;
       }
 
       continue;
     }
 
-    vsPathsOut = vsDirPaths;
+    vsPathsOut = vsPathsOut;
     return;
   }
 
@@ -442,7 +429,19 @@ void BackgroundUtil::GetGlobalRandomMovies(
       bTryInsideOfSongGroupFirst);
 
   for (const std::string& s : vsPathsOut) {
-    std::string sName = NormalizeRandomMoviePath(s);
+    std::string sName = s;
+
+    // Strip mounted path prefix /RandomMovies/
+    const std::string sMountedRandomMoviesDir = "/" + RANDOMMOVIES_DIR;
+    size_t iMountedDir = sName.find(sMountedRandomMoviesDir);
+    if (iMountedDir != std::string::npos) {
+      sName = sName.substr(iMountedDir + sMountedRandomMoviesDir.size());
+    }
+    // Strip relative path prefix RandomMovies/
+    else if (BeginsWith(sName, RANDOMMOVIES_DIR)) {
+      sName = sName.substr(RANDOMMOVIES_DIR.size());
+    }
+
     vsNamesOut.push_back(sName);
   }
 
