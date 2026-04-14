@@ -367,11 +367,15 @@ void GetGlobalRandomMoviePaths(
   }
   vsDirsToTry.push_back(RANDOMMOVIES_DIR);
 
+  std::vector<std::string> vsFallbackPaths;
+
   for (const std::string& sDir : vsDirsToTry) {
-    GetDirListing(sDir + "*.ogv", vsPathsOut, false, true);
-    GetDirListing(sDir + "*.avi", vsPathsOut, false, true);
-    GetDirListing(sDir + "*.mpg", vsPathsOut, false, true);
-    GetDirListing(sDir + "*.mpeg", vsPathsOut, false, true);
+    std::vector<std::string> vsPathsOut;
+    GetMovieDirListing(sDir, vsPathsOut);
+
+    if (vsPathsOut.empty()) {
+      continue;
+    }
 
     if (!ssFileNameWhitelist.empty()) {
       std::vector<std::string> vsMatches;
@@ -387,13 +391,27 @@ void GetGlobalRandomMoviePaths(
       // If none match the whitelist, ignore the whitelist..
       if (!vsMatches.empty()) {
         vsPathsOut = vsMatches;
+        return;
       }
+
+      if (sDir == RANDOMMOVIES_DIR) {
+        vsPathsOut = vsPathsOut;
+        return;
+      }
+
+      if (vsFallbackPaths.empty()) {
+        vsFallbackPaths = vsPathsOut;
+      }
+
+      continue;
     }
 
-    if (!vsPathsOut.empty()) {
-      // Return only the first directory found
-      return;
-    }
+    vsPathsOut = vsPathsOut;
+    return;
+  }
+
+  if (!vsFallbackPaths.empty()) {
+    vsPathsOut = vsFallbackPaths;
   }
 }
 
