@@ -134,6 +134,7 @@ void BGAnimation::LoadFromAniDir(const std::string& _sAniDir) {
     GetDirListing(sAniDir + "*.jpg", asImagePaths, false, true);
     GetDirListing(sAniDir + "*.jpeg", asImagePaths, false, true);
     GetDirListing(sAniDir + "*.gif", asImagePaths, false, true);
+    GetDirListing(sAniDir + "*.tga", asImagePaths, false, true);
     GetDirListing(sAniDir + "*.ogv", asImagePaths, false, true);
     GetDirListing(sAniDir + "*.avi", asImagePaths, false, true);
     GetDirListing(sAniDir + "*.mpg", asImagePaths, false, true);

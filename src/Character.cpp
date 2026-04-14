@@ -43,6 +43,7 @@ bool Character::Load(std::string sCharDir) {
     GetDirListing(m_sCharDir + "card.jpeg", as, false, true);
     GetDirListing(m_sCharDir + "card.gif", as, false, true);
     GetDirListing(m_sCharDir + "card.bmp", as, false, true);
+    GetDirListing(m_sCharDir + "card.tga", as, false, true);
     if (as.empty()) {
       m_sCardPath = "";
     } else {
@@ -57,6 +58,7 @@ bool Character::Load(std::string sCharDir) {
     GetDirListing(m_sCharDir + "icon.jpeg", as, false, true);
     GetDirListing(m_sCharDir + "icon.gif", as, false, true);
     GetDirListing(m_sCharDir + "icon.bmp", as, false, true);
+    GetDirListing(m_sCharDir + "icon.tga", as, false, true);
     if (as.empty()) {
       m_sIconPath = "";
     } else {
@@ -123,6 +125,7 @@ std::string Character::GetTakingABreakPath() const {
   GetDirListing(m_sCharDir + "break.jpeg", as, false, true);
   GetDirListing(m_sCharDir + "break.gif", as, false, true);
   GetDirListing(m_sCharDir + "break.bmp", as, false, true);
+  GetDirListing(m_sCharDir + "break.tga", as, false, true);
   if (as.empty()) {
     return std::string();
   } else {
@@ -139,6 +142,7 @@ std::string Character::GetSongSelectIconPath() const {
   GetDirListing(m_sCharDir + "selectmusicicon.jpeg", as, false, true);
   GetDirListing(m_sCharDir + "selectmusicicon.gif", as, false, true);
   GetDirListing(m_sCharDir + "selectmusicicon.bmp", as, false, true);
+  GetDirListing(m_sCharDir + "selectmusicicon.tga", as, false, true);
 
   if (as.empty()) {
     // if that failed, try using the regular icon
@@ -147,6 +151,7 @@ std::string Character::GetSongSelectIconPath() const {
     GetDirListing(m_sCharDir + "icon.jpeg", as, false, true);
     GetDirListing(m_sCharDir + "icon.gif", as, false, true);
     GetDirListing(m_sCharDir + "icon.bmp", as, false, true);
+    GetDirListing(m_sCharDir + "icon.tga", as, false, true);
     if (as.empty()) {
       return std::string();
     } else {
@@ -166,6 +171,7 @@ std::string Character::GetStageIconPath() const {
   GetDirListing(m_sCharDir + "stageicon.jpeg", as, false, true);
   GetDirListing(m_sCharDir + "stageicon.gif", as, false, true);
   GetDirListing(m_sCharDir + "stageicon.bmp", as, false, true);
+  GetDirListing(m_sCharDir + "stageicon.tga", as, false, true);
 
   if (as.empty()) {
     // if that failed, try using the regular icon
@@ -174,6 +180,7 @@ std::string Character::GetStageIconPath() const {
     GetDirListing(m_sCharDir + "card.jpeg", as, false, true);
     GetDirListing(m_sCharDir + "card.gif", as, false, true);
     GetDirListing(m_sCharDir + "card.bmp", as, false, true);
+    GetDirListing(m_sCharDir + "card.tga", as, false, true);
     if (as.empty()) {
       return std::string();
     } else {

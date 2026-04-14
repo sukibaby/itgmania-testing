@@ -10,6 +10,7 @@ enum class RageSurfaceSTBFormat {
   GIF,
   JPEG,
   PNG,
+  TGA,
 };
 
 RageSurfaceUtils::OpenResult RageSurface_Load_STB(

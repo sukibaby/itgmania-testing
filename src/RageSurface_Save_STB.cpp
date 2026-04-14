@@ -48,6 +48,8 @@ const char* GetFormatName(RageSurfaceSTBWriteFormat format) {
       return "JPEG";
     case RageSurfaceSTBWriteFormat::PNG:
       return "PNG";
+    case RageSurfaceSTBWriteFormat::TGA:
+      return "TGA";
   }
 
   return "image";
@@ -79,6 +81,10 @@ bool WriteSurface(
       stbi_write_png_compression_level = previous_level;
       break;
     }
+    case RageSurfaceSTBWriteFormat::TGA:
+      result = stbi_write_tga_to_func(
+          StbWriteCallback, &state, surface->w, surface->h, 3, surface->pixels);
+      break;
   }
 
   if (state.io_failed) {

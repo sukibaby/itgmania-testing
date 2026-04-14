@@ -346,6 +346,7 @@ void SongManager::AddGroup(
   GetDirListing(sDir + sGroupDirName + "/*.jpeg", arrayGroupBanners);
   GetDirListing(sDir + sGroupDirName + "/*.gif", arrayGroupBanners);
   GetDirListing(sDir + sGroupDirName + "/*.bmp", arrayGroupBanners);
+  GetDirListing(sDir + sGroupDirName + "/*.tga", arrayGroupBanners);
 
   if (!arrayGroupBanners.empty()) {
     sBannerPath = sDir + sGroupDirName + "/" + arrayGroupBanners[0];
@@ -356,6 +357,7 @@ void SongManager::AddGroup(
     GetDirListing(sDir + sGroupDirName + ".jpeg", arrayGroupBanners);
     GetDirListing(sDir + sGroupDirName + ".gif", arrayGroupBanners);
     GetDirListing(sDir + sGroupDirName + ".bmp", arrayGroupBanners);
+    GetDirListing(sDir + sGroupDirName + ".tga", arrayGroupBanners);
     if (!arrayGroupBanners.empty()) {
       sBannerPath = sDir + arrayGroupBanners[0];
     }
