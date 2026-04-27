@@ -399,7 +399,14 @@ void BackgroundUtil::GetGlobalRandomMovies(
       bTryInsideOfSongGroupFirst);
 
   for (const std::string& s : vsPathsOut) {
-    std::string sName = Right(s, s.size() - RANDOMMOVIES_DIR.size() - 1);
+    std::string sName = s;
+
+    // Strip mounted path prefix /RandomMovies/ if necessary
+    if (sName.size() > RANDOMMOVIES_DIR.size() && sName[0] == '/' &&
+        sName.compare(1, RANDOMMOVIES_DIR.size(), RANDOMMOVIES_DIR) == 0) {
+      sName.erase(0, RANDOMMOVIES_DIR.size() + 1);
+    }
+
     vsNamesOut.push_back(sName);
   }
   StripCvsAndSvn(vsPathsOut, vsNamesOut);
