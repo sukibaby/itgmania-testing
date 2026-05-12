@@ -6,10 +6,12 @@
 #include <ixwebsocket/IXWebSocket.h>
 
 #include <algorithm>
+#include <atomic>
 #include <climits>
 #include <cstddef>
 #include <memory>
 #include <mutex>
+#include <queue>
 #include <sstream>
 #include <string>
 #include <thread>
@@ -35,6 +37,35 @@
 
 NetworkManager* NETWORK =
     nullptr;  // global and accessible from anywhere in our program
+
+namespace {
+std::mutex networkThreadSyncMutex;
+std::queue<std::function<void()>> networkTaskQueue;
+}  // namespace
+
+// Used by IXWebSocket worker threads to queue work for Lua to
+// executed in the main loop via ProcessQueuedNetworkTasks.
+void NetworkManager::Enqueue(std::function<void()> task) {
+  std::lock_guard<std::mutex> lock(networkThreadSyncMutex);
+  networkTaskQueue.push(std::move(task));
+}
+
+// Called from GameLoop.cpp only.
+void NetworkManager::ProcessQueuedNetworkTasks() {
+  std::queue<std::function<void()>> tasks;
+  {
+    std::lock_guard<std::mutex> lock(networkThreadSyncMutex);
+    std::swap(tasks, networkTaskQueue);
+  }
+
+  while (!tasks.empty()) {
+    auto task = std::move(tasks.front());
+    tasks.pop();
+    if (task) {
+      task();
+    }
+  }
+}
 
 Preference<bool> NetworkManager::httpEnabled(
     "HttpEnabled", true, nullptr, PreferenceType::Immutable);
@@ -531,14 +562,6 @@ class LunaNetworkManager : public Luna<NetworkManager> {
       if (lua_isfunction(L, -1)) {
         lua_pushvalue(L, -1);
         onProgressRef = luaL_ref(L, LUA_REGISTRYINDEX);
-
-        args.onProgress = [onProgressRef](int current, int total) {
-          Lua* L = LUA->Get();
-          handleProgress(L, current, total, onProgressRef);
-          LUA->Release(L);
-
-          return true;
-        };
       } else {
         luaL_error(L, "onProgress must be a function");
       }
@@ -557,31 +580,15 @@ class LunaNetworkManager : public Luna<NetworkManager> {
     }
     lua_pop(L, 1);
 
-    args.onFileError = [onProgressRef,
-                        onResponseRef](const std::string& errorMessage) {
-      Lua* L = LUA->Get();
+    std::shared_ptr<HttpLuaCallbackState> callbackState =
+        std::make_shared<HttpLuaCallbackState>(onProgressRef, onResponseRef);
 
-      luaL_unref(L, LUA_REGISTRYINDEX, onProgressRef);
+    if (onProgressRef != LUA_NOREF) {
+      args.onProgress = EnqueueHttpProgressCallback{callbackState};
+    }
 
-      if (onResponseRef != LUA_NOREF) {
-        handleFileError(L, errorMessage, onResponseRef);
-      }
-
-      LUA->Release(L);
-    };
-
-    args.onResponse = [onProgressRef,
-                       onResponseRef](const ix::HttpResponsePtr& response) {
-      Lua* L = LUA->Get();
-
-      luaL_unref(L, LUA_REGISTRYINDEX, onProgressRef);
-
-      if (onResponseRef != LUA_NOREF) {
-        handleHttpResponse(L, response, onResponseRef);
-      }
-
-      LUA->Release(L);
-    };
+    args.onFileError = EnqueueHttpFileErrorCallback{callbackState};
+    args.onResponse = EnqueueHttpResponseCallback{callbackState};
 
     if (p->IsUrlAllowed(args.url)) {
       auto fut = p->HttpRequest(args);
@@ -770,6 +777,146 @@ class LunaNetworkManager : public Luna<NetworkManager> {
   }
 
  private:
+  // Shared callback metadata and Lua registry refs, created in Lua
+  // HttpRequest(). The atomic 'done' flag prevents multiple tasks
+  // (progress, error, or response) from running concurrently and
+  // prevents duplicate Lua callback invocations.
+  struct HttpLuaCallbackState {
+    std::atomic<bool> done;
+    int onProgressRef;
+    int onResponseRef;
+
+    HttpLuaCallbackState(int onProgressRef_, int onResponseRef_)
+        : done(false),
+          onProgressRef(onProgressRef_),
+          onResponseRef(onResponseRef_) {}
+  };
+
+  // Executable task queued from ixwebsocket's thread and drained on the main
+  // thread. Calls the Lua onProgress handler with current/total bytes.
+  struct HttpLuaProgressTask {
+    std::shared_ptr<HttpLuaCallbackState> state;
+    int current;
+    int total;
+
+    void operator()() const {
+      if (!state || state->done.load()) {
+        return;
+      }
+      if (state->onProgressRef == LUA_NOREF) {
+        return;
+      }
+
+      Lua* L = LUA->Get();
+      handleProgress(L, current, total, state->onProgressRef);
+      LUA->Release(L);
+    }
+  };
+
+  // Queued from ixwebsocket's thread and drained on the main
+  // thread. Will be called if the download write fails.
+  struct HttpLuaFileErrorTask {
+    std::shared_ptr<HttpLuaCallbackState> state;
+    std::string errorMessage;
+
+    void operator()() const {
+      if (!state) {
+        return;
+      }
+
+      bool expected = false;
+      if (!state->done.compare_exchange_strong(expected, true)) {
+        return;
+      }
+
+      Lua* L = LUA->Get();
+
+      if (state->onProgressRef != LUA_NOREF) {
+        luaL_unref(L, LUA_REGISTRYINDEX, state->onProgressRef);
+      }
+
+      if (state->onResponseRef != LUA_NOREF) {
+        handleFileError(L, errorMessage, state->onResponseRef);
+      }
+
+      LUA->Release(L);
+    }
+  };
+
+  // Queued from ixwebsocket's thread, and drained on the main
+  // thread. Will be called when the HTTP response is ready.
+  struct HttpLuaResponseTask {
+    std::shared_ptr<HttpLuaCallbackState> state;
+    ix::HttpResponsePtr response;
+
+    void operator()() const {
+      if (!state) {
+        return;
+      }
+
+      bool expected = false;
+      if (!state->done.compare_exchange_strong(expected, true)) {
+        return;
+      }
+
+      Lua* L = LUA->Get();
+
+      if (state->onProgressRef != LUA_NOREF) {
+        luaL_unref(L, LUA_REGISTRYINDEX, state->onProgressRef);
+      }
+
+      if (state->onResponseRef != LUA_NOREF) {
+        handleHttpResponse(L, response, state->onResponseRef);
+      }
+
+      LUA->Release(L);
+    }
+  };
+
+  // Invoked from ixwebsocket's internal worker thread during HTTP download.
+  // Enqueues an HttpLuaProgressTask to run progress callback on main thread.
+  struct EnqueueHttpProgressCallback {
+    std::shared_ptr<HttpLuaCallbackState> state;
+
+    bool operator()(int current, int total) const {
+      if (!state || state->done.load()) {
+        return true;
+      }
+
+      if (state->onProgressRef != LUA_NOREF) {
+        NetworkManager::Enqueue(HttpLuaProgressTask{state, current, total});
+      }
+
+      return true;
+    }
+  };
+
+  // Invoked from ixwebsocket's internal worker thread if a
+  // write error occurs (e.g., disk full).
+  struct EnqueueHttpFileErrorCallback {
+    std::shared_ptr<HttpLuaCallbackState> state;
+
+    void operator()(const std::string& errorMessage) const {
+      if (!state) {
+        return;
+      }
+      NetworkManager::Enqueue(HttpLuaFileErrorTask{state, errorMessage});
+    }
+  };
+
+  // Invoked from ixwebsocket's internal worker thread when the
+  // HTTP response is ready (success or protocol error).
+  struct EnqueueHttpResponseCallback {
+    std::shared_ptr<HttpLuaCallbackState> state;
+
+    void operator()(const ix::HttpResponsePtr& response) const {
+      if (!state) {
+        return;
+      }
+      NetworkManager::Enqueue(HttpLuaResponseTask{state, response});
+    }
+  };
+
   static void handleUrlForbidden(Lua* L, std::string& url, int onResponseRef) {
     lua_rawgeti(L, LUA_REGISTRYINDEX, onResponseRef);
     luaL_unref(L, LUA_REGISTRYINDEX, onResponseRef);

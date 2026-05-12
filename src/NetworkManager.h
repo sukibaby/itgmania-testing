@@ -147,6 +147,14 @@ class NetworkManager {
   NetworkManager();
   ~NetworkManager();
 
+  // Lua HTTP callbacks (progress, error, response) are invoked from
+  // ixwebsocket's internal worker threads during async HTTP operations. Since
+  // Lua uses a global lock and must be executed on the main thread only, we
+  // enqueue these callbacks from the worker thread and drain them each frame in
+  // the main game loop.
+  static void Enqueue(std::function<void()> task);
+  static void ProcessQueuedNetworkTasks();
+
   bool IsUrlAllowed(const std::string& url);
   HttpRequestFuturePtr HttpRequest(const HttpRequestArgs& args);
   WebSocketHandlePtr WebSocket(const WebSocketArgs& args);
