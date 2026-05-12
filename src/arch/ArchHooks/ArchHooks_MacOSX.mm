@@ -441,8 +441,6 @@ static void RemoveLegacyDirectory(const std::string& oldPath) {
 }
 
 void ArchHooks::MountUserFilesystems(const std::string& sDirOfExecutable) {
-  std::string libraryDir = PathForDirectory(NSLibraryDirectory);
-  std::string cachesDir = PathForDirectory(NSCachesDirectory);
   std::string appSupportDir = PathForDirectory(NSApplicationSupportDirectory);
   std::string appSupportPath = ssprintf("%s/" PRODUCT_ID, appSupportDir.c_str());
 
