@@ -24,7 +24,6 @@
 #include "RageFile.h"
 #include "RageFileManager.h"
 #include "RageLog.h"
-#include "RageTimer.h"
 #include "RageUtil.h"
 #include "SpecialFiles.h"
 #include "StdString.h"
@@ -73,10 +72,6 @@ static const char* WebSocketMessageTypeNames[] = {
     "Close",
     "Error",
 };
-
-static constexpr int kMaxMainThreadTasksPerUpdate = 32;
-static constexpr float kMaxMainThreadTaskSecondsPerUpdate = 0.001f;
-
 XToString(WebSocketMessageType);
 StringToX(WebSocketMessageType);
 LuaXType(WebSocketMessageType);
@@ -217,27 +212,15 @@ void NetworkManager::EnqueueMainThreadTask(std::function<void()> task) {
 }
 
 void NetworkManager::Update() {
-  RageTimer timer;
-  int tasksProcessed = 0;
+  std::queue<std::function<void()>> tasks;
+  {
+    std::lock_guard<std::mutex> lock(this->mainThreadTaskMutex);
+    std::swap(tasks, this->mainThreadTaskQueue);
+  }
 
-  while (tasksProcessed < kMaxMainThreadTasksPerUpdate) {
-    std::function<void()> task;
-    {
-      std::lock_guard<std::mutex> lock(this->mainThreadTaskMutex);
-      if (this->mainThreadTaskQueue.empty()) {
-        break;
-      }
-
-      task = std::move(this->mainThreadTaskQueue.front());
-      this->mainThreadTaskQueue.pop();
-    }
-
-    task();
-    ++tasksProcessed;
-
-    if (timer.Ago() >= kMaxMainThreadTaskSecondsPerUpdate) {
-      break;
-    }
+  while (!tasks.empty()) {
+    tasks.front()();
+    tasks.pop();
   }
 }
 
