@@ -116,21 +116,7 @@ NetworkManager::~NetworkManager() {
 
   this->StopWorkers();
 
-  this->CloseAllWebSockets();
-
-  // Set the status to uninitialized.
-  ix::uninitNetSystem();
-}
-
-void NetworkManager::CloseAllWebSockets() {
-  // Drop queued websocket starts so no new connections come up after cleanup.
-  {
-    std::lock_guard<std::mutex> lock(this->webSocketWorkerMutex);
-    std::queue<std::function<void()>> empty;
-    std::swap(this->webSocketWorkerQueue, empty);
-  }
-
-  // Stop all active websocket connections without aggressively clearing.
+  // Close all WebSocket connections
   std::vector<WebSocketHandlePtr> webSocketHandlesCopy;
   {
     std::lock_guard<std::mutex> lock(this->webSocketHandlesMutex);
@@ -138,9 +124,11 @@ void NetworkManager::CloseAllWebSockets() {
   }
 
   for (auto& handle : webSocketHandlesCopy) {
-    handle->webSocket.disableAutomaticReconnection();
     handle->webSocket.stop();
   }
+
+  // Set the status to uninitialized.
+  ix::uninitNetSystem();
 }
 
 void NetworkManager::RunHttpWorker() {

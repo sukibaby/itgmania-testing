@@ -1177,9 +1177,6 @@ bool HandleGlobalInputs(const InputEventPlus& input) {
       SCREENMAN->SystemMessage(RELOADED_METRICS);
     } else if (bIsCtrlHeld && !bIsShiftHeld) {
       // Ctrl+F2: reload scripts only
-      if (NETWORK != nullptr) {
-        NETWORK->CloseAllWebSockets();
-      }
       THEME->UpdateLuaGlobals();
       SCREENMAN->SystemMessage(RELOADED_SCRIPTS);
     } else if (bIsCtrlHeld && bIsShiftHeld) {
