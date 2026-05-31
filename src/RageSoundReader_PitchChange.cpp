@@ -33,7 +33,7 @@ RageSoundReader_PitchChange::RageSoundReader_PitchChange(
     m_pResample =
         new RageSoundReader_Resample_Good(pSource, pSource->GetSampleRate());
   }
-  m_pSource = m_pResample;
+  m_pSource.reset(m_pResample);
   m_fSpeedRatio = 1.0f;
   m_fPitchRatio = 1.0f;
   m_fLastSetSpeedRatio = m_fSpeedRatio;
@@ -46,7 +46,7 @@ RageSoundReader_PitchChange::RageSoundReader_PitchChange(
   /* The source tree has already been copied.  Our source is m_pResample; its
    * source is m_pSpeedChange (and its source is a copy of the pSource we were
    * initialized with). */
-  m_pResample = dynamic_cast<RageSoundReader_Resample_Good*>(&*m_pSource);
+  m_pResample = dynamic_cast<RageSoundReader_Resample_Good*>(m_pSource.get());
   m_pSpeedChange =
       dynamic_cast<RageSoundReader_SpeedChange*>(m_pResample->GetSource());
   m_fSpeedRatio = cpy.m_fSpeedRatio;

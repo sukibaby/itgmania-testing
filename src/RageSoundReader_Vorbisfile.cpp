@@ -107,7 +107,7 @@ static std::string ov_ssprintf(int err, const char* fmt, ...) {
 
 RageSoundReader_FileReader::OpenResult RageSoundReader_Vorbisfile::Open(
     RageFileBasic* pFile) {
-  m_pFile = pFile;
+  m_pFile.reset(pFile);
   vf = new OggVorbis_File;
   memset(vf, 0, sizeof(*vf));
 

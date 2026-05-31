@@ -3,10 +3,7 @@
 #include <string>
 
 #include "LuaManager.h"
-#include "RageUtil_AutoPtr.h"
 #include "global.h"
-
-REGISTER_CLASS_TRAITS(LuaReference, new LuaReference(*pCopy))
 
 LuaReference::LuaReference() { m_iReference = LUA_NOREF; }
 
@@ -151,9 +148,8 @@ bool FromStack<LuaReference>(lua_State* L, LuaReference& Object, int iOffset) {
 template <>
 bool FromStack<apActorCommands>(
     lua_State* L, apActorCommands& Object, int iOffset) {
-  LuaReference* pRef = new LuaReference;
-  FromStack(L, *pRef, iOffset);
-  Object = apActorCommands(pRef);
+  Object = std::make_shared<LuaReference>();
+  FromStack(L, *Object, iOffset);
   return true;
 }
 }  // namespace LuaHelpers

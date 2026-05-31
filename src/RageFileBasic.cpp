@@ -8,10 +8,7 @@
 #include <string>
 
 #include "RageUtil.h"
-#include "RageUtil_AutoPtr.h"
 #include "global.h"
-
-REGISTER_CLASS_TRAITS(RageFileBasic, pCopy->Copy());
 
 RageFileObj::RageFileObj() {
   m_pReadBuffer = nullptr;

@@ -1,11 +1,12 @@
 #ifndef ACTOR_H
 #define ACTOR_H
 
+#include <memory>
+
 #include "EnumHelper.h"
 #include "LuaReference.h"
 #include "PlayerNumber.h"
 #include "RageTypes.h"
-#include "RageUtil_AutoPtr.h"
 class XNode;
 struct lua_State;
 class LuaClass;
@@ -16,8 +17,6 @@ class LuaClass;
 
 #include "MessageManager.h"
 #include "Tween.h"
-
-typedef AutoPtrCopyOnWrite<LuaReference> apActorCommands;
 
 /** @brief The background layer. */
 constexpr int DRAW_ORDER_BEFORE_EVERYTHING = -200;
@@ -723,7 +722,7 @@ class Actor : public MessageSubscriber {
   void SetRateScalingEnabled(bool b) { rate_scaling_enabled_ = b; }
   bool GetRateScalingEnabled() { return rate_scaling_enabled_; }
 
-  HiddenPtr<LuaClass> m_pLuaInstance;
+  std::unique_ptr<LuaClass> m_pLuaInstance;
 
  protected:
   /** @brief the name of the Actor. */

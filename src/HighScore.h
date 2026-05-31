@@ -1,13 +1,13 @@
 #ifndef HIGH_SCORE_H
 #define HIGH_SCORE_H
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "DateTime.h"
 #include "GameConstantsAndTypes.h"
 #include "Grade.h"
-#include "RageUtil_AutoPtr.h"
 #include "global.h"
 
 class XNode;
@@ -20,6 +20,9 @@ struct HighScoreImpl;
  * This is scoring data that is persisted between sessions. */
 struct HighScore {
   HighScore();
+  HighScore(const HighScore& other);
+  HighScore& operator=(const HighScore& other);
+  ~HighScore();
 
   /**
    * @brief Retrieve the name of the player that set the high score.
@@ -111,7 +114,7 @@ struct HighScore {
   void PushSelf(lua_State* L);
 
  private:
-  HiddenPtr<HighScoreImpl> m_Impl;
+  std::unique_ptr<HighScoreImpl> m_Impl;
 };
 
 /** @brief The list of high scores */

@@ -290,9 +290,6 @@ void LuaBinding::ApplyDerivedType(
   lua_setmetatable(L, iTable);
 }
 
-#include "RageUtil_AutoPtr.h"
-REGISTER_CLASS_TRAITS(LuaClass, new LuaClass(*pCopy))
-
 void* LuaBinding::GetPointerFromStack(
     Lua* L, const std::string& sType, int iArg) {
   iArg = LuaHelpers::AbsIndex(L, iArg);
