@@ -125,6 +125,21 @@ class Preference : public IPreference {
   }
 
  private:
+  void AssignValue(const T& value) {
+    if (m_currentValue == value) {
+      return;
+    }
+
+    m_currentValue = value;
+    BroadcastPreferenceChanged(GetName());
+  }
+
+  void ValidateValue(T& value) const {
+    if (m_pfnValidate) {
+      m_pfnValidate(value);
+    }
+  }
+
   T m_currentValue;
   T m_defaultValue;
   void (*m_pfnValidate)(T& val);
