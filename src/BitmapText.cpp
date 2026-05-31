@@ -42,6 +42,12 @@ REGISTER_ACTOR_CLASS(BitmapText);
 
 static std::vector<RageColor> RAINBOW_COLORS;
 
+void BitmapText::FontDeleter::operator()(Font* font) const {
+  if (font != nullptr) {
+    FONT->UnloadFont(font);
+  }
+}
+
 BitmapText::BitmapText() {
   // Loading these theme metrics is slow, so only do it every 20th time.
   // todo: why not check to see if you need to bother updating this at all? -aj
@@ -78,14 +84,13 @@ BitmapText::BitmapText() {
   m_TextGlowMode = TextGlowMode_Both;  // Both used for compatibility with SM4
 }
 
-BitmapText::~BitmapText() {
-  if (m_pFont) {
-    FONT->UnloadFont(m_pFont);
-  }
-}
+BitmapText::~BitmapText() = default;
 
 BitmapText& BitmapText::operator=(const BitmapText& cpy) {
   Actor::operator=(cpy);
+
+  Font* copiedFont =
+      cpy.m_pFont != nullptr ? FONT->CopyFont(cpy.m_pFont.get()) : nullptr;
 
   m_bUppercase = cpy.m_bUppercase;
   m_sText = cpy.m_sText;
@@ -109,15 +114,7 @@ BitmapText& BitmapText::operator=(const BitmapText& cpy) {
   BMT_current = cpy.BMT_current;
   BMT_start = cpy.BMT_start;
 
-  if (m_pFont) {
-    FONT->UnloadFont(m_pFont);
-  }
-
-  if (cpy.m_pFont != nullptr) {
-    m_pFont = FONT->CopyFont(cpy.m_pFont);
-  } else {
-    m_pFont = nullptr;
-  }
+  m_pFont.reset(copiedFont);
 
   return *this;
 }
@@ -219,12 +216,7 @@ void BitmapText::LoadFromNode(const XNode* node) {
 bool BitmapText::LoadFromFont(const std::string& sFontFilePath) {
   CHECKPOINT_M(ssprintf("BitmapText::LoadFromFont(%s)", sFontFilePath.c_str()));
 
-  if (m_pFont) {
-    FONT->UnloadFont(m_pFont);
-    m_pFont = nullptr;
-  }
-
-  m_pFont = FONT->LoadFont(sFontFilePath);
+  m_pFont.reset(FONT->LoadFont(sFontFilePath));
 
   this->SetStrokeColor(m_pFont->GetDefaultStrokeColor());
 
@@ -239,12 +231,7 @@ bool BitmapText::LoadFromTextureAndChars(
       "BitmapText::LoadFromTextureAndChars(\"%s\",\"%s\")",
       sTexturePath.c_str(), sChars.c_str()));
 
-  if (m_pFont) {
-    FONT->UnloadFont(m_pFont);
-    m_pFont = nullptr;
-  }
-
-  m_pFont = FONT->LoadFont(sTexturePath, sChars);
+  m_pFont.reset(FONT->LoadFont(sTexturePath, sChars));
 
   BuildChars();
 
@@ -257,15 +244,20 @@ void BitmapText::BuildChars() {
     return;
   }
 
+  const bool rightToLeft = m_pFont->IsRightToLeft();
+
   // calculate line lengths and widths
   m_size.x = 0;
 
   m_iLineWidths.clear();
+  m_iLineWidths.reserve(m_wTextLines.size());
+  size_t glyphCount = 0;
   for (unsigned l = 0; l < m_wTextLines.size(); l++)  // for each line
   {
     m_iLineWidths.push_back(
         m_pFont->GetLineWidthInSourcePixels(m_wTextLines[l]));
     m_size.x = std::max(m_size.x, (float)m_iLineWidths.back());
+    glyphCount += m_wTextLines[l].size();
   }
 
   /* Ensure that the width is always even. This maintains pixel alignment;
@@ -274,6 +266,8 @@ void BitmapText::BuildChars() {
 
   m_aVertices.clear();
   m_vpFontPageTextures.clear();
+  m_aVertices.reserve(glyphCount * 4);
+  m_vpFontPageTextures.reserve(glyphCount);
 
   if (m_wTextLines.empty()) {
     return;
@@ -295,9 +289,12 @@ void BitmapText::BuildChars() {
   {
     iY += m_pFont->GetHeight();
 
-    std::wstring sLine = m_wTextLines[i];
-    if (m_pFont->IsRightToLeft()) {
-      reverse(sLine.begin(), sLine.end());
+    const std::wstring* sLine = &m_wTextLines[i];
+    std::wstring reversedLine;
+    if (rightToLeft) {
+      reversedLine = *sLine;
+      reverse(reversedLine.begin(), reversedLine.end());
+      sLine = &reversedLine;
     }
     const int iLineWidth = m_iLineWidths[i];
 
@@ -306,12 +303,12 @@ void BitmapText::BuildChars() {
         +m_size.x / 2.0f - iLineWidth);
     int iX = std::lrint(fX);
 
-    for (unsigned j = 0; j < sLine.size(); ++j) {
+    for (unsigned j = 0; j < sLine->size(); ++j) {
       RageSpriteVertex v[4];
-      const glyph& g = m_pFont->GetGlyph(sLine[j]);
+      const glyph& g = m_pFont->GetGlyph((*sLine)[j]);
 
       // Advance the cursor early for RTL(?)
-      if (m_pFont->IsRightToLeft()) {
+      if (rightToLeft) {
         iX -= g.m_iHadvance;
       }
 
@@ -538,6 +535,8 @@ void BitmapText::SetTextInternal() {
     // TODO: Move this wrapping logic into Font.
     std::vector<std::string> asLines;
     split(m_sText, "\n", asLines, false);
+    m_wTextLines.reserve(asLines.size());
+    const int iSpaceWidth = m_pFont->GetLineWidthInSourcePixels(L" ");
 
     for (unsigned line = 0; line < asLines.size(); ++line) {
       std::vector<std::string> asWords;
@@ -558,8 +557,7 @@ void BitmapText::SetTextInternal() {
         }
 
         std::string sToAdd = " " + sWord;
-        int iWidthToAdd =
-            m_pFont->GetLineWidthInSourcePixels(L" ") + iWidthWord;
+        int iWidthToAdd = iSpaceWidth + iWidthWord;
         if (iCurLineWidth + iWidthToAdd <=
             m_iWrapWidthPixels)  // will fit on current line
         {
@@ -773,9 +771,9 @@ void BitmapText::DrawPrimitives() noexcept {
           iEnd = i + attr.length * 4;
         }
         iEnd = std::min(iEnd, m_aVertices.size());  // clamp to vertex size
-        std::vector<RageColor> temp_attr_diffuse(
-            NUM_DIFFUSE_COLORS, m_internalDiffuse);
+        RageColor temp_attr_diffuse[NUM_DIFFUSE_COLORS];
         for (size_t c = 0; c < NUM_DIFFUSE_COLORS; ++c) {
+          temp_attr_diffuse[c] = m_internalDiffuse;
           temp_attr_diffuse[c] *= attr.diffuse[c];
           if (m_mult_attrs_with_diffuse) {
             temp_attr_diffuse[c] *= m_pTempState->diffuse[c];
@@ -934,7 +932,10 @@ void BitmapText::AddAttribute(size_t iPos, const Attribute& attr) {
   // Check if there are existing attributes overlapping this one. We might need
   // to remove or fix them up.
   const size_t iStartPos = iPos - iLines;
-  const size_t iEndPos = iStartPos + newAttr.length;
+  const bool newAttrOpenEnded = newAttr.length < 0;
+  const size_t iEndPos =
+      newAttrOpenEnded ? static_cast<size_t>(-1)
+                       : iStartPos + static_cast<size_t>(newAttr.length);
 
   // First attribute starting at the same position or further than the new
   // attribute
@@ -945,19 +946,29 @@ void BitmapText::AddAttribute(size_t iPos, const Attribute& attr) {
     auto iterLastBeforeStart = iterFirstAfterStart;
     --iterLastBeforeStart;
 
+    const int iLengthBeforeStart =
+        static_cast<int>(iStartPos - iterLastBeforeStart->first);
     // Fixup the length so that it ends before the new attribute
-    iterLastBeforeStart->second.length = std::min(
-        iterLastBeforeStart->second.length,
-        static_cast<int>(iStartPos - iterLastBeforeStart->first));
+    if (iterLastBeforeStart->second.length < 0) {
+      iterLastBeforeStart->second.length = iLengthBeforeStart;
+    } else {
+      iterLastBeforeStart->second.length =
+          std::min(iterLastBeforeStart->second.length, iLengthBeforeStart);
+    }
   }
 
   // First attribute starting after the end of the new attribute
-  auto iterLastBeforeEnd = m_mAttributes.lower_bound(iEndPos);
+  auto iterLastBeforeEnd =
+      newAttrOpenEnded ? m_mAttributes.end() : m_mAttributes.lower_bound(iEndPos);
   if (iterLastBeforeEnd != iterFirstAfterStart) {
     // Go back one, so that we are at the last overlapping attribute
     --iterLastBeforeEnd;
     const bool lastAttrOverlappingCompletely =
-        iterLastBeforeEnd->first + iterLastBeforeEnd->second.length <= iEndPos;
+        newAttrOpenEnded ||
+        (iterLastBeforeEnd->second.length >= 0 &&
+         iterLastBeforeEnd->first +
+                 static_cast<size_t>(iterLastBeforeEnd->second.length) <=
+             iEndPos);
 
     auto iterEraseEnd = iterLastBeforeEnd;
     // If it's overlapping completely, erase it as well
@@ -970,7 +981,10 @@ void BitmapText::AddAttribute(size_t iPos, const Attribute& attr) {
     if (!lastAttrOverlappingCompletely) {
       // Fixup the length accordingly
       Attribute lastAttr = iterLastBeforeEnd->second;
-      lastAttr.length -= iEndPos - iterLastBeforeEnd->first;
+      if (lastAttr.length >= 0) {
+        lastAttr.length -=
+            static_cast<int>(iEndPos - iterLastBeforeEnd->first);
+      }
 
       // Erase it and insert just after the new attribute
       m_mAttributes.erase(iterLastBeforeEnd);

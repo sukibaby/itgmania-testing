@@ -2,6 +2,7 @@
 #define BITMAP_TEXT_H
 
 #include <cstddef>
+#include <memory>
 #include <map>
 #include <string>
 #include <vector>
@@ -16,6 +17,10 @@ struct FontPageTextures;
 /** @brief An actor that holds a Font and draws text to the screen. */
 class BitmapText : public Actor {
  public:
+  struct FontDeleter {
+    void operator()(Font* font) const;
+  };
+
   BitmapText();
   BitmapText(const BitmapText& cpy);
   BitmapText& operator=(const BitmapText& cpy);
@@ -128,7 +133,7 @@ class BitmapText : public Actor {
   virtual void PushSelf(lua_State* L) override;
 
  protected:
-  Font* m_pFont;
+  std::unique_ptr<Font, FontDeleter> m_pFont;
   bool m_bUppercase;
   std::string m_sText;
   std::vector<std::wstring> m_wTextLines;
