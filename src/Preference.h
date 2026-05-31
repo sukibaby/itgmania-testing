@@ -77,6 +77,7 @@ class Preference : public IPreference {
         m_currentValue(defaultValue),
         m_defaultValue(defaultValue),
         m_pfnValidate(pfnValidate) {
+    ValidateValue(m_defaultValue);
     LoadDefault();
   }
 
@@ -84,26 +85,31 @@ class Preference : public IPreference {
     return StringConversion::ToString<T>(m_currentValue);
   }
   void FromString(const std::string& s) {
-    if (!StringConversion::FromString<T>(s, m_currentValue)) {
-      m_currentValue = m_defaultValue;
+    T value = m_defaultValue;
+    if (!StringConversion::FromString<T>(s, value)) {
+      value = m_defaultValue;
     }
-    if (m_pfnValidate) {
-      m_pfnValidate(m_currentValue);
-    }
+    ValidateValue(value);
+    AssignValue(value);
   }
   void SetFromStack(lua_State* L) {
-    LuaHelpers::Pop<T>(L, m_currentValue);
-    if (m_pfnValidate) {
-      m_pfnValidate(m_currentValue);
-    }
+    T value = m_currentValue;
+    LuaHelpers::Pop<T>(L, value);
+    ValidateValue(value);
+    AssignValue(value);
   }
   void PushValue(lua_State* L) const { LuaHelpers::Push<T>(L, m_currentValue); }
 
-  void LoadDefault() { m_currentValue = m_defaultValue; }
+  void LoadDefault() {
+    T value = m_defaultValue;
+    ValidateValue(value);
+    AssignValue(value);
+  }
   void SetDefaultFromString(const std::string& s) {
-    T def = m_defaultValue;
-    if (!StringConversion::FromString<T>(s, m_defaultValue)) {
-      m_defaultValue = def;
+    T value = m_defaultValue;
+    if (StringConversion::FromString<T>(s, value)) {
+      ValidateValue(value);
+      m_defaultValue = value;
     }
   }
 
@@ -114,8 +120,9 @@ class Preference : public IPreference {
   operator const T&() const { return Get(); }
 
   void Set(const T& other) {
-    m_currentValue = other;
-    BroadcastPreferenceChanged(GetName());
+    T value = other;
+    ValidateValue(value);
+    AssignValue(value);
   }
 
   static Preference<T>* GetPreferenceByName(const std::string& sName) {
