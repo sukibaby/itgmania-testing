@@ -431,6 +431,10 @@ void PrefsManager::ReadPrefsFromDisk() {
       SpecialFiles::DEFAULTS_INI_PATH, GetPreferencesSection());
   IPreference::LoadAllDefaults();
 
+  // Rebuild per-game overrides from disk on every reload so removed sections
+  // and keys do not linger in memory.
+  m_mapGameNameToGamePrefs.clear();
+
   ReadPrefsFromFile(SpecialFiles::PREFERENCES_INI_PATH, "Options", false);
   ReadGamePrefsFromIni(SpecialFiles::PREFERENCES_INI_PATH);
   ReadPrefsFromFile(
