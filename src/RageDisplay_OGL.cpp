@@ -905,9 +905,9 @@ void RageDisplay_Legacy::EndFrame() {
     CameraPopMatrix();
   }
 
-  FrameLimitBeforeVsync(g_pWind->GetActualVideoModeParams().rate);
+  BeforePresent();
   g_pWind->SwapBuffers();
-  FrameLimitAfterVsync();
+  AfterPresent();
 
   // Some would advise against glFinish(), ever. Those people don't realize
   // the degree of freedom GL hosts are permitted in queueing commands.

@@ -835,19 +835,17 @@ void RageDisplay::DrawCircle(const RageSpriteVertex& v, float radius) {
   this->DrawCircleInternal(v, radius);
 }
 
-void RageDisplay::FrameLimitBeforeVsync(int iFPS) {
-  ASSERT(iFPS != 0);
-
+static int GetFrameLimitDelayMicroseconds(
+    const ActualVideoModeParams& videoMode) {
   int iDelayMicroseconds = 0;
-  if (g_fFrameLimitPercent.Get() > 0.0f && !g_LastFrameEndedAt.IsZero()) {
+  if (!videoMode.vsync && videoMode.rate > 0 &&
+      g_fFrameLimitPercent.Get() > 0.0f && !g_LastFrameEndedAt.IsZero()) {
     float fFrameTime = g_LastFrameEndedAt.GetDeltaTime();
-    float fExpectedTime = 1.0f / iFPS;
+    float fExpectedTime = 1.0f / videoMode.rate;
 
-    /* This is typically used to turn some of the delay that would normally
-     * be waiting for vsync and turn it into a usleep, to make sure we give
-     * up the CPU.  If we overshoot the sleep, then we'll miss the vsync,
-     * so allow tweaking the amount of time we expect a frame to take.
-     * Frame limiting is disabled by setting this to 0. */
+    /* When the renderer is not blocking in present, use the manual frame
+     * limiter to target the display's nominal refresh interval.  If vsync is
+     * enabled, let present own the pacing instead of sleeping ahead of it. */
     fExpectedTime *= g_fFrameLimitPercent.Get();
     float fExtraTime = fExpectedTime - fFrameTime;
 
@@ -860,16 +858,18 @@ void RageDisplay::FrameLimitBeforeVsync(int iFPS) {
         10000);  // give some time to other processes and threads
   }
 
+  return iDelayMicroseconds;
+}
+
+void RageDisplay::BeforePresent() {
+  const int iDelayMicroseconds =
+      GetFrameLimitDelayMicroseconds(GetActualVideoModeParams());
   if (iDelayMicroseconds > 0) {
     usleep(iDelayMicroseconds);
   }
 }
 
-void RageDisplay::FrameLimitAfterVsync() {
-  if (g_fFrameLimitPercent.Get() == 0.0f) {
-    return;
-  }
-
+void RageDisplay::AfterPresent() {
   g_LastFrameEndedAt.Touch();
 }
 

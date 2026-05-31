@@ -19,6 +19,7 @@
 #include "NotesLoaderSM.h"
 #include "NotesLoaderSSC.h"
 #include "PlayerNumber.h"
+#include "Preference.h"
 #include "PrefsManager.h"
 #include "RageDisplay.h"
 #include "RageLog.h"
@@ -55,6 +56,8 @@ static RageEvent* g_Mutex;
 static bool g_UpdatingTimer;
 static bool g_Shutdown;
 static bool g_bFlushing = false;
+static Preference<bool> g_bEnableFrameTimingAdjustment(
+  "EnableFrameTimingAdjustment", false);
 
 enum FadeState { FADE_NONE, FADE_OUT, FADE_WAIT, FADE_IN };
 static FadeState g_FadeState = FADE_NONE;
@@ -492,6 +495,11 @@ GameSoundManager::~GameSoundManager() {
 
 float GameSoundManager::GetFrameTimingAdjustment(float fDeltaTime) {
   /*
+   * NOTE: This is only useful if vsync if the host PC has a poor quality or
+   * low-resolution scheduler.  This is a legacy method, but it might help some
+   * users, so I don't want to just remove it. But it is off by default now,
+   * since it can cause stuttering if the assumptions below don't hold. -sukibaby
+   * 
    * We get one update per frame, and we're updated early, almost immediately
    * after vsync, near the beginning of the game loop.  However, it's very
    * likely that we'll lose the scheduler while waiting for vsync, and some
@@ -508,16 +516,20 @@ float GameSoundManager::GetFrameTimingAdjustment(float fDeltaTime) {
    * than that, we probably had a frame skip, in which case we have bigger skip
    * problems, so don't adjust.
    */
+  const ActualVideoModeParams videoMode = DISPLAY->GetActualVideoModeParams();
+  if (!videoMode.vsync || videoMode.rate <= 0) {
+    return 0;
+  }
+
   static int iLastFPS = 0;
   int iThisFPS = DISPLAY->GetFPS();
 
-  if (iThisFPS != DISPLAY->GetActualVideoModeParams().rate ||
-      iThisFPS != iLastFPS) {
+  if (iThisFPS != videoMode.rate || iThisFPS != iLastFPS) {
     iLastFPS = iThisFPS;
     return 0;
   }
 
-  const float fExpectedDelay = 1.0f / iThisFPS;
+  const float fExpectedDelay = 1.0f / videoMode.rate;
   const float fExtraDelay = fDeltaTime - fExpectedDelay;
   if (std::abs(fExtraDelay) >= fExpectedDelay / 2) {
     return 0;
@@ -603,7 +615,18 @@ void GameSoundManager::Update(float fDeltaTime) {
     return;
   }
 
-  const float fAdjust = GetFrameTimingAdjustment(fDeltaTime);
+  static const bool bEnableFrameTimingAdjustment = g_bEnableFrameTimingAdjustment.Get();
+
+  float fAdjust = 0.0f;
+  if (bEnableFrameTimingAdjustment) {
+    /* Adjust the time to compensate for scheduler issues, but only if the
+     * Frame Timing Adjustment option is enabled. It's disabled by default
+     * because it's more likely to add entropy or latency than to help, on
+     * any modern OS with a monotonic clock. It should be used if a monotonic
+     * clock isn't available. */
+    fAdjust = GetFrameTimingAdjustment(fDeltaTime);
+  }
+
   if (!g_Playing->m_Music->IsPlaying()) {
     /* There's no song playing.  Fake it. */
     CHECKPOINT_M(ssprintf(
@@ -659,9 +682,11 @@ void GameSoundManager::Update(float fDeltaTime) {
     GAMESTATE->UpdateSongPosition(
         GAMESTATE->m_Position.m_fMusicSeconds + fDeltaTime,
         g_Playing->m_Timing);
-  } else {
+  } else if (bEnableFrameTimingAdjustment) {
     GAMESTATE->UpdateSongPosition(
         fSeconds + fAdjust, g_Playing->m_Timing, tm + fAdjust);
+  } else {
+    GAMESTATE->UpdateSongPosition(fSeconds, g_Playing->m_Timing, tm);
   }
 
   // Send crossed messages

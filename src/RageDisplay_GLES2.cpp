@@ -413,9 +413,9 @@ void RageDisplay_GLES2::EndFrame() {
   glFlush();
 
   // XXX: This is broken on NVidia, as their xrandr sucks.
-  FrameLimitBeforeVsync(g_pWind->GetActualVideoModeParams().rate);
+  BeforePresent();
   g_pWind->SwapBuffers();
-  FrameLimitAfterVsync();
+  AfterPresent();
 
   g_pWind->Update();
 

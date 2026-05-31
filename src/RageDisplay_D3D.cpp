@@ -602,13 +602,12 @@ bool RageDisplay_D3D::BeginFrame() {
   return RageDisplay::BeginFrame();
 }
 
-static RageTimer g_LastFrameEndedAt(RageZeroTimer);
 void RageDisplay_D3D::EndFrame() {
   g_pd3dDevice->EndScene();
 
-  FrameLimitBeforeVsync(GetActualVideoModeParams().rate);
+  BeforePresent();
   g_pd3dDevice->Present(0, 0, 0, 0);
-  FrameLimitAfterVsync();
+  AfterPresent();
 
   RageDisplay::EndFrame();
 }

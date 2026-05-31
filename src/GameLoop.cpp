@@ -45,19 +45,23 @@ void GameLoop::SetUpdateRate(float fUpdateRate) { g_fUpdateRate = fUpdateRate; }
 float GameLoop::GetUpdateRate() { return g_fUpdateRate; }
 
 static void CheckGameLoopTimerSkips(float fDeltaTime) {
+  const ActualVideoModeParams videoMode = DISPLAY->GetActualVideoModeParams();
+  if (!videoMode.vsync || videoMode.rate <= 0) {
+    return;
+  }
+
   static int iLastFPS = 0;
   int iThisFPS = DISPLAY->GetFPS();
 
-  /* If vsync is on, and we have a solid framerate (vsync == refresh and we've
-   * sustained this for at least one second), we expect the amount of time for
-   * the last frame to be 1/FPS. */
-  if (iThisFPS != DISPLAY->GetActualVideoModeParams().rate ||
-      iThisFPS != iLastFPS) {
+  /* If vsync is enabled and we've sustained the display refresh rate for at
+   * least one second, we expect the amount of time for the last frame to match
+   * the refresh interval. */
+  if (iThisFPS != videoMode.rate || iThisFPS != iLastFPS) {
     iLastFPS = iThisFPS;
     return;
   }
 
-  const float fExpectedTime = 1.0f / iThisFPS;
+  const float fExpectedTime = 1.0f / videoMode.rate;
   const float fDifference = fDeltaTime - fExpectedTime;
   if (std::abs(fDifference) > 0.002f && std::abs(fDifference) < 0.100f) {
     LOG->Trace(
