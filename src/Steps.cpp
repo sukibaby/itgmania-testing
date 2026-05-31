@@ -58,6 +58,17 @@
 // For hashing hart keys - Mina
 #include "CryptManager.h"
 
+namespace {
+std::unique_ptr<NoteData> CloneNoteData(
+    const std::unique_ptr<NoteData>& noteData) {
+  if (!noteData) {
+    return std::make_unique<NoteData>();
+  }
+
+  return std::make_unique<NoteData>(*noteData);
+}
+}  // namespace
+
 std::optional<StepParity::StageLayout> getLayout(StepsType ty) {
   switch (ty) {
     case StepsType_dance_single:
@@ -103,7 +114,7 @@ Steps::Steps(Song* song)
     : m_StepsType(StepsType_Invalid),
       m_pSong(song),
       parent(nullptr),
-      m_pNoteData(new NoteData),
+  m_pNoteData(std::make_unique<NoteData>()),
       m_bNoteDataIsFilled(false),
       m_sNoteDataCompressed(""),
       m_sFilename(""),
@@ -125,6 +136,109 @@ Steps::Steps(Song* song)
       displayBPMType(DISPLAY_BPM_ACTUAL),
       specifiedBPMMin(0),
       specifiedBPMMax(0) {}
+
+    Steps::Steps(const Steps& other)
+      : m_Attacks(other.m_Attacks),
+        m_sAttackString(other.m_sAttackString),
+        ChartKey(other.ChartKey),
+        m_Timing(other.m_Timing),
+        m_StepsType(other.m_StepsType),
+        m_StepsTypeStr(other.m_StepsTypeStr),
+        m_pSong(other.m_pSong),
+        parent(other.parent),
+        m_pNoteData(CloneNoteData(other.m_pNoteData)),
+        m_bNoteDataIsFilled(other.m_bNoteDataIsFilled),
+        m_sNoteDataCompressed(other.m_sNoteDataCompressed),
+        m_sFilename(other.m_sFilename),
+        m_bSavedToDisk(other.m_bSavedToDisk),
+        m_MusicFile(other.m_MusicFile),
+        m_LoadedFromProfile(other.m_LoadedFromProfile),
+        m_iHash(other.m_iHash),
+        m_sDescription(other.m_sDescription),
+        m_sChartStyle(other.m_sChartStyle),
+        m_Difficulty(other.m_Difficulty),
+        m_iMeter(other.m_iMeter),
+        m_bAreCachedRadarValuesJustLoaded(
+          other.m_bAreCachedRadarValuesJustLoaded),
+        m_bAreCachedTechCountsValuesJustLoaded(
+          other.m_bAreCachedTechCountsValuesJustLoaded),
+        m_CachedNpsPerMeasure(other.m_CachedNpsPerMeasure),
+        m_AreCachedNpsPerMeasureJustLoaded(
+          other.m_AreCachedNpsPerMeasureJustLoaded),
+        m_CachedNotesPerMeasure(other.m_CachedNotesPerMeasure),
+        m_AreCachedNotesPerMeasureJustLoaded(
+          other.m_AreCachedNotesPerMeasureJustLoaded),
+        m_PeakNps(other.m_PeakNps),
+        m_bIsCachedGrooveStatsHashJustLoaded(
+          other.m_bIsCachedGrooveStatsHashJustLoaded),
+        m_sGrooveStatsHash(other.m_sGrooveStatsHash),
+        m_iGrooveStatsHashVersion(other.m_iGrooveStatsHashVersion),
+        m_sCredit(other.m_sCredit),
+        chartName(other.chartName),
+        displayBPMType(other.displayBPMType),
+        specifiedBPMMin(other.specifiedBPMMin),
+        specifiedBPMMax(other.specifiedBPMMax) {
+      std::copy(
+        other.m_CachedRadarValues, other.m_CachedRadarValues + NUM_PLAYERS,
+        m_CachedRadarValues);
+      std::copy(
+        other.m_CachedTechCounts, other.m_CachedTechCounts + NUM_PLAYERS,
+        m_CachedTechCounts);
+    }
+
+    Steps& Steps::operator=(const Steps& other) {
+      if (this == &other) {
+      return *this;
+      }
+
+      m_Attacks = other.m_Attacks;
+      m_sAttackString = other.m_sAttackString;
+      ChartKey = other.ChartKey;
+      m_Timing = other.m_Timing;
+      m_StepsType = other.m_StepsType;
+      m_StepsTypeStr = other.m_StepsTypeStr;
+      m_pSong = other.m_pSong;
+      parent = other.parent;
+      m_pNoteData = CloneNoteData(other.m_pNoteData);
+      m_bNoteDataIsFilled = other.m_bNoteDataIsFilled;
+      m_sNoteDataCompressed = other.m_sNoteDataCompressed;
+      m_sFilename = other.m_sFilename;
+      m_bSavedToDisk = other.m_bSavedToDisk;
+      m_MusicFile = other.m_MusicFile;
+      m_LoadedFromProfile = other.m_LoadedFromProfile;
+      m_iHash = other.m_iHash;
+      m_sDescription = other.m_sDescription;
+      m_sChartStyle = other.m_sChartStyle;
+      m_Difficulty = other.m_Difficulty;
+      m_iMeter = other.m_iMeter;
+      std::copy(
+        other.m_CachedRadarValues, other.m_CachedRadarValues + NUM_PLAYERS,
+        m_CachedRadarValues);
+      m_bAreCachedRadarValuesJustLoaded = other.m_bAreCachedRadarValuesJustLoaded;
+      std::copy(
+        other.m_CachedTechCounts, other.m_CachedTechCounts + NUM_PLAYERS,
+        m_CachedTechCounts);
+      m_bAreCachedTechCountsValuesJustLoaded =
+        other.m_bAreCachedTechCountsValuesJustLoaded;
+      m_CachedNpsPerMeasure = other.m_CachedNpsPerMeasure;
+      m_AreCachedNpsPerMeasureJustLoaded =
+        other.m_AreCachedNpsPerMeasureJustLoaded;
+      m_CachedNotesPerMeasure = other.m_CachedNotesPerMeasure;
+      m_AreCachedNotesPerMeasureJustLoaded =
+        other.m_AreCachedNotesPerMeasureJustLoaded;
+      m_PeakNps = other.m_PeakNps;
+      m_bIsCachedGrooveStatsHashJustLoaded =
+        other.m_bIsCachedGrooveStatsHashJustLoaded;
+      m_sGrooveStatsHash = other.m_sGrooveStatsHash;
+      m_iGrooveStatsHashVersion = other.m_iGrooveStatsHashVersion;
+      m_sCredit = other.m_sCredit;
+      chartName = other.chartName;
+      displayBPMType = other.displayBPMType;
+      specifiedBPMMin = other.specifiedBPMMin;
+      specifiedBPMMax = other.specifiedBPMMax;
+
+      return *this;
+    }
 
 Steps::~Steps() {}
 

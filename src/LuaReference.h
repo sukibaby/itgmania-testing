@@ -1,10 +1,10 @@
 #ifndef LUA_REFERENCE_H
 #define LUA_REFERENCE_H
 
+#include <memory>
 #include <string>
 
 #include "LuaManager.h"
-#include "RageUtil_AutoPtr.h"
 
 struct lua_State;
 typedef lua_State Lua;
@@ -83,7 +83,7 @@ class LuaReference {
   int m_iReference;
 };
 
-typedef AutoPtrCopyOnWrite<LuaReference> apActorCommands;
+  using apActorCommands = std::shared_ptr<LuaReference>;
 
 class LuaTable : public LuaReference {
  public:

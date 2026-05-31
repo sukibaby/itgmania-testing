@@ -3,15 +3,23 @@
 #ifndef RAGE_SOUND_READER_FILE_READER_H
 #define RAGE_SOUND_READER_FILE_READER_H
 
+#include <memory>
 #include <string>
 
 #include "RageSoundReader.h"
-#include "RageUtil_AutoPtr.h"
 class RageFileBasic;
 
 #define SoundReader_FileReader RageSoundReader_FileReader
 class RageSoundReader_FileReader : public RageSoundReader {
  public:
+  RageSoundReader_FileReader() = default;
+  RageSoundReader_FileReader(const RageSoundReader_FileReader& cpy);
+  RageSoundReader_FileReader& operator=(const RageSoundReader_FileReader& rhs);
+  RageSoundReader_FileReader(RageSoundReader_FileReader&&) noexcept = default;
+  RageSoundReader_FileReader& operator=(
+      RageSoundReader_FileReader&&) noexcept = default;
+  ~RageSoundReader_FileReader() override;
+
   /*
    * Return OPEN_OK if the file is open and ready to go.  Return
    * OPEN_UNKNOWN_FILE_FORMAT if the file appears to be of a different type.
@@ -29,8 +37,8 @@ class RageSoundReader_FileReader : public RageSoundReader {
 
   /* Takes ownership of pFile (even on failure). */
   virtual OpenResult Open(RageFileBasic* pFile) = 0;
-  virtual float GetStreamToSourceRatio() const { return 1.0f; }
-  virtual std::string GetError() const { return m_sError; }
+  float GetStreamToSourceRatio() const override { return 1.0f; }
+  std::string GetError() const override { return m_sError; }
 
   /* Open a file.  If pPrebuffer is non-nullptr, and the file is sufficiently
    * small, the (possibly compressed) data will be loaded entirely into memory,
@@ -40,7 +48,7 @@ class RageSoundReader_FileReader : public RageSoundReader {
 
  protected:
   void SetError(std::string sError) const { m_sError = sError; }
-  HiddenPtr<RageFileBasic> m_pFile;
+  std::unique_ptr<RageFileBasic> m_pFile;
 
  private:
   static RageSoundReader_FileReader* TryOpenFile(

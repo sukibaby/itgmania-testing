@@ -28,7 +28,6 @@
 #include "ProfileManager.h"
 #include "RageLog.h"
 #include "RageUtil.h"
-#include "RageUtil_AutoPtr.h"
 #include "ScreenManager.h"
 #include "Song.h"
 #include "SongManager.h"
@@ -42,9 +41,7 @@
 #include "global.h"
 
 static LocalizedString COULD_NOT_LAUNCH_BROWSER(
-    "GameCommand", "Could not launch web browser.");
-
-REGISTER_CLASS_TRAITS(GameCommand, new GameCommand(*pCopy));
+  "GameCommand", "Could not launch web browser.");
 
 void GameCommand::Init() {
   m_bApplyCommitsScreens = true;

@@ -13,12 +13,22 @@
 #include "PrefsManager.h"
 #include "RadarValues.h"
 #include "RageUtil.h"
-#include "RageUtil_AutoPtr.h"
 #include "ThemeMetric.h"
 #include "XmlFile.h"
 #include "global.h"
 
 ThemeMetric<std::string> EMPTY_NAME("HighScore", "EmptyName");
+
+namespace {
+std::unique_ptr<HighScoreImpl> CloneHighScoreImpl(
+    const std::unique_ptr<HighScoreImpl>& source) {
+  if (!source) {
+    return std::make_unique<HighScoreImpl>();
+  }
+
+  return std::make_unique<HighScoreImpl>(*source);
+}
+}  // namespace
 
 struct HighScoreImpl {
   std::string sName;  // name that shows in the machine's ranking screen
@@ -216,11 +226,23 @@ void HighScoreImpl::LoadFromNode(const XNode* pNode) {
   grade = std::clamp(grade, Grade_Tier01, Grade_Failed);
 }
 
-REGISTER_CLASS_TRAITS(HighScoreImpl, new HighScoreImpl(*pCopy))
+HighScore::HighScore() : m_Impl(std::make_unique<HighScoreImpl>()) {}
 
-HighScore::HighScore() { m_Impl = new HighScoreImpl; }
+HighScore::HighScore(const HighScore& other)
+    : m_Impl(CloneHighScoreImpl(other.m_Impl)) {}
 
-void HighScore::Unset() { m_Impl = new HighScoreImpl; }
+HighScore& HighScore::operator=(const HighScore& other) {
+  if (this == &other) {
+    return *this;
+  }
+
+  m_Impl = CloneHighScoreImpl(other.m_Impl);
+  return *this;
+}
+
+HighScore::~HighScore() = default;
+
+void HighScore::Unset() { m_Impl = std::make_unique<HighScoreImpl>(); }
 
 bool HighScore::IsEmpty() const {
   if (m_Impl->iTapNoteScores[TNS_W1] || m_Impl->iTapNoteScores[TNS_W2] ||

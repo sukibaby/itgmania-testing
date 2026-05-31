@@ -1,6 +1,7 @@
 #ifndef MUSIC_WHEEL_ITEM_H
 #define MUSIC_WHEEL_ITEM_H
 
+#include <memory>
 #include <string>
 
 #include "AutoActor.h"
@@ -10,7 +11,6 @@
 #include "MessageManager.h"
 #include "PlayerNumber.h"
 #include "RageTypes.h"
-#include "RageUtil_AutoPtr.h"
 #include "Song.h"
 #include "TextBanner.h"
 #include "ThemeMetric.h"
@@ -89,7 +89,7 @@ struct MusicWheelItemData : public WheelItemBaseData {
 
   // for TYPE_SORT
   std::string m_sLabel;
-  HiddenPtr<GameCommand> m_pAction;
+  std::shared_ptr<GameCommand> m_pAction;
 };
 
 #endif
