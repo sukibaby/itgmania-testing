@@ -133,7 +133,6 @@ list(APPEND SMDATA_RAGE_FILE_SRC
             "RageFileDriverReadAhead.cpp"
             "RageFileDriverSlice.cpp"
             "RageFileDriverTimeout.cpp"
-            "RageFileDriverZip.cpp"
             "RageFileManager.cpp"
             "RageFileManager_ReadAhead.cpp")
 
@@ -148,7 +147,6 @@ list(APPEND SMDATA_RAGE_FILE_HPP
             "RageFileDriverReadAhead.h"
             "RageFileDriverSlice.h"
             "RageFileDriverTimeout.h"
-            "RageFileDriverZip.h"
             "RageFileManager.h"
             "RageFileManager_ReadAhead.h")
 
