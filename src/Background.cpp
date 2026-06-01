@@ -70,100 +70,6 @@ static Preference<bool> g_bSongBackgrounds("SongBackgrounds", true);
 // Width of the region separating the left and right brightness areas:
 static float g_fBackgroundCenterWidth = 40;
 
-class BrightnessOverlay : public ActorFrame {
- public:
-  BrightnessOverlay();
-  void Update(float fDeltaTime);
-
-  void FadeToActualBrightness();
-  void SetActualBrightness();
-  void Set(float fBrightness);
-
- private:
-  Quad m_quadBGBrightness[NUM_PLAYERS];
-  Quad m_quadBGBrightnessFade;
-};
-
-struct BackgroundTransition {
-  apActorCommands cmdLeaves;
-  apActorCommands cmdRoot;
-};
-
-class BackgroundImpl : public ActorFrame {
- public:
-  BackgroundImpl();
-  ~BackgroundImpl();
-  void Init();
-
-  virtual void LoadFromSong(const Song* pSong);
-  virtual void Unload();
-
-  virtual void Update(float fDeltaTime);
-  virtual void DrawPrimitives();
-
-  void FadeToActualBrightness() { m_Brightness.FadeToActualBrightness(); }
-  void SetBrightness(float fBrightness) {
-    m_Brightness.Set(fBrightness);
-  } /* overrides pref and Cover */
-
-  DancingCharacters* GetDancingCharacters() { return m_pDancingCharacters; };
-
-  void GetLoadedBackgroundChanges(
-      std::vector<BackgroundChange>*
-          pBackgroundChangesOut[NUM_BackgroundLayer]);
-
- protected:
-  bool m_bInitted;
-  DancingCharacters* m_pDancingCharacters;
-  const Song* m_pSong;
-  std::map<std::string, BackgroundTransition> m_mapNameToTransition;
-  std::deque<BackgroundDef>
-      m_RandomBGAnimations;  // random background to choose from.  These may or
-                             // may not be loaded into m_BGAnimations.
-
-  void LoadFromRandom(
-      float fFirstBeat, float fEndBeat, const BackgroundChange& change);
-  bool IsDangerAllVisible();
-
-  class Layer {
-   public:
-    Layer();
-    void Unload();
-
-    // return true if created and added to m_BGAnimations
-    bool CreateBackground(
-        const Song* pSong, const BackgroundDef& bd, Actor* pParent);
-    // return def of the background that was created and added to
-    // m_BGAnimations. calls CreateBackground
-    BackgroundDef CreateRandomBGA(
-        const Song* pSong, const std::string& sEffect,
-        std::deque<BackgroundDef>& RandomBGAnimations, Actor* pParent);
-
-    int FindBGSegmentForBeat(float fBeat) const;
-    void UpdateCurBGChange(
-        const Song* pSong, float fLastMusicSeconds, float fCurrentTime,
-        const std::map<std::string, BackgroundTransition>& mapNameToTransition);
-
-    std::map<BackgroundDef, Actor*> m_BGAnimations;
-    std::vector<BackgroundChange> m_aBGChanges;
-    int m_iCurBGChangeIndex;
-    Actor* m_pCurrentBGA;
-    Actor* m_pFadingBGA;
-  };
-  Layer m_Layer[NUM_BackgroundLayer];
-
-  float m_fLastMusicSeconds;
-  bool m_bDangerAllWasVisible;
-
-  // cover up the edge of animations that might hang outside of the background
-  // rectangle
-  Quad m_quadBorderLeft, m_quadBorderTop, m_quadBorderRight, m_quadBorderBottom;
-
-  BrightnessOverlay m_Brightness;
-
-  BackgroundDef m_StaticBackgroundDef;
-};
-
 static RageColor GetBrightnessColor(float fBrightnessPercent) {
   RageColor cBrightness = RageColor(0, 0, 0, 1 - fBrightnessPercent);
   RageColor cClamp = RageColor(0.5f, 0.5f, 0.5f, CLAMP_OUTPUT_PERCENT);
@@ -180,19 +86,25 @@ static RageColor GetBrightnessColor(float fBrightnessPercent) {
   return ret;
 }
 
-BackgroundImpl::BackgroundImpl() {
-  m_bInitted = false;
-  m_pDancingCharacters = nullptr;
-  m_pSong = nullptr;
+Background::Background()
+    : m_disable_draw(false),
+      m_bInitted(false),
+      m_pSong(nullptr),
+      m_fLastMusicSeconds(-9999),
+      m_bDangerAllWasVisible(false) {}
+
+Background::~Background() {
+  RemoveAllChildren();
+  Unload();
 }
 
-BackgroundImpl::Layer::Layer() {
+Background::Layer::Layer() {
   m_iCurBGChangeIndex = -1;
   m_pCurrentBGA = nullptr;
   m_pFadingBGA = nullptr;
 }
 
-void BackgroundImpl::Init() {
+void Background::Init() {
   if (m_bInitted) {
     return;
   }
@@ -244,7 +156,7 @@ void BackgroundImpl::Init() {
   }
 
   if (bOneOrMoreChars && !bShowingBeginnerHelper && SHOW_DANCING_CHARACTERS) {
-    m_pDancingCharacters = new DancingCharacters;
+    m_pDancingCharacters = std::make_unique<DancingCharacters>();
   }
 
   RageColor c = GetBrightnessColor(0);
@@ -269,22 +181,22 @@ void BackgroundImpl::Init() {
   this->AddChild(&m_Brightness);
 }
 
-BackgroundImpl::~BackgroundImpl() {
-  Unload();
-  delete m_pDancingCharacters;
+void Background::FadeToActualBrightness() {
+  m_Brightness.FadeToActualBrightness();
 }
 
-void BackgroundImpl::Unload() {
+void Background::SetBrightness(float fBrightness) {
+  m_Brightness.Set(fBrightness);
+}
+
+void Background::Unload() {
   FOREACH_BackgroundLayer(i) m_Layer[i].Unload();
   m_pSong = nullptr;
   m_fLastMusicSeconds = -9999;
   m_RandomBGAnimations.clear();
 }
 
-void BackgroundImpl::Layer::Unload() {
-  for (std::pair<const BackgroundDef&, Actor*> iter : m_BGAnimations) {
-    delete iter.second;
-  }
+void Background::Layer::Unload() {
   m_BGAnimations.clear();
   m_aBGChanges.clear();
 
@@ -293,8 +205,8 @@ void BackgroundImpl::Layer::Unload() {
   m_iCurBGChangeIndex = -1;
 }
 
-bool BackgroundImpl::Layer::CreateBackground(
-    const Song* pSong, const BackgroundDef& bd, Actor* pParent) {
+bool Background::Layer::CreateBackground(
+    const Song* pSong, const BackgroundDef& bd) {
   ASSERT(m_BGAnimations.find(bd) == m_BGAnimations.end());
 
   // Resolve the background names
@@ -427,12 +339,12 @@ bool BackgroundImpl::Layer::CreateBackground(
   }
   ASSERT(!sEffectFile.empty());
 
-  Actor* pActor = ActorUtil::MakeActor(sEffectFile);
+  std::unique_ptr<Actor> pActor(ActorUtil::MakeActor(sEffectFile));
 
   if (pActor == nullptr) {
-    pActor = new Actor;
+    pActor = std::make_unique<Actor>();
   }
-  m_BGAnimations[bd] = pActor;
+  m_BGAnimations[bd] = std::move(pActor);
 
   for (unsigned i = 0; i < vsResolvedRef.size(); i++) {
     delete vsResolvedRef[i];
@@ -441,9 +353,9 @@ bool BackgroundImpl::Layer::CreateBackground(
   return true;
 }
 
-BackgroundDef BackgroundImpl::Layer::CreateRandomBGA(
+BackgroundDef Background::Layer::CreateRandomBGA(
     const Song* pSong, const std::string& sEffect,
-    std::deque<BackgroundDef>& RandomBGAnimations, Actor* pParent) {
+    std::deque<BackgroundDef>& RandomBGAnimations) {
   if (g_RandomBackgroundMode == BGMODE_OFF) {
     return BackgroundDef();
   }
@@ -467,18 +379,18 @@ BackgroundDef BackgroundImpl::Layer::CreateRandomBGA(
     bd.m_sEffect = sEffect;
   }
 
-  std::map<BackgroundDef, Actor*>::const_iterator iter =
+  std::map<BackgroundDef, std::unique_ptr<Actor>>::const_iterator iter =
       m_BGAnimations.find(bd);
 
   // create the background if it's not already created
   if (iter == m_BGAnimations.end()) {
-    bool bSuccess = CreateBackground(pSong, bd, pParent);
+    bool bSuccess = CreateBackground(pSong, bd);
     ASSERT(bSuccess);  // we fed it valid files, so this shouldn't fail
   }
   return bd;
 }
 
-void BackgroundImpl::LoadFromRandom(
+void Background::LoadFromRandom(
     float fFirstBeat, float fEndBeat, const BackgroundChange& change) {
   int iStartRow = BeatToNoteRow(fFirstBeat);
   int iEndRow = BeatToNoteRow(fEndBeat);
@@ -499,7 +411,7 @@ void BackgroundImpl::LoadFromRandom(
          j += int(RAND_BG_CHANGE_MEASURES * ts->GetNoteRowsPerMeasure())) {
       // Don't fade. It causes frame rate dip, especially on slower machines.
       BackgroundDef bd = m_Layer[0].CreateRandomBGA(
-          m_pSong, change.m_def.m_sEffect, m_RandomBGAnimations, this);
+          m_pSong, change.m_def.m_sEffect, m_RandomBGAnimations);
       if (!bd.IsEmpty()) {
         BackgroundChange c = change;
         c.m_def = bd;
@@ -540,7 +452,7 @@ void BackgroundImpl::LoadFromRandom(
       }
 
       BackgroundDef bd = m_Layer[0].CreateRandomBGA(
-          m_pSong, change.m_def.m_sEffect, m_RandomBGAnimations, this);
+          m_pSong, change.m_def.m_sEffect, m_RandomBGAnimations);
       if (!bd.IsEmpty()) {
         BackgroundChange c = change;
         c.m_def.m_sFile1 = bd.m_sFile1;
@@ -552,7 +464,7 @@ void BackgroundImpl::LoadFromRandom(
   }
 }
 
-void BackgroundImpl::LoadFromSong(const Song* pSong) {
+void Background::LoadFromSong(const Song* pSong) {
   Init();
   Unload();
   m_pSong = pSong;
@@ -630,7 +542,7 @@ void BackgroundImpl::LoadFromSong(const Song* pSong) {
             layer.m_BGAnimations.find(bd) != layer.m_BGAnimations.end();
 
         if (bd.m_sFile1 != RANDOM_BACKGROUND_FILE && !bIsAlreadyLoaded) {
-          if (layer.CreateBackground(m_pSong, bd, this)) {
+          if (layer.CreateBackground(m_pSong, bd)) {
             ;  // do nothing.  Create was successful.
           } else {
             if (i == BACKGROUND_LAYER_1) {
@@ -638,7 +550,7 @@ void BackgroundImpl::LoadFromSong(const Song* pSong) {
               // Don't use the BackgroundDef's effect, because it may be an
               // effect that requires 2 files, and random BGA will only supply
               // one file
-              bd = layer.CreateRandomBGA(pSong, "", m_RandomBGAnimations, this);
+              bd = layer.CreateRandomBGA(pSong, "", m_RandomBGAnimations);
               if (bd.IsEmpty()) {
                 bd = m_StaticBackgroundDef;
               }
@@ -703,7 +615,7 @@ void BackgroundImpl::LoadFromSong(const Song* pSong) {
         mainlayer.m_BGAnimations.end();
     if (!bIsAlreadyLoaded) {
       bool bSuccess =
-          mainlayer.CreateBackground(m_pSong, m_StaticBackgroundDef, this);
+          mainlayer.CreateBackground(m_pSong, m_StaticBackgroundDef);
       ASSERT(bSuccess);
     }
   }
@@ -746,7 +658,7 @@ void BackgroundImpl::LoadFromSong(const Song* pSong) {
   TEXTUREMAN->SetDefaultTexturePolicy(OldPolicy);
 }
 
-int BackgroundImpl::Layer::FindBGSegmentForBeat(float fBeat) const {
+int Background::Layer::FindBGSegmentForBeat(float fBeat) const {
   if (m_aBGChanges.empty()) {
     return -1;
   }
@@ -766,7 +678,7 @@ int BackgroundImpl::Layer::FindBGSegmentForBeat(float fBeat) const {
 }
 
 /* If the BG segment has changed, move focus to it. Send Update() calls. */
-void BackgroundImpl::Layer::UpdateCurBGChange(
+void Background::Layer::UpdateCurBGChange(
     const Song* pSong, float fLastMusicSeconds, float fCurrentTime,
     const std::map<std::string, BackgroundTransition>& mapNameToTransition) {
   ASSERT(fCurrentTime != GameState::MUSIC_SECONDS_INVALID);
@@ -806,7 +718,7 @@ void BackgroundImpl::Layer::UpdateCurBGChange(
 
     m_pFadingBGA = m_pCurrentBGA;
 
-    std::map<BackgroundDef, Actor*>::const_iterator iter =
+    std::map<BackgroundDef, std::unique_ptr<Actor>>::const_iterator iter =
         m_BGAnimations.find(change.m_def);
     if (iter == m_BGAnimations.end()) {
       XNode* pNode = change.m_def.CreateNode();
@@ -819,7 +731,7 @@ void BackgroundImpl::Layer::UpdateCurBGChange(
       return;
     }
 
-    m_pCurrentBGA = iter->second;
+    m_pCurrentBGA = iter->second.get();
 
     if (m_pFadingBGA == m_pCurrentBGA) {
       m_pFadingBGA = nullptr;
@@ -876,7 +788,7 @@ void BackgroundImpl::Layer::UpdateCurBGChange(
   }
 }
 
-void BackgroundImpl::Update(float fDeltaTime) {
+void Background::Update(float fDeltaTime) {
   ActorFrame::Update(fDeltaTime);
 
   {
@@ -900,7 +812,7 @@ void BackgroundImpl::Update(float fDeltaTime) {
   m_fLastMusicSeconds = GAMESTATE->m_Position.m_fMusicSeconds;
 }
 
-void BackgroundImpl::DrawPrimitives() {
+void Background::DrawPrimitives() {
   if (g_fBGBrightness == 0.0f) {
     return;
   }
@@ -937,13 +849,13 @@ void BackgroundImpl::DrawPrimitives() {
   ActorFrame::DrawPrimitives();
 }
 
-void BackgroundImpl::GetLoadedBackgroundChanges(
+void Background::GetLoadedBackgroundChanges(
     std::vector<BackgroundChange>* pBackgroundChangesOut[NUM_BackgroundLayer]) {
   FOREACH_BackgroundLayer(i) * pBackgroundChangesOut[i] =
       m_Layer[i].m_aBGChanges;
 }
 
-bool BackgroundImpl::IsDangerAllVisible() {
+bool Background::IsDangerAllVisible() {
   // The players are never in danger in FAIL_OFF.
   FOREACH_PlayerNumber(p) if (
       GAMESTATE->GetPlayerFailType(GAMESTATE->m_pPlayerState[p]) ==
@@ -961,7 +873,7 @@ bool BackgroundImpl::IsDangerAllVisible() {
   return GAMESTATE->AllAreInDangerOrWorse();
 }
 
-BrightnessOverlay::BrightnessOverlay() {
+Background::BrightnessOverlay::BrightnessOverlay() {
   float fQuadWidth = (RIGHT_EDGE - LEFT_EDGE) / 2;
   fQuadWidth -= g_fBackgroundCenterWidth / 2;
 
@@ -987,7 +899,9 @@ BrightnessOverlay::BrightnessOverlay() {
   SetActualBrightness();
 }
 
-void BrightnessOverlay::Update(float fDeltaTime) {
+Background::BrightnessOverlay::~BrightnessOverlay() { RemoveAllChildren(); }
+
+void Background::BrightnessOverlay::Update(float fDeltaTime) {
   ActorFrame::Update(fDeltaTime);
   /* If we're actually playing, then we're past fades, etc; update the
    * background brightness to follow Cover. */
@@ -996,7 +910,7 @@ void BrightnessOverlay::Update(float fDeltaTime) {
   }
 }
 
-void BrightnessOverlay::SetActualBrightness() {
+void Background::BrightnessOverlay::SetActualBrightness() {
   float fLeftBrightness = 1 - GAMESTATE->m_pPlayerState[PLAYER_1]
                                   ->m_PlayerOptions.GetCurrent()
                                   .m_fCover;
@@ -1034,39 +948,20 @@ void BrightnessOverlay::SetActualBrightness() {
   m_quadBGBrightnessFade.SetDiffuseRightEdge(RightColor);
 }
 
-void BrightnessOverlay::Set(float fBrightness) {
+void Background::BrightnessOverlay::Set(float fBrightness) {
   RageColor c = GetBrightnessColor(fBrightness);
 
   FOREACH_PlayerNumber(pn) m_quadBGBrightness[pn].SetDiffuse(c);
   m_quadBGBrightnessFade.SetDiffuse(c);
 }
 
-void BrightnessOverlay::FadeToActualBrightness() {
+void Background::BrightnessOverlay::FadeToActualBrightness() {
   this->PlayCommand("Fade");
   SetActualBrightness();
 }
 
-Background::Background() {
-  m_disable_draw = false;
-  m_pImpl = new BackgroundImpl;
-  this->AddChild(m_pImpl);
-}
-Background::~Background() { RageUtil::SafeDelete(m_pImpl); }
-void Background::Init() { m_pImpl->Init(); }
-void Background::LoadFromSong(const Song* pSong) {
-  m_pImpl->LoadFromSong(pSong);
-}
-void Background::Unload() { m_pImpl->Unload(); }
-void Background::FadeToActualBrightness() { m_pImpl->FadeToActualBrightness(); }
-void Background::SetBrightness(float fBrightness) {
-  m_pImpl->SetBrightness(fBrightness);
-}
 DancingCharacters* Background::GetDancingCharacters() {
-  return m_pImpl->GetDancingCharacters();
-}
-void Background::GetLoadedBackgroundChanges(
-    std::vector<BackgroundChange>* pBackgroundChangesOut[NUM_BackgroundLayer]) {
-  m_pImpl->GetLoadedBackgroundChanges(pBackgroundChangesOut);
+  return m_pDancingCharacters.get();
 }
 
 /*

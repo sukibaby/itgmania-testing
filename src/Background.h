@@ -1,19 +1,23 @@
 #ifndef BACKGROUND_H
 #define BACKGROUND_H
 
+#include <deque>
+#include <map>
+#include <memory>
+#include <string>
 #include <vector>
 
 #include "ActorFrame.h"
 #include "BackgroundUtil.h"
+#include "Quad.h"
+#include "Song.h"
 
 class DancingCharacters;
-class Song;
-class BackgroundImpl;
 /** @brief the Background that is behind the notes while playing. */
 class Background : public ActorFrame {
  public:
   Background();
-  ~Background();
+  ~Background() override;
   void Init();
 
   virtual void LoadFromSong(const Song* pSong);
@@ -27,7 +31,7 @@ class Background : public ActorFrame {
   // ScreenGameplay can draw the background manually, and still have it as a
   // child. -Kyz
   bool m_disable_draw;
-  virtual bool EarlyAbortDraw() const { return m_disable_draw; }
+  bool EarlyAbortDraw() const override { return m_disable_draw; }
 
   /**
    * @brief Retrieve whatever dancing characters are in use.
@@ -37,8 +41,80 @@ class Background : public ActorFrame {
   void GetLoadedBackgroundChanges(
       std::vector<BackgroundChange>** pBackgroundChangesOut);
 
- protected:
-  BackgroundImpl* m_pImpl;
+  void Update(float fDeltaTime) override;
+  void DrawPrimitives() override;
+
+ private:
+  class BrightnessOverlay : public ActorFrame {
+   public:
+    BrightnessOverlay();
+    ~BrightnessOverlay() override;
+
+    void Update(float fDeltaTime) override;
+
+    void FadeToActualBrightness();
+    void SetActualBrightness();
+    void Set(float fBrightness);
+
+   private:
+    Quad m_quadBGBrightness[NUM_PLAYERS];
+    Quad m_quadBGBrightnessFade;
+  };
+
+  struct BackgroundTransition {
+    apActorCommands cmdLeaves;
+    apActorCommands cmdRoot;
+  };
+
+  class Layer {
+   public:
+    Layer();
+    void Unload();
+
+    // return true if created and added to m_BGAnimations
+    bool CreateBackground(const Song* pSong, const BackgroundDef& bd);
+    // return def of the background that was created and added to
+    // m_BGAnimations. calls CreateBackground
+    BackgroundDef CreateRandomBGA(
+        const Song* pSong, const std::string& sEffect,
+        std::deque<BackgroundDef>&
+            randomBGAnimations);  // random background to choose from.  These
+                                  // may or may not be loaded into
+                                  // m_BGAnimations.
+
+    int FindBGSegmentForBeat(float fBeat) const;
+    void UpdateCurBGChange(
+        const Song* pSong, float fLastMusicSeconds, float fCurrentTime,
+        const std::map<std::string, BackgroundTransition>& mapNameToTransition);
+
+    std::map<BackgroundDef, std::unique_ptr<Actor>> m_BGAnimations;
+    std::vector<BackgroundChange> m_aBGChanges;
+    int m_iCurBGChangeIndex;
+    Actor* m_pCurrentBGA;
+    Actor* m_pFadingBGA;
+  };
+
+  void LoadFromRandom(
+      float fFirstBeat, float fEndBeat, const BackgroundChange& change);
+  bool IsDangerAllVisible();
+
+  bool m_bInitted;
+  std::unique_ptr<DancingCharacters> m_pDancingCharacters;
+  const Song* m_pSong;
+  std::map<std::string, BackgroundTransition> m_mapNameToTransition;
+  std::deque<BackgroundDef> m_RandomBGAnimations;
+  Layer m_Layer[NUM_BackgroundLayer];
+
+  float m_fLastMusicSeconds;
+  bool m_bDangerAllWasVisible;
+
+  // cover up the edge of animations that might hang outside of the background
+  // rectangle
+  Quad m_quadBorderLeft, m_quadBorderTop, m_quadBorderRight, m_quadBorderBottom;
+
+  BrightnessOverlay m_Brightness;
+
+  BackgroundDef m_StaticBackgroundDef;
 };
 
 #endif
