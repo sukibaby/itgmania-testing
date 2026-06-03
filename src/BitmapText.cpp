@@ -934,7 +934,10 @@ void BitmapText::AddAttribute(size_t iPos, const Attribute& attr) {
   // Check if there are existing attributes overlapping this one. We might need
   // to remove or fix them up.
   const size_t iStartPos = iPos - iLines;
-  const size_t iEndPos = iStartPos + newAttr.length;
+  const bool isNewAttrLengthNegative = newAttr.length < 0;
+  const size_t iEndPos = isNewAttrLengthNegative
+                             ? static_cast<size_t>(-1)
+                             : iStartPos + static_cast<size_t>(newAttr.length);
 
   // First attribute starting at the same position or further than the new
   // attribute
@@ -945,19 +948,30 @@ void BitmapText::AddAttribute(size_t iPos, const Attribute& attr) {
     auto iterLastBeforeStart = iterFirstAfterStart;
     --iterLastBeforeStart;
 
+    const int iLengthBeforeStart =
+        static_cast<int>(iStartPos - iterLastBeforeStart->first);
     // Fixup the length so that it ends before the new attribute
-    iterLastBeforeStart->second.length = std::min(
-        iterLastBeforeStart->second.length,
-        static_cast<int>(iStartPos - iterLastBeforeStart->first));
+    if (iterLastBeforeStart->second.length < 0) {
+      iterLastBeforeStart->second.length = iLengthBeforeStart;
+    } else {
+      iterLastBeforeStart->second.length =
+          std::min(iterLastBeforeStart->second.length, iLengthBeforeStart);
+    }
   }
 
   // First attribute starting after the end of the new attribute
-  auto iterLastBeforeEnd = m_mAttributes.lower_bound(iEndPos);
+  auto iterLastBeforeEnd = isNewAttrLengthNegative
+                               ? m_mAttributes.end()
+                               : m_mAttributes.lower_bound(iEndPos);
   if (iterLastBeforeEnd != iterFirstAfterStart) {
     // Go back one, so that we are at the last overlapping attribute
     --iterLastBeforeEnd;
     const bool lastAttrOverlappingCompletely =
-        iterLastBeforeEnd->first + iterLastBeforeEnd->second.length <= iEndPos;
+        isNewAttrLengthNegative ||
+        (iterLastBeforeEnd->second.length >= 0 &&
+         iterLastBeforeEnd->first +
+                 static_cast<size_t>(iterLastBeforeEnd->second.length) <=
+             iEndPos);
 
     auto iterEraseEnd = iterLastBeforeEnd;
     // If it's overlapping completely, erase it as well
@@ -970,7 +984,9 @@ void BitmapText::AddAttribute(size_t iPos, const Attribute& attr) {
     if (!lastAttrOverlappingCompletely) {
       // Fixup the length accordingly
       Attribute lastAttr = iterLastBeforeEnd->second;
-      lastAttr.length -= iEndPos - iterLastBeforeEnd->first;
+      if (lastAttr.length >= 0) {
+        lastAttr.length -= static_cast<int>(iEndPos - iterLastBeforeEnd->first);
+      }
 
       // Erase it and insert just after the new attribute
       m_mAttributes.erase(iterLastBeforeEnd);
