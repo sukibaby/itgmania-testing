@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <cmath>
 #include <cinttypes>
 #include <cstdint>
 #include <cstring>
@@ -28,6 +29,11 @@
 static const int channels = 2;
 
 static int frames_to_buffer;
+
+static int64_t FramesToSourceFrames(int iFrames, float fSourceToStreamRatio) {
+  return static_cast<int64_t>(std::llround(
+      static_cast<double>(iFrames) * static_cast<double>(fSourceToStreamRatio)));
+}
 
 /* 512 is about 10ms, which is big enough for the tolerance of most schedulers.
  */
@@ -260,6 +266,93 @@ int RageSoundDriver::GetDataForSound(Sound& s) {
   //		(int) pBlock->m_FramesInBuffer, s.m_State, s.m_pSound );
 
   return iRet;
+}
+
+void RageSoundDriver::DrainPlaybackQueue(Sound& s) {
+  Sound::AudioPositionQueue position;
+  while (s.m_MixedPositionQueue.read(&position, 1)) {
+    if (!s.m_PlaybackHistory.empty()) {
+      Sound::AudioPositionQueue& previous = s.m_PlaybackHistory.back();
+      const int64_t iExpectedHardwareFrame =
+          previous.iHardwareFrame + previous.iFrames;
+      const int64_t iExpectedSourceFrame =
+          previous.iSourceFrame +
+          FramesToSourceFrames(
+              previous.iFrames, previous.m_fSourceToStreamRatio);
+      if (previous.m_fSourceToStreamRatio == position.m_fSourceToStreamRatio &&
+          iExpectedHardwareFrame == position.iHardwareFrame &&
+          iExpectedSourceFrame == position.iSourceFrame) {
+        previous.iFrames += position.iFrames;
+        continue;
+      }
+    }
+
+    s.m_PlaybackHistory.push_back(position);
+  }
+}
+
+void RageSoundDriver::CleanupPlaybackHistory(
+    Sound& s, int64_t iCurrentHardwareFrame) {
+  while (s.m_PlaybackHistory.size() > 1) {
+    if (s.m_PlaybackHistory[1].iHardwareFrame > iCurrentHardwareFrame) {
+      break;
+    }
+    s.m_PlaybackHistory.pop_front();
+  }
+}
+
+bool RageSoundDriver::GetSourceFrameForHardwareFrame(
+    const Sound& s, int64_t iHardwareFrame, int& iSourceFrame) const {
+  if (s.m_PlaybackHistory.empty()) {
+    return false;
+  }
+
+  const Sound::AudioPositionQueue* pClosest = nullptr;
+  for (const Sound::AudioPositionQueue& position : s.m_PlaybackHistory) {
+    if (iHardwareFrame < position.iHardwareFrame) {
+      break;
+    }
+
+    pClosest = &position;
+    if (iHardwareFrame < position.iHardwareFrame + position.iFrames) {
+      iSourceFrame = static_cast<int>(
+          position.iSourceFrame +
+          FramesToSourceFrames(
+              static_cast<int>(iHardwareFrame - position.iHardwareFrame),
+              position.m_fSourceToStreamRatio));
+      return true;
+    }
+  }
+
+  if (pClosest == nullptr) {
+    return false;
+  }
+
+  iSourceFrame = static_cast<int>(
+      pClosest->iSourceFrame +
+      FramesToSourceFrames(
+          pClosest->iFrames, pClosest->m_fSourceToStreamRatio));
+  return true;
+}
+
+bool RageSoundDriver::GetPlayingPosition(
+    const RageSoundBase* pSound, int& iSourceFrame, RageTimer* pTimer) {
+  const int64_t iCurrentHardwareFrame = GetHardwareFrame(pTimer);
+
+  LockMut(m_Mutex);
+  for (unsigned i = 0; i < ARRAYLEN(m_Sounds); ++i) {
+    Sound& sound = m_Sounds[i];
+    if (sound.m_State == Sound::AVAILABLE || sound.m_pSound != pSound) {
+      continue;
+    }
+
+    DrainPlaybackQueue(sound);
+    CleanupPlaybackHistory(sound, iCurrentHardwareFrame);
+    return GetSourceFrameForHardwareFrame(
+        sound, iCurrentHardwareFrame, iSourceFrame);
+  }
+
+  return false;
 }
 
 void RageSoundDriver::Update() {
