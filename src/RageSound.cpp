@@ -279,9 +279,9 @@ void AppendMixPosition(
 }  // namespace
 
 /*
- * Retrieve audio data, for mixing.  At the time of this call, the frameno at
- * which the sound will be played doesn't have to be known.  Once committed, and
- * the frameno is known, call CommitPCMData.
+ * Retrieve audio data, for mixing. The driver owns the audible-position
+ * history, so we only need to return the source spans that describe the block
+ * we decoded.
  *
  * RageSound::GetDataToPlay and RageSound::FillBuf are the main threaded API.
  * These need to execute without blocking other threads from calling eg.
@@ -293,10 +293,6 @@ void AppendMixPosition(
  * the requested number of frames will always be returned.
  */
 int RageSound::GetDataToPlay(
-  /* We only update m_iStreamFrame; only take a shared lock, so we don't block
-   * the main thread. */
-  //	LockMut(m_Mutex);
-
     float* pBuffer, int iFrames, RageSoundMixPosition* pPositions,
     int iMaxPositions, int& iPositionCount, int& iFramesStored) {
   ASSERT_M(m_bPlaying, ssprintf("%p", static_cast<void*>(this)));
@@ -405,11 +401,8 @@ void RageSound::SoundIsFinishedPlaying(int iSourceFrame) {
     // Global sound mutex
     LockMut(m_Mutex);
 
-    // Update the stopped source frame using the current hardware frame,
-    // but only if the hardware-to-stream and stream-to-source maps are not
-    // empty. This branch handles normal cleanup when the sound is not scheduled
-    // for deletion. If the maps are empty, we leave m_iStoppedSourceFrame
-    // untouched.
+    // Preserve the last known source frame when the driver was able to resolve
+    // one; otherwise keep the previous stopped position.
     if (m_bDeleteWhenFinished) {
       m_bDeleteWhenFinished = false;
       bDeleteThis = true;
