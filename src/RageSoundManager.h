@@ -39,6 +39,9 @@ class RageSoundManager {
   void StartMixing(RageSoundBase* snd);         /* used by RageSound */
   void StopMixing(RageSoundBase* snd);          /* used by RageSound */
   bool Pause(RageSoundBase* snd, bool bPause);  /* used by RageSound */
+  bool GetPlayingPosition(
+      const RageSoundBase* snd, int& iSourceFrame,
+      RageTimer* pTimer = nullptr);             /* used by RageSound */
   int64_t GetPosition(RageTimer* pTimer) const; /* used by RageSound */
   float GetPlayLatency() const;
   int GetDriverSampleRate() const;
