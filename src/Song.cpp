@@ -83,7 +83,7 @@ Song::VBackgroundChange& EnsureUniqueBackgroundChanges(
     std::shared_ptr<Song::VBackgroundChange>& changes) {
   if (!changes) {
     changes = MakeBackgroundChanges();
-  } else if (!changes.unique()) {
+  } else if (changes.use_count() != 1) {
     changes = std::make_shared<Song::VBackgroundChange>(*changes);
   }
 
