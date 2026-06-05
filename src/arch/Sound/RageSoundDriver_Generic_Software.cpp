@@ -152,8 +152,7 @@ RageSoundMixBuffer& RageSoundDriver::MixIntoBuffer(
       ASSERT(p[0]->m_iCurrentPositionSpan < p[0]->m_iPositionSpanCount);
       MixingPositionInfo& pSpan =
           p[0]->m_PositionSpans[p[0]->m_iCurrentPositionSpan];
-      const int remainingFrames =
-          pSpan.m_iFrames - pSpan.m_iFramesConsumed;
+      const int remainingFrames = pSpan.m_iFrames - pSpan.m_iFramesConsumed;
       ASSERT(remainingFrames > 0);
 
       const int frames_to_read = std::min(
@@ -164,10 +163,10 @@ RageSoundMixBuffer& RageSoundDriver::MixIntoBuffer(
       {
         Sound::PlaybackPositionInfo pos;
         pos.iHardwareFrame = iFrameNumber + iGotFrames;
-        pos.iSourceFrame = pSpan.m_iSourceFrame +
-                           FramesToSourceFrames(
-                               pSpan.m_iFramesConsumed,
-                               pSpan.m_fSourceToStreamRatio);
+        pos.iSourceFrame =
+            pSpan.m_iSourceFrame +
+            FramesToSourceFrames(
+                pSpan.m_iFramesConsumed, pSpan.m_fSourceToStreamRatio);
         pos.iFrames = frames_to_read;
         pos.m_fSourceToStreamRatio = pSpan.m_fSourceToStreamRatio;
 
