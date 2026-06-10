@@ -48,7 +48,6 @@
 #include "RageTextureManager.h"
 #include "RageThreads.h"
 #include "RageUtil.h"
-#include "RageUtil_AutoPtr.h"
 #include "SongCacheIndex.h"
 #include "SongManager.h"
 #include "SongUtil.h"
@@ -75,6 +74,23 @@ static Preference<float> g_fMarathonVerSongSeconds(
     "MarathonVerSongSeconds", 60 * 5.f);
 static Preference<bool> g_BackUpAllSongSaves("BackUpAllSongSaves", false);
 
+namespace {
+std::shared_ptr<Song::VBackgroundChange> MakeBackgroundChanges() {
+  return std::make_shared<Song::VBackgroundChange>();
+}
+
+Song::VBackgroundChange& EnsureUniqueBackgroundChanges(
+    std::shared_ptr<Song::VBackgroundChange>& changes) {
+  if (!changes) {
+    changes = MakeBackgroundChanges();
+  } else if (changes.use_count() != 1) {
+    changes = std::make_shared<Song::VBackgroundChange>(*changes);
+  }
+
+  return *changes;
+}
+}  // namespace
+
 static const char* InstrumentTrackNames[] = {
     "Guitar",
     "Rhythm",
@@ -84,10 +100,8 @@ XToString(InstrumentTrack);
 StringToX(InstrumentTrack);
 
 Song::Song() {
-  FOREACH_BackgroundLayer(i) m_BackgroundChanges[i] =
-      AutoPtrCopyOnWrite<VBackgroundChange>(new VBackgroundChange);
-  m_ForegroundChanges =
-      AutoPtrCopyOnWrite<VBackgroundChange>(new VBackgroundChange);
+  FOREACH_BackgroundLayer(i) m_BackgroundChanges[i] = MakeBackgroundChanges();
+  m_ForegroundChanges = MakeBackgroundChanges();
 
   m_LoadedFromProfile = ProfileSlot_Invalid;
   m_fVersion = STEPFILE_VERSION_NUMBER;
@@ -1565,17 +1579,19 @@ bool Song::HasPreviewVid() const {
 
 const std::vector<BackgroundChange>& Song::GetBackgroundChanges(
     BackgroundLayer bl) const {
+  ASSERT(m_BackgroundChanges[bl]);
   return *(m_BackgroundChanges[bl]);
 }
 std::vector<BackgroundChange>& Song::GetBackgroundChanges(BackgroundLayer bl) {
-  return *(m_BackgroundChanges[bl].Get());
+  return EnsureUniqueBackgroundChanges(m_BackgroundChanges[bl]);
 }
 
 const std::vector<BackgroundChange>& Song::GetForegroundChanges() const {
+  ASSERT(m_ForegroundChanges);
   return *m_ForegroundChanges;
 }
 std::vector<BackgroundChange>& Song::GetForegroundChanges() {
-  return *m_ForegroundChanges.Get();
+  return EnsureUniqueBackgroundChanges(m_ForegroundChanges);
 }
 
 std::vector<std::string> Song::GetChangesToVectorString(

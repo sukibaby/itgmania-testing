@@ -1,6 +1,7 @@
 #ifndef STEPS_H
 #define STEPS_H
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -12,7 +13,6 @@
 #include "PlayerNumber.h"
 #include "RadarValues.h"
 #include "RageUtil.h"
-#include "RageUtil_AutoPtr.h"
 #include "TechCounts.h"
 #include "TimingData.h"
 
@@ -54,6 +54,8 @@ class Steps {
  public:
   /** @brief Set up the Steps with initial values. */
   Steps(Song* song);
+  Steps(const Steps& other);
+  Steps& operator=(const Steps& other);
   /** @brief Destroy the Steps that are no longer needed. */
   ~Steps();
 
@@ -299,7 +301,7 @@ class Steps {
   /* We can have one or both of these; if we have both, they're always
    * identical. Call Compress() to force us to only have m_sNoteDataCompressed;
    * otherwise, creation of these is transparent. */
-  mutable HiddenPtr<NoteData> m_pNoteData;
+  mutable std::unique_ptr<NoteData> m_pNoteData;
   mutable bool m_bNoteDataIsFilled;
   mutable std::string m_sNoteDataCompressed;
 

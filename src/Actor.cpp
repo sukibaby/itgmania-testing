@@ -25,7 +25,6 @@
 #include "RageTypes.h"
 #include "RageUtil.h"
 #include "RageUtil/RandomNumbers.h"
-#include "RageUtil_AutoPtr.h"
 #include "StdString.h"
 #include "Tween.h"
 #include "XmlFile.h"
@@ -33,6 +32,17 @@
 
 static Preference<bool> g_bShowMasks("ShowMasks", false);
 static const float default_effect_period = 1.0f;
+
+namespace {
+std::unique_ptr<LuaClass> CloneLuaInstance(
+    const std::unique_ptr<LuaClass>& source) {
+  if (!source) {
+    return nullptr;
+  }
+
+  return std::make_unique<LuaClass>(*source);
+}
+}  // namespace
 
 /**
  * @brief Set up a hidden Actor that won't be drawn.
@@ -151,7 +161,7 @@ static bool GetMessageNameFromCommandName(
 }
 
 Actor::Actor() {
-  m_pLuaInstance = new LuaClass;
+  m_pLuaInstance = std::make_unique<LuaClass>();
   Lua* L = LUA->Get();
   m_pLuaInstance->PushSelf(L);
   lua_newtable(L);
@@ -189,7 +199,7 @@ Actor::Actor(const Actor& cpy) : MessageSubscriber(cpy) {
   CPY(alias_);
   CPY(m_pParent);
   CPY(m_FakeParent);
-  CPY(m_pLuaInstance);
+  m_pLuaInstance = CloneLuaInstance(cpy.m_pLuaInstance);
 
   m_WrapperStates.resize(cpy.m_WrapperStates.size());
   for (size_t i = 0; i < m_WrapperStates.size(); ++i) {
@@ -356,11 +366,11 @@ void Actor::LoadFromNode(const XNode* pNode) {
     const std::string& sKeyName = pAttr->first;
     const XNodeValue* pValue = pAttr->second;
     if (EndsWith(sKeyName, "Command")) {
-      LuaReference* pRef = new LuaReference;
+      auto pRef = std::make_shared<LuaReference>();
       pValue->PushValue(L);
       pRef->SetFromStack(L);
       std::string sCmdName = Left(sKeyName, sKeyName.size() - 7);
-      AddCommand(sCmdName, apActorCommands(pRef));
+      AddCommand(sCmdName, pRef);
     } else if (sKeyName == "Name") {
       SetName(pValue->GetValue<std::string>());
     } else if (sKeyName == "BaseRotationX") {
@@ -2226,9 +2236,9 @@ class LunaActor : public Luna<Actor> {
     COMMON_RETURN_SELF;
   }
   static int addcommand(T* p, lua_State* L) {
-    LuaReference* pRef = new LuaReference;
+    auto pRef = std::make_shared<LuaReference>();
     pRef->SetFromStack(L);
-    p->AddCommand(SArg(1), apActorCommands(pRef));
+    p->AddCommand(SArg(1), pRef);
     COMMON_RETURN_SELF;
   }
   static int GetCommand(T* p, lua_State* L) {

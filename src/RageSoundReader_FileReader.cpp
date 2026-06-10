@@ -11,8 +11,35 @@
 #include "RageSoundReader_Vorbisfile.h"
 #include "RageSoundReader_WAV.h"
 #include "RageUtil.h"
-#include "RageUtil_AutoPtr.h"
 #include "StdString.h"
+
+namespace {
+std::unique_ptr<RageFileBasic> CloneRageFileBasic(
+    const std::unique_ptr<RageFileBasic>& file) {
+  if (!file) {
+    return nullptr;
+  }
+
+  return std::unique_ptr<RageFileBasic>(file->Copy());
+}
+}  // namespace
+
+RageSoundReader_FileReader::RageSoundReader_FileReader(
+    const RageSoundReader_FileReader& cpy)
+    : m_pFile(CloneRageFileBasic(cpy.m_pFile)), m_sError(cpy.m_sError) {}
+
+RageSoundReader_FileReader& RageSoundReader_FileReader::operator=(
+    const RageSoundReader_FileReader& rhs) {
+  if (this == &rhs) {
+    return *this;
+  }
+
+  m_pFile = CloneRageFileBasic(rhs.m_pFile);
+  m_sError = rhs.m_sError;
+  return *this;
+}
+
+RageSoundReader_FileReader::~RageSoundReader_FileReader() = default;
 
 RageSoundReader_FileReader* RageSoundReader_FileReader::TryOpenFile(
     RageFileBasic* pFile, std::string& error, std::string format,
@@ -89,27 +116,25 @@ RageSoundReader_FileReader* RageSoundReader_FileReader::TryOpenFile(
 
 RageSoundReader_FileReader* RageSoundReader_FileReader::OpenFile(
     std::string filename, std::string& error, bool* pPrebuffer) {
-  HiddenPtr<RageFileBasic> pFile;
+  std::unique_ptr<RageFileBasic> pFile;
   {
-    RageFile* pFileOpen = new RageFile;
+    auto pFileOpen = std::make_unique<RageFile>();
     if (!pFileOpen->Open(filename)) {
       error = pFileOpen->GetError();
-      delete pFileOpen;
       return nullptr;
     }
-    pFile = pFileOpen;
+    pFile = std::move(pFileOpen);
   }
 
   if (pPrebuffer) {
     if (pFile->GetFileSize() < 1024 * 50) {
-      RageFileObjMem* pMem = new RageFileObjMem;
+      auto pMem = std::make_unique<RageFileObjMem>();
       bool bRet = FileCopy(*pFile, *pMem, error, nullptr);
       if (!bRet) {
-        delete pMem;
         return nullptr;
       }
 
-      pFile = pMem;
+      pFile = std::move(pMem);
       pFile->Seek(0);
       *pPrebuffer = true;
     } else {

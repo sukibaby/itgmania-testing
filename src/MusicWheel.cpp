@@ -31,7 +31,6 @@
 #include "RageTypes.h"
 #include "RageUtil.h"
 #include "RageUtil/RandomNumbers.h"
-#include "RageUtil_AutoPtr.h"
 #include "ScreenManager.h"
 #include "ScreenMessage.h"
 #include "Song.h"
@@ -181,7 +180,7 @@ void MusicWheel::BeginScreen() {
     const std::vector<MusicWheelItemData*>& from =
         getWheelItemsData(SORT_MODE_MENU);
     for (unsigned i = 0; i < from.size(); i++) {
-      ASSERT(!from[i]->m_pAction.isNull());
+      ASSERT(from[i]->m_pAction != nullptr);
       if (from[i]->m_pAction->DescribesCurrentModeForAllPlayers()) {
         m_sLastModeMenuItem = from[i]->m_pAction->m_sName;
         break;
@@ -566,7 +565,7 @@ void MusicWheel::BuildWheelItemDatas(
         MusicWheelItemData wid(
             WheelItemDataType_Sort, nullptr, "", nullptr, nullptr,
             SORT_MENU_COLOR, 0);
-        wid.m_pAction = HiddenPtr<GameCommand>(new GameCommand);
+        wid.m_pAction = std::make_shared<GameCommand>();
         wid.m_pAction->m_sName = vsNames[i];
         wid.m_pAction->Load(i, ParseCommands(CHOICE.GetValue(vsNames[i])));
         wid.m_sLabel = WHEEL_TEXT(vsNames[i]);
@@ -970,7 +969,7 @@ void MusicWheel::BuildWheelItemDatas(
           MusicWheelItemData wid(
               WheelItemDataType_Custom, nullptr, "", nullptr, nullptr,
               CUSTOM_CHOICE_COLORS.GetValue(vsNames[i]), 0);
-          wid.m_pAction = HiddenPtr<GameCommand>(new GameCommand);
+          wid.m_pAction = std::make_shared<GameCommand>();
           wid.m_pAction->m_sName = vsNames[i];
           wid.m_pAction->Load(
               i, ParseCommands(CUSTOM_CHOICES.GetValue(vsNames[i])));

@@ -2,6 +2,7 @@
 #define SONG_H
 
 #include <array>
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
@@ -12,7 +13,6 @@
 #include "GameConstantsAndTypes.h"
 #include "RageTypes.h"
 #include "RageUtil.h"
-#include "RageUtil_AutoPtr.h"
 #include "Steps.h"
 #include "TimingData.h"
 
@@ -334,17 +334,16 @@ class Song {
   float specifiedLastSecond;
   /**
    * @brief The background changes (sorted by layer) that are for this Song.
-   * This uses an AutoPtr instead of a raw pointer so that the
-   * auto gen'd copy constructor works correctly.
+   * Shared ownership plus copy-on-write keeps Song copyable without
+   * duplicating the data until a mutable view is requested.
    * This must be sorted before gameplay. */
-  AutoPtrCopyOnWrite<VBackgroundChange>
-      m_BackgroundChanges[NUM_BackgroundLayer];
+  std::shared_ptr<VBackgroundChange> m_BackgroundChanges[NUM_BackgroundLayer];
   /**
    * @brief The foreground changes that are for this Song.
-   * This uses an AutoPtr instead of a raw pointer so that the
-   * auto gen'd copy constructor works correctly.
+   * Shared ownership plus copy-on-write keeps Song copyable without
+   * duplicating the data until a mutable view is requested.
    * This must be sorted before gameplay. */
-  AutoPtrCopyOnWrite<VBackgroundChange> m_ForegroundChanges;
+  std::shared_ptr<VBackgroundChange> m_ForegroundChanges;
 
   std::vector<std::string> GetChangesToVectorString(
       const std::vector<BackgroundChange>& changes) const;

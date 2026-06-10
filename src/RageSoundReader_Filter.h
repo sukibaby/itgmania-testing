@@ -3,13 +3,26 @@
 #ifndef RAGE_SOUND_READER_FILTER_H
 #define RAGE_SOUND_READER_FILTER_H
 
+#include <memory>
 #include <string>
 
 #include "RageSoundReader.h"
-#include "RageUtil_AutoPtr.h"
 class RageSoundReader_Filter : public RageSoundReader {
  public:
   RageSoundReader_Filter(RageSoundReader* pSource) : m_pSource(pSource) {}
+  RageSoundReader_Filter(const RageSoundReader_Filter& cpy)
+      : m_pSource(CloneSource(cpy.m_pSource)) {}
+  RageSoundReader_Filter& operator=(const RageSoundReader_Filter& rhs) {
+    if (this == &rhs) {
+      return *this;
+    }
+
+    m_pSource = CloneSource(rhs.m_pSource);
+    return *this;
+  }
+  RageSoundReader_Filter(RageSoundReader_Filter&&) noexcept = default;
+  RageSoundReader_Filter& operator=(RageSoundReader_Filter&&) noexcept =
+      default;
 
   virtual int GetLength() const { return m_pSource->GetLength(); }
   virtual int GetLength_Fast() const { return m_pSource->GetLength_Fast(); }
@@ -30,11 +43,21 @@ class RageSoundReader_Filter : public RageSoundReader {
   virtual float GetStreamToSourceRatio() const {
     return m_pSource->GetStreamToSourceRatio();
   }
-  virtual RageSoundReader* GetSource() { return &*m_pSource; }
+  virtual RageSoundReader* GetSource() { return m_pSource.get(); }
   virtual std::string GetError() const { return m_pSource->GetError(); }
 
  protected:
-  HiddenPtr<RageSoundReader> m_pSource;
+  std::unique_ptr<RageSoundReader> m_pSource;
+
+ private:
+  static std::unique_ptr<RageSoundReader> CloneSource(
+      const std::unique_ptr<RageSoundReader>& source) {
+    if (!source) {
+      return nullptr;
+    }
+
+    return std::unique_ptr<RageSoundReader>(source->Copy());
+  }
 };
 
 #endif

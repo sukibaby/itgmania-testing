@@ -468,7 +468,7 @@ std::string ReadString(RageFileBasic& f, int iSize, std::string& sError) {
 
 RageSoundReader_FileReader::OpenResult RageSoundReader_WAV::Open(
     RageFileBasic* pFile) {
-  m_pFile = pFile;
+  m_pFile.reset(pFile);
 
   std::string sError;
 
