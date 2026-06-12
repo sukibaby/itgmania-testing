@@ -42,6 +42,12 @@ REGISTER_ACTOR_CLASS(BitmapText);
 
 static std::vector<RageColor> RAINBOW_COLORS;
 
+void BitmapText::FontDeleter::operator()(Font* font) const {
+  if (font != nullptr) {
+    FONT->UnloadFont(font);
+  }
+}
+
 BitmapText::BitmapText() {
   // Loading these theme metrics is slow, so only do it every 20th time.
   // todo: why not check to see if you need to bother updating this at all? -aj
