@@ -132,7 +132,7 @@ const RadarValues& Trail::GetRadarValues() const {
     /* Hack: SetRadarValues is non-const (a const setter doesn't
      * make sense), but it only modifies a mutable value.  Just
      * cast away const. */
-    const_cast<Trail*>(this)->SetRadarValues(rv);
+    //const_cast<Trail*>(this)->SetRadarValues(rv);
 
     return m_CachedRadarValues;
   }

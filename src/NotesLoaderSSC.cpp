@@ -334,7 +334,7 @@ void SetRadarValues(StepsTagInfo& info) {
         v[pn][i] = StringToFloat(values[pn * cats_per_player + i]);
       }
     }
-    info.steps->SetRadarValues(v);
+    info.steps->SetCachedRadarValues(v);
   } else {
     // just recalc at time.
   }
@@ -352,7 +352,7 @@ void SetTechCounts(StepsTagInfo& info) {
         v[pn][i] = StringToFloat(values[pn * cats_per_player + i]);
       }
     }
-    info.steps->SetTechCounts(v);
+    info.steps->SetCachedTechCounts(v);
   } else {
     // just recalc at time.
   }
@@ -408,7 +408,7 @@ void SetNpsPerMeasure(StepsTagInfo& info) {
       }
       npsPerMeasures.push_back(npsPerMeasure);
     }
-    info.steps->SetNpsPerMeasure(npsPerMeasures);
+    info.steps->SetCachedNpsPerMeasure(npsPerMeasures);
   } else {
     // just recalc at time.
   }
@@ -439,7 +439,7 @@ void SetNotesPerMeasure(StepsTagInfo& info) {
       }
       notesPerMeasures.push_back(notesPerMeasure);
     }
-    info.steps->SetNotesPerMeasure(notesPerMeasures);
+    info.steps->SetCachedNotesPerMeasure(notesPerMeasures);
   } else {
     // just recalc at time.
   }
@@ -473,7 +473,7 @@ void SetPeakNps(StepsTagInfo& info) {
 void SetGrooveStatsHash(StepsTagInfo& info) {
   if (info.from_cache || info.for_load_edit) {
     std::string value = (*info.params)[1];
-    info.steps->SetGrooveStatsHash(value);
+    info.steps->SetCachedGrooveStatsHash(value);
   }
   info.ssc_format = true;
 }
@@ -482,7 +482,7 @@ void SetGrooveStatsHashVersion(StepsTagInfo& info) {
   if (info.from_cache || info.for_load_edit) {
     std::string value = (*info.params)[1];
     int hashVersion = StringToInt(value);
-    info.steps->SetGrooveStatsHashVersion(hashVersion);
+    info.steps->SetCachedGrooveStatsHashVersion(hashVersion);
   }
   info.ssc_format = true;
 }
