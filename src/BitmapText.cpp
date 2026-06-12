@@ -84,11 +84,7 @@ BitmapText::BitmapText() {
   m_TextGlowMode = TextGlowMode_Both;  // Both used for compatibility with SM4
 }
 
-BitmapText::~BitmapText() {
-  if (m_pFont) {
-    FONT->UnloadFont(m_pFont);
-  }
-}
+BitmapText::~BitmapText() = default;
 
 BitmapText& BitmapText::operator=(const BitmapText& cpy) {
   Actor::operator=(cpy);
