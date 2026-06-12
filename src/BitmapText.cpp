@@ -93,6 +93,9 @@ BitmapText::~BitmapText() {
 BitmapText& BitmapText::operator=(const BitmapText& cpy) {
   Actor::operator=(cpy);
 
+  Font* copiedFont =
+      cpy.m_pFont != nullptr ? FONT->CopyFont(cpy.m_pFont.get()) : nullptr;
+
   m_bUppercase = cpy.m_bUppercase;
   m_sText = cpy.m_sText;
   m_wTextLines = cpy.m_wTextLines;
