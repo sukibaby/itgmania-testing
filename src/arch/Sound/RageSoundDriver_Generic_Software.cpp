@@ -17,14 +17,6 @@
 #include <unistd.h>
 #endif
 
-#if defined(_MSC_VER) && !defined(PRIu64)
-#define PRIu64 "I64u"
-#endif
-/* Note(sukibaby): If you need to activate a log method
- * below, and it's casting a variable to int instead of
- * using the correct format specifier, please modify it
- * to use PRId64 for int64_t, or PRIu64 for uint64_t */
-
 static const int channels = 2;
 
 static int frames_to_buffer;
@@ -489,9 +481,9 @@ int64_t RageSoundDriver::ClampHardwareFrame(int64_t iHardwareFrame) const {
     int64_t currentTime = RageTimer::GetTimeSinceStartMicroseconds();
     if (lastTime == 0 || (currentTime - lastTime) > 1000000) {
       LOG->Trace(
-          "RageSoundDriver: driver returned a lesser position (%" PRId64
-          " < %" PRId64 ")",
-          iHardwareFrame, m_iMaxHardwareFrame);
+          "RageSoundDriver: driver returned a lesser position (%lld < %lld)",
+          static_cast<long long>(iHardwareFrame),
+          static_cast<long long>(m_iMaxHardwareFrame));
       lastTime = currentTime;
     }
     return m_iMaxHardwareFrame;
