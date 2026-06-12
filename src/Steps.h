@@ -9,6 +9,7 @@
 #include "Difficulty.h"
 #include "EnumHelper.h"
 #include "GameConstantsAndTypes.h"
+#include "NoteAnnotation.h"
 #include "PlayerNumber.h"
 #include "RadarValues.h"
 #include "RageUtil.h"
@@ -116,7 +117,7 @@ class Steps {
    */
   int GetMeter() const { return Real()->m_iMeter; }
   const RadarValues& GetRadarValues(PlayerNumber pn) const {
-    return Real()->m_RadarValues[pn];
+    return Real()->m_CachedRadarValues[pn];
   }
   /**
    * @brief Retrieve the author credit used for this edit.
@@ -163,10 +164,10 @@ class Steps {
 
   /** @brief Produces a chart that's reduced to it's smallest unique
    * representable form. */
-  std::string MinimizedChartString(const NoteData& noteData);
+  std::string MinimizedChartString();
 
   /** @brief Generates a hash used for GrooveStats integration. */
-  void CalculateGrooveStatsHash(const NoteData& noteData);
+  void CalculateGrooveStatsHash();
   const std::string GetGrooveStatsHash() const;
   int GetGrooveStatsHashVersion() const;
 
@@ -174,13 +175,15 @@ class Steps {
 
   void SetLoadedFromProfile(ProfileSlot slot) { m_LoadedFromProfile = slot; }
   void SetMeter(int meter);
-  void SetRadarValues(const RadarValues v[NUM_PLAYERS]);
-  void SetTechCounts(const TechCounts ts[NUM_PLAYERS]);
-  void SetNpsPerMeasure(std::vector<std::vector<float>>& npsPerMeasure);
-  void SetNotesPerMeasure(std::vector<std::vector<int>>& notesPerMeasure);
+  void SetCachedRadarValues(const RadarValues v[NUM_PLAYERS]);
+  void SetCachedTechCounts(const TechCounts ts[NUM_PLAYERS]);
+  void SetCachedNoteAnnotations(
+      std::vector<NoteAnnotationCache>& noteAnnotations);
+  void SetCachedNpsPerMeasure(std::vector<std::vector<float>>& npsPerMeasure);
+  void SetCachedNotesPerMeasure(std::vector<std::vector<int>>& notesPerMeasure);
   void SetPeakNps(std::vector<float>& peakNps);
-  void SetGrooveStatsHash(const std::string& key);
-  void SetGrooveStatsHashVersion(int version);
+  void SetCachedGrooveStatsHash(const std::string& key);
+  void SetCachedGrooveStatsHashVersion(int version);
   float PredictMeter() const;
 
   unsigned GetHash() const;
@@ -208,22 +211,24 @@ class Steps {
    * Stats, and GrooveStats key.*/
   void CalculateStepStats(float fMusicLengthSeconds);
 
-  void CalculateRadarValues(
-      float fMusicLengthSeconds, const NoteData& noteData);
+  void CalculateRadarValues(float fMusicLengthSeconds);
 
-  void CalculateTechCounts(const NoteData& noteData);
+  void CalculateTechCounts();
   const TechCounts& GetTechCounts(PlayerNumber pn) const {
-    return Real()->m_TechCounts[pn];
+    return Real()->m_CachedTechCounts[pn];
   }
 
-  void CalculateMeasureInfo(const NoteData& noteData);
+  const std::vector<NoteAnnotation>& GetNoteAnnotations(PlayerNumber pn) const;
+  const std::vector<NoteAnnotationCache>& GetNoteAnnotationCaches() const;
+  std::vector<std::vector<NoteAnnotation>> GetAllNoteAnnotations() const;
+  void CalculateMeasureInfo();
 
   const std::vector<std::vector<float>>& GetAllNpsPerMeasures() const {
-    return Real()->m_NpsPerMeasure;
+    return Real()->m_CachedNpsPerMeasure;
   }
   const std::vector<float>& GetNpsPerMeasure(PlayerNumber pn) const;
   const std::vector<std::vector<int>>& GetAllNotesPerMeasures() const {
-    return Real()->m_NotesPerMeasure;
+    return Real()->m_CachedNotesPerMeasure;
   };
   const std::vector<int>& GetNotesPerMeasure(PlayerNumber pn) const;
 
@@ -327,16 +332,24 @@ class Steps {
    * MAX_METER. */
   int m_iMeter;
   /** @brief The radar values used for each player. */
-  RadarValues m_RadarValues[NUM_PLAYERS];
+  RadarValues m_CachedRadarValues[NUM_PLAYERS];
+  bool m_bAreCachedRadarValuesJustLoaded;
 
   /** @brief The tech stats used for each player */
-  TechCounts m_TechCounts[NUM_PLAYERS];
+  mutable TechCounts m_CachedTechCounts[NUM_PLAYERS];
+  bool m_bAreCachedTechCountsValuesJustLoaded;
 
-  std::vector<std::vector<float>> m_NpsPerMeasure;
-  std::vector<std::vector<int>> m_NotesPerMeasure;
+  std::vector<std::vector<float>> m_CachedNpsPerMeasure;
+  bool m_AreCachedNpsPerMeasureJustLoaded;
 
+  std::vector<std::vector<int>> m_CachedNotesPerMeasure;
+  bool m_AreCachedNotesPerMeasureJustLoaded;
+
+  std::vector<NoteAnnotationCache> m_CachedNoteAnnotations;
+  bool m_AreCachedNoteAnnotationsJustLoaded;
   std::vector<float> m_PeakNps;
 
+  bool m_bIsCachedGrooveStatsHashJustLoaded;
   std::string m_sGrooveStatsHash;
   int m_iGrooveStatsHashVersion;
 
