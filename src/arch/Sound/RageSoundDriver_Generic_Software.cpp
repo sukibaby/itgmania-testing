@@ -39,7 +39,8 @@ static int underruns = 0, logged_underruns = 0;
 // Maps stream (hardware) frames to the equivalent number of source frames.
 // In other words, this converts an offset measured in hardware frames into
 // the matching offset matched in original source (stream) frames.
-static int64_t StreamFramesToSourceFrames(int iFrames, float fSourceToStreamRatio) {
+static int64_t StreamFramesToSourceFrames(
+    int iFrames, float fSourceToStreamRatio) {
   return static_cast<int64_t>(std::llround(
       static_cast<double>(iFrames) *
       static_cast<double>(fSourceToStreamRatio)));
