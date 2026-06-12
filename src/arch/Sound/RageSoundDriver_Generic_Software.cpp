@@ -30,17 +30,20 @@ static const int channels = 2;
 
 static int frames_to_buffer;
 
-static int64_t FramesToSourceFrames(int iFrames, float fSourceToStreamRatio) {
-  return static_cast<int64_t>(std::llround(
-      static_cast<double>(iFrames) *
-      static_cast<double>(fSourceToStreamRatio)));
-}
-
 /* 512 is about 10ms, which is big enough for the tolerance of most schedulers.
  */
 static int chunksize() { return 512; }
 
 static int underruns = 0, logged_underruns = 0;
+
+// Maps stream (hardware) frames to the equivalent number of source frames.
+// In other words, this converts an offset measured in hardware frames into
+// the matching offset matched in original source (stream) frames.
+static int64_t StreamFramesToSourceFrames(int iFrames, float fSourceToStreamRatio) {
+  return static_cast<int64_t>(std::llround(
+      static_cast<double>(iFrames) *
+      static_cast<double>(fSourceToStreamRatio)));
+}
 
 RageSoundDriver::Sound::Sound() {
   m_pSound = nullptr;
@@ -165,7 +168,7 @@ RageSoundMixBuffer& RageSoundDriver::MixIntoBuffer(
         pos.iHardwareFrame = iFrameNumber + iGotFrames;
         pos.iSourceFrame =
             pSpan.m_iSourceFrame +
-            FramesToSourceFrames(
+            StreamFramesToSourceFrames(
                 pSpan.m_iFramesConsumed, pSpan.m_fSourceToStreamRatio);
         pos.iFrames = frames_to_read;
         pos.m_fSourceToStreamRatio = pSpan.m_fSourceToStreamRatio;
@@ -310,7 +313,7 @@ void RageSoundDriver::DrainPlaybackQueue(Sound& s) {
           previous.iHardwareFrame + previous.iFrames;
       const int64_t iExpectedSourceFrame =
           previous.iSourceFrame +
-          FramesToSourceFrames(
+          StreamFramesToSourceFrames(
               previous.iFrames, previous.m_fSourceToStreamRatio);
       if (previous.m_fSourceToStreamRatio == position.m_fSourceToStreamRatio &&
           iExpectedHardwareFrame == position.iHardwareFrame &&
@@ -350,7 +353,7 @@ bool RageSoundDriver::GetSourceFrameForHardwareFrame(
     if (iHardwareFrame < position.iHardwareFrame + position.iFrames) {
       iSourceFrame = static_cast<int>(
           position.iSourceFrame +
-          FramesToSourceFrames(
+          StreamFramesToSourceFrames(
               static_cast<int>(iHardwareFrame - position.iHardwareFrame),
               position.m_fSourceToStreamRatio));
       return true;
@@ -363,7 +366,7 @@ bool RageSoundDriver::GetSourceFrameForHardwareFrame(
 
   iSourceFrame = static_cast<int>(
       pClosest->iSourceFrame +
-      FramesToSourceFrames(
+      StreamFramesToSourceFrames(
           pClosest->iFrames, pClosest->m_fSourceToStreamRatio));
   return true;
 }
