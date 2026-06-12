@@ -114,15 +114,7 @@ BitmapText& BitmapText::operator=(const BitmapText& cpy) {
   BMT_current = cpy.BMT_current;
   BMT_start = cpy.BMT_start;
 
-  if (m_pFont) {
-    FONT->UnloadFont(m_pFont);
-  }
-
-  if (cpy.m_pFont != nullptr) {
-    m_pFont = FONT->CopyFont(cpy.m_pFont);
-  } else {
-    m_pFont = nullptr;
-  }
+  m_pFont.reset(copiedFont);
 
   return *this;
 }
@@ -224,12 +216,7 @@ void BitmapText::LoadFromNode(const XNode* node) {
 bool BitmapText::LoadFromFont(const std::string& sFontFilePath) {
   CHECKPOINT_M(ssprintf("BitmapText::LoadFromFont(%s)", sFontFilePath.c_str()));
 
-  if (m_pFont) {
-    FONT->UnloadFont(m_pFont);
-    m_pFont = nullptr;
-  }
-
-  m_pFont = FONT->LoadFont(sFontFilePath);
+  m_pFont.reset(FONT->LoadFont(sFontFilePath));
 
   this->SetStrokeColor(m_pFont->GetDefaultStrokeColor());
 
@@ -244,12 +231,7 @@ bool BitmapText::LoadFromTextureAndChars(
       "BitmapText::LoadFromTextureAndChars(\"%s\",\"%s\")",
       sTexturePath.c_str(), sChars.c_str()));
 
-  if (m_pFont) {
-    FONT->UnloadFont(m_pFont);
-    m_pFont = nullptr;
-  }
-
-  m_pFont = FONT->LoadFont(sTexturePath, sChars);
+  m_pFont.reset(FONT->LoadFont(sTexturePath, sChars));
 
   BuildChars();
 
