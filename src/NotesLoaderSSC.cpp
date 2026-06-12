@@ -12,6 +12,7 @@
 #include "GameConstantsAndTypes.h"
 #include "GameManager.h"
 #include "MsdFile.h"  // No JSON here.
+#include "NoteAnnotation.h"
 #include "NoteTypes.h"
 #include "NotesLoaderSM.h"  // For programming shortcuts.
 #include "PlayerNumber.h"
@@ -333,7 +334,7 @@ void SetRadarValues(StepsTagInfo& info) {
         v[pn][i] = StringToFloat(values[pn * cats_per_player + i]);
       }
     }
-    info.steps->SetRadarValues(v);
+    info.steps->SetCachedRadarValues(v);
   } else {
     // just recalc at time.
   }
@@ -351,9 +352,34 @@ void SetTechCounts(StepsTagInfo& info) {
         v[pn][i] = StringToFloat(values[pn * cats_per_player + i]);
       }
     }
-    info.steps->SetTechCounts(v);
+    info.steps->SetCachedTechCounts(v);
   } else {
     // just recalc at time.
+  }
+  info.ssc_format = true;
+}
+
+void SetNoteAnnotations(StepsTagInfo& info) {
+  if (info.from_cache || info.for_load_edit) {
+    std::vector<std::string> valuesPerPlayer;
+    split((*info.params)[1], "|", valuesPerPlayer, true);
+
+    if (valuesPerPlayer.size() > NUM_PlayerNumber) {
+      LOG->Warn(
+          "#NOTEANNOTATIONS has more sections (%zu) than possible number of "
+          "players (%d)!",
+          valuesPerPlayer.size(), NUM_PlayerNumber);
+    }
+
+    std::vector<NoteAnnotationCache> annotationsPerPlayer;
+
+    for (std::size_t pn = 0;
+         pn < valuesPerPlayer.size() && pn < NUM_PlayerNumber; pn++) {
+      NoteAnnotationCache annotationCache;
+      annotationCache.compressed = valuesPerPlayer[pn];
+      annotationsPerPlayer.push_back(annotationCache);
+    }
+    info.steps->SetCachedNoteAnnotations(annotationsPerPlayer);
   }
   info.ssc_format = true;
 }
@@ -382,7 +408,7 @@ void SetNpsPerMeasure(StepsTagInfo& info) {
       }
       npsPerMeasures.push_back(npsPerMeasure);
     }
-    info.steps->SetNpsPerMeasure(npsPerMeasures);
+    info.steps->SetCachedNpsPerMeasure(npsPerMeasures);
   } else {
     // just recalc at time.
   }
@@ -413,7 +439,7 @@ void SetNotesPerMeasure(StepsTagInfo& info) {
       }
       notesPerMeasures.push_back(notesPerMeasure);
     }
-    info.steps->SetNotesPerMeasure(notesPerMeasures);
+    info.steps->SetCachedNotesPerMeasure(notesPerMeasures);
   } else {
     // just recalc at time.
   }
@@ -447,7 +473,7 @@ void SetPeakNps(StepsTagInfo& info) {
 void SetGrooveStatsHash(StepsTagInfo& info) {
   if (info.from_cache || info.for_load_edit) {
     std::string value = (*info.params)[1];
-    info.steps->SetGrooveStatsHash(value);
+    info.steps->SetCachedGrooveStatsHash(value);
   }
   info.ssc_format = true;
 }
@@ -456,7 +482,7 @@ void SetGrooveStatsHashVersion(StepsTagInfo& info) {
   if (info.from_cache || info.for_load_edit) {
     std::string value = (*info.params)[1];
     int hashVersion = StringToInt(value);
-    info.steps->SetGrooveStatsHashVersion(hashVersion);
+    info.steps->SetCachedGrooveStatsHashVersion(hashVersion);
   }
   info.ssc_format = true;
 }
@@ -674,6 +700,7 @@ struct ssc_parser_helper_t {
     steps_tag_handlers["NPSPERMEASURE"] = &SetNpsPerMeasure;
     steps_tag_handlers["NOTESPERMEASURE"] = &SetNotesPerMeasure;
     steps_tag_handlers["PEAKNPS"] = &SetPeakNps;
+    steps_tag_handlers["NOTEANNOTATIONS"] = &SetNoteAnnotations;
     steps_tag_handlers["GROOVESTATSHASH"] = &SetGrooveStatsHash;
     steps_tag_handlers["GROOVESTATSHASHVERSION"] = &SetGrooveStatsHashVersion;
 
