@@ -90,5 +90,5 @@ runs:
       if: runner.os == 'Windows'
       run: |
         echo "CMAKE_BUILD_FLAGS=--parallel $env:NUMBER_OF_PROCESSORS" >> $env:GITHUB_ENV
-        echo "ARTIFACT_PATH=build/ITGmania-*.exe" >> $env:GITHUB_ENV
+        echo "ARTIFACT_PATH=build/ITGmania-*.exe build/ITGmania-*.msi" >> $env:GITHUB_ENV
       shell: pwsh
