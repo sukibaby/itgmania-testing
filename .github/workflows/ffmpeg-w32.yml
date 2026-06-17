@@ -79,7 +79,7 @@ jobs:
           --disable-iamf \
           --disable-lsp \
           --disable-lzma \
-          --disable-muxers" \
+          --disable-muxers \
           --disable-network \
           --disable-pixelutils \
           --disable-programs \
