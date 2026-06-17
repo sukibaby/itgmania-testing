@@ -1,7 +1,7 @@
 # .github/workflows/ffmpeg-w32.yml
 # These libraries can't be built with MSVC, so we use mingw-w64 to cross-compile for Windows.
-# This workflow watches the beta branch for changes to extern/ffmpeg (submodule updates or source),
-# rebuilds the ffmpeg-w32 x86_64 prebuilts, and commits the updated binaries/headers to beta.
+# This workflow watches the pr1383winpatch-ci branch for changes to extern/ffmpeg (submodule updates or source),
+# rebuilds the ffmpeg-w32 x86_64 prebuilts, and commits the updated binaries/headers to pr1383winpatch-ci.
 
 name: Build ffmpeg-w32 libraries
 
@@ -11,7 +11,7 @@ permissions:
 on:
   push:
     branches:
-      - beta
+      - pr1383winpatch-ci
     paths:
       - extern/ffmpeg
       - extern/ffmpeg/**
@@ -25,7 +25,7 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v6
       with:
-        ref: beta
+        ref: pr1383winpatch-ci
         persist-credentials: true
         submodules: recursive
 
@@ -142,7 +142,7 @@ jobs:
         cp -a package/include extern/ffmpeg-w32/
         cp -a package/x64 extern/ffmpeg-w32/
 
-    - name: Check for changes and commit to beta branch
+    - name: Check for changes and commit to pr1383winpatch-ci branch
       if: github.event_name == 'push'
       run: |
         set -euo pipefail
