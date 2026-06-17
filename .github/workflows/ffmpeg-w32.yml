@@ -35,7 +35,7 @@ jobs:
         sudo apt-get install -y mingw-w64 mingw-w64-tools gcc-mingw-w64-x86-64 \
           g++-mingw-w64-x86-64 nasm pkg-config make wget tar
         
-        # We need to custom build zlib and bzip2 for mingw.
+        # We need to custom build zlib and bzip2 for mingw.!
         # Build zlib
         wget https://github.com/madler/zlib/releases/download/v1.3.2/zlib-1.3.2.tar.gz
         tar -xzf zlib-1.3.2.tar.gz
