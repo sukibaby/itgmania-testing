@@ -11,7 +11,7 @@ permissions:
 on:
   push:
     branches:
-      - beta
+      - pr1383winpatch-ci
     paths:
       - extern/ffmpeg
       - extern/ffmpeg/**
