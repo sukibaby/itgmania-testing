@@ -25,7 +25,7 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v6
       with:
-        ref: beta
+        ref: pr1383winpatch-ci
         persist-credentials: true
         submodules: recursive
 
