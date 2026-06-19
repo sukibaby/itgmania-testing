@@ -55,14 +55,6 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 # Select static MSVC runtime instead of DLL
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
-# Checks the standard include directories for c-style headers. We may use C++ in
-# this project, but the check works better with plain C headers.
-include(CheckIncludeFiles)
-check_include_files(dirent.h HAVE_DIRENT_H)
-check_include_files(fcntl.h HAVE_FCNTL_H)
-check_include_files(unistd.h HAVE_UNISTD_H)
-check_include_files(sys/param.h HAVE_SYS_PARAM_H)
-check_include_files(sys/types.h HAVE_SYS_TYPES_H)
 
 include(CheckFunctionExists)
 include(CheckSymbolExists)
@@ -91,30 +83,6 @@ if(WIN32)
   else()
     set(SM_WIN32_ARCH "x86")
   endif()
-endif()
-
-check_compile_features("${SM_CMAKE_DIR}/TestCode"
-                       "${SM_CMAKE_DIR}/TestCode/test_external.c"
-                       "Checking for external name shortening requirements"
-                       "not needed"
-                       "needed"
-                       SM_BUILT_LONG_NAME
-                       TRUE)
-
-if(NOT SM_BUILT_LONG_NAME)
-  set(NEED_SHORT_EXTERNAL_NAMES 1)
-endif()
-
-check_compile_features("${SM_CMAKE_DIR}/TestCode"
-                       "${SM_CMAKE_DIR}/TestCode/test_broken.c"
-                       "Checking if incomplete types are broken."
-                       "not broken"
-                       "broken"
-                       SM_BUILT_INCOMPLETE_TYPE
-                       FALSE)
-
-if(SM_BUILT_INCOMPLETE_TYPE)
-  set(INCOMPLETE_TYPES_BROKEN 1)
 endif()
 
 # Dependencies go here.

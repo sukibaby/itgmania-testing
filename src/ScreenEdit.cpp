@@ -846,6 +846,10 @@ EditButton ScreenEdit::DeviceToEdit(const DeviceInput& DeviceI) const {
 /* Given a DeviceInput that was just depressed, return an active edit function.
  */
 EditButton ScreenEdit::MenuButtonToEditButton(GameButton MenuI) const {
+  if (MenuI == GameButton_Invalid) {
+    return EditButton_Invalid;
+  }
+
   const MapEditButtonToMenuButton* pCurrentMap = GetCurrentMenuButtonMap();
 
   FOREACH_EditButton(e) {
@@ -1697,6 +1701,9 @@ void ScreenEdit::Init() {
 
   GAMESTATE->m_bIsUsingStepTiming = false;
   GAMESTATE->m_bInStepEditor = true;
+  // Is already zero if going into EditMode, but not always zero upon entering
+  // PracticeMode
+  GAMESTATE->m_Position.m_fMusicSeconds = 0.0;
 
   SubscribeToMessage("Judgment");
   main_player_ = GAMESTATE->GetMasterPlayerNumber();
@@ -1865,6 +1872,7 @@ void ScreenEdit::Init() {
   m_textInfo.LoadFromFont(THEME->GetPathF("ScreenEdit", "Info"));
   LOAD_ALL_COMMANDS_AND_SET_XY_AND_ON_COMMAND(m_textInfo);
   this->AddChild(&m_textInfo);
+  m_bTextInfoNeedsUpdate = false;
 
   m_textPlayRecordHelp.SetName("PlayRecordHelp");
   m_textPlayRecordHelp.LoadFromFont(
@@ -3940,7 +3948,7 @@ void ScreenEdit::TransitionEditState(EditState em) {
         Steps* pSteps = GAMESTATE->m_pCurSteps[main_player_];
         ASSERT(pSteps != nullptr);
         pSteps->SetNoteData(m_NoteDataEdit);
-        m_pSong->ReCalculateStepStatsAndLastSecond();
+        m_pSong->ReCalculateStepStatsAndLastSecond(false);
 
         // TODO: Background videos don't support seeking, when they do, make
         // sure to load the appropriate part of the video.
@@ -4075,8 +4083,11 @@ void ScreenEdit::ScrollTo(float fDestinationBeat) {
       }
     }
   }
-
+  GAMESTATE->m_Position.m_fMusicSeconds =
+      GetAppropriateTiming().GetElapsedTimeFromBeat(fDestinationBeat);
   m_soundChangeLine.Play(true);
+  m_sprOverlay->PlayCommand("ScrollSong");
+  m_sprUnderlay->PlayCommand("ScrollSong");
 }
 
 static LocalizedString NEW_KEYSOUND_FILE(
