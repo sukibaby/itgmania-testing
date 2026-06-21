@@ -32,9 +32,6 @@ add_executable("TextureFontGenerator"
                ${TEXTURE_SRC}
                ${TEXTURE_HPP}
                ${TEXTURE_DAT})
-target_compile_definitions("TextureFontGenerator" PRIVATE WINVER=0x0601)
-target_compile_definitions("TextureFontGenerator" PRIVATE _WIN32_WINNT=0x0601)
-target_compile_definitions("TextureFontGenerator" PRIVATE NTDDI_VERSION=0x06010000)
 unset(CMAKE_MFC_FLAG)
 set_property(TARGET "TextureFontGenerator" PROPERTY FOLDER "Internal Libraries")
 

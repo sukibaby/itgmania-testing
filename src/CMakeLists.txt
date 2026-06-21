@@ -161,9 +161,6 @@ if(WIN32)
   target_compile_definitions("${SM_EXE_NAME}" PRIVATE NOMINMAX)
   target_compile_definitions("${SM_EXE_NAME}" PRIVATE WIN32_LEAN_AND_MEAN)
   target_compile_definitions("${SM_EXE_NAME}" PRIVATE VC_EXTRALEAN)
-  target_compile_definitions("${SM_EXE_NAME}" PRIVATE WINVER=0x0601)
-  target_compile_definitions("${SM_EXE_NAME}" PRIVATE _WIN32_WINNT=0x0601)
-  target_compile_definitions("${SM_EXE_NAME}" PRIVATE NTDDI_VERSION=0x06010000)
 
   set_target_properties("${SM_EXE_NAME}"
                         PROPERTIES RUNTIME_OUTPUT_DIRECTORY
