@@ -510,16 +510,22 @@ list(APPEND SM_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}
             "${SM_GENERATED_SRC_DIR}")
 
 if(APPLE)
+  add_dependencies("${SM_EXE_NAME}" "ffmpeg-configure")
   list(APPEND SM_INCLUDE_DIRS "archutils/Unix")
 
   add_dependencies("${SM_EXE_NAME}" "ffmpeg")
   list(APPEND SM_INCLUDE_DIRS "${SM_FFMPEG_INCLUDE}")
+  list(APPEND SM_INCLUDE_DIRS "${SM_FFMPEG_SRC_DIR}")
 elseif(WIN32)
+  add_dependencies("${SM_EXE_NAME}" "ffmpeg-configure")
   add_dependencies("${SM_EXE_NAME}" "ffmpeg")
   list(APPEND SM_INCLUDE_DIRS "${SM_FFMPEG_INCLUDE}")
+  list(APPEND SM_INCLUDE_DIRS "${SM_FFMPEG_SRC_DIR}")
 else()
+  add_dependencies("${SM_EXE_NAME}" "ffmpeg-configure")
   add_dependencies("${SM_EXE_NAME}" "ffmpeg")
   list(APPEND SM_INCLUDE_DIRS "${SM_FFMPEG_INCLUDE}")
+  list(APPEND SM_INCLUDE_DIRS "${SM_FFMPEG_SRC_DIR}")
 
   if(X11_FOUND)
     list(APPEND SM_INCLUDE_DIRS "${X11_INCLUDE_DIR}")
