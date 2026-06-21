@@ -553,15 +553,11 @@ if(WIN32)
     install(FILES "${SM_PROGRAM_DIR}/Texture Font Generator.exe"
             DESTINATION "${SM_FULL_INSTALLATION_PATH}")
   endif()
-  install(FILES "${SM_PROGRAM_DIR}/avcodec-59.dll"
-          DESTINATION "${SM_FULL_INSTALLATION_PATH}")
-  install(FILES "${SM_PROGRAM_DIR}/avformat-59.dll"
-          DESTINATION "${SM_FULL_INSTALLATION_PATH}")
-  install(FILES "${SM_PROGRAM_DIR}/avutil-57.dll"
-          DESTINATION "${SM_FULL_INSTALLATION_PATH}")
+  foreach(dll ${SM_FFMPEG_WIN32_DLLS})
+    install(FILES "${SM_PROGRAM_DIR}/${dll}"
+            DESTINATION "${SM_FULL_INSTALLATION_PATH}")
+  endforeach()
   install(FILES "${SM_PROGRAM_DIR}/parallel_lights_io.dll"
-          DESTINATION "${SM_FULL_INSTALLATION_PATH}")
-  install(FILES "${SM_PROGRAM_DIR}/swscale-6.dll"
           DESTINATION "${SM_FULL_INSTALLATION_PATH}")
   install(FILES "${SM_PROGRAM_DIR}/ITGmania.vdi"
           DESTINATION "${SM_FULL_INSTALLATION_PATH}")
