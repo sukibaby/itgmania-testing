@@ -404,18 +404,17 @@ list(APPEND SMDATA_LINK_LIB "mad"
 
 if(WIN32)
   list(APPEND SMDATA_LINK_LIB
-              # The misc libraries are here.
-              "${LIB_SWSCALE}"
-              "${LIB_AVCODEC}"
-              "${LIB_AVFORMAT}"
-              "${LIB_AVUTIL}")
+              "${SM_FFMPEG_LIB}/avcodec.lib"
+              "${SM_FFMPEG_LIB}/avformat.lib"
+              "${SM_FFMPEG_LIB}/swscale.lib"
+              "${SM_FFMPEG_LIB}/avutil.lib")
 
   list(APPEND SMDATA_LINK_LIB
               "dbghelp.lib"
               "setupapi.lib"
               "hid.lib")
 
-  sm_add_link_flag("${SM_EXE_NAME}" "/LIBPATH:\"${SM_EXTERN_DIR}/ffmpeg-w32/${SM_WIN32_ARCH}\"")
+  sm_add_link_flag("${SM_EXE_NAME}" "/LIBPATH:\"${SM_FFMPEG_LIB}\"")
   sm_add_link_flag("${SM_EXE_NAME}"
                    "/LIBPATH:\"$(WindowsSdkDir)Lib\\um\\${SM_WIN32_ARCH}\"")
   sm_add_link_flag("${SM_EXE_NAME}" "/ERRORREPORT:SEND")
@@ -515,19 +514,18 @@ if(APPLE)
 
   add_dependencies("${SM_EXE_NAME}" "ffmpeg")
   list(APPEND SM_INCLUDE_DIRS "${SM_FFMPEG_INCLUDE}")
+elseif(WIN32)
+  add_dependencies("${SM_EXE_NAME}" "ffmpeg")
+  list(APPEND SM_INCLUDE_DIRS "${SM_FFMPEG_INCLUDE}")
 else()
-  if(MSVC)
-    list(APPEND SM_INCLUDE_DIRS "${SM_EXTERN_DIR}/ffmpeg-w32/include")
-  else()
-    add_dependencies("${SM_EXE_NAME}" "ffmpeg")
-    list(APPEND SM_INCLUDE_DIRS "${SM_FFMPEG_INCLUDE}")
+  add_dependencies("${SM_EXE_NAME}" "ffmpeg")
+  list(APPEND SM_INCLUDE_DIRS "${SM_FFMPEG_INCLUDE}")
 
-    if(X11_FOUND)
-      list(APPEND SM_INCLUDE_DIRS "${X11_INCLUDE_DIR}")
-    endif()
-
-    list(APPEND SM_INCLUDE_DIRS "${LIBUSB_INCLUDE_DIR}")
+  if(X11_FOUND)
+    list(APPEND SM_INCLUDE_DIRS "${X11_INCLUDE_DIR}")
   endif()
+
+  list(APPEND SM_INCLUDE_DIRS "${LIBUSB_INCLUDE_DIR}")
 endif()
 
 target_include_directories("${SM_EXE_NAME}" PUBLIC ${SM_INCLUDE_DIRS})
@@ -550,15 +548,7 @@ if(WIN32)
     install(FILES "${SM_PROGRAM_DIR}/Texture Font Generator.exe"
             DESTINATION "${SM_FULL_INSTALLATION_PATH}")
   endif()
-  install(FILES "${SM_PROGRAM_DIR}/avcodec-59.dll"
-          DESTINATION "${SM_FULL_INSTALLATION_PATH}")
-  install(FILES "${SM_PROGRAM_DIR}/avformat-59.dll"
-          DESTINATION "${SM_FULL_INSTALLATION_PATH}")
-  install(FILES "${SM_PROGRAM_DIR}/avutil-57.dll"
-          DESTINATION "${SM_FULL_INSTALLATION_PATH}")
   install(FILES "${SM_PROGRAM_DIR}/parallel_lights_io.dll"
-          DESTINATION "${SM_FULL_INSTALLATION_PATH}")
-  install(FILES "${SM_PROGRAM_DIR}/swscale-6.dll"
           DESTINATION "${SM_FULL_INSTALLATION_PATH}")
   install(FILES "${SM_PROGRAM_DIR}/ITGmania.vdi"
           DESTINATION "${SM_FULL_INSTALLATION_PATH}")

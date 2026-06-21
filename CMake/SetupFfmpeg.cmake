@@ -1,5 +1,8 @@
 set(SM_FFMPEG_SRC_DIR "${SM_EXTERN_DIR}/ffmpeg")
 set(SM_FFMPEG_CONFIGURE_EXE "${SM_FFMPEG_SRC_DIR}/configure")
+set(SM_FFMPEG_INSTALL_DIR "${CMAKE_BINARY_DIR}/ffmpeg-install")
+set(SM_FFMPEG_LIB "${SM_FFMPEG_INSTALL_DIR}/lib")
+set(SM_FFMPEG_INCLUDE "${SM_FFMPEG_INSTALL_DIR}/include")
 
 list(APPEND FFMPEG_CONFIGURE
             "${SM_FFMPEG_CONFIGURE_EXE}"
@@ -20,8 +23,9 @@ list(APPEND FFMPEG_CONFIGURE
             "--enable-version3"
             "--enable-pthreads"
             "--enable-static"
+            "--disable-shared"
             "--enable-zlib"
-            "--prefix=/")
+            "--prefix=${SM_FFMPEG_INSTALL_DIR}")
 
 set(FFMPEG_CC "${CMAKE_C_COMPILER}")
 set(FFMPEG_CXX "${CMAKE_CXX_COMPILER}")
@@ -46,7 +50,14 @@ if(CMAKE_POSITION_INDEPENDENT_CODE)
   list(APPEND FFMPEG_CONFIGURE "--enable-pic")
 endif()
 
-if(MACOSX)
+if(WIN32)
+  list(APPEND FFMPEG_CONFIGURE "--disable-asm")
+  if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+    list(APPEND FFMPEG_CONFIGURE "--arch=x86_64")
+  else()
+    list(APPEND FFMPEG_CONFIGURE "--arch=x86")
+  endif()
+elseif(MACOSX)
   list(APPEND FFMPEG_CONFIGURE "--enable-cross-compile")
   list(APPEND FFMPEG_CONFIGURE "--enable-videotoolbox")
   list(APPEND FFMPEG_CONFIGURE "--extra-cflags=-mmacosx-version-min=11")
@@ -65,31 +76,36 @@ if(NOT WITH_EXTERNAL_WARNINGS)
   list(APPEND FFMPEG_CONFIGURE "--extra-cflags=-w")
 endif()
 
-if(CMAKE_GENERATOR STREQUAL "Xcode" OR CMAKE_GENERATOR MATCHES "Ninja")
-  if(DEFINED ENV{CMAKE_BUILD_PARALLEL_LEVEL})
-    set(NUM_CORES $ENV{CMAKE_BUILD_PARALLEL_LEVEL})
-  else()
-    cmake_host_system_information(RESULT NUM_CORES QUERY NUMBER_OF_LOGICAL_CORES)
-  endif()
-  list(APPEND SM_FFMPEG_MAKE "make" "-j${NUM_CORES}")
+set(SM_FFMPEG_MAKE_COMMAND)
+if(MSVC)
+  find_program(SM_FFMPEG_MAKE_PROGRAM NAMES nmake REQUIRED NO_CACHE)
+  set(SM_FFMPEG_MAKE_COMMAND "${SM_FFMPEG_MAKE_PROGRAM}" "install")
 else()
-  list(APPEND SM_FFMPEG_MAKE $(MAKE))
+  if(CMAKE_GENERATOR STREQUAL "Xcode" OR CMAKE_GENERATOR MATCHES "Ninja")
+    if(DEFINED ENV{CMAKE_BUILD_PARALLEL_LEVEL})
+      set(NUM_CORES $ENV{CMAKE_BUILD_PARALLEL_LEVEL})
+    else()
+      cmake_host_system_information(RESULT NUM_CORES QUERY NUMBER_OF_LOGICAL_CORES)
+    endif()
+    set(SM_FFMPEG_MAKE_COMMAND "make" "-j${NUM_CORES}" "install")
+  else()
+    set(SM_FFMPEG_MAKE_COMMAND "make" "install")
+  endif()
 endif()
-list(APPEND SM_FFMPEG_MAKE "&&" "make" "DESTDIR=./dest" "install")
 
 externalproject_add("ffmpeg"
                     SOURCE_DIR "${SM_FFMPEG_SRC_DIR}"
                     CONFIGURE_COMMAND ${FFMPEG_CONFIGURE}
-                    BUILD_COMMAND "${SM_FFMPEG_MAKE}"
+                    BUILD_COMMAND ${SM_FFMPEG_MAKE_COMMAND}
                     UPDATE_COMMAND ""
                     INSTALL_COMMAND ""
                     TEST_COMMAND ""
                     BUILD_BYPRODUCTS
-                      "<BINARY_DIR>/dest/lib/libavformat.a"
-                      "<BINARY_DIR>/dest/lib/libavcodec.a"
-                      "<BINARY_DIR>/dest/lib/libswscale.a"
-                      "<BINARY_DIR>/dest/lib/libavutil.a")
-
-externalproject_get_property("ffmpeg" BINARY_DIR)
-set(SM_FFMPEG_LIB ${BINARY_DIR}/dest/lib)
-set(SM_FFMPEG_INCLUDE ${BINARY_DIR}/dest/include)
+                      "${SM_FFMPEG_LIB}/libavformat.a"
+                      "${SM_FFMPEG_LIB}/libavcodec.a"
+                      "${SM_FFMPEG_LIB}/libswscale.a"
+                      "${SM_FFMPEG_LIB}/libavutil.a"
+                      "${SM_FFMPEG_LIB}/avformat.lib"
+                      "${SM_FFMPEG_LIB}/avcodec.lib"
+                      "${SM_FFMPEG_LIB}/swscale.lib"
+                      "${SM_FFMPEG_LIB}/avutil.lib")

@@ -105,41 +105,7 @@ else()
 endif()
 
 if(WIN32)
-  # FFMPEG...it can be evil.
-  find_library(LIB_SWSCALE
-               NAMES "swscale"
-               PATHS "${SM_EXTERN_DIR}/ffmpeg-w32/${SM_WIN32_ARCH}"
-               NO_DEFAULT_PATH)
-  get_filename_component(LIB_SWSCALE ${LIB_SWSCALE} NAME)
-
-  find_library(LIB_AVCODEC
-               NAMES "avcodec"
-               PATHS "${SM_EXTERN_DIR}/ffmpeg-w32/${SM_WIN32_ARCH}"
-               NO_DEFAULT_PATH)
-  get_filename_component(LIB_AVCODEC ${LIB_AVCODEC} NAME)
-
-  find_library(LIB_AVFORMAT
-               NAMES "avformat"
-               PATHS "${SM_EXTERN_DIR}/ffmpeg-w32/${SM_WIN32_ARCH}"
-               NO_DEFAULT_PATH)
-  get_filename_component(LIB_AVFORMAT ${LIB_AVFORMAT} NAME)
-
-  find_library(LIB_AVUTIL
-               NAMES "avutil"
-               PATHS "${SM_EXTERN_DIR}/ffmpeg-w32/${SM_WIN32_ARCH}"
-               NO_DEFAULT_PATH)
-  get_filename_component(LIB_AVUTIL ${LIB_AVUTIL} NAME)
-
-  list(APPEND SM_FFMPEG_WIN32_DLLS
-    "avcodec-59.dll"
-    "avformat-59.dll"
-    "avutil-57.dll"
-    "swscale-6.dll"
-  )
-  foreach(dll ${SM_FFMPEG_WIN32_DLLS})
-    file(REMOVE "${SM_PROGRAM_DIR}/${dll}")
-    file(COPY "${SM_EXTERN_DIR}/ffmpeg-w32/${SM_WIN32_ARCH}/${dll}" DESTINATION "${SM_PROGRAM_DIR}/")
-  endforeach()
+  include("${SM_CMAKE_DIR}/SetupFfmpeg.cmake")
 elseif(MACOSX)
   include("${SM_CMAKE_DIR}/SetupFfmpeg.cmake")
 
