@@ -130,7 +130,8 @@ if(WIN32)
                NO_DEFAULT_PATH)
   get_filename_component(LIB_AVUTIL ${LIB_AVUTIL} NAME)
 
-  list(APPEND SM_FFMPEG_WIN32_DLLS
+  # ffmpeg-w32
+  set(SM_FFMPEG_WIN32_DLLS
     "avcodec-59.dll"
     "avformat-59.dll"
     "avutil-57.dll"
