@@ -14,8 +14,7 @@
 #include "archutils/Win32/RegistryAccess.h"
 #include "global.h"
 
-#ifdef NTDDI_WIN8  // Link to Xinput9_1_0.lib on Windows 8 SDK and above to
-                   // ensure linkage to Xinput9_1_0.dll
+#if defined(NTDDI_WIN8) && NTDDI_VERSION >= NTDDI_WIN8  // Link to Xinput9_1_0.lib on Windows 8 SDK and above to ensure linkage to Xinput9_1_0.dll
 #pragma comment(lib, "Xinput9_1_0.lib")
 #else
 #pragma comment(lib, "xinput.lib")
