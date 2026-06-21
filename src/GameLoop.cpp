@@ -282,7 +282,12 @@ void GameLoop::RunGameLoop() {
     HOOKS->BoostPriority();
   }
 
+  static int iFrameCount = 0;
   while (!ArchHooks::UserQuit()) {
+    if (iFrameCount++ % 300 == 0) {
+      LOG->Trace("GameLoop::RunGameLoop: Frame %d", iFrameCount);
+    }
+
     if (!g_NewGame.empty()) {
       DoChangeGame();
     }

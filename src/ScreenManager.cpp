@@ -498,6 +498,11 @@ void ScreenManager::Update(float fDeltaTime) {
 }
 
 void ScreenManager::Draw() {
+  static int iDrawCount = 0;
+  if (iDrawCount++ % 300 == 0) {
+    LOG->Trace("ScreenManager::Draw called: count %d", iDrawCount);
+  }
+
   /* If it hasn't been updated yet, skip the render. We can't call Update(0),
    * since that'll confuse the "zero out the next update after loading a screen
    * logic. If we don't render, don't call BeginFrame or EndFrame. That way, we
@@ -506,6 +511,7 @@ void ScreenManager::Draw() {
     return;
   }
 
+  LOG->Trace("ScreenManager::Draw: Calling BeginFrame");
   if (!DISPLAY->BeginFrame()) {
     return;
   }
@@ -525,7 +531,9 @@ void ScreenManager::Draw() {
     overlayScreen->Draw();
   }
 
+  LOG->Trace("ScreenManager::Draw: Calling EndFrame");
   DISPLAY->EndFrame();
+  LOG->Trace("ScreenManager::Draw: EndFrame returned");
 }
 
 void ScreenManager::Input(const InputEventPlus& input) {

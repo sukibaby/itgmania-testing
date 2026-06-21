@@ -193,22 +193,30 @@ static void update_centering() {
 }
 
 static void StartDisplay() {
+  LOG->Info("StartDisplay: DISPLAY=%p", DISPLAY);
   if (DISPLAY != nullptr) {
     return;  // already started
   }
 
+  LOG->Info("StartDisplay: Creating display...");
   DISPLAY = CreateDisplay();
+  LOG->Info("StartDisplay: Display created, updating centering");
 
   update_centering();
+  LOG->Info("StartDisplay: Centering updated");
 
   TEXTUREMAN = new RageTextureManager;
+  LOG->Info("StartDisplay: Created RageTextureManager, setting prefs...");
   TEXTUREMAN->SetPrefs(RageTextureManagerPrefs(
       PREFSMAN->m_iTextureColorDepth, PREFSMAN->m_iMovieColorDepth,
       PREFSMAN->m_bDelayedTextureDelete, PREFSMAN->m_iMaxTextureResolution,
       StepMania::GetHighResolutionTextures(), PREFSMAN->m_bForceMipMaps));
+  LOG->Info("StartDisplay: RageTextureManager prefs set");
 
   MODELMAN = new ModelManager;
+  LOG->Info("StartDisplay: Created ModelManager, setting prefs...");
   MODELMAN->SetPrefs(ModelManagerPrefs(PREFSMAN->m_bDelayedModelDelete));
+  LOG->Info("StartDisplay: ModelManager prefs set, StartDisplay complete");
 }
 
 void StepMania::ApplyGraphicOptions() {
@@ -910,24 +918,35 @@ int sm_main(int argc, char* argv[]) {
   }
 
   SOUNDMAN = new RageSoundManager;
+  LOG->Info("Initializing SOUNDMAN");
   SOUNDMAN->Init();
+  LOG->Info("SOUNDMAN initialized, setting volume");
   SOUNDMAN->SetMixVolume();
+  LOG->Info("SOUNDMAN volume set");
   SOUND = new GameSoundManager;
   BOOKKEEPER = new Bookkeeper;
   LIGHTSMAN = new LightsManager;
+  LOG->Info("Created LIGHTSMAN");
   INPUTFILTER = new InputFilter;
+  LOG->Info("Created INPUTFILTER");
   INPUTMAPPER = new InputMapper;
+  LOG->Info("Created INPUTMAPPER");
 
   StepMania::InitializeCurrentGame(GAMESTATE->GetCurrentGame());
+  LOG->Info("Initialized current game");
 
   INPUTQUEUE = new InputQueue;
+  LOG->Info("Created INPUTQUEUE");
   SONGINDEX = new SongCacheIndex;
   IMAGECACHE = new ImageCache;
+  LOG->Info("Created SONGINDEX and IMAGECACHE");
 
   // depends on SONGINDEX:
   SONGMAN = new SongManager;
+  LOG->Info("Created SONGMAN, about to InitAll");
   SONGMAN->InitAll(
       pLoadingWindow, /*onlyAdditions=*/false);  // this takes a long time
+  LOG->Info("SONGMAN::InitAll completed");
   CRYPTMAN = new CryptManager;  // need to do this before ProfileMan
   if (PREFSMAN->m_bSignProfileData) {
     CRYPTMAN->GenerateGlobalKeys();
@@ -935,7 +954,9 @@ int sm_main(int argc, char* argv[]) {
   MEMCARDMAN = new MemoryCardManager;
   CHARMAN = new CharacterManager;
   PROFILEMAN = new ProfileManager;
+  LOG->Info("Created PROFILEMAN, about to Init");
   PROFILEMAN->Init();  // must load after SONGMAN
+  LOG->Info("PROFILEMAN::Init completed");
   UNLOCKMAN = new UnlockManager;
   SONGMAN->UpdatePopular();
   SONGMAN->UpdatePreferredSort();
@@ -944,8 +965,10 @@ int sm_main(int argc, char* argv[]) {
 
   // Initialize which courses are ranking courses here.
   SONGMAN->UpdateRankingCourses();
+  LOG->Info("UpdateRankingCourses completed");
 
   RageUtil::SafeDelete(pLoadingWindow);  // destroy this before init'ing Display
+  LOG->Info("Deleted loading window");
 
   /* If the user has tried to quit during the loading, do it before creating
    * the main window. This prevents going to full screen just to quit. */
@@ -954,16 +977,20 @@ int sm_main(int argc, char* argv[]) {
     return 0;
   }
 
+  LOG->Info("About to call StartDisplay");
   StartDisplay();
-
-  StoreActualGraphicOptions();
+  LOG->Info("StartDisplay completed");
   LOG->Info("%s", GetActualGraphicOptionsString().c_str());
 
+  LOG->Info("About to call SONGMAN->PreloadSongImages");
   SONGMAN->PreloadSongImages();
+  LOG->Info("SONGMAN->PreloadSongImages completed");
 
   /* Input handlers can have dependences on the video system so
    * INPUTMAN must be initialized after DISPLAY. */
+  LOG->Info("Creating RageInput manager");
   INPUTMAN = new RageInput;
+  LOG->Info("RageInput created");
 
   // These things depend on the TextureManager, so do them after!
   FONT = new FontManager;
@@ -985,7 +1012,9 @@ int sm_main(int argc, char* argv[]) {
   CodeDetector::RefreshCacheItems();
 
   // Run the main loop.
+  LOG->Info("=== About to start GameLoop::RunGameLoop ===");
   GameLoop::RunGameLoop();
+  LOG->Info("=== GameLoop::RunGameLoop returned ===");
 
   PREFSMAN->SavePrefsToDisk();
 

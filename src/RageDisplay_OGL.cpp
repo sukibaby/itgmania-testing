@@ -32,6 +32,7 @@
 #include "RageUtil/Endian.h"
 #include "Sprite.h"
 #include "arch/LowLevelWindow/LowLevelWindow.h"
+#include "arch/arch_default.h"
 #include "global.h"
 
 using namespace RageDisplay_Legacy_Helpers;
@@ -499,6 +500,8 @@ std::string RageDisplay_Legacy::Init(
     const VideoModeParams& p, bool bAllowUnacceleratedRenderer) {
   g_pWind = LowLevelWindow::Create();
 
+  LOG->Info("Window Driver: %s", GetDefaultWindowDriver());
+
   bool bIgnore = false;
   std::string sError = SetVideoMode(p, bIgnore);
   if (sError != "") {
@@ -867,6 +870,11 @@ int RageDisplay_Legacy::GetMaxTextureSize() const {
 }
 
 bool RageDisplay_Legacy::BeginFrame() {
+  static int iFrameCounter = 0;
+  if (iFrameCounter++ % 300 == 0) {
+    LOG->Trace("BeginFrame called: frame %d", iFrameCounter);
+  }
+
   /* We do this in here, rather than ResolutionChanged, or we won't update the
    * viewport for the concurrent rendering context. */
   int fWidth = g_pWind->GetActualVideoModeParams().windowWidth;
@@ -887,6 +895,11 @@ bool RageDisplay_Legacy::BeginFrame() {
 }
 
 void RageDisplay_Legacy::EndFrame() {
+  static int iFrameCounter = 0;
+  if (iFrameCounter++ % 300 == 0) {
+    LOG->Trace("EndFrame called: frame %d, rate=%d", iFrameCounter, g_pWind->GetActualVideoModeParams().rate);
+  }
+
   if (UseOffscreenRenderTarget()) {
     offscreenRenderTarget->FinishRenderingTo();
     Sprite fullscreenSprite;
@@ -906,8 +919,11 @@ void RageDisplay_Legacy::EndFrame() {
   }
 
   FrameLimitBeforeVsync();
+  LOG->Trace("EndFrame: Before SwapBuffers");
   g_pWind->SwapBuffers();
+  LOG->Trace("EndFrame: After SwapBuffers, before FrameLimitAfterVsync");
   FrameLimitAfterVsync();
+  LOG->Trace("EndFrame: After FrameLimitAfterVsync, before glFinish");
 
   // Some would advise against glFinish(), ever. Those people don't realize
   // the degree of freedom GL hosts are permitted in queueing commands.
@@ -919,10 +935,14 @@ void RageDisplay_Legacy::EndFrame() {
   // reflected by the next frame as close as possible to the on-screen
   // appearance of that frame.
   glFinish();
+  LOG->Trace("EndFrame: After glFinish");
 
+  LOG->Trace("EndFrame: Before g_pWind->Update");
   g_pWind->Update();
+  LOG->Trace("EndFrame: After g_pWind->Update");
 
   RageDisplay::EndFrame();
+  LOG->Trace("EndFrame: Complete");
 }
 
 RageSurface* RageDisplay_Legacy::CreateScreenshot() {
