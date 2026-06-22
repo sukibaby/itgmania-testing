@@ -37,6 +37,7 @@ if(WIN32)
   set(CPACK_NSIS_COMPRESSOR "/SOLID lzma")
   set(CPACK_NSIS_MUI_FINISHPAGE_RUN "${SM_EXE_NAME}.exe")
   set(CPACK_NSIS_BRANDING_TEXT " ")
+  set(CPACK_NSIS_MANIFEST_DPI_AWARE "on")
 
   # The header and welcome bitmaps require backslashes.
   string(REGEX
