@@ -700,7 +700,7 @@ Section -FinishComponents
 
   ; Strip off the last 13 characters, to see if we have AddRemove.exe
   StrLen $R1 $R0
-  IntOp $R1 $R0 - 13
+  IntOp $R1 $R1 - 13
   StrCpy $R2 $R0 13 $R1
   StrCmp $R2 "AddRemove.exe" addremove_installed
 
