@@ -142,6 +142,10 @@ static std::string GetActualGraphicOptionsString() {
 }
 
 static void StoreActualGraphicOptions() {
+#if (defined(HAS_SDL))
+// SDL doesn't support exclusive fullscreen, so we don't need to store the
+// fullscreen preference.
+#else
   /* Store the settings that RageDisplay was actually able to use so that
    * we don't go through the process of auto-detecting a usable video mode
    * every time. */
@@ -168,6 +172,7 @@ static void StoreActualGraphicOptions() {
   PREFSMAN->m_bVsync.Set(params.vsync);
 
   Dialog::SetWindowed(params.windowed);
+#endif
 }
 
 static RageDisplay* CreateDisplay();
@@ -485,8 +490,9 @@ bool CheckVideoDefaultSettings() {
 
     // Update last seen video card
     PREFSMAN->m_sLastSeenVideoDriver.Set(GetVideoDriverName());
-  } else if (CompareNoCase(
-                 PREFSMAN->m_sVideoRenderers.Get(), defaults.sVideoRenderers)) {
+  } else if (
+      CompareNoCase(
+          PREFSMAN->m_sVideoRenderers.Get(), defaults.sVideoRenderers)) {
     LOG->Warn(
         "Video renderer list has been changed from '%s' to '%s'",
         defaults.sVideoRenderers.c_str(),
