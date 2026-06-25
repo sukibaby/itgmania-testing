@@ -202,6 +202,10 @@ void ImageCache::UnloadAllImages() {
   g_ImagePathToImage.clear();
 }
 
+void ImageCache::PurgeCachedImages() {
+  UnloadAllImages();
+}
+
 ImageCache::ImageCache() : delay_save_cache(false) { ReadFromDisk(); }
 
 ImageCache::~ImageCache() { UnloadAllImages(); }

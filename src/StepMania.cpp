@@ -928,6 +928,11 @@ int sm_main(int argc, char* argv[]) {
   SONGMAN = new SongManager;
   SONGMAN->InitAll(
       pLoadingWindow, /*onlyAdditions=*/false);  // this takes a long time
+
+  if (IMAGECACHE) {
+    IMAGECACHE->PurgeCachedImages();
+  }
+
   CRYPTMAN = new CryptManager;  // need to do this before ProfileMan
   if (PREFSMAN->m_bSignProfileData) {
     CRYPTMAN->GenerateGlobalKeys();
