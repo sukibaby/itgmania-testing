@@ -38,8 +38,8 @@ void InputHandler_SDL::GetDevicesAndDescriptions(
   vDevicesOut.push_back(InputDeviceInfo(DEVICE_KEYBOARD, "SDL"));
 }
 
-DeviceButton InputHandler_SDL::SDLKeyToDeviceButton(const SDL_Keysym& keysym) {
-  switch (keysym.sym) {
+DeviceButton InputHandler_SDL::SDLKeyToDeviceButton(SDL_Keycode keycode) {
+  switch (keycode) {
     case SDLK_BACKSPACE:
       return KEY_BACK;
     case SDLK_TAB:
@@ -178,15 +178,8 @@ DeviceButton InputHandler_SDL::SDLKeyToDeviceButton(const SDL_Keysym& keysym) {
   }
 
   // SDL keycodes for ASCII keys generally match their character codes.
-  if (keysym.sym >= 32 && keysym.sym <= 127) {
-    return static_cast<DeviceButton>(keysym.sym);
-  }
-
-  // Fall back to scancode-based mapping into KEY_OTHER_0...KEY_LAST_OTHER.
-  const int scancode = static_cast<int>(keysym.scancode);
-  const int mapped = static_cast<int>(KEY_OTHER_0) + scancode;
-  if (mapped <= static_cast<int>(KEY_LAST_OTHER)) {
-    return static_cast<DeviceButton>(mapped);
+  if (keycode >= 32 && keycode <= 127) {
+    return static_cast<DeviceButton>(keycode);
   }
 
   return DeviceButton_Invalid;
@@ -198,38 +191,34 @@ void InputHandler_SDL::Update() {
   SDL_Event ev;
   while (SDL_PollEvent(&ev)) {
     switch (ev.type) {
-      case SDL_QUIT:
+      case SDL_EVENT_QUIT:
         ArchHooks::SetUserQuit();
         break;
-      case SDL_WINDOWEVENT:
+      case SDL_EVENT_WINDOW_FOCUS_GAINED:
         if (HOOKS != nullptr) {
-          switch (ev.window.event) {
-            case SDL_WINDOWEVENT_FOCUS_GAINED:
-              HOOKS->SetHasFocus(true);
-              break;
-            case SDL_WINDOWEVENT_FOCUS_LOST:
-              HOOKS->SetHasFocus(false);
-              break;
-            case SDL_WINDOWEVENT_CLOSE:
-              ArchHooks::SetUserQuit();
-              break;
-            default:
-              break;
-          }
+          HOOKS->SetHasFocus(true);
         }
         break;
-      case SDL_KEYDOWN:
-      case SDL_KEYUP: {
+      case SDL_EVENT_WINDOW_FOCUS_LOST:
+        if (HOOKS != nullptr) {
+          HOOKS->SetHasFocus(false);
+        }
+        break;
+      case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
+        ArchHooks::SetUserQuit();
+        break;
+      case SDL_EVENT_KEY_DOWN:
+      case SDL_EVENT_KEY_UP: {
         if (ev.key.repeat != 0) {
           break;
         }
 
-        const DeviceButton button = SDLKeyToDeviceButton(ev.key.keysym);
+        const DeviceButton button = SDLKeyToDeviceButton(ev.key.key);
         if (button == DeviceButton_Invalid) {
           break;
         }
 
-        const float level = (ev.type == SDL_KEYDOWN) ? 1.0f : 0.0f;
+        const float level = (ev.type == SDL_EVENT_KEY_DOWN) ? 1.0f : 0.0f;
         DeviceInput di(DEVICE_KEYBOARD, button, level);
         di.ts.SetZero();
         ButtonPressed(di);

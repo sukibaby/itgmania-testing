@@ -19,7 +19,7 @@ class InputHandler_SDL : public InputHandler {
       std::vector<InputDeviceInfo>& vDevicesOut) override;
 
  private:
-  static DeviceButton SDLKeyToDeviceButton(const SDL_Keysym& keysym);
+  static DeviceButton SDLKeyToDeviceButton(SDL_Keycode keycode);
 };
 
 #endif
