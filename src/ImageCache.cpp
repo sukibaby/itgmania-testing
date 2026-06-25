@@ -44,12 +44,6 @@ static Preference<bool> g_bPalettedImageCache("PalettedImageCache", false);
 static const int MAX_BANNER_CACHE_WIDTH = 256;
 static const int MAX_BANNER_CACHE_HEIGHT = 128;
 
-static int nearest_power_of_two(int v) {
-  const int up = power_of_two(v);
-  const int down = up / 2;
-  return (std::abs(v - up) > std::abs(v - down)) ? down : up;
-}
-
 /* Bump this to invalidate the on-disk image cache. */
 static const int IMAGE_CACHE_VERSION = 1;
 
@@ -451,13 +445,24 @@ void ImageCache::CacheImageInternal(
 
   const int iSourceWidth = pImage->w, iSourceHeight = pImage->h;
 
-  /* Halve each dimension, round to the nearest power of two */
-  int iWidth = nearest_power_of_two(iSourceWidth / 2);
-  int iHeight = nearest_power_of_two(iSourceHeight / 2);
+  int iWidth = iSourceWidth / 3;
+  int iHeight = iSourceHeight / 3;
 
   if (sImageDir == "Banner") {
-    iWidth = std::min(iWidth, MAX_BANNER_CACHE_WIDTH);
-    iHeight = std::min(iHeight, MAX_BANNER_CACHE_HEIGHT);
+    if (iWidth > MAX_BANNER_CACHE_WIDTH) {
+      iWidth = MAX_BANNER_CACHE_WIDTH;
+    } else {
+      iWidth = power_of_two(iWidth);
+    }
+
+    if (iHeight > MAX_BANNER_CACHE_HEIGHT) {
+      iHeight = MAX_BANNER_CACHE_HEIGHT;
+    } else {
+      iHeight = power_of_two(iHeight);
+    }
+  } else {
+    iWidth = power_of_two(iWidth);
+    iHeight = power_of_two(iHeight);
   }
 
   RageSurfaceUtils::Zoom(pImage, iWidth, iHeight);
