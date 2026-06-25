@@ -5,6 +5,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -436,7 +437,8 @@ void ImageCache::CacheImage(std::string sImageDir, std::string sImagePath) {
 void ImageCache::CacheImageInternal(
     std::string sImageDir, std::string sImagePath) {
   std::string sError;
-  RageSurface* pImage = RageSurfaceUtils::LoadFile(sImagePath, sError);
+  std::unique_ptr<RageSurface> pImage(
+      RageSurfaceUtils::LoadFile(sImagePath, sError));
   if (pImage == nullptr) {
     LOG->UserLog(
         "Cache file", sImagePath, "couldn't be loaded: %s", sError.c_str());
@@ -470,7 +472,11 @@ void ImageCache::CacheImageInternal(
     iHeight = power_of_two(iHeight);
   }
 
-  RageSurfaceUtils::Zoom(pImage, iWidth, iHeight);
+  {
+    RageSurface* pTemp = pImage.release();
+    RageSurfaceUtils::Zoom(pTemp, iWidth, iHeight);
+    pImage.reset(pTemp);
+  }
 
   /*
    * When paletted image cache is enabled, cached images are paletted.  Cached
@@ -490,7 +496,9 @@ void ImageCache::CacheImageInternal(
    */
   if (g_bPalettedImageCache) {
     if (pImage->fmt.BytesPerPixel != 1) {
-      RageSurfaceUtils::Palettize(pImage);
+      RageSurface* pTemp = pImage.release();
+      RageSurfaceUtils::Palettize(pTemp);
+      pImage.reset(pTemp);
     }
   } else {
     /* Dither to the final format.  We use A1RGB5, since that's usually
@@ -500,13 +508,12 @@ void ImageCache::CacheImageInternal(
 
     /* OrderedDither is still faster than ErrorDiffusionDither, and
      * these images are very small and only displayed briefly. */
-    RageSurfaceUtils::OrderedDither(pImage, dst);
-    delete pImage;
-    pImage = dst;
+    RageSurfaceUtils::OrderedDither(pImage.get(), dst);
+    pImage.reset(dst);
   }
 
   const std::string sCachePath = GetImageCachePath(sImageDir, sImagePath);
-  RageSurfaceUtils::SaveSurface(pImage, sCachePath);
+  RageSurfaceUtils::SaveSurface(pImage.get(), sCachePath);
 
   {
     LockMut(g_ImageCacheMutex);
@@ -520,9 +527,7 @@ void ImageCache::CacheImageInternal(
 
     if (PREFSMAN->m_ImageCache == IMGCACHE_LOW_RES_PRELOAD) {
       /* Keep it; we're just going to load it anyway. */
-      g_ImagePathToImage[sImagePath] = pImage;
-    } else {
-      delete pImage;
+      g_ImagePathToImage[sImagePath] = pImage.release();
     }
 
     /* Remember the original size. */
