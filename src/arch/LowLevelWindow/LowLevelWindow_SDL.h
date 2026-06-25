@@ -3,7 +3,7 @@
 #ifndef LOW_LEVEL_WINDOW_SDL_H
 #define LOW_LEVEL_WINDOW_SDL_H
 
-#include <SDL2/SDL.h>
+#include <SDL3/SDL.h>
 
 #include "LowLevelWindow.h"
 #include "RageDisplay.h"  // VideoModeParams

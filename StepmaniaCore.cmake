@@ -177,11 +177,9 @@ elseif(LINUX OR BSD)
   endif()
 
   if(WITH_SDL_WINDOW)
-    find_package(SDL2)
-    set(HAS_SDL ${SDL2_FOUND})
-    if(NOT SDL2_FOUND)
-      message("SDL2 was not found on your system. SDL windowing support will not be available.")
-    endif()
+    # SDL detection is performed after extern subdirectories are configured,
+    # so the bundled SDL submodule can be used before falling back to system SDL2.
+    set(HAS_SDL FALSE)
   else()
     set(HAS_SDL FALSE)
   endif()

@@ -3,7 +3,7 @@
 #ifndef INPUT_HANDLER_SDL_H
 #define INPUT_HANDLER_SDL_H
 
-#include <SDL2/SDL.h>
+#include <SDL3/SDL.h>
 
 #include <vector>
 

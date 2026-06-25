@@ -1,10 +1,17 @@
 #include "InputHandler_SDL.h"
 
-#include <SDL2/SDL.h>
+#include <SDL3/SDL.h>
 
 #include "RageLog.h"
 #include "arch/ArchHooks/ArchHooks.h"
 #include "global.h"
+
+#ifndef HAVE_SDL
+#error "InputHandler_SDL.cpp requires SDL support; enable WITH_SDL_WINDOW and ensure SDL is detected."
+#endif
+static_assert(SDL_VERSION_ATLEAST(2, 0, 0),
+              "SDL headers are required to build InputHandler_SDL.cpp");
+
 
 // register input handler class
 

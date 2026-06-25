@@ -12,7 +12,13 @@
 using namespace RageDisplay_Legacy_Helpers;
 
 #include <GL/glew.h>
-#include <SDL2/SDL.h>
+#include <SDL3/SDL.h>
+
+#ifndef HAVE_SDL
+#error "LowLevelWindow_SDL.cpp requires SDL support; enable WITH_SDL_WINDOW and ensure SDL is detected."
+#endif
+static_assert(SDL_VERSION_ATLEAST(2, 0, 0),
+              "SDL headers are required to build LowLevelWindow_SDL.cpp");
 
 #include <cmath>
 #include <cstdint>

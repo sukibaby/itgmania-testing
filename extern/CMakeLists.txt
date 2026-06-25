@@ -17,3 +17,7 @@ include(CMakeProject-miniz.cmake)
 
 # External projects
 include(CMakeProject-libusb.cmake)
+
+if(WITH_SDL_WINDOW)
+  add_subdirectory(SDL)
+endif()

@@ -379,6 +379,9 @@ else() # Linux
 
   if(HAS_SDL)
     target_compile_definitions("${SM_EXE_NAME}" PRIVATE HAVE_SDL)
+    if(TARGET SDL3::SDL3)
+      target_compile_definitions("${SM_EXE_NAME}" PRIVATE HAVE_SDL3)
+    endif()
   endif()
 
   target_compile_definitions("${SM_EXE_NAME}" PRIVATE UNIX)
@@ -476,7 +479,11 @@ else() # Unix / Linux TODO: Remember to find and locate the zip archive files.
   endif()
 
   if(HAS_SDL)
-    list(APPEND SMDATA_LINK_LIB ${SDL2_LIBRARIES})
+    if(TARGET SDL3::SDL3)
+      list(APPEND SMDATA_LINK_LIB SDL3::SDL3)
+    else()
+      list(APPEND SMDATA_LINK_LIB ${SDL2_LIBRARIES})
+    endif()
   endif()
 
   list(APPEND SMDATA_LINK_LIB "${CMAKE_THREAD_LIBS_INIT}")
@@ -534,7 +541,7 @@ else()
       list(APPEND SM_INCLUDE_DIRS "${X11_INCLUDE_DIR}")
     endif()
 
-    if(HAS_SDL)
+    if(HAS_SDL AND NOT TARGET SDL3::SDL3)
       list(APPEND SM_INCLUDE_DIRS ${SDL2_INCLUDE_DIRS})
     endif()
 

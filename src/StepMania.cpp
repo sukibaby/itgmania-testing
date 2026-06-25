@@ -490,9 +490,8 @@ bool CheckVideoDefaultSettings() {
 
     // Update last seen video card
     PREFSMAN->m_sLastSeenVideoDriver.Set(GetVideoDriverName());
-  } else if (
-      CompareNoCase(
-          PREFSMAN->m_sVideoRenderers.Get(), defaults.sVideoRenderers)) {
+  } else if (CompareNoCase(
+                 PREFSMAN->m_sVideoRenderers.Get(), defaults.sVideoRenderers)) {
     LOG->Warn(
         "Video renderer list has been changed from '%s' to '%s'",
         defaults.sVideoRenderers.c_str(),
