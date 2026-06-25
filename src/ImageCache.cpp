@@ -451,6 +451,11 @@ void ImageCache::CacheImageInternal(
 
   const int iSourceWidth = pImage->w, iSourceHeight = pImage->h;
 
+  // Round up to the nearest power of two. Divide by 3 to target the next
+  // smallest power of two without going under. We will most often encounter
+  // banners large enough that we end up clamping to the maximum allowed
+  // dimensions, so this optimizes for that case by dividing by 3 and seeing if
+  // it's still larger than the allowed dimensions.
   int iWidth = iSourceWidth / 3;
   int iHeight = iSourceHeight / 3;
 
@@ -458,17 +463,17 @@ void ImageCache::CacheImageInternal(
     if (iWidth > MAX_BANNER_CACHE_WIDTH) {
       iWidth = MAX_BANNER_CACHE_WIDTH;
     } else {
-      iWidth = power_of_two(iWidth/2);
+      iWidth = power_of_two(iWidth);
     }
 
     if (iHeight > MAX_BANNER_CACHE_HEIGHT) {
       iHeight = MAX_BANNER_CACHE_HEIGHT;
     } else {
-      iHeight = power_of_two(iHeight/2);
+      iHeight = power_of_two(iHeight);
     }
   } else {
-    iWidth = power_of_two(iWidth/2);
-    iHeight = power_of_two(iHeight/2);
+    iWidth = power_of_two(iWidth);
+    iHeight = power_of_two(iHeight);
   }
 
   {
