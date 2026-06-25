@@ -929,7 +929,9 @@ int sm_main(int argc, char* argv[]) {
   SONGMAN->InitAll(
       pLoadingWindow, /*onlyAdditions=*/false);  // this takes a long time
 
-  if (IMAGECACHE) {
+  if (IMAGECACHE && PREFSMAN->m_ImageCache != IMGCACHE_FULL) {
+    // Free cached RageSurface objects that were loaded during song init.
+    // The disk cache remains intact and surfaces may be reloaded on demand.
     IMAGECACHE->PurgeCachedImages();
   }
 
