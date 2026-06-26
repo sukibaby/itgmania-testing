@@ -25,6 +25,7 @@ static LocalizedString FAILED_SDL_INIT(
 LowLevelWindow_SDL::LowLevelWindow_SDL()
     : m_window(nullptr), m_glContext(nullptr), m_bWasWindowed(true) {
   if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+    LOG->Warn("SDL_Init(SDL_INIT_VIDEO) failed: %s", SDL_GetError());
     RageException::Throw(
         "%s: %s", FAILED_SDL_INIT.GetValue().c_str(), SDL_GetError());
   }

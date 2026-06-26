@@ -240,7 +240,7 @@ void StepMania::ApplyGraphicOptions() {
     TEXTUREMAN->ReloadAll();
   }
 
-  StoreActualGraphicOptions();
+  //StoreActualGraphicOptions();
   if (SCREENMAN) {
     SCREENMAN->SystemMessage(GetActualGraphicOptionsString());
   }

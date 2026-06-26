@@ -31,6 +31,7 @@
 #include "RageUtil.h"
 #include "RageUtil/Endian.h"
 #include "Sprite.h"
+#include "arch/arch_default.h"
 #include "arch/LowLevelWindow/LowLevelWindow.h"
 #include "global.h"
 
@@ -498,6 +499,8 @@ static LocalizedString GLDIRECT_IS_NOT_COMPATIBLE(
 std::string RageDisplay_Legacy::Init(
     const VideoModeParams& p, bool bAllowUnacceleratedRenderer) {
   g_pWind = LowLevelWindow::Create();
+
+  LOG->Info("Window Driver: %s", GetDefaultWindowDriver());
 
   bool bIgnore = false;
   std::string sError = SetVideoMode(p, bIgnore);
