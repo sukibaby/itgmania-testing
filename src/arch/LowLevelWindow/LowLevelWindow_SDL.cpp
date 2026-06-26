@@ -225,6 +225,7 @@ std::string LowLevelWindow_SDL::TryVideoMode(
     const Uint32 windowFlags =
         (m_window != nullptr) ? SDL_GetWindowFlags(m_window) : 0;
 
+#ifdef DEBUG
     LOG->Info(
         "SDL ActualVideoModeParams: windowed=%d displayId='%s'",
         CurrentParams.windowed ? 1 : 0, CurrentParams.sDisplayId.c_str());
@@ -249,6 +250,7 @@ std::string LowLevelWindow_SDL::TryVideoMode(
         CurrentParams.renderOffscreen ? 1 : 0);
     LOG->Info(
         "SDL Window: flags=0x%08x", static_cast<unsigned int>(windowFlags));
+#endif
   }
 
   return "";
@@ -268,6 +270,7 @@ void LowLevelWindow_SDL::LogDebugInformation() const {
         "SDL Window Refresh Rate: %d Hz", GetActualVideoModeParams().rate);
   }
 
+#ifdef DEBUG
   LOG->Info(
       "SDL Version: %d.%d.%d", SDL_MAJOR_VERSION, SDL_MINOR_VERSION,
       SDL_PATCHLEVEL);
@@ -280,6 +283,7 @@ void LowLevelWindow_SDL::LogDebugInformation() const {
   LOG->Info(
       "OpenGL Version: %s",
       reinterpret_cast<const char*>(glGetString(GL_VERSION)));
+#endif
 }
 
 bool LowLevelWindow_SDL::IsSoftwareRenderer(std::string& sError) {
