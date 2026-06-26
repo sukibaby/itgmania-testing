@@ -3,6 +3,7 @@ on:
     branches:
       - beta
       - release
+      - SDL2-ci
 
 name: Release
 
@@ -43,19 +44,11 @@ jobs:
           ccache: 'false'
 
       - name: Create nightly release
-        if: github.ref_name == 'beta'
+        if: github.ref_name == 'SDL2-ci'
         run: >
           cmake -S . -B build -DCMAKE_BUILD_TYPE=Release 
           -DWITH_FULL_RELEASE=Off -DWITH_NIGHTLY_RELEASE=On 
-          -DWITH_CLUB_FANTASTIC=${{ matrix.club_fantastic }}
-          ${{ env.CMAKE_FLAGS }}
-
-      - name: Create full release
-        if: github.ref_name == 'release'
-        run: >
-          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release 
-          -DWITH_FULL_RELEASE=On -DWITH_NIGHTLY_RELEASE=Off 
-          -DWITH_CLUB_FANTASTIC=${{ matrix.club_fantastic }}
+          -DWITH_CLUB_FANTASTIC=OFF
           ${{ env.CMAKE_FLAGS }}
 
       - name: Create package
