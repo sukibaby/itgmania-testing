@@ -8,6 +8,7 @@
 #include "RageUtil.h"
 #include "StdString.h"
 #include "arch/LoadingWindow/LoadingWindow_Null.h"
+#include "arch/LoadingWindow/LoadingWindow_stdio.h"
 #include "arch/arch_default.h"
 #include "global.h"
 
@@ -19,7 +20,7 @@ LoadingWindow* LoadingWindow::Create() {
     return new LoadingWindow_Null;
   }
 #if defined(UNIX) && !defined(HAVE_GTK)
-  return new LoadingWindow_Null;
+  return new LoadingWindow_stdio;
 #endif
   // Don't load nullptr by default.
   const std::string drivers = "win32,macosx,gtk";
