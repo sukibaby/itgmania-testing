@@ -1,3 +1,4 @@
+include(CMakeProject-stb_sprintf.cmake)
 include(CMakeProject-hidapi.cmake)
 include(CMakeProject-lua.cmake)
 include(CMakeProject-glew.cmake)
