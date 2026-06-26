@@ -170,6 +170,10 @@ else()
                 "arch/LoadingWindow/LoadingWindow_MacOSX.h")
   elseif(LINUX)
     include(CMakeData-gtk.cmake)
+    list(APPEND SMDATA_ARCH_LOADING_SRC
+          "arch/LoadingWindow/LoadingWindow_stdio.cpp")
+    list(APPEND SMDATA_ARCH_LOADING_HPP
+          "arch/LoadingWindow/LoadingWindow_stdio.h")
   endif()
 endif()
 
