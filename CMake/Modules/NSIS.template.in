@@ -275,7 +275,7 @@ Function un.RemoveFromPath
   unDoTrim:
     StrCmp $1 "" unRemoveFromPath_done
       Push $1
-      Call Trim
+      Call un.Trim
       Pop $1
 
     StrCpy $5 $1 1 -1 ; copy last char
@@ -372,7 +372,8 @@ FunctionEnd
 !insertmacro StrStr ""
 !insertmacro StrStr "un."
 
-Function Trim ; Added by Pelaca
+!macro TrimImpl FuncName ; Added by Pelaca
+Function ${FuncName}
 	Exch $R1
 	Push $R2
 Loop:
@@ -389,6 +390,10 @@ Done:
 	Pop $R2
 	Exch $R1
 FunctionEnd
+!macroend
+
+!insertmacro TrimImpl Trim
+!insertmacro TrimImpl un.Trim
 
 Function ConditionalAddToRegistry
   Pop $0
