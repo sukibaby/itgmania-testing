@@ -1,6 +1,7 @@
 #ifndef LOADING_WINDOW_NULL_H
 #define LOADING_WINDOW_NULL_H
 
+#include <iostream>
 #include <string>
 
 #include "LoadingWindow.h"
@@ -9,6 +10,14 @@ class LoadingWindow_Null : public LoadingWindow {
  public:
   void SetText(std::string str) {}
   void SetSplash(const RageSurface* pSplash) {}
+  void SetProgress(const int progress) override {
+    LoadingWindow::SetProgress(progress);
+
+    if (m_totalWork > 0) {
+      int pct = static_cast<int>((m_progress * 100.0) / m_totalWork);
+      std::cout << "[Loading Songs] Progress: " << pct << "%" << std::endl;
+    }
+  }
 };
 #define USE_LOADING_WINDOW_NULL
 
