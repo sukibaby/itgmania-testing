@@ -89,6 +89,6 @@ runs:
     - name: Set CMake environment variables (Windows)
       if: runner.os == 'Windows'
       run: |
-        echo "CMAKE_BUILD_FLAGS=--parallel $env:NUMBER_OF_PROCESSORS" >> $env:GITHUB_ENV
+        echo "CMAKE_BUILD_FLAGS=--parallel $env:NUMBER_OF_PROCESSORS -DWITH_TEXTURE_GENERATOR" >> $env:GITHUB_ENV
         echo "ARTIFACT_PATH=build/ITGmania-*.exe" >> $env:GITHUB_ENV
       shell: pwsh
