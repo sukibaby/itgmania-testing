@@ -6,6 +6,12 @@
   !define VERSION "@CPACK_PACKAGE_VERSION@"
   !define PATCH  "@CPACK_PACKAGE_VERSION_PATCH@"
   !define INST_DIR "@CPACK_TEMPORARY_DIRECTORY@"
+  
+  ; Always operate in 64-bit registry and file-system view.
+  ; Basically, by calling this here, we don't have to call
+  ; SetRegView 64 explicitly in every section. It doesn't
+  ; impact the default install directory set by CPack.
+  !define MULTIUSER_USE_PROGRAMFILES64
 
 ;--------------------------------
 ;Variables
