@@ -145,7 +145,8 @@ else(UNIX)
                 "arch/LowLevelWindow/LowLevelWindow_SDL.cpp")
     list(APPEND SMDATA_ARCH_LOWLEVEL_HPP
                 "arch/LowLevelWindow/LowLevelWindow_SDL.h")
-  elseif(X11_FOUND)
+  endif()
+  if(X11_FOUND)
     list(APPEND SMDATA_ARCH_LOWLEVEL_SRC
                 "arch/LowLevelWindow/LowLevelWindow_X11.cpp")
     list(APPEND SMDATA_ARCH_LOWLEVEL_HPP
