@@ -86,6 +86,9 @@ static int g_iDemandRefcount = 0;
 /* Synchronizes access to g_ImagePathToImage and ImageCache::ImageData. */
 static RageMutex g_ImageCacheMutex("ImageCache");
 
+// the protected key is the image that is currently being used by the screen. It
+// should not be unloaded, even if it is the oldest image in the cache. This is
+// to prevent a screen from unloading an image that it is currently using.
 static void TrimOnDemandImages(const ImageCacheKey& protectedKey) {
   if (PREFSMAN->m_ImageCache != IMGCACHE_LOW_RES_LOAD_ON_DEMAND) {
     return;
