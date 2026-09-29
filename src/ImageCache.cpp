@@ -106,6 +106,9 @@ static void TrimOnDemandImages(const ImageCacheKey& protectedKey) {
       }
 
       RageTextureID id(
+          // first.first is the directory, first.second is the path. they appear
+          // like this because the map is keyed by a pair of strings. the first
+          // string is the directory and the second string is the path.
           SongCacheIndex::GetCacheFilePath(it->first.first, it->first.second));
       if (it->first.first == "Banner") {
         id = Sprite::SongBannerTexture(id);
