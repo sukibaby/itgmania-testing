@@ -6,6 +6,7 @@
 #include <cstdint>
 #include <map>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "CommonMetrics.h"
@@ -75,50 +76,79 @@ static const int IMAGE_CACHE_VERSION = 1;
 
 ImageCache* IMAGECACHE;  // global and accessible from anywhere in our program
 
-static std::map<std::string, RageSurface*> g_ImagePathToImage;
+using ImageCacheKey = std::pair<std::string, std::string>;
+static std::map<ImageCacheKey, RageSurface*> g_ImagePathToImage;
+static std::map<ImageCacheKey, uint64_t> g_ImageLastUsed;
+static uint64_t g_iImageUseSequence = 0;
+static const size_t MAX_ON_DEMAND_IMAGE_MEMORY = 4 * 1024 * 1024;
 static int g_iDemandRefcount = 0;
 
 /* Synchronizes access to g_ImagePathToImage and ImageCache::ImageData. */
 static RageMutex g_ImageCacheMutex("ImageCache");
+
+// the protected key is the image that is currently being used by the screen. It
+// should not be unloaded, even if it is the oldest image in the cache. This is
+// to prevent a screen from unloading an image that it is currently using.
+static void TrimOnDemandImages(const ImageCacheKey& protectedKey) {
+  if (PREFSMAN->m_ImageCache != IMGCACHE_LOW_RES_LOAD_ON_DEMAND) {
+    return;
+  }
+
+  size_t totalSize = 0;
+  for (const auto& image : g_ImagePathToImage) {
+    totalSize += static_cast<size_t>(image.second->pitch) * image.second->h;
+  }
+
+  while (totalSize > MAX_ON_DEMAND_IMAGE_MEMORY) {
+    auto oldest = g_ImagePathToImage.end();
+    uint64_t oldestUse = UINT64_MAX;
+    for (auto it = g_ImagePathToImage.begin(); it != g_ImagePathToImage.end();
+         ++it) {
+      if (it->first == protectedKey) {
+        continue;
+      }
+
+      RageTextureID id(
+          // first.first is the directory, first.second is the path. they appear
+          // like this because the map is keyed by a pair of strings. the first
+          // string is the directory and the second string is the path.
+          SongCacheIndex::GetCacheFilePath(it->first.first, it->first.second));
+      if (it->first.first == "Banner") {
+        id = Sprite::SongBannerTexture(id);
+      }
+      if (TEXTUREMAN->IsTextureRegistered(id)) {
+        continue;
+      }
+
+      const auto use = g_ImageLastUsed.find(it->first);
+      const uint64_t lastUsed = use == g_ImageLastUsed.end() ? 0 : use->second;
+      if (lastUsed < oldestUse) {
+        oldest = it;
+        oldestUse = lastUsed;
+      }
+    }
+
+    if (oldest == g_ImagePathToImage.end()) {
+      break;
+    }
+
+    totalSize -= static_cast<size_t>(oldest->second->pitch) * oldest->second->h;
+    delete oldest->second;
+    g_ImageLastUsed.erase(oldest->first);
+    g_ImagePathToImage.erase(oldest);
+  }
+}
 
 std::string ImageCache::GetImageCachePath(
     std::string sImageDir, std::string sImagePath) {
   return SongCacheIndex::GetCacheFilePath(sImageDir, sImagePath);
 }
 
-/* If in on-demand mode, load all cached images.  This must be fast, so
- * cache files will not be created if they don't exist; that should be done
- * by CacheImage or LoadImage on startup. */
-void ImageCache::Demand(std::string sImageDir) {
-  ++g_iDemandRefcount;
-  if (g_iDemandRefcount > 1) {
-    return;
-  }
-
-  if (PREFSMAN->m_ImageCache != IMGCACHE_LOW_RES_LOAD_ON_DEMAND) {
-    return;
-  }
-
-  LockMut(g_ImageCacheMutex);
-  FOREACH_CONST_Child(&ImageData, p) {
-    std::string sImagePath = p->GetName();
-
-    if (g_ImagePathToImage.find(sImagePath) != g_ImagePathToImage.end()) {
-      continue; /* already loaded */
-    }
-
-    const std::string sCachePath = GetImageCachePath(sImageDir, sImagePath);
-    RageSurface* pImage = RageSurfaceUtils::LoadSurface(sCachePath);
-    if (pImage == nullptr) {
-      continue; /* doesn't exist */
-    }
-
-    g_ImagePathToImage[sImagePath] = pImage;
-  }
-}
+/* Track screens using the on-demand cache mode. */
+void ImageCache::Demand(std::string) { ++g_iDemandRefcount; }
 
 /* Release images loaded on demand. */
-void ImageCache::Undemand(std::string sImageDir) {
+void ImageCache::Undemand(std::string) {
   --g_iDemandRefcount;
   if (g_iDemandRefcount != 0) {
     return;
@@ -146,11 +176,19 @@ void ImageCache::LoadImage(std::string sImageDir, std::string sImagePath) {
 
   /* Load it. */
   const std::string sCachePath = GetImageCachePath(sImageDir, sImagePath);
+  const ImageCacheKey key = std::make_pair(sImageDir, sImagePath);
+
+  if (PREFSMAN->m_ImageCache == IMGCACHE_LOW_RES_LOAD_ON_DEMAND) {
+    if (!DoesFileExist(sCachePath)) {
+      CacheImageInternal(sImageDir, sImagePath);
+    }
+    return;
+  }
 
   for (int tries = 0; tries < 2; ++tries) {
     {
       LockMut(g_ImageCacheMutex);
-      if (g_ImagePathToImage.find(sImagePath) != g_ImagePathToImage.end()) {
+      if (g_ImagePathToImage.find(key) != g_ImagePathToImage.end()) {
         return; /* already loaded */
       }
     }
@@ -178,11 +216,11 @@ void ImageCache::LoadImage(std::string sImageDir, std::string sImagePath) {
 
     {
       LockMut(g_ImageCacheMutex);
-      if (g_ImagePathToImage.find(sImagePath) != g_ImagePathToImage.end()) {
+      if (g_ImagePathToImage.find(key) != g_ImagePathToImage.end()) {
         /* already loaded */
         delete pImage;
       } else {
-        g_ImagePathToImage[sImagePath] = pImage;
+        g_ImagePathToImage[key] = pImage;
       }
     }
   }
@@ -206,6 +244,7 @@ void ImageCache::UnloadAllImages() {
   }
 
   g_ImagePathToImage.clear();
+  g_ImageLastUsed.clear();
 }
 
 ImageCache::ImageCache() : delay_save_cache(false) { ReadFromDisk(); }
@@ -345,27 +384,57 @@ RageTextureID ImageCache::LoadCachedImage(
   // LOG->Trace( "ImageCache::LoadCachedImage(%s): %s", sImagePath.c_str(),
   // ID.filename.c_str() );
 
-  LockMut(g_ImageCacheMutex);
-
   /* Hack: make sure Image::Load doesn't change our return value and end up
    * reloading. */
   if (sImageDir == "Banner") {
     ID = Sprite::SongBannerTexture(ID);
   }
+  const ImageCacheKey key = std::make_pair(sImageDir, sImagePath);
 
-  /* It's not in a texture.  Do we have it loaded? */
-  if (g_ImagePathToImage.find(sImagePath) == g_ImagePathToImage.end()) {
-    /* Oops, the image is missing.  Warn and continue. */
-    if (PREFSMAN->m_ImageCache != IMGCACHE_OFF) {
-      LOG->Warn("Image cache for '%s' wasn't loaded", sImagePath.c_str());
-    }
+  if (TEXTUREMAN->IsTextureRegistered(ID)) {
     return ID;
   }
+
+  RageSurface* pLoadedImage = nullptr;
+  {
+    LockMut(g_ImageCacheMutex);
+    auto it = g_ImagePathToImage.find(key);
+    if (it != g_ImagePathToImage.end()) {
+      pLoadedImage = it->second;
+    }
+  }
+
+  if (pLoadedImage == nullptr) {
+    if (PREFSMAN->m_ImageCache != IMGCACHE_LOW_RES_LOAD_ON_DEMAND) {
+      if (PREFSMAN->m_ImageCache != IMGCACHE_OFF) {
+        LOG->Warn("Image cache for '%s' wasn't loaded", sImagePath.c_str());
+      }
+      return ID;
+    }
+
+    pLoadedImage =
+        RageSurfaceUtils::LoadSurface(GetImageCachePath(sImageDir, sImagePath));
+    if (pLoadedImage == nullptr) {
+      if (PREFSMAN->m_ImageCache != IMGCACHE_OFF) {
+        LOG->Warn("Image cache for '%s' wasn't loaded", sImagePath.c_str());
+      }
+      return ID;
+    }
+  }
+
+  LockMut(g_ImageCacheMutex);
+
+  auto imageIt = g_ImagePathToImage.emplace(key, pLoadedImage).first;
+  if (imageIt->second != pLoadedImage) {
+    delete pLoadedImage;
+    pLoadedImage = imageIt->second;
+  }
+  g_ImageLastUsed[key] = ++g_iImageUseSequence;
 
   /* This is a reference to a pointer.  ImageTexture's ctor may change it
    * when converting; this way, the conversion will end up in the map so we
    * only have to convert once. */
-  RageSurface*& pImage = g_ImagePathToImage[sImagePath];
+  RageSurface*& pImage = imageIt->second;
   ASSERT(pImage != nullptr);
 
   int iSourceWidth = 0, iSourceHeight = 0;
@@ -384,12 +453,14 @@ RageTextureID ImageCache::LoadCachedImage(
   // LOG->Trace( "Loading image texture %s; src %ix%i; image %ix%i",
   //	    ID.filename.c_str(), iSourceWidth, iSourceHeight, pImage->w,
   // pImage->h );
+  ID.Policy =
+      RageTextureID::TEX_VOLATILE;  // assign policy before tex construction
   RageTexture* pTexture =
       new ImageTexture(ID, pImage, iSourceWidth, iSourceHeight);
 
-  ID.Policy = RageTextureID::TEX_VOLATILE;
   TEXTUREMAN->RegisterTexture(ID, pTexture);
   TEXTUREMAN->UnloadTexture(pTexture);
+  TrimOnDemandImages(key);
 
   return ID;
 }
@@ -497,21 +568,24 @@ void ImageCache::CacheImageInternal(
   }
 
   const std::string sCachePath = GetImageCachePath(sImageDir, sImagePath);
+  const ImageCacheKey key = std::make_pair(sImageDir, sImagePath);
   RageSurfaceUtils::SaveSurface(pImage, sCachePath);
 
   {
     LockMut(g_ImageCacheMutex);
 
     /* If an old image is loaded, free it. */
-    if (g_ImagePathToImage.find(sImagePath) != g_ImagePathToImage.end()) {
-      RageSurface* oldimg = g_ImagePathToImage[sImagePath];
+    if (g_ImagePathToImage.find(key) != g_ImagePathToImage.end()) {
+      RageSurface* oldimg = g_ImagePathToImage[key];
       delete oldimg;
-      g_ImagePathToImage.erase(sImagePath);
+      g_ImagePathToImage.erase(key);
+      g_ImageLastUsed.erase(key);
     }
 
     if (PREFSMAN->m_ImageCache == IMGCACHE_LOW_RES_PRELOAD) {
       /* Keep it; we're just going to load it anyway. */
-      g_ImagePathToImage[sImagePath] = pImage;
+      g_ImagePathToImage[key] = pImage;
+      g_ImageLastUsed[key] = ++g_iImageUseSequence;
     } else {
       delete pImage;
     }
