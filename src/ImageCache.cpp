@@ -33,6 +33,9 @@
 #include "global.h"
 
 static Preference<bool> g_bPalettedImageCache("PalettedImageCache", false);
+static Preference<unsigned int> g_bImgCacheMemSize(
+    "ImageCacheOnDemandMemorySize",
+    64 * 1024 * 1024);  // only used with LowResLoadOnDemand
 
 /* Neither a global or a file scope static can be used for this because
  * the order of initialization of nonlocal objects is unspecified. */
@@ -80,7 +83,6 @@ using ImageCacheKey = std::pair<std::string, std::string>;
 static std::map<ImageCacheKey, RageSurface*> g_ImagePathToImage;
 static std::map<ImageCacheKey, uint64_t> g_ImageLastUsed;
 static uint64_t g_iImageUseSequence = 0;
-static const size_t MAX_ON_DEMAND_IMAGE_MEMORY = 64 * 1024 * 1024;  // 64mb
 static int g_iDemandRefcount = 0;
 
 /* Synchronizes access to g_ImagePathToImage and ImageCache::ImageData. */
@@ -104,7 +106,7 @@ static void TrimOnDemandImages(const ImageCacheKey& protectedKey) {
     totalSize += static_cast<size_t>(image.second->pitch) * image.second->h;
   }
 
-  while (totalSize > MAX_ON_DEMAND_IMAGE_MEMORY) {
+  while (totalSize > g_bImgCacheMemSize) {
     auto oldest = g_ImagePathToImage.end();
     uint64_t oldestUse = UINT64_MAX;
     for (auto it = g_ImagePathToImage.begin(); it != g_ImagePathToImage.end();
