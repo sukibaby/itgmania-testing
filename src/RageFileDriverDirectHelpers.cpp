@@ -1,7 +1,6 @@
 #include "RageFileDriverDirectHelpers.h"
 
-#include <cerrno>
-#include <cstring>
+#include <chrono>
 #include <filesystem>
 #include <set>
 #include <string>
@@ -17,9 +16,7 @@
 #if defined(_WIN32)
 // clang-format off
 #include <windows.h>
-#include <io.h>
 // clang-format on
-#else
 #endif
 
 namespace filesystem = std::filesystem;
@@ -27,7 +24,10 @@ namespace filesystem = std::filesystem;
 static bool GetFileMetadata(
     const filesystem::path& path, File& file, std::error_code& error) {
   const filesystem::file_status status = filesystem::status(path, error);
-  if (error) {
+  if (error || !filesystem::exists(status)) {
+    if (!error) {
+      error = std::make_error_code(std::errc::no_such_file_or_directory);
+    }
     return false;
   }
 
@@ -42,7 +42,9 @@ static bool GetFileMetadata(
   error.clear();
   const auto writeTime = filesystem::last_write_time(path, error);
   if (!error) {
-    file.hash = static_cast<int>(writeTime.time_since_epoch().count());
+    file.hash = static_cast<int>(std::chrono::duration_cast<std::chrono::seconds>(
+                     writeTime.time_since_epoch())
+                     .count());
   }
   error.clear();
   return true;
@@ -186,7 +188,6 @@ void DirectFilenameDB::CacheFile(const std::string& sPath) {
 }
 
 void DirectFilenameDB::PopulateFileSet(FileSet& fs, const std::string& path) {
-  namespace filesystem = std::filesystem;
   std::string sPath = path;
 
   // Resolve path cases (path/Path -> PATH/path).
@@ -205,6 +206,20 @@ void DirectFilenameDB::PopulateFileSet(FileSet& fs, const std::string& path) {
   const filesystem::directory_iterator end;
   while (entry != end) {
     const filesystem::directory_entry current = *entry;
+    std::error_code statusError;
+    File file(current.path().filename().u8string());
+    if (!GetFileMetadata(current.path(), file, statusError)) {
+      std::error_code linkError;
+      if (!(current.is_symlink(linkError) && !linkError)) {
+        WARN(ssprintf(
+            "Got file '%s' in '%s' from list, but can't stat: %s",
+            current.path().u8string().c_str(), sPath.c_str(),
+            statusError.message().c_str()));
+      }
+    } else {
+      fs.files.insert(file);
+    }
+
     entry.increment(iterationError);
     if (iterationError) {
       WARN(ssprintf(
@@ -212,36 +227,6 @@ void DirectFilenameDB::PopulateFileSet(FileSet& fs, const std::string& path) {
           iterationError.message().c_str()));
       break;
     }
-
-    std::error_code statusError;
-    const filesystem::file_status status = current.status(statusError);
-    if (statusError) {
-      std::error_code linkError;
-      if (current.is_symlink(linkError) && !linkError) {
-        continue;
-      }
-      WARN(ssprintf(
-          "Couldn't get file status for '%s': %s",
-          current.path().u8string().c_str(), statusError.message().c_str()));
-      continue;
-    }
-
-    File file(current.path().filename().u8string());
-    file.dir = filesystem::is_directory(status);
-    if (filesystem::is_regular_file(status)) {
-      std::error_code sizeError;
-      const auto size = current.file_size(sizeError);
-      if (!sizeError) {
-        file.size = static_cast<int>(size);
-      }
-    }
-
-    std::error_code timeError;
-    const auto writeTime = current.last_write_time(timeError);
-    if (!timeError) {
-      file.hash = static_cast<int>(writeTime.time_since_epoch().count());
-    }
-    fs.files.insert(file);
   }
 
   /*
