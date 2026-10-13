@@ -42,9 +42,7 @@ static bool GetFileMetadata(
   error.clear();
   const auto writeTime = filesystem::last_write_time(path, error);
   if (!error) {
-    file.hash = static_cast<int>(std::chrono::duration_cast<std::chrono::seconds>(
-                     writeTime.time_since_epoch())
-                     .count());
+    file.hash = static_cast<int>(writeTime.time_since_epoch().count());
   }
   error.clear();
   return true;
