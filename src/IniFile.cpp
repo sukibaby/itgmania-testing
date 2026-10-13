@@ -71,7 +71,6 @@ bool IniFile::ReadFile(RageFileBasic& f) {
       }
     }
 
-    Trim(line);
     if (line.empty()) {
       continue;
     }
@@ -89,7 +88,6 @@ bool IniFile::ReadFile(RageFileBasic& f) {
         if (line[line.size() - 1] == ']') {
           // New section.
           keyname = line.substr(1, line.size() - 2);
-          Trim(keyname);
           keychild = GetChild(keyname);
           if (keychild == nullptr) {
             keychild = AppendChild(keyname);
@@ -108,7 +106,6 @@ bool IniFile::ReadFile(RageFileBasic& f) {
           std::string valuename = Left(line, (int)iEqualIndex);
           std::string value = Right(line, line.size() - valuename.size() - 1);
           Trim(valuename);
-          Trim(value);
           if (!valuename.empty()) {
             SetKeyValue(keychild, valuename, value);
           }
