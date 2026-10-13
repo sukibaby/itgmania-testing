@@ -38,19 +38,16 @@ ctest --test-dir build --output-on-failure
 
 CTest automatically generates `test_file_readers` fixtures before running
 that test. To run its deflate-only path manually, use
-`./itgmania-test_file_readers zlib` from the repository root after building;
-the CMake output name for this target is `test_file_readers`, so the executable
-is `./test_file_readers`.
+`./test_file_readers zlib` from the repository root after building.
 
 The old Unix hookup was in `src/Makefile.am`, which was removed with the
 Autotools build system. The current CMake targets use the full engine source
 set (excluding `Main.cpp`) as a shared object library so test executables get
 the same platform implementation and link dependencies as ITGmania.
 
-The old target definitions are useful when restoring the hookup. They shared
-these sources with each test: architecture utilities, RageFile, Lua,
-architecture hooks, threads, dialogs, `test_misc.cpp`, IniFile, XmlFile,
-Command, DateTime, and MessageManager. Per-test additions were:
+The old Autotools targets shared these sources: architecture utilities,
+RageFile, Lua, architecture hooks, threads, dialogs, `test_misc.cpp`, IniFile,
+XmlFile, Command, DateTime, and MessageManager. Their per-test additions were:
 
 | Program | Additional sources and libraries |
 | --- | --- |
@@ -64,8 +61,8 @@ Command, DateTime, and MessageManager. Per-test additions were:
 are not included, so its reader tests may not be usable as-is. Its old note
 said the input set was about 30 MB and was not committed.
 
-Runtime notes for when targets are restored
--------------------------------------------
+Runtime notes
+-------------
 
 Run the programs from the repository root so relative resource and test-file
 paths resolve consistently. `test_file_readers` supports `-c` to generate its

@@ -630,13 +630,13 @@ if(BUILD_TESTING AND LINUX)
   target_compile_definitions(sm_test_engine PRIVATE ${SM_TEST_COMPILE_DEFINITIONS})
   target_compile_options(sm_test_engine PRIVATE ${SM_TEST_COMPILE_OPTIONS})
   target_include_directories(sm_test_engine PRIVATE ${SM_TEST_INCLUDE_DIRS})
+  target_link_libraries(sm_test_engine PRIVATE ${SMDATA_LINK_LIB})
   add_dependencies(sm_test_engine ffmpeg)
 
   function(sm_add_test test_name)
     add_executable(${test_name}
       "tests/${test_name}.cpp"
       "tests/test_misc.cpp"
-      $<TARGET_OBJECTS:sm_test_engine>
     )
     set_target_properties(${test_name} PROPERTIES
       CXX_STANDARD "${SM_TEST_CXX_STANDARD}"
@@ -648,7 +648,7 @@ if(BUILD_TESTING AND LINUX)
     target_compile_definitions(${test_name} PRIVATE ${SM_TEST_COMPILE_DEFINITIONS})
     target_compile_options(${test_name} PRIVATE ${SM_TEST_COMPILE_OPTIONS})
     target_include_directories(${test_name} PRIVATE ${SM_TEST_INCLUDE_DIRS})
-    target_link_libraries(${test_name} PRIVATE ${SMDATA_LINK_LIB})
+    target_link_libraries(${test_name} PRIVATE sm_test_engine ${SMDATA_LINK_LIB})
     add_dependencies(${test_name} ffmpeg)
     add_test(NAME ${test_name} COMMAND ${test_name})
     set_tests_properties(${test_name} PROPERTIES WORKING_DIRECTORY "${SM_ROOT_DIR}")
@@ -658,6 +658,7 @@ if(BUILD_TESTING AND LINUX)
   sm_add_test(test_file_errors)
   sm_add_test(test_timing_data)
   sm_add_test(test_threads)
+  target_link_options(test_threads PRIVATE -rdynamic)
 
   # Audio fixtures are not included, so these reader tests may not be usable as-is.
   # sm_add_test(test_audio_readers)
