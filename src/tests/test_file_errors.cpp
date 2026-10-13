@@ -293,6 +293,31 @@ void IniTest() {
     }
   } while (false);
 
+  /* IniFile whitespace, comments, and multi-line behavior */
+  do {
+    g_TestFile =
+        "  ; comment\n"
+        "  [ test ]  \n"
+        "  abc =   value   \n"
+        "  joined=left\\\n"
+        "right\n";
+
+    g_BytesUntilError = -1;
+
+    IniFile test;
+    if (!test.ReadFile("test/file")) {
+      Fail("INI: whitespace ReadFile failed: %s", test.GetError().c_str());
+    }
+
+    std::string value;
+    if (!test.GetValue("test", "abc", value) || value != "value") {
+      Fail("INI: whitespace trimming failed: got \"%s\"", value.c_str());
+    }
+    if (!test.GetValue("test", "joined", value) || value != "leftright") {
+      Fail("INI: continuation failed: got \"%s\"", value.c_str());
+    }
+  } while (false);
+
   /* Read error check. */
   do {
     g_TestFile =
