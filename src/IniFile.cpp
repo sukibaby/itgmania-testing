@@ -40,35 +40,28 @@ bool IniFile::ReadFile(RageFileBasic& f) {
   XNode* keychild = nullptr;
   for (;;) {
     std::string line;
-    bool continuation = false;
     // Read lines until we reach a line that doesn't end in a backslash
     for (;;) {
       std::string s;
-      int result = f.GetLine(s);
-      if (result == -1) {
-        m_sError = f.GetError();
-        LOG->Warn(
-            "Error reading line in file '%s': %s", m_sPath.c_str(),
-            m_sError.c_str());
-        return false;
-      }
-      if (result == 0) {
-        if (line.empty()) {
+      switch (f.GetLine(s)) {
+        case -1:
+          m_sError = f.GetError();
+          LOG->Warn(
+              "Error reading line in file '%s': %s", m_sPath.c_str(),
+              m_sError.c_str());
+          return false;
+        case 0:
           return true;  // eof
-        }
-        break;
       }
 
       utf8_remove_bom(s);
 
-      if (continuation) {
-        line.erase(line.end() - 1);
-      }
       line += s;
-      continuation = !line.empty() && line[line.size() - 1] == '\\';
-      if (!continuation) {
+
+      if (line.empty() || line[line.size() - 1] != '\\') {
         break;
       }
+      line.erase(line.end() - 1);
     }
 
     if (line.empty()) {
