@@ -331,6 +331,38 @@ void IniTest() {
   } while (false);
 }
 
+  /* IniFile whitespace, comments, and multi-line behavior */
+  do {
+    g_TestFile =
+        "  ; comment\n"
+        "  [ test ]  \n"
+        "  abc =   value   \n"
+        "  joined=left\\\n"
+        "right\n"
+        "windowsPath=C:\\Users\\Test User\\ITGmania\\\n";
+
+    g_BytesUntilError = -1;
+
+    IniFile test;
+    if (!test.ReadFile("test/file")) {
+      Fail("INI: i/o error with test file? error: %s", test.GetError().c_str());
+    }
+
+    std::string value;
+    if (!test.GetValue("test", "abc", value) || value != "value") {
+      Fail("INI: whitespace trimming failed: got \"%s\"", value.c_str());
+    }
+    if (!test.GetValue("test", "joined", value) || value != "leftright") {
+      Fail("INI: multi-line parse failed: got \"%s\"", value.c_str());
+    }
+    if (!test.GetValue("test", "windowsPath", value) ||
+        value != "C:\\Users\\Test User\\ITGmania\\") {
+      Fail(
+          "INI: Windows path trailing backslash issue: got \"%s\"",
+          value.c_str());
+    }
+  } while (false);
+
 #include "MsdFile.h"
 void MsdTest() {
   g_TestFilename = "file";
