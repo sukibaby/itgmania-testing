@@ -1,10 +1,77 @@
-This file contains test sets.
+Test programs
+=============
 
-Currently, all we have is test_audio_readers, which tests the MP3, WAV and Ogg
-file readers.
+Each test source is a standalone program with its own `main()`. Most use the
+shared harness in `test_misc.cpp`:
 
-Once I create smaller test inputs, I'll commit them; the current set is about
-30 megs.  Until then, if you want to try this, edit the source to point it at
-files you have.
+- `test_handle_args()` parses the file-driver (`-d`) and root (`-r`) options.
+- `test_init()` creates the platform hooks, file manager, and logger, and
+	mounts the selected file driver.
+- `test_deinit()` releases the logger, file manager, and platform hooks.
 
-This is only compiled in the Unix build environment.
+The tests initialize additional singletons themselves when needed. For
+example, `test_file_errors` mounts its fake `TEST` driver after `test_init()`,
+and `test_timing_data` creates `PrefsManager` because `TimingData` uses it.
+
+Linux build and run
+-------------------
+
+The Linux CMake build defines `test_file_readers`, `test_file_errors`,
+`test_timing_data`, and `test_threads` when `BUILD_TESTING` is enabled (it is
+enabled by default through CTest). These targets share the engine sources and
+compile settings, but omit `Main.cpp` so each test can provide its own `main()`.
+CTest runs the tests from the repository root, except `test_file_readers`,
+which uses a build-directory fixture folder.
+
+Configure and build the test targets from the repository root:
+
+```sh
+cmake -S . -B build -DBUILD_TESTING=ON
+cmake --build build --target test_file_readers test_file_errors test_timing_data test_threads --parallel
+```
+
+Run them with:
+
+```sh
+ctest --test-dir build --output-on-failure
+```
+
+CTest automatically generates `test_file_readers` fixtures before running
+that test. To run its deflate-only path manually, use
+`./itgmania-test_file_readers zlib` from the repository root after building;
+the CMake output name for this target is `test_file_readers`, so the executable
+is `./test_file_readers`.
+
+The old Unix hookup was in `src/Makefile.am`, which was removed with the
+Autotools build system. The current CMake targets use the full engine source
+set (excluding `Main.cpp`) as a shared object library so test executables get
+the same platform implementation and link dependencies as ITGmania.
+
+The old target definitions are useful when restoring the hookup. They shared
+these sources with each test: architecture utilities, RageFile, Lua,
+architecture hooks, threads, dialogs, `test_misc.cpp`, IniFile, XmlFile,
+Command, DateTime, and MessageManager. Per-test additions were:
+
+| Program | Additional sources and libraries |
+| --- | --- |
+| `test_file_readers` | Shared sources only |
+| `test_file_errors` | `MsdFile.cpp`, `CryptManager.cpp`; link `libtomcrypt` and `libtommath` |
+| `test_timing_data` | `TimingData.cpp` |
+| `test_threads` | Shared sources only |
+| `test_audio_readers` | Sound file readers, sound reader/filter implementations, `RageSoundUtil.cpp`, and `RageSoundMixBuffer.cpp`; link audio libraries |
+
+`test_audio_readers` is intentionally not added as a target: its audio fixtures
+are not included, so its reader tests may not be usable as-is. Its old note
+said the input set was about 30 MB and was not committed.
+
+Runtime notes for when targets are restored
+-------------------------------------------
+
+Run the programs from the repository root so relative resource and test-file
+paths resolve consistently. `test_file_readers` supports `-c` to generate its
+binary and text fixtures; run it again without `-c` to read and check them. Its
+`zlib` command-line argument selects the deflate test. `test_file_errors`
+generates its input and simulated read/write failures in memory. `test_threads`
+exercises Linux thread suspension and backtrace behavior, and therefore
+requires the Unix thread/backtrace implementations to be included in its
+target.

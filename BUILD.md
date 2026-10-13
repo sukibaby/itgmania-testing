@@ -139,6 +139,11 @@ Afterwards, run `cmake --build build --parallel "$(sysctl -n hw.logicalcpu)"`. A
 
 From the `itgmania` directory (not `src`), run `cmake -B build` followed by `sudo make install`. The `itgmania` executable will be in the same directory you are in, so you can type `./itgmania` to run the game.
 
+The Linux test executables can be built and run through CMake/CTest. See the
+[test notes](src/tests/00%20README) for the commands, harness, and runtime
+expectations. Audio-reader tests remain disabled because their fixture files
+are missing.
+
 ### Installing ITGmania
 
 Installing in this context refers to placing the folders and generated binary in a standard location based on your operating system.
