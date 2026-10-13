@@ -300,7 +300,8 @@ void IniTest() {
         "  [ test ]  \n"
         "  abc =   value   \n"
         "  joined=left\\\n"
-        "right\n";
+        "right\n"
+        "windowsPath=C:\\Games\\ITGmania\\";
 
     g_BytesUntilError = -1;
 
@@ -315,6 +316,12 @@ void IniTest() {
     }
     if (!test.GetValue("test", "joined", value) || value != "leftright") {
       Fail("INI: continuation failed: got \"%s\"", value.c_str());
+    }
+    if (!test.GetValue("test", "windowsPath", value) ||
+        value != "C:\\Games\\ITGmania\\") {
+      Fail(
+          "INI: Windows path trailing backslash issue: got \"%s\"",
+          value.c_str());
     }
   } while (false);
 
