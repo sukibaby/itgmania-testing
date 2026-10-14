@@ -7,8 +7,11 @@
 #include <type_traits>
 #include <vector>
 
+#include <GL/glew.h>
+
 #include "RageMath.h"
 #include "RageSurface.h"
+#include "arch/LowLevelWindow/LowLevelWindow.h"
 
 /* ------------------------------------------------------------------------ */
 /* Small helpers                                                            */
@@ -161,6 +164,101 @@ void SwSurface::Resize(int width, int height, bool withDepth) {
   initialized = false;
 }
 
+namespace {
+
+class SoftwarePresenterLowLevelWindow final : public SoftwarePresenter {
+ public:
+  SoftwarePresenterLowLevelWindow() : m_window(LowLevelWindow::Create()) {}
+
+  std::string Resize(
+      const VideoModeParams& params, int& windowWidthOut,
+      int& windowHeightOut) override {
+    if (!m_window) {
+      return "Could not create a low-level window";
+    }
+
+    bool newDevice = false;
+    const std::string error = m_window->TryVideoMode(params, newDevice);
+    if (!error.empty()) {
+      return error;
+    }
+
+    const ActualVideoModeParams actual = m_window->GetActualVideoModeParams();
+    windowWidthOut = actual.width;
+    windowHeightOut = actual.height;
+    return std::string();
+  }
+
+  void Present(
+      const uint32_t* pixels, int width, int height, int pitchBytes) override {
+    if (!m_window || pixels == nullptr || width <= 0 || height <= 0 ||
+        pitchBytes < width * static_cast<int>(sizeof(uint32_t))) {
+      return;
+    }
+
+    glPushAttrib(GL_ALL_ATTRIB_BITS);
+    glMatrixMode(GL_PROJECTION);
+    glPushMatrix();
+    glLoadIdentity();
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
+    glLoadIdentity();
+
+    glViewport(0, 0, width, height);
+    glDrawBuffer(GL_BACK);
+    glDisable(GL_ALPHA_TEST);
+    glDisable(GL_BLEND);
+    glDisable(GL_DEPTH_TEST);
+    glDisable(GL_DITHER);
+    glDisable(GL_LIGHTING);
+    glDisable(GL_SCISSOR_TEST);
+    glDisable(GL_TEXTURE_2D);
+    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+    glPixelStorei(GL_UNPACK_ALIGNMENT, sizeof(uint32_t));
+    glPixelStorei(GL_UNPACK_ROW_LENGTH, pitchBytes / sizeof(uint32_t));
+    glPixelZoom(1.0f, -1.0f);
+    glRasterPos2f(-1.0f, 1.0f);
+    glDrawPixels(width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+
+    glMatrixMode(GL_MODELVIEW);
+    glPopMatrix();
+    glMatrixMode(GL_PROJECTION);
+    glPopMatrix();
+    glPopAttrib();
+    m_window->SwapBuffers();
+  }
+  void Update() override {
+    if (m_window) {
+      m_window->Update();
+    }
+  }
+
+  bool GetActualSize(int& widthOut, int& heightOut) const override {
+    if (!m_window) {
+      return false;
+    }
+    const ActualVideoModeParams actual = m_window->GetActualVideoModeParams();
+    widthOut = actual.width;
+    heightOut = actual.height;
+    return widthOut > 0 && heightOut > 0;
+  }
+
+  void GetDisplaySpecs(DisplaySpecs& out) const override {
+    if (m_window) {
+      m_window->GetDisplaySpecs(out);
+    }
+  }
+
+  bool SupportsFullscreenBorderlessWindow() const override {
+    return m_window && m_window->SupportsFullscreenBorderlessWindow();
+  }
+
+ private:
+  std::unique_ptr<LowLevelWindow> m_window;
+};
+
+}  // namespace
+
 /* ------------------------------------------------------------------------ */
 /* Compiled geometry                                                        */
 /* ------------------------------------------------------------------------ */
@@ -211,6 +309,9 @@ class RageCompiledGeometrySoftware : public RageCompiledGeometry {
 RageDisplay_Software::RageDisplay_Software(
     std::unique_ptr<SoftwarePresenter> presenter)
     : m_pPresenter(std::move(presenter)) {
+  if (!m_pPresenter) {
+    m_pPresenter = std::make_unique<SoftwarePresenterLowLevelWindow>();
+  }
   for (int i = 0; i < kNumUnits; ++i) m_UnitMode[i] = TextureMode_Modulate;
   std::memset(&m_Ctx, 0, sizeof(m_Ctx));
 }
@@ -231,7 +332,7 @@ std::string RageDisplay_Software::TryVideoMode(
     if (!err.empty()) return err;
   }
   m_Actual = ActualVideoModeParams(p, ww, wh, false);
-  m_Back.Resize(p.width, p.height, true);
+  m_Back.Resize(ww, wh, true);
   bNewDeviceOut = !m_bDeviceCreated;  // textures live in system RAM and survive
   m_bDeviceCreated = true;
   return std::string();
@@ -241,7 +342,17 @@ void RageDisplay_Software::GetDisplaySpecs(DisplaySpecs& out) const {
   if (m_pPresenter) m_pPresenter->GetDisplaySpecs(out);
 }
 
-void RageDisplay_Software::ResolutionChanged() { RageDisplay::ResolutionChanged(); }
+void RageDisplay_Software::ResolutionChanged() {
+  int width = 0;
+  int height = 0;
+  if (m_pPresenter && m_pPresenter->GetActualSize(width, height) &&
+      (width != m_Back.w || height != m_Back.h)) {
+    m_Back.Resize(width, height, true);
+    m_Actual.width = width;
+    m_Actual.height = height;
+  }
+  RageDisplay::ResolutionChanged();
+}
 
 const RageDisplay::RagePixelFormatDesc* RageDisplay_Software::GetPixelFormatDesc(
     RagePixelFormat pf) const {
@@ -296,6 +407,7 @@ void RageDisplay_Software::EndFrame() {
   if (m_pPresenter) {
     m_pPresenter->Present(
         m_Back.color.data(), m_Back.w, m_Back.h, m_Back.w * (int)sizeof(uint32_t));
+    m_pPresenter->Update();
   }
   FrameLimitAfterVsync();
   RageDisplay::EndFrame();

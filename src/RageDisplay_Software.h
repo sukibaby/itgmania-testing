@@ -39,6 +39,10 @@ class SoftwarePresenter {
   virtual void Present(
       const uint32_t* pixels, int width, int height, int pitchBytes) = 0;
 
+  virtual void Update() {}
+  virtual bool GetActualSize(int& widthOut, int& heightOut) const {
+    return false;
+  }
   virtual void GetDisplaySpecs(DisplaySpecs& /* out */) const {}
   virtual bool SupportsFullscreenBorderlessWindow() const { return false; }
 };
