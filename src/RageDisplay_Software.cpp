@@ -1,6 +1,7 @@
 #include "RageDisplay_Software.h"
 
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <cstring>
 #include <type_traits>
@@ -16,8 +17,7 @@ namespace {
 
 static_assert(
     sizeof(RageMatrix) == sizeof(float) * 16,
-    "RageMatrix is expected to be 16 packed floats in OpenGL (column-major) "
-    "layout");
+    "OpenGL demands a layout of 16 packed floats in column-major order, which it does not appear that the RageMatrix is");
 
 inline float Clamp01(float x) { return x < 0.f ? 0.f : (x > 1.f ? 1.f : x); }
 
@@ -667,15 +667,30 @@ void RageDisplay_Software::PrepareDraw() {
   std::memcpy(m_Ctx.texture.m, static_cast<const float*>(*GetTextureTop()),
               sizeof(m_Ctx.texture.m));
 
-  m_Ctx.normalMat[0] = modelView.m[0][0];
-  m_Ctx.normalMat[1] = modelView.m[1][0];
-  m_Ctx.normalMat[2] = modelView.m[2][0];
-  m_Ctx.normalMat[3] = modelView.m[0][1];
-  m_Ctx.normalMat[4] = modelView.m[1][1];
-  m_Ctx.normalMat[5] = modelView.m[2][1];
-  m_Ctx.normalMat[6] = modelView.m[0][2];
-  m_Ctx.normalMat[7] = modelView.m[1][2];
-  m_Ctx.normalMat[8] = modelView.m[2][2];
+  const float a00 = modelView.m[0][0];
+  const float a01 = modelView.m[1][0];
+  const float a02 = modelView.m[2][0];
+  const float a10 = modelView.m[0][1];
+  const float a11 = modelView.m[1][1];
+  const float a12 = modelView.m[2][1];
+  const float a20 = modelView.m[0][2];
+  const float a21 = modelView.m[1][2];
+  const float a22 = modelView.m[2][2];
+  const float cofactors[9] = {
+      a11 * a22 - a12 * a21, a12 * a20 - a10 * a22,
+      a10 * a21 - a11 * a20, a02 * a21 - a01 * a22,
+      a00 * a22 - a02 * a20, a01 * a20 - a00 * a21,
+      a01 * a12 - a02 * a11, a02 * a10 - a00 * a12,
+      a00 * a11 - a01 * a10};
+  const float determinant =
+      a00 * cofactors[0] + a01 * cofactors[1] + a02 * cofactors[2];
+  if (std::abs(determinant) > 1e-12f) {
+    for (int i = 0; i < 9; ++i) {
+      m_Ctx.normalMat[i] = cofactors[i] / determinant;
+    }
+  } else {
+    std::copy(std::begin(cofactors), std::end(cofactors), m_Ctx.normalMat);
+  }
 }
 
 void RageDisplay_Software::ShadeVertex(
@@ -755,13 +770,18 @@ void RageDisplay_Software::ShadeSpriteVertices(const RageSpriteVertex* v, int n)
 
 void RageDisplay_Software::SubmitTriangle(
     const ClipVertex& a, const ClipVertex& b, const ClipVertex& c) {
-  std::vector<ClipVertex> polygon = {a, b, c};
-  for (int plane = 0; plane < 6 && !polygon.empty(); ++plane) {
-    std::vector<ClipVertex> clipped;
-    clipped.reserve(polygon.size() + 1);
-    ClipVertex previous = polygon.back();
+  std::array<ClipVertex, 16> polygon{};
+  std::array<ClipVertex, 16> clipped{};
+  polygon[0] = a;
+  polygon[1] = b;
+  polygon[2] = c;
+  size_t polygonSize = 3;
+  for (int plane = 0; plane < 6 && polygonSize > 0; ++plane) {
+    size_t clippedSize = 0;
+    ClipVertex previous = polygon[polygonSize - 1];
     float previousDistance = ClipDistance(previous.c, plane);
-    for (const ClipVertex& current : polygon) {
+    for (size_t i = 0; i < polygonSize; ++i) {
+      const ClipVertex& current = polygon[i];
       const float currentDistance = ClipDistance(current.c, plane);
       const bool previousInside = previousDistance >= 0.0f;
       const bool currentInside = currentDistance >= 0.0f;
@@ -776,18 +796,25 @@ void RageDisplay_Software::SubmitTriangle(
           intersection.a[i] =
               previous.a[i] + (current.a[i] - previous.a[i]) * t;
         }
-        clipped.push_back(intersection);
+        if (clippedSize == clipped.size()) {
+          return;
+        }
+        clipped[clippedSize++] = intersection;
       }
       if (currentInside) {
-        clipped.push_back(current);
+        if (clippedSize == clipped.size()) {
+          return;
+        }
+        clipped[clippedSize++] = current;
       }
       previous = current;
       previousDistance = currentDistance;
     }
     polygon.swap(clipped);
+    polygonSize = clippedSize;
   }
 
-  if (polygon.size() < 3) {
+  if (polygonSize < 3) {
     return;
   }
 
@@ -813,7 +840,7 @@ void RageDisplay_Software::SubmitTriangle(
   if (!toRasterVertex(polygon[0], first)) {
     return;
   }
-  for (size_t i = 1; i + 1 < polygon.size(); ++i) {
+  for (size_t i = 1; i + 1 < polygonSize; ++i) {
     RasterVertex second{}, third{};
     if (toRasterVertex(polygon[i], second) &&
         toRasterVertex(polygon[i + 1], third)) {
