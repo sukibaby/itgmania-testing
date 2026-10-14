@@ -416,9 +416,9 @@ bool RageDisplay_Software::BeginFrame() {
 void RageDisplay_Software::EndFrame() {
   FrameLimitBeforeVsync();
   if (m_pPresenter) {
+    m_pPresenter->Update();
     m_pPresenter->Present(
         m_Back.color.data(), m_Back.w, m_Back.h, m_Back.w * (int)sizeof(uint32_t));
-    m_pPresenter->Update();
   }
   FrameLimitAfterVsync();
   RageDisplay::EndFrame();
