@@ -685,11 +685,14 @@ void RageDisplay_Software::PrepareDraw() {
   const float determinant =
       a00 * cofactors[0] + a01 * cofactors[1] + a02 * cofactors[2];
   if (std::abs(determinant) > 1e-12f) {
-    for (int i = 0; i < 9; ++i) {
-      m_Ctx.normalMat[i] = cofactors[i] / determinant;
+    for (int component = 0; component < 9; ++component) {
+      m_Ctx.normalMat[component] = cofactors[component] / determinant;
     }
   } else {
-    std::copy(std::begin(cofactors), std::end(cofactors), m_Ctx.normalMat);
+    const float linearTransform[9] = {a00, a01, a02, a10, a11,
+                                      a12, a20, a21, a22};
+    std::copy(std::begin(linearTransform), std::end(linearTransform),
+              m_Ctx.normalMat);
   }
 }
 
@@ -788,13 +791,17 @@ void RageDisplay_Software::SubmitTriangle(
       if (previousInside != currentInside) {
         const float t = previousDistance / (previousDistance - currentDistance);
         ClipVertex intersection{};
-        for (int i = 0; i < 4; ++i) {
-          intersection.c[i] =
-              previous.c[i] + (current.c[i] - previous.c[i]) * t;
+        for (int component = 0; component < 4; ++component) {
+          intersection.c[component] = previous.c[component] +
+                                      (current.c[component] -
+                                       previous.c[component]) *
+                                          t;
         }
-        for (int i = 0; i < kAttr; ++i) {
-          intersection.a[i] =
-              previous.a[i] + (current.a[i] - previous.a[i]) * t;
+        for (int component = 0; component < kAttr; ++component) {
+          intersection.a[component] = previous.a[component] +
+                                      (current.a[component] -
+                                       previous.a[component]) *
+                                          t;
         }
         if (clippedSize == clipped.size()) {
           return;
