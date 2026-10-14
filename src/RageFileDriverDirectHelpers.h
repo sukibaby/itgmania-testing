@@ -7,10 +7,14 @@
 
 #include <string>
 
+#define DoStat stat
+#define DoMkdir mkdir
+#define DoFindFirstFile FindFirstFile
 #define DoRename rename
 #define DoRemove remove
 #if defined(WIN32)
 #define DoOpen _open
+#define DoRmdir _rmdir
 #define DoLseek _lseek
 #define DoClose _close
 #define DoRead _read
@@ -19,6 +23,7 @@
 #else
 #include <unistd.h>
 #define DoOpen open
+#define DoRmdir rmdir
 #define DoLseek lseek
 #define DoClose close
 #define DoRead read
