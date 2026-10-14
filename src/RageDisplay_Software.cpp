@@ -225,10 +225,12 @@ class SoftwarePresenterNative final : public SoftwarePresenter {
     bitmapInfo.bmiHeader.biPlanes = 1;
     bitmapInfo.bmiHeader.biBitCount = 32;
     bitmapInfo.bmiHeader.biCompression = BI_RGB;
+    const VideoModeParams& actual = GraphicsWindow::GetParams();
     SetStretchBltMode(GraphicsWindow::GetHDC(), COLORONCOLOR);
     StretchDIBits(
-        GraphicsWindow::GetHDC(), 0, 0, width, height, 0, 0, width, height,
-        m_dibPixels.data(), &bitmapInfo, DIB_RGB_COLORS, SRCCOPY);
+      GraphicsWindow::GetHDC(), 0, 0, actual.width, actual.height, 0, 0,
+      width, height, m_dibPixels.data(), &bitmapInfo, DIB_RGB_COLORS,
+      SRCCOPY);
   }
   void Update() override { GraphicsWindow::Update(); }
 
@@ -343,10 +345,52 @@ std::string RageDisplay_Software::TryVideoMode(
     if (!err.empty()) return err;
   }
   m_Actual = ActualVideoModeParams(p, ww, wh, false);
-  m_Back.Resize(ww, wh, true);
+  ResizeBackBuffer();
   bNewDeviceOut = !m_bDeviceCreated;  // textures live in system RAM and survive
   m_bDeviceCreated = true;
   return std::string();
+}
+
+void RageDisplay_Software::ResizeBackBuffer() {
+  const int width = std::max(
+      1, static_cast<int>(std::lround(m_Actual.width * m_fRenderScale)));
+  const int height = std::max(
+      1, static_cast<int>(std::lround(m_Actual.height * m_fRenderScale)));
+  m_Back.Resize(width, height, true);
+}
+
+void RageDisplay_Software::UpdateRenderScale(float frameSeconds) {
+  if (!(frameSeconds > 0.0f) || !std::isfinite(frameSeconds)) {
+    return;
+  }
+
+  if (m_fAverageFrameSeconds == 0.0f) {
+    m_fAverageFrameSeconds = frameSeconds;
+  } else {
+    m_fAverageFrameSeconds =
+        m_fAverageFrameSeconds * 0.9f + frameSeconds * 0.1f;
+  }
+
+  if (++m_iFramesUntilScaleAdjustment < 30) {
+    return;
+  }
+  m_iFramesUntilScaleAdjustment = 0;
+
+  constexpr float targetFrameSeconds = 1.0f / 30.0f;
+  const float previousScale = m_fRenderScale;
+  if (m_fAverageFrameSeconds > targetFrameSeconds * 1.05f) {
+    const float idealScale = m_fRenderScale *
+                             std::sqrt(targetFrameSeconds /
+                                       m_fAverageFrameSeconds);
+    m_fRenderScale = std::max(
+        0.5f, std::max(idealScale, m_fRenderScale * 0.7f));
+  } else if (m_fAverageFrameSeconds < targetFrameSeconds * 0.75f) {
+    m_fRenderScale = std::min(1.0f, m_fRenderScale + 0.05f);
+  }
+
+  if (m_fRenderScale != previousScale) {
+    ResizeBackBuffer();
+  }
 }
 
 void RageDisplay_Software::GetDisplaySpecs(DisplaySpecs& out) const {
@@ -357,10 +401,10 @@ void RageDisplay_Software::ResolutionChanged() {
   int width = 0;
   int height = 0;
   if (m_pPresenter && m_pPresenter->GetActualSize(width, height) &&
-      (width != m_Back.w || height != m_Back.h)) {
-    m_Back.Resize(width, height, true);
+      (width != m_Actual.width || height != m_Actual.height)) {
     m_Actual.width = width;
     m_Actual.height = height;
+    ResizeBackBuffer();
   }
   RageDisplay::ResolutionChanged();
 }
@@ -405,6 +449,7 @@ bool RageDisplay_Software::SupportsTextureFormat(
 /* Frame                                                                    */
 /* ------------------------------------------------------------------------ */
 bool RageDisplay_Software::BeginFrame() {
+  m_FrameTimer.Touch();
   m_pTarget = nullptr;
   m_hTarget = 0;
   std::fill(m_Back.color.begin(), m_Back.color.end(), 0xFF000000u);
@@ -414,6 +459,7 @@ bool RageDisplay_Software::BeginFrame() {
 }
 
 void RageDisplay_Software::EndFrame() {
+  const float frameSeconds = m_FrameTimer.Ago();
   FrameLimitBeforeVsync();
   if (m_pPresenter) {
     m_pPresenter->Present(
@@ -421,6 +467,7 @@ void RageDisplay_Software::EndFrame() {
     m_pPresenter->Update();
   }
   FrameLimitAfterVsync();
+  UpdateRenderScale(frameSeconds);
   RageDisplay::EndFrame();
 }
 

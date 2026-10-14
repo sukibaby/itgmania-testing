@@ -17,6 +17,7 @@
 
 #include "RageDisplay.h"
 #include "RageTypes.h"
+#include "RageTimer.h"
 
 /* Backend hook: owns the OS window / blit path. Implement this on top of
  * whatever you like (SDL_UpdateWindowSurface, a GL texture upload, X11
@@ -219,6 +220,8 @@ class RageDisplay_Software : public RageDisplay {
   };
 
   // Per-draw pipeline
+  void ResizeBackBuffer();
+  void UpdateRenderScale(float frameSeconds);
   void PrepareDraw();
   void ShadeVertex(
       const float p[3], const float n[3], const float col[4], const float uv[2],
@@ -239,6 +242,10 @@ class RageDisplay_Software : public RageDisplay {
   std::unique_ptr<SoftwarePresenter> m_pPresenter;
   ActualVideoModeParams m_Actual;
   bool m_bDeviceCreated = false;
+  float m_fRenderScale = 1.0f;
+  float m_fAverageFrameSeconds = 0.0f;
+  int m_iFramesUntilScaleAdjustment = 0;
+  RageTimer m_FrameTimer;
 
   SwSurface m_Back;
 
