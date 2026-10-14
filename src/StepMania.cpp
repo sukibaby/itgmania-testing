@@ -904,6 +904,12 @@ int sm_main(int argc, char* argv[]) {
   SOUNDMAN = new RageSoundManager;
   SOUNDMAN->Init();
   SOUNDMAN->SetMixVolume();
+
+
+  RageTimer hella;
+  hella.Touch();
+
+
   SOUND = new GameSoundManager;
   BOOKKEEPER = new Bookkeeper;
   LIGHTSMAN = new LightsManager;
@@ -937,7 +943,13 @@ int sm_main(int argc, char* argv[]) {
   // Initialize which courses are ranking courses here.
   SONGMAN->UpdateRankingCourses();
 
+
+
   RageUtil::SafeDelete(pLoadingWindow);  // destroy this before init'ing Display
+
+
+  LOG->Warn("INIT TOOK %f seconds took", hella.Ago());
+
 
   /* If the user has tried to quit during the loading, do it before creating
    * the main window. This prevents going to full screen just to quit. */
