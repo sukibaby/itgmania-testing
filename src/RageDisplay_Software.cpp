@@ -974,7 +974,9 @@ void RageDisplay_Software::SubmitTriangle(
     RasterVertex second{}, third{};
     if (toRasterVertex(polygon[i], second) &&
         toRasterVertex(polygon[i + 1], third)) {
-      RasterTriangle(first, second, third, true);
+      RasterTriangle(
+          first, second, third,
+          m_pUnitTex[0] != nullptr || m_pUnitTex[1] != nullptr);
     }
   }
 }
@@ -1015,7 +1017,32 @@ void RageDisplay_Software::RasterTriangle(
     return;
   }
 
-  auto blendPixel = [this](float source[4], uint32_t destination) {
+  const bool standardAlphaBlend =
+      m_Blend.eq == SwBlendEq::Add &&
+      m_Blend.src == SwBlendFactor::SrcAlpha &&
+      m_Blend.dst == SwBlendFactor::OneMinusSrcAlpha &&
+      m_Blend.separateAlpha;
+  auto blendPixel = [this, standardAlphaBlend](float source[4],
+                                               uint32_t destination) {
+    if (standardAlphaBlend) {
+      if (source[3] >= 1.0f) {
+        return Pack(source);
+      }
+      if (source[3] <= 0.0f) {
+        return destination;
+      }
+      float dest[4];
+      Unpack(destination, dest);
+      const float inverseAlpha = 1.0f - source[3];
+      float result[4];
+      for (int channel = 0; channel < 3; ++channel) {
+        result[channel] =
+            source[channel] * source[3] + dest[channel] * inverseAlpha;
+      }
+      result[3] = source[3] + dest[3] * inverseAlpha;
+      return Pack(result);
+    }
+
     float dest[4];
     Unpack(destination, dest);
     float result[4];
@@ -1036,21 +1063,33 @@ void RageDisplay_Software::RasterTriangle(
   };
 
   const float inverseArea = 1.0f / area;
+  const float sampleX = minX + 0.5f;
+  const float sampleY = minY + 0.5f;
+  float rowWeight0 = edge(v1, v2, sampleX, sampleY) * inverseArea;
+  float rowWeight1 = edge(v2, v0, sampleX, sampleY) * inverseArea;
+  float rowWeight2 = edge(v0, v1, sampleX, sampleY) * inverseArea;
+  const float weight0StepX = -(v2.y - v1.y) * inverseArea;
+  const float weight1StepX = -(v0.y - v2.y) * inverseArea;
+  const float weight2StepX = -(v1.y - v0.y) * inverseArea;
+  const float weight0StepY = (v2.x - v1.x) * inverseArea;
+  const float weight1StepY = (v0.x - v2.x) * inverseArea;
+  const float weight2StepY = (v1.x - v0.x) * inverseArea;
   for (int y = minY; y <= maxY; ++y) {
+    float weight0 = rowWeight0;
+    float weight1 = rowWeight1;
+    float weight2 = rowWeight2;
     for (int x = minX; x <= maxX; ++x) {
-      const float sampleX = x + 0.5f;
-      const float sampleY = y + 0.5f;
-      const float weight0 = edge(v1, v2, sampleX, sampleY) * inverseArea;
-      const float weight1 = edge(v2, v0, sampleX, sampleY) * inverseArea;
-      const float weight2 = edge(v0, v1, sampleX, sampleY) * inverseArea;
       if (weight0 < 0.0f || weight1 < 0.0f || weight2 < 0.0f) {
+        weight0 += weight0StepX;
+        weight1 += weight1StepX;
+        weight2 += weight2StepX;
         continue;
       }
 
       const float depth =
           weight0 * v0.z + weight1 * v1.z + weight2 * v2.z;
       const size_t pixelIndex = static_cast<size_t>(y) * target.w + x;
-      if (!target.depth.empty() && m_ZTest != ZTEST_OFF) {
+      if (depthTest) {
         const float oldDepth = target.depth[pixelIndex];
         const bool depthPass = m_ZTest == ZTEST_WRITE_ON_PASS
                                    ? depth <= oldDepth
@@ -1063,11 +1102,15 @@ void RageDisplay_Software::RasterTriangle(
       const float reciprocalW = weight0 * v0.invw + weight1 * v1.invw +
                                 weight2 * v2.invw;
       if (reciprocalW <= 1e-12f) {
+        weight0 += weight0StepX;
+        weight1 += weight1StepX;
+        weight2 += weight2StepX;
         continue;
       }
-      const float p0 = weight0 * v0.invw / reciprocalW;
-      const float p1 = weight1 * v1.invw / reciprocalW;
-      const float p2 = weight2 * v2.invw / reciprocalW;
+      const float inverseReciprocalW = 1.0f / reciprocalW;
+      const float p0 = weight0 * v0.invw * inverseReciprocalW;
+      const float p1 = weight1 * v1.invw * inverseReciprocalW;
+      const float p2 = weight2 * v2.invw * inverseReciprocalW;
       float color[4];
       for (int channel = 0; channel < 4; ++channel) {
         color[channel] = p0 * v0.a[channel] + p1 * v1.a[channel] +
@@ -1114,10 +1157,17 @@ void RageDisplay_Software::RasterTriangle(
       }
 
       target.color[pixelIndex] = blendPixel(color, target.color[pixelIndex]);
-      if (!target.depth.empty() && m_bZWrite) {
+      if (depthWrite) {
         target.depth[pixelIndex] = depth;
       }
+
+      weight0 += weight0StepX;
+      weight1 += weight1StepX;
+      weight2 += weight2StepX;
     }
+    rowWeight0 += weight0StepY;
+    rowWeight1 += weight1StepY;
+    rowWeight2 += weight2StepY;
   }
 }
 
