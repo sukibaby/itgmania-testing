@@ -211,7 +211,7 @@ class RageDisplay_Software : public RageDisplay {
   };
   struct DrawContext {
     Mat4 modelView, mvp, texture;
-    float normalMat[9];  // upper 3x3 of modelView (row-major r*3+c)
+    float normalMat[9];  // inverse-transpose modelView 3x3
   };
 
   // Per-draw pipeline
