@@ -14,9 +14,7 @@
 #include "global.h"
 
 #if defined(_WIN32)
-// clang-format off
 #include <windows.h>
-// clang-format on
 #endif
 
 namespace filesystem = std::filesystem;
