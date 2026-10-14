@@ -10,6 +10,9 @@
 #include "RageMath.h"
 #include "RageSurface.h"
 #if defined(_WIN32)
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
 #include "archutils/Win32/GraphicsWindow.h"
 #endif
 
