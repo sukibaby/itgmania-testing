@@ -816,3 +816,355 @@ void RageDisplay_Software::SubmitTriangle(
     }
   }
 }
+
+void RageDisplay_Software::RasterTriangle(
+    RasterVertex v0, RasterVertex v1, RasterVertex v2, bool textured) {
+  const auto edge = [](const RasterVertex& a, const RasterVertex& b, float x,
+                       float y) {
+    return (b.x - a.x) * (y - a.y) - (b.y - a.y) * (x - a.x);
+  };
+  const float area = edge(v0, v1, v2.x, v2.y);
+  if (std::abs(area) < 1e-8f) {
+    return;
+  }
+
+  const bool frontFacing = area < 0.0f;
+  if ((m_Cull == CULL_BACK && !frontFacing) ||
+      (m_Cull == CULL_FRONT && frontFacing)) {
+    return;
+  }
+  if (m_PolyMode == POLYGON_LINE) {
+    DrawScreenLine(v0, v1, m_fLineWidth);
+    DrawScreenLine(v1, v2, m_fLineWidth);
+    DrawScreenLine(v2, v0, m_fLineWidth);
+    return;
+  }
+
+  SwSurface& target = Target();
+  const int minX = std::max(
+      0, FloorToInt(std::min({v0.x, v1.x, v2.x})));
+  const int minY = std::max(
+      0, FloorToInt(std::min({v0.y, v1.y, v2.y})));
+  const int maxX = std::min(
+      target.w - 1, FloorToInt(std::max({v0.x, v1.x, v2.x})));
+  const int maxY = std::min(
+      target.h - 1, FloorToInt(std::max({v0.y, v1.y, v2.y})));
+  if (minX > maxX || minY > maxY) {
+    return;
+  }
+
+  auto blendPixel = [this](float source[4], uint32_t destination) {
+    float dest[4];
+    Unpack(destination, dest);
+    float result[4];
+    for (int channel = 0; channel < 4; ++channel) {
+      float sourceFactor = BlendFactor(
+          m_Blend.src, source, dest, channel);
+      float destinationFactor = BlendFactor(
+          m_Blend.dst, source, dest, channel);
+      if (channel == 3 && m_Blend.separateAlpha) {
+        sourceFactor = 1.0f;
+        destinationFactor = 1.0f - source[3];
+      }
+      result[channel] = Clamp01(Combine(
+          m_Blend.eq, source[channel], sourceFactor, dest[channel],
+          destinationFactor));
+    }
+    return Pack(result);
+  };
+
+  const float inverseArea = 1.0f / area;
+  for (int y = minY; y <= maxY; ++y) {
+    for (int x = minX; x <= maxX; ++x) {
+      const float sampleX = x + 0.5f;
+      const float sampleY = y + 0.5f;
+      const float weight0 = edge(v1, v2, sampleX, sampleY) * inverseArea;
+      const float weight1 = edge(v2, v0, sampleX, sampleY) * inverseArea;
+      const float weight2 = edge(v0, v1, sampleX, sampleY) * inverseArea;
+      if (weight0 < 0.0f || weight1 < 0.0f || weight2 < 0.0f) {
+        continue;
+      }
+
+      const float depth =
+          weight0 * v0.z + weight1 * v1.z + weight2 * v2.z;
+      const size_t pixelIndex = static_cast<size_t>(y) * target.w + x;
+      if (!target.depth.empty() && m_ZTest != ZTEST_OFF) {
+        const float oldDepth = target.depth[pixelIndex];
+        const bool depthPass = m_ZTest == ZTEST_WRITE_ON_PASS
+                                   ? depth <= oldDepth
+                                   : depth > oldDepth;
+        if (!depthPass) {
+          continue;
+        }
+      }
+
+      const float reciprocalW = weight0 * v0.invw + weight1 * v1.invw +
+                                weight2 * v2.invw;
+      if (reciprocalW <= 1e-12f) {
+        continue;
+      }
+      const float p0 = weight0 * v0.invw / reciprocalW;
+      const float p1 = weight1 * v1.invw / reciprocalW;
+      const float p2 = weight2 * v2.invw / reciprocalW;
+      float color[4];
+      for (int channel = 0; channel < 4; ++channel) {
+        color[channel] = p0 * v0.a[channel] + p1 * v1.a[channel] +
+                         p2 * v2.a[channel];
+      }
+
+      if (textured) {
+        for (int unit = 0; unit < kNumUnits; ++unit) {
+          const SwTexture* texture = m_pUnitTex[unit];
+          if (texture == nullptr) {
+            continue;
+          }
+          float sample[4];
+          const int uvOffset = 4 + unit * 2;
+          const float u = p0 * v0.a[uvOffset] + p1 * v1.a[uvOffset] +
+                          p2 * v2.a[uvOffset];
+          const float v = p0 * v0.a[uvOffset + 1] +
+                          p1 * v1.a[uvOffset + 1] +
+                          p2 * v2.a[uvOffset + 1];
+          SampleTexture(*texture, u, v, sample);
+          switch (m_UnitMode[unit]) {
+            case TextureMode_Modulate:
+              for (int channel = 0; channel < 4; ++channel) {
+                color[channel] *= sample[channel];
+              }
+              break;
+            case TextureMode_Glow:
+              color[0] = color[1] = color[2] = 1.0f;
+              color[3] *= sample[3];
+              break;
+            case TextureMode_Add:
+              for (int channel = 0; channel < 4; ++channel) {
+                color[channel] += sample[channel];
+              }
+              break;
+            default:
+              break;
+          }
+        }
+      }
+
+      if (m_bAlphaTest && color[3] <= 1.0f / 256.0f) {
+        continue;
+      }
+
+      target.color[pixelIndex] = blendPixel(color, target.color[pixelIndex]);
+      if (!target.depth.empty() && m_bZWrite) {
+        target.depth[pixelIndex] = depth;
+      }
+    }
+  }
+}
+
+void RageDisplay_Software::DrawScreenLine(
+    const RasterVertex& a, const RasterVertex& b, float width) {
+  const float dx = b.x - a.x;
+  const float dy = b.y - a.y;
+  const int steps = std::max(1, FloorToInt(std::ceil(std::max(
+                                  std::abs(dx), std::abs(dy)))));
+  const int radius = std::max(0, FloorToInt(width * 0.5f));
+  SwSurface& target = Target();
+
+  for (int step = 0; step <= steps; ++step) {
+    const float t = static_cast<float>(step) / steps;
+    const float x = a.x + dx * t;
+    const float y = a.y + dy * t;
+    const float inverseW = a.invw + (b.invw - a.invw) * t;
+    if (inverseW <= 1e-12f) {
+      continue;
+    }
+    const float p = (1.0f - t) * a.invw / inverseW;
+    const float q = t * b.invw / inverseW;
+    float color[4];
+    for (int channel = 0; channel < 4; ++channel) {
+      color[channel] = p * a.a[channel] + q * b.a[channel];
+    }
+    const float depth = a.z + (b.z - a.z) * t;
+    const int centerX = FloorToInt(x);
+    const int centerY = FloorToInt(y);
+    for (int offsetY = -radius; offsetY <= radius; ++offsetY) {
+      for (int offsetX = -radius; offsetX <= radius; ++offsetX) {
+        const int pixelX = centerX + offsetX;
+        const int pixelY = centerY + offsetY;
+        if (pixelX < 0 || pixelX >= target.w || pixelY < 0 ||
+            pixelY >= target.h) {
+          continue;
+        }
+        const size_t index = static_cast<size_t>(pixelY) * target.w + pixelX;
+        if (!target.depth.empty() && m_ZTest != ZTEST_OFF) {
+          const bool depthPass = m_ZTest == ZTEST_WRITE_ON_PASS
+                                     ? depth <= target.depth[index]
+                                     : depth > target.depth[index];
+          if (!depthPass) {
+            continue;
+          }
+        }
+        if (m_bAlphaTest && color[3] <= 1.0f / 256.0f) {
+          continue;
+        }
+
+        float destination[4];
+        Unpack(target.color[index], destination);
+        float result[4];
+        for (int channel = 0; channel < 4; ++channel) {
+          float sourceFactor =
+              BlendFactor(m_Blend.src, color, destination, channel);
+          float destinationFactor =
+              BlendFactor(m_Blend.dst, color, destination, channel);
+          if (channel == 3 && m_Blend.separateAlpha) {
+            sourceFactor = 1.0f;
+            destinationFactor = 1.0f - color[3];
+          }
+          result[channel] = Clamp01(Combine(
+              m_Blend.eq, color[channel], sourceFactor, destination[channel],
+              destinationFactor));
+        }
+        target.color[index] = Pack(result);
+        if (!target.depth.empty() && m_bZWrite) {
+          target.depth[index] = depth;
+        }
+      }
+    }
+  }
+}
+
+void RageDisplay_Software::DrawSpriteIndexed(
+    const RageSpriteVertex* vertices, int numVertices,
+    const std::vector<uint32_t>& indices) {
+  if (vertices == nullptr || numVertices <= 0) {
+    return;
+  }
+  PrepareDraw();
+  ShadeSpriteVertices(vertices, numVertices);
+  for (size_t i = 0; i + 2 < indices.size(); i += 3) {
+    const uint32_t i0 = indices[i];
+    const uint32_t i1 = indices[i + 1];
+    const uint32_t i2 = indices[i + 2];
+    if (i0 >= m_Shaded.size() || i1 >= m_Shaded.size() ||
+        i2 >= m_Shaded.size()) {
+      continue;
+    }
+    SubmitTriangle(m_Shaded[i0], m_Shaded[i1], m_Shaded[i2]);
+  }
+}
+
+void RageDisplay_Software::DrawQuadsInternal(
+    const RageSpriteVertex vertices[], int numVertices) {
+  m_Idx.clear();
+  m_Idx.reserve(static_cast<size_t>(numVertices / 4) * 6);
+  for (int i = 0; i + 3 < numVertices; i += 4) {
+    m_Idx.insert(m_Idx.end(), {static_cast<uint32_t>(i),
+                               static_cast<uint32_t>(i + 1),
+                               static_cast<uint32_t>(i + 2),
+                               static_cast<uint32_t>(i + 2),
+                               static_cast<uint32_t>(i + 1),
+                               static_cast<uint32_t>(i + 3)});
+  }
+  DrawSpriteIndexed(vertices, numVertices, m_Idx);
+}
+
+void RageDisplay_Software::DrawQuadStripInternal(
+    const RageSpriteVertex vertices[], int numVertices) {
+  m_Idx.clear();
+  m_Idx.reserve(static_cast<size_t>(numVertices - 2) * 3);
+  for (int i = 0; i + 3 < numVertices; i += 2) {
+    m_Idx.insert(m_Idx.end(), {static_cast<uint32_t>(i),
+                               static_cast<uint32_t>(i + 1),
+                               static_cast<uint32_t>(i + 2),
+                               static_cast<uint32_t>(i + 2),
+                               static_cast<uint32_t>(i + 1),
+                               static_cast<uint32_t>(i + 3)});
+  }
+  DrawSpriteIndexed(vertices, numVertices, m_Idx);
+}
+
+void RageDisplay_Software::DrawFanInternal(
+    const RageSpriteVertex vertices[], int numVertices) {
+  m_Idx.clear();
+  m_Idx.reserve(static_cast<size_t>(numVertices - 2) * 3);
+  for (int i = 1; i + 1 < numVertices; ++i) {
+    m_Idx.insert(m_Idx.end(), {0u, static_cast<uint32_t>(i),
+                               static_cast<uint32_t>(i + 1)});
+  }
+  DrawSpriteIndexed(vertices, numVertices, m_Idx);
+}
+
+void RageDisplay_Software::DrawStripInternal(
+    const RageSpriteVertex vertices[], int numVertices) {
+  m_Idx.clear();
+  m_Idx.reserve(static_cast<size_t>(numVertices - 2) * 3);
+  for (int i = 0; i + 2 < numVertices; ++i) {
+    if (i & 1) {
+      m_Idx.insert(m_Idx.end(), {static_cast<uint32_t>(i + 1),
+                                 static_cast<uint32_t>(i),
+                                 static_cast<uint32_t>(i + 2)});
+    } else {
+      m_Idx.insert(m_Idx.end(), {static_cast<uint32_t>(i),
+                                 static_cast<uint32_t>(i + 1),
+                                 static_cast<uint32_t>(i + 2)});
+    }
+  }
+  DrawSpriteIndexed(vertices, numVertices, m_Idx);
+}
+
+void RageDisplay_Software::DrawTrianglesInternal(
+    const RageSpriteVertex vertices[], int numVertices) {
+  m_Idx.clear();
+  m_Idx.reserve(static_cast<size_t>(numVertices));
+  for (int i = 0; i + 2 < numVertices; ++i) {
+    m_Idx.push_back(static_cast<uint32_t>(i));
+  }
+  DrawSpriteIndexed(vertices, numVertices, m_Idx);
+}
+
+void RageDisplay_Software::DrawSymmetricQuadStripInternal(
+    const RageSpriteVertex vertices[], int numVertices) {
+  m_Idx.clear();
+  const int numPieces = (numVertices - 3) / 3;
+  m_Idx.reserve(static_cast<size_t>(numPieces) * 12);
+  for (int i = 0; i < numPieces; ++i) {
+    const uint32_t start = static_cast<uint32_t>(i * 3);
+    m_Idx.insert(m_Idx.end(), {start + 1, start + 3, start,
+                               start + 1, start + 4, start + 3,
+                               start + 1, start + 5, start + 4,
+                               start + 1, start + 2, start + 5});
+  }
+  DrawSpriteIndexed(vertices, numVertices, m_Idx);
+}
+
+void RageDisplay_Software::DrawCompiledGeometryInternal(
+    const RageCompiledGeometry* geometry, int meshIndex) {
+  const auto* softwareGeometry =
+      dynamic_cast<const RageCompiledGeometrySoftware*>(geometry);
+  if (softwareGeometry != nullptr) {
+    DrawMesh(softwareGeometry, meshIndex);
+  }
+}
+
+void RageDisplay_Software::DrawMesh(
+    const RageCompiledGeometrySoftware* geometry, int meshIndex) {
+  if (geometry == nullptr || meshIndex < 0) {
+    return;
+  }
+  const auto& mesh = geometry->Info(meshIndex);
+  const size_t firstIndex = static_cast<size_t>(mesh.iTriangleStart) * 3;
+  const size_t endIndex =
+      firstIndex + static_cast<size_t>(mesh.iTriangleCount) * 3;
+  PrepareDraw();
+  const float color[4] = {1.0f, 1.0f, 1.0f, 1.0f};
+
+  for (size_t index = firstIndex; index + 2 < endIndex; index += 3) {
+    ClipVertex triangle[3]{};
+    for (int corner = 0; corner < 3; ++corner) {
+      const RageModelVertex& vertex =
+          geometry->Vertex(geometry->Indices()[index + corner]);
+      const float uv[2] = {vertex.t.x * vertex.TextureMatrixScale.x,
+                           vertex.t.y * vertex.TextureMatrixScale.y};
+      ShadeVertex(vertex.p, vertex.n, color, uv, triangle[corner]);
+    }
+    SubmitTriangle(triangle[0], triangle[1], triangle[2]);
+  }
+}
