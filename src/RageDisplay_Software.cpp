@@ -680,7 +680,7 @@ void RageDisplay_Software::PrepareDraw() {
 
 void RageDisplay_Software::ShadeVertex(
     const float p[3], const float n[3], const float col[4], const float uv[2],
-    ClipVertex& out) const {
+  ClipVertex& out, const float textureScale[2]) const {
   const float position[4] = {p[0], p[1], p[2], 1.0f};
   Transform4(m_Ctx.mvp.m, position, out.c);
 
@@ -720,14 +720,13 @@ void RageDisplay_Software::ShadeVertex(
             m_Material.specular[channel] * light.specular[channel] * specular;
       }
     }
+    for (int channel = 0; channel < 3; ++channel) {
+      out.a[channel] = lit[channel] * col[channel];
+    }
+    out.a[3] = lit[3] * col[3];
   } else {
-    std::copy(col, col + 4, lit);
+    std::copy(col, col + 4, out.a);
   }
-
-  for (int channel = 0; channel < 3; ++channel) {
-    out.a[channel] = lit[channel] * col[channel];
-  }
-  out.a[3] = lit[3] * col[3];
 
   const float texCoord[4] = {uv[0], uv[1], 0.0f, 1.0f};
   float transformedTexCoord[4];
@@ -735,8 +734,14 @@ void RageDisplay_Software::ShadeVertex(
   const float q = std::abs(transformedTexCoord[3]) > 1e-8f
                       ? transformedTexCoord[3]
                       : 1.0f;
-  out.a[4] = out.a[6] = transformedTexCoord[0] / q;
-  out.a[5] = out.a[7] = transformedTexCoord[1] / q;
+  float u = transformedTexCoord[0] / q;
+  float v = transformedTexCoord[1] / q;
+  if (textureScale != nullptr) {
+    u = u * textureScale[0] + uv[0] * (1.0f - textureScale[0]);
+    v = v * textureScale[1] + uv[1] * (1.0f - textureScale[1]);
+  }
+  out.a[4] = out.a[6] = u;
+  out.a[5] = out.a[7] = v;
 }
 
 void RageDisplay_Software::ShadeSpriteVertices(const RageSpriteVertex* v, int n) {
@@ -1161,9 +1166,11 @@ void RageDisplay_Software::DrawMesh(
     for (int corner = 0; corner < 3; ++corner) {
       const RageModelVertex& vertex =
           geometry->Vertex(geometry->Indices()[index + corner]);
-      const float uv[2] = {vertex.t.x * vertex.TextureMatrixScale.x,
-                           vertex.t.y * vertex.TextureMatrixScale.y};
-      ShadeVertex(vertex.p, vertex.n, color, uv, triangle[corner]);
+        const float uv[2] = {vertex.t.x, vertex.t.y};
+        const float textureScale[2] = {vertex.TextureMatrixScale.x,
+                       vertex.TextureMatrixScale.y};
+        ShadeVertex(
+          vertex.p, vertex.n, color, uv, triangle[corner], textureScale);
     }
     SubmitTriangle(triangle[0], triangle[1], triangle[2]);
   }

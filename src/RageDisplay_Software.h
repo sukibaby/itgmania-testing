@@ -218,7 +218,7 @@ class RageDisplay_Software : public RageDisplay {
   void PrepareDraw();
   void ShadeVertex(
       const float p[3], const float n[3], const float col[4], const float uv[2],
-      ClipVertex& out) const;
+      ClipVertex& out, const float textureScale[2] = nullptr) const;
   void ShadeSpriteVertices(const RageSpriteVertex* v, int n);
   void SubmitTriangle(
       const ClipVertex& a, const ClipVertex& b, const ClipVertex& c);
