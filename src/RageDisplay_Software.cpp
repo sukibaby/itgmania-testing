@@ -7,11 +7,11 @@
 #include <type_traits>
 #include <vector>
 
-#include <GL/glew.h>
-
 #include "RageMath.h"
 #include "RageSurface.h"
-#include "arch/LowLevelWindow/LowLevelWindow.h"
+#if defined(_WIN32)
+#include "archutils/Win32/GraphicsWindow.h"
+#endif
 
 /* ------------------------------------------------------------------------ */
 /* Small helpers                                                            */
@@ -20,7 +20,7 @@ namespace {
 
 static_assert(
     sizeof(RageMatrix) == sizeof(float) * 16,
-    "OpenGL demands a layout of 16 packed floats in column-major order, which it does not appear that the RageMatrix is");
+  "RageMatrix must be represented by 16 packed floats");
 
 inline float Clamp01(float x) { return x < 0.f ? 0.f : (x > 1.f ? 1.f : x); }
 
@@ -166,24 +166,27 @@ void SwSurface::Resize(int width, int height, bool withDepth) {
 
 namespace {
 
-class SoftwarePresenterLowLevelWindow final : public SoftwarePresenter {
+#if defined(_WIN32)
+class SoftwarePresenterNative final : public SoftwarePresenter {
  public:
-  SoftwarePresenterLowLevelWindow() : m_window(LowLevelWindow::Create()) {}
+  SoftwarePresenterNative() { GraphicsWindow::Initialize(false); }
+
+  ~SoftwarePresenterNative() override { GraphicsWindow::Shutdown(); }
 
   std::string Resize(
       const VideoModeParams& params, int& windowWidthOut,
       int& windowHeightOut) override {
-    if (!m_window) {
-      return "Could not create a low-level window";
+    if (GraphicsWindow::GetHwnd() == nullptr) {
+      GraphicsWindow::CreateGraphicsWindow(params);
     }
 
-    bool newDevice = false;
-    const std::string error = m_window->TryVideoMode(params, newDevice);
+    const std::string error = GraphicsWindow::SetScreenMode(params);
     if (!error.empty()) {
       return error;
     }
 
-    const ActualVideoModeParams actual = m_window->GetActualVideoModeParams();
+    GraphicsWindow::CreateGraphicsWindow(params);
+    const VideoModeParams& actual = GraphicsWindow::GetParams();
     windowWidthOut = actual.width;
     windowHeightOut = actual.height;
     return std::string();
@@ -191,71 +194,76 @@ class SoftwarePresenterLowLevelWindow final : public SoftwarePresenter {
 
   void Present(
       const uint32_t* pixels, int width, int height, int pitchBytes) override {
-    if (!m_window || pixels == nullptr || width <= 0 || height <= 0 ||
+    if (GraphicsWindow::GetHwnd() == nullptr || pixels == nullptr ||
+        width <= 0 || height <= 0 ||
         pitchBytes < width * static_cast<int>(sizeof(uint32_t))) {
       return;
     }
 
-    glPushAttrib(GL_ALL_ATTRIB_BITS);
-    glMatrixMode(GL_PROJECTION);
-    glPushMatrix();
-    glLoadIdentity();
-    glMatrixMode(GL_MODELVIEW);
-    glPushMatrix();
-    glLoadIdentity();
-
-    glViewport(0, 0, width, height);
-    glDrawBuffer(GL_BACK);
-    glDisable(GL_ALPHA_TEST);
-    glDisable(GL_BLEND);
-    glDisable(GL_DEPTH_TEST);
-    glDisable(GL_DITHER);
-    glDisable(GL_LIGHTING);
-    glDisable(GL_SCISSOR_TEST);
-    glDisable(GL_TEXTURE_2D);
-    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-    glPixelStorei(GL_UNPACK_ALIGNMENT, sizeof(uint32_t));
-    glPixelStorei(GL_UNPACK_ROW_LENGTH, pitchBytes / sizeof(uint32_t));
-    glPixelZoom(1.0f, -1.0f);
-    glRasterPos2f(-1.0f, 1.0f);
-    glDrawPixels(width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
-
-    glMatrixMode(GL_MODELVIEW);
-    glPopMatrix();
-    glMatrixMode(GL_PROJECTION);
-    glPopMatrix();
-    glPopAttrib();
-    m_window->SwapBuffers();
-  }
-  void Update() override {
-    if (m_window) {
-      m_window->Update();
+    m_dibPixels.resize(static_cast<size_t>(width) * height);
+    for (int y = 0; y < height; ++y) {
+      const auto* source = reinterpret_cast<const uint32_t*>(
+          reinterpret_cast<const uint8_t*>(pixels) +
+          static_cast<size_t>(y) * pitchBytes);
+      uint32_t* destination =
+          m_dibPixels.data() + static_cast<size_t>(y) * width;
+      for (int x = 0; x < width; ++x) {
+        const uint32_t pixel = source[x];
+        destination[x] = 0xFF000000u | (pixel & 0x0000FF00u) |
+                          ((pixel & 0x000000FFu) << 16) |
+                          ((pixel & 0x00FF0000u) >> 16);
+      }
     }
+
+    BITMAPINFO bitmapInfo{};
+    bitmapInfo.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+    bitmapInfo.bmiHeader.biWidth = width;
+    bitmapInfo.bmiHeader.biHeight = -height;
+    bitmapInfo.bmiHeader.biPlanes = 1;
+    bitmapInfo.bmiHeader.biBitCount = 32;
+    bitmapInfo.bmiHeader.biCompression = BI_RGB;
+    SetStretchBltMode(GraphicsWindow::GetHDC(), COLORONCOLOR);
+    StretchDIBits(
+        GraphicsWindow::GetHDC(), 0, 0, width, height, 0, 0, width, height,
+        m_dibPixels.data(), &bitmapInfo, DIB_RGB_COLORS, SRCCOPY);
   }
+  void Update() override { GraphicsWindow::Update(); }
 
   bool GetActualSize(int& widthOut, int& heightOut) const override {
-    if (!m_window) {
+    if (GraphicsWindow::GetHwnd() == nullptr) {
       return false;
     }
-    const ActualVideoModeParams actual = m_window->GetActualVideoModeParams();
+    const VideoModeParams& actual = GraphicsWindow::GetParams();
     widthOut = actual.width;
     heightOut = actual.height;
     return widthOut > 0 && heightOut > 0;
   }
 
   void GetDisplaySpecs(DisplaySpecs& out) const override {
-    if (m_window) {
-      m_window->GetDisplaySpecs(out);
-    }
+    GraphicsWindow::GetDisplaySpecs(out);
   }
 
   bool SupportsFullscreenBorderlessWindow() const override {
-    return m_window && m_window->SupportsFullscreenBorderlessWindow();
+    return true;
   }
 
  private:
-  std::unique_ptr<LowLevelWindow> m_window;
+  std::vector<uint32_t> m_dibPixels;
 };
+#else
+class SoftwarePresenterNative final : public SoftwarePresenter {
+ public:
+  std::string Resize(
+      const VideoModeParams& /* params */, int& /* windowWidthOut */,
+      int& /* windowHeightOut */) override {
+    return "Native software presentation is not implemented on this platform";
+  }
+
+  void Present(
+      const uint32_t* /* pixels */, int /* width */, int /* height */,
+      int /* pitchBytes */) override {}
+};
+#endif
 
 }  // namespace
 
@@ -310,7 +318,7 @@ RageDisplay_Software::RageDisplay_Software(
     std::unique_ptr<SoftwarePresenter> presenter)
     : m_pPresenter(std::move(presenter)) {
   if (!m_pPresenter) {
-    m_pPresenter = std::make_unique<SoftwarePresenterLowLevelWindow>();
+      m_pPresenter = std::make_unique<SoftwarePresenterNative>();
   }
   for (int i = 0; i < kNumUnits; ++i) m_UnitMode[i] = TextureMode_Modulate;
   std::memset(&m_Ctx, 0, sizeof(m_Ctx));
