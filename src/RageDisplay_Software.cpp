@@ -1005,6 +1005,8 @@ void RageDisplay_Software::RasterTriangle(
   }
 
   SwSurface& target = Target();
+  const bool depthTest = !target.depth.empty() && m_ZTest != ZTEST_OFF;
+  const bool depthWrite = !target.depth.empty() && m_bZWrite;
   const int minX = std::max(
       0, FloorToInt(std::min({v0.x, v1.x, v2.x})));
   const int minY = std::max(
@@ -1078,11 +1080,10 @@ void RageDisplay_Software::RasterTriangle(
     float weight0 = rowWeight0;
     float weight1 = rowWeight1;
     float weight2 = rowWeight2;
-    for (int x = minX; x <= maxX; ++x) {
+    for (int x = minX; x <= maxX;
+         ++x, weight0 += weight0StepX, weight1 += weight1StepX,
+         weight2 += weight2StepX) {
       if (weight0 < 0.0f || weight1 < 0.0f || weight2 < 0.0f) {
-        weight0 += weight0StepX;
-        weight1 += weight1StepX;
-        weight2 += weight2StepX;
         continue;
       }
 
@@ -1102,9 +1103,6 @@ void RageDisplay_Software::RasterTriangle(
       const float reciprocalW = weight0 * v0.invw + weight1 * v1.invw +
                                 weight2 * v2.invw;
       if (reciprocalW <= 1e-12f) {
-        weight0 += weight0StepX;
-        weight1 += weight1StepX;
-        weight2 += weight2StepX;
         continue;
       }
       const float inverseReciprocalW = 1.0f / reciprocalW;
@@ -1160,10 +1158,6 @@ void RageDisplay_Software::RasterTriangle(
       if (depthWrite) {
         target.depth[pixelIndex] = depth;
       }
-
-      weight0 += weight0StepX;
-      weight1 += weight1StepX;
-      weight2 += weight2StepX;
     }
     rowWeight0 += weight0StepY;
     rowWeight1 += weight1StepY;
