@@ -368,6 +368,7 @@ std::string StepMania::GetSelectMusicScreen() {
 #endif
 
 #include "RageDisplay_Null.h"
+#include "RageDisplay_Software.h"
 
 struct VideoCardDefaults {
   std::string sDriverRegex;
@@ -565,6 +566,8 @@ RageDisplay* CreateDisplay() {
 #if defined(SUPPORT_D3D)
       pRet = new RageDisplay_D3D;
 #endif
+    } else if (CompareNoCase(sRenderer, "software") == 0) {
+      pRet = new RageDisplay_Software;
     } else if (CompareNoCase(sRenderer, "null") == 0) {
       return new RageDisplay_Null;
     } else {
