@@ -284,6 +284,12 @@ void Song::SetSongDirAndGroup(
  */
 bool Song::LoadFromSongDir(
     std::string sDir, bool load_autosave, ProfileSlot from_profile) {
+      
+
+RageTimer hella;
+      hella.Touch();
+
+
   ASSERT_M(sDir != "", "Songs can't be loaded from an empty directory!");
   ASSERT_M(
       m_vpSteps.empty() && m_UnknownStyleSteps.empty(),
@@ -447,6 +453,10 @@ bool Song::LoadFromSongDir(
 
   // Add AutoGen pointers. (These aren't cached.)
   AddAutoGenNotes();
+
+  LOG->Trace(
+      "Song::LoadFromSongDir took %f seconds", 
+  hella.Ago());
 
   if (!m_bHasMusic) {
     LOG->UserLog("Song", sDir, "has no music; ignored.");

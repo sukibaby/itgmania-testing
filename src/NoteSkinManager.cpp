@@ -89,6 +89,8 @@ NoteSkinManager::~NoteSkinManager() {
 }
 
 void NoteSkinManager::RefreshNoteSkinData(const Game* pGame) {
+  RageTimer hella;
+  hella.Touch();
   m_pCurGame = pGame;
 
   // clear path cache
@@ -145,7 +147,10 @@ void NoteSkinManager::RefreshNoteSkinData(const Game* pGame) {
       }
     }
   }
-}
+  LOG->Trace(
+      "NoteSkinManager::RefreshNoteSkinData took %f seconds", 
+  hella.Ago());
+} 
 
 bool NoteSkinManager::LoadNoteSkinData(
     const std::string& sNoteSkinName, NoteSkinData& data_out) {
