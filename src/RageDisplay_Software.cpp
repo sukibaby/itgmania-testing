@@ -404,7 +404,22 @@ bool RageDisplay_Software::SupportsTextureFormat(
 /* ------------------------------------------------------------------------ */
 /* Frame                                                                    */
 /* ------------------------------------------------------------------------ */
+void RageDisplay_Software::ResetStats() {
+  m_Stats = FrameStats();
+  RageDisplay::ResetStats();
+}
+
+std::string RageDisplay_Software::GetStats() const {
+  return RageDisplay::GetStats() + "\nSW tris submitted/clipped/culled/rastered: " +
+         std::to_string(m_Stats.trianglesSubmitted) + "/" +
+         std::to_string(m_Stats.trianglesClipped) + "/" +
+         std::to_string(m_Stats.trianglesCulled) + "/" +
+         std::to_string(m_Stats.trianglesRastered) +
+         "  px: " + std::to_string(m_Stats.pixelsWritten);
+}
+
 bool RageDisplay_Software::BeginFrame() {
+  m_Stats = FrameStats();
   m_pTarget = nullptr;
   m_hTarget = 0;
   std::fill(m_Back.color.begin(), m_Back.color.end(), 0xFF000000u);
@@ -736,6 +751,26 @@ void RageDisplay_Software::DeleteCompiledGeometry(RageCompiledGeometry* p) {
 /* ------------------------------------------------------------------------ */
 namespace {
 
+
+SwMat4 LoadGL(const RageMatrix* matrix) {
+  SwMat4 out;
+  std::memcpy(out.m, matrix, sizeof(out.m));
+  return out;
+}
+
+/* a * b, column-vector convention, column-major storage (glMultMatrix). */
+SwMat4 MulGL(const SwMat4& a, const SwMat4& b) {
+  SwMat4 out;
+  for (int col = 0; col < 4; ++col) {
+    for (int row = 0; row < 4; ++row) {
+      float sum = 0.0f;
+      for (int k = 0; k < 4; ++k) sum += a.m[k * 4 + row] * b.m[col * 4 + k];
+      out.m[col * 4 + row] = sum;
+    }
+  }
+  return out;
+}
+
 void Transform4(const float* m, const float in[4], float out[4]) {
   for (int row = 0; row < 4; ++row) {
     out[row] = m[row] * in[0] + m[4 + row] * in[1] + m[8 + row] * in[2] +
@@ -774,21 +809,26 @@ float ClipDistance(const float position[4], int plane) {
 }  // namespace
 
 void RageDisplay_Software::PrepareDraw() {
-  RageMatrix modelView;
-  RageMatrixMultiply(&modelView, GetViewTop(), GetWorldTop());
+  /* Mirror RageDisplay_Legacy::SendCurrentMatrices exactly:
+   *   GL_PROJECTION = Centering * ProjectionTop
+   *   GL_MODELVIEW  = ViewTop * WorldTop
+   * and clip = Projection * ModelView * v (column vectors, column-major
+   * memory). Done locally so we don't depend on RageMatrixMultiply's argument
+   * convention. */
+  const Mat4 centering = LoadGL(GetCentering());
+  const Mat4 projectionTop = LoadGL(GetProjectionTop());
+  const Mat4 view = LoadGL(GetViewTop());
+  const Mat4 world = LoadGL(GetWorldTop());
+  const Mat4 projection = MulGL(centering, projectionTop);
+  m_Ctx.modelView = MulGL(view, world);
+  m_Ctx.mvp = MulGL(projection, m_Ctx.modelView);
+  m_Ctx.texture = LoadGL(GetTextureTop());
 
-  RageMatrix projection;
-  RageMatrixMultiply(&projection, GetCentering(), GetProjectionTop());
-
-  RageMatrix mvp;
-  RageMatrixMultiply(&mvp, &modelView, &projection);
-
-  std::memcpy(m_Ctx.modelView.m, static_cast<const float*>(modelView),
-              sizeof(m_Ctx.modelView.m));
-  std::memcpy(m_Ctx.mvp.m, static_cast<const float*>(mvp),
-              sizeof(m_Ctx.mvp.m));
-  std::memcpy(m_Ctx.texture.m, static_cast<const float*>(*GetTextureTop()),
-              sizeof(m_Ctx.texture.m));
+  const float* modelViewMemory = m_Ctx.modelView.m;
+  struct {
+    float m[4][4];
+  } modelView;
+  std::memcpy(modelView.m, modelViewMemory, sizeof(modelView.m));
 
   const float a00 = modelView.m[0][0];
   const float a01 = modelView.m[1][0];
@@ -896,6 +936,7 @@ void RageDisplay_Software::ShadeSpriteVertices(const RageSpriteVertex* v, int n)
 
 void RageDisplay_Software::SubmitTriangle(
     const ClipVertex& a, const ClipVertex& b, const ClipVertex& c) {
+  ++m_Stats.trianglesSubmitted;
   std::array<ClipVertex, 16> polygon{};
   std::array<ClipVertex, 16> clipped{};
   polygon[0] = a;
@@ -945,6 +986,7 @@ void RageDisplay_Software::SubmitTriangle(
   }
 
   if (polygonSize < 3) {
+    ++m_Stats.trianglesClipped;
     return;
   }
 
@@ -995,8 +1037,10 @@ void RageDisplay_Software::RasterTriangle(
   const bool frontFacing = area < 0.0f;
   if ((m_Cull == CULL_BACK && !frontFacing) ||
       (m_Cull == CULL_FRONT && frontFacing)) {
+    ++m_Stats.trianglesCulled;
     return;
   }
+  ++m_Stats.trianglesRastered;
   if (m_PolyMode == POLYGON_LINE) {
     DrawScreenLine(v0, v1, m_fLineWidth);
     DrawScreenLine(v1, v2, m_fLineWidth);
@@ -1006,7 +1050,8 @@ void RageDisplay_Software::RasterTriangle(
 
   SwSurface& target = Target();
   const bool depthTest = !target.depth.empty() && m_ZTest != ZTEST_OFF;
-  const bool depthWrite = !target.depth.empty() && m_bZWrite;
+  const bool depthWrite =
+      !target.depth.empty() && m_bZWrite && m_ZTest != ZTEST_OFF;
   const int minX = std::max(
       0, FloorToInt(std::min({v0.x, v1.x, v2.x})));
   const int minY = std::max(
@@ -1064,28 +1109,36 @@ void RageDisplay_Software::RasterTriangle(
     return Pack(result);
   };
 
+  /* Evaluate the three edge functions directly (not incrementally) so pixel
+   * centers that lie exactly on an edge give exactly 0, then apply the
+   * top-left rule so shared edges (e.g. a quad's diagonal) are drawn once.
+   * Without it, translucent sprites get a double-blended seam. */
   const float inverseArea = 1.0f / area;
-  const float sampleX = minX + 0.5f;
-  const float sampleY = minY + 0.5f;
-  float rowWeight0 = edge(v1, v2, sampleX, sampleY) * inverseArea;
-  float rowWeight1 = edge(v2, v0, sampleX, sampleY) * inverseArea;
-  float rowWeight2 = edge(v0, v1, sampleX, sampleY) * inverseArea;
-  const float weight0StepX = -(v2.y - v1.y) * inverseArea;
-  const float weight1StepX = -(v0.y - v2.y) * inverseArea;
-  const float weight2StepX = -(v1.y - v0.y) * inverseArea;
-  const float weight0StepY = (v2.x - v1.x) * inverseArea;
-  const float weight1StepY = (v0.x - v2.x) * inverseArea;
-  const float weight2StepY = (v1.x - v0.x) * inverseArea;
+  const float orient = area > 0.0f ? 1.0f : -1.0f;
+  const auto topLeft = [orient](const RasterVertex& a, const RasterVertex& b) {
+    const float dx = (b.x - a.x) * orient;
+    const float dy = (b.y - a.y) * orient;
+    return dy < 0.0f || (dy == 0.0f && dx > 0.0f);
+  };
+  const bool tl0 = topLeft(v1, v2);
+  const bool tl1 = topLeft(v2, v0);
+  const bool tl2 = topLeft(v0, v1);
   for (int y = minY; y <= maxY; ++y) {
-    float weight0 = rowWeight0;
-    float weight1 = rowWeight1;
-    float weight2 = rowWeight2;
-    for (int x = minX; x <= maxX;
-         ++x, weight0 += weight0StepX, weight1 += weight1StepX,
-         weight2 += weight2StepX) {
-      if (weight0 < 0.0f || weight1 < 0.0f || weight2 < 0.0f) {
+    for (int x = minX; x <= maxX; ++x) {
+      const float px = x + 0.5f, py = y + 0.5f;
+      const float e0 = edge(v1, v2, px, py) * orient;
+      const float e1 = edge(v2, v0, px, py) * orient;
+      const float e2 = edge(v0, v1, px, py) * orient;
+      if (e0 < 0.0f || e1 < 0.0f || e2 < 0.0f) {
         continue;
       }
+      if ((e0 == 0.0f && !tl0) || (e1 == 0.0f && !tl1) ||
+          (e2 == 0.0f && !tl2)) {
+        continue;
+      }
+      const float weight0 = e0 * orient * inverseArea;
+      const float weight1 = e1 * orient * inverseArea;
+      const float weight2 = e2 * orient * inverseArea;
 
       const float depth =
           weight0 * v0.z + weight1 * v1.z + weight2 * v2.z;
@@ -1155,13 +1208,11 @@ void RageDisplay_Software::RasterTriangle(
       }
 
       target.color[pixelIndex] = blendPixel(color, target.color[pixelIndex]);
+      ++m_Stats.pixelsWritten;
       if (depthWrite) {
         target.depth[pixelIndex] = depth;
       }
     }
-    rowWeight0 += weight0StepY;
-    rowWeight1 += weight1StepY;
-    rowWeight2 += weight2StepY;
   }
 }
 
@@ -1229,7 +1280,7 @@ void RageDisplay_Software::DrawScreenLine(
               destinationFactor));
         }
         target.color[index] = Pack(result);
-        if (!target.depth.empty() && m_bZWrite) {
+        if (!target.depth.empty() && m_bZWrite && m_ZTest != ZTEST_OFF) {
           target.depth[index] = depth;
         }
       }
@@ -1259,15 +1310,13 @@ void RageDisplay_Software::DrawSpriteIndexed(
 
 void RageDisplay_Software::DrawQuadsInternal(
     const RageSpriteVertex vertices[], int numVertices) {
+  /* GL_QUADS: the four vertices run around the perimeter (TL, BL, BR, TR for
+   * sprites), so split along the 0-2 diagonal. */
   m_Idx.clear();
   m_Idx.reserve(static_cast<size_t>(numVertices / 4) * 6);
   for (int i = 0; i + 3 < numVertices; i += 4) {
-    m_Idx.insert(m_Idx.end(), {static_cast<uint32_t>(i),
-                               static_cast<uint32_t>(i + 1),
-                               static_cast<uint32_t>(i + 2),
-                               static_cast<uint32_t>(i + 2),
-                               static_cast<uint32_t>(i + 1),
-                               static_cast<uint32_t>(i + 3)});
+    const uint32_t b = static_cast<uint32_t>(i);
+    m_Idx.insert(m_Idx.end(), {b, b + 1, b + 2, b, b + 2, b + 3});
   }
   DrawSpriteIndexed(vertices, numVertices, m_Idx);
 }
@@ -1320,7 +1369,7 @@ void RageDisplay_Software::DrawTrianglesInternal(
     const RageSpriteVertex vertices[], int numVertices) {
   m_Idx.clear();
   m_Idx.reserve(static_cast<size_t>(numVertices));
-  for (int i = 0; i + 2 < numVertices; ++i) {
+  for (int i = 0; i < numVertices; ++i) {
     m_Idx.push_back(static_cast<uint32_t>(i));
   }
   DrawSpriteIndexed(vertices, numVertices, m_Idx);
