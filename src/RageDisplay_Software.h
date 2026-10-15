@@ -88,6 +88,36 @@ struct SwMat4 {
   float m[16];
 };
 
+/* Render state captured per batch of queued triangles (rasterization is
+ * deferred to Flush(), so the live state may have changed by then). */
+struct SwState {
+  SwBlend blend;
+  int blendKind = 0;  // 0 generic, 1 normal alpha, 2 additive, 3 copy
+  bool zwrite = false;
+  ZTestMode ztest = ZTEST_OFF;
+  bool alphaTest = false;
+  const SwTexture* tex[2] = {nullptr, nullptr};
+  TextureMode mode[2] = {TextureMode_Modulate, TextureMode_Modulate};
+  bool wrap[2] = {false, false};
+  bool filter[2] = {false, false};
+};
+
+/* A screen-space triangle with all rasterizer setup precomputed. */
+struct SwTri {
+  static constexpr int kPlanes = 10;  // rgba, uv0, uv1, z, 1/w
+  float x[3], y[3];
+  float invArea, orient;
+  bool tl[3];
+  int xmin, xmax, ymin, ymax;
+  float f[kPlanes][3];  // per-vertex plane values (premultiplied by 1/w if !affine)
+  float gx[kPlanes];    // d(plane)/dx
+  bool affine;
+  bool constColor;
+  uint32_t constColor8;
+  uint32_t state;
+};
+
+class SwThreadPool;
 class RageCompiledGeometrySoftware;
 
 class RageDisplay_Software : public RageDisplay {
@@ -236,8 +266,11 @@ class RageDisplay_Software : public RageDisplay {
   void DrawMesh(const RageCompiledGeometrySoftware* g, int iMeshIndex);
   void DrawScreenLine(
       const RasterVertex& a, const RasterVertex& b, float width);
-  void RasterTriangle(
-      RasterVertex v0, RasterVertex v1, RasterVertex v2, bool textured);
+  void QueueTriangle(RasterVertex v0, RasterVertex v1, RasterVertex v2);
+  /* Rasterize everything queued so far (parallel, in screen-space bands).
+   * Must be called before anything reads or invalidates the pixels/textures
+   * the queued triangles depend on. */
+  void Flush();
 
   SwSurface& Target() { return m_pTarget ? *m_pTarget : m_Back; }
 
@@ -273,10 +306,21 @@ class RageDisplay_Software : public RageDisplay {
   struct FrameStats {
     int trianglesSubmitted = 0;  // reached SubmitTriangle
     int trianglesClipped = 0;    // removed entirely by clipping
-    int trianglesRastered = 0;   // reached the rasterizer
+    int trianglesRastered = 0;   // queued for rasterization
     int trianglesCulled = 0;
-    int pixelsWritten = 0;
-  } m_Stats;
+    long long pixelsTested = 0;  // pixels inside a triangle (before z/alpha)
+    long long pixelsWritten = 0;
+    int flushes = 0;
+    double msFlush = 0, msPresent = 0, msClear = 0, msRender = 0, msLimiter = 0;
+  } m_Stats, m_Last;  // m_Last = the previous complete frame
+  double m_dFrameStartMs = 0;
+
+  // Deferred rasterization
+  std::vector<SwTri> m_Tris;
+  std::vector<SwState> m_States;
+  SwSurface* m_pPendingTarget = nullptr;
+  std::unique_ptr<SwThreadPool> m_pPool;
+  int m_iThreads = 0;
 
   DrawContext m_Ctx;
   std::vector<ClipVertex> m_Shaded;  // scratch

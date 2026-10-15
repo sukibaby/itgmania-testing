@@ -2,6 +2,14 @@
 
 #include <algorithm>
 #include <array>
+#include <atomic>
+#include <chrono>
+#include <condition_variable>
+#include <cstdio>
+#include <cstdlib>
+#include <functional>
+#include <mutex>
+#include <thread>
 #include <cmath>
 #include <cstring>
 #include <type_traits>
@@ -19,6 +27,10 @@
 /* ------------------------------------------------------------------------ */
 /* Small helpers                                                            */
 /* ------------------------------------------------------------------------ */
+namespace {
+double NowMs();
+}  // namespace
+
 namespace {
 
 static_assert(
@@ -327,7 +339,6 @@ RageDisplay_Software::RageDisplay_Software(
   std::memset(&m_Ctx, 0, sizeof(m_Ctx));
 }
 
-RageDisplay_Software::~RageDisplay_Software() {}
 
 std::string RageDisplay_Software::Init(
     const VideoModeParams& p, bool /* bAllowUnacceleratedRenderer */) {
@@ -343,6 +354,9 @@ std::string RageDisplay_Software::TryVideoMode(
     if (!err.empty()) return err;
   }
   m_Actual = ActualVideoModeParams(p, ww, wh, false);
+  m_Tris.clear();
+  m_States.clear();
+  m_pPendingTarget = nullptr;
   m_Back.Resize(ww, wh, true);
   bNewDeviceOut = !m_bDeviceCreated;  // textures live in system RAM and survive
   m_bDeviceCreated = true;
@@ -358,6 +372,9 @@ void RageDisplay_Software::ResolutionChanged() {
   int height = 0;
   if (m_pPresenter && m_pPresenter->GetActualSize(width, height) &&
       (width != m_Back.w || height != m_Back.h)) {
+    m_Tris.clear();
+    m_States.clear();
+    m_pPendingTarget = nullptr;
     m_Back.Resize(width, height, true);
     m_Actual.width = width;
     m_Actual.height = height;
@@ -404,38 +421,57 @@ bool RageDisplay_Software::SupportsTextureFormat(
 /* ------------------------------------------------------------------------ */
 /* Frame                                                                    */
 /* ------------------------------------------------------------------------ */
+std::string RageDisplay_Software::GetStats() const {
+  const FrameStats& f = m_Last;
+  char buf[320];
+  snprintf(
+      buf, sizeof(buf),
+      "\nSW tris sub/clip/cull/queued: %d/%d/%d/%d  px tested/written: %lld/%lld"
+      "\nSW ms: render %.1f (raster %.1f in %d flush, clear %.1f)  present %.1f  wait %.1f  threads %d",
+      f.trianglesSubmitted, f.trianglesClipped, f.trianglesCulled,
+      f.trianglesRastered, f.pixelsTested, f.pixelsWritten, f.msRender, f.msFlush,
+      f.flushes, f.msClear, f.msPresent, f.msLimiter, m_iThreads);
+  return RageDisplay::GetStats() + buf;
+}
+
 void RageDisplay_Software::ResetStats() {
   m_Stats = FrameStats();
   RageDisplay::ResetStats();
 }
 
-std::string RageDisplay_Software::GetStats() const {
-  return RageDisplay::GetStats() + "\nSW tris submitted/clipped/culled/rastered: " +
-         std::to_string(m_Stats.trianglesSubmitted) + "/" +
-         std::to_string(m_Stats.trianglesClipped) + "/" +
-         std::to_string(m_Stats.trianglesCulled) + "/" +
-         std::to_string(m_Stats.trianglesRastered) +
-         "  px: " + std::to_string(m_Stats.pixelsWritten);
-}
-
 bool RageDisplay_Software::BeginFrame() {
+  Flush();
   m_Stats = FrameStats();
+  m_dFrameStartMs = NowMs();
   m_pTarget = nullptr;
   m_hTarget = 0;
+  const double t0 = NowMs();
   std::fill(m_Back.color.begin(), m_Back.color.end(), 0xFF000000u);
   std::fill(m_Back.depth.begin(), m_Back.depth.end(), 1.0f);
   m_Back.initialized = true;
+  m_Stats.msClear = NowMs() - t0;
   return RageDisplay::BeginFrame();
 }
 
 void RageDisplay_Software::EndFrame() {
+  m_pTarget = nullptr;
+  m_hTarget = 0;
+  Flush();
+  const double tRendered = NowMs();
+  m_Stats.msRender = tRendered - m_dFrameStartMs;
+
   FrameLimitBeforeVsync();
+  const double tPresent = NowMs();
   if (m_pPresenter) {
     m_pPresenter->Update();
     m_pPresenter->Present(
         m_Back.color.data(), m_Back.w, m_Back.h, m_Back.w * (int)sizeof(uint32_t));
   }
+  m_Stats.msPresent = NowMs() - tPresent;
+  const double tLimiter = NowMs();
   FrameLimitAfterVsync();
+  m_Stats.msLimiter = NowMs() - tLimiter + (tPresent - tRendered);
+  m_Last = m_Stats;
   RageDisplay::EndFrame();
 }
 
@@ -508,6 +544,7 @@ void RageDisplay_Software::SetZBias(float f) {
 }
 
 void RageDisplay_Software::ClearZBuffer() {
+  Flush();
   SwSurface& t = Target();
   std::fill(t.depth.begin(), t.depth.end(), 1.0f);
 }
@@ -609,6 +646,7 @@ uintptr_t RageDisplay_Software::CreateTexture(
 void RageDisplay_Software::UpdateTexture(
     uintptr_t iTexHandle, RageSurface* img, int xoffset, int yoffset, int width,
     int height) {
+  Flush();  // queued triangles may still sample the old texels
   auto it = m_Textures.find(iTexHandle);
   if (it == m_Textures.end() || !img) return;
   SwTexture& t = *it->second;
@@ -623,6 +661,7 @@ void RageDisplay_Software::UpdateTexture(
 }
 
 void RageDisplay_Software::DeleteTexture(uintptr_t iTexHandle) {
+  Flush();
   auto it = m_Textures.find(iTexHandle);
   if (it == m_Textures.end()) return;
   SwTexture* p = it->second.get();
@@ -660,6 +699,7 @@ void RageDisplay_Software::SetTextureFiltering(TextureUnit tu, bool b) {
 }
 
 RageSurface* RageDisplay_Software::GetTexture(uintptr_t iTexture) {
+  Flush();
   auto it = m_Textures.find(iTexture);
   if (it == m_Textures.end()) return nullptr;
   const SwTexture& t = *it->second;
@@ -704,6 +744,7 @@ uintptr_t RageDisplay_Software::CreateRenderTarget(
 
 void RageDisplay_Software::SetRenderTarget(
     uintptr_t iHandle, bool bPreserveTexture) {
+  Flush();  // finish the previous target before switching
   if (iHandle == 0) {
     m_pTarget = nullptr;
     m_hTarget = 0;
@@ -721,6 +762,7 @@ void RageDisplay_Software::SetRenderTarget(
 }
 
 RageSurface* RageDisplay_Software::CreateScreenshot() {
+  Flush();
   const SwSurface& s = m_Back;
   /* 32bpp, no alpha: R in the top byte. */
   RageSurface* out = CreateSurface(s.w, s.h, 32, 0xFF000000u, 0x00FF0000u, 0x0000FF00u, 0u);
@@ -934,58 +976,27 @@ void RageDisplay_Software::ShadeSpriteVertices(const RageSpriteVertex* v, int n)
   }
 }
 
+/* ------------------------------------------------------------------------ */
+/* Triangle submission: clip -> screen space -> queue                        */
+/* ------------------------------------------------------------------------ */
+namespace {
+
+inline unsigned OutCode(const float c[4]) {
+  unsigned code = 0;
+  for (int plane = 0; plane < 6; ++plane) {
+    if (ClipDistance(c, plane) < 0.0f) code |= 1u << plane;
+  }
+  return code;
+}
+
+}  // namespace
+
 void RageDisplay_Software::SubmitTriangle(
     const ClipVertex& a, const ClipVertex& b, const ClipVertex& c) {
   ++m_Stats.trianglesSubmitted;
-  std::array<ClipVertex, 16> polygon{};
-  std::array<ClipVertex, 16> clipped{};
-  polygon[0] = a;
-  polygon[1] = b;
-  polygon[2] = c;
-  size_t polygonSize = 3;
-  for (int plane = 0; plane < 6 && polygonSize > 0; ++plane) {
-    size_t clippedSize = 0;
-    ClipVertex previous = polygon[polygonSize - 1];
-    float previousDistance = ClipDistance(previous.c, plane);
-    for (size_t i = 0; i < polygonSize; ++i) {
-      const ClipVertex& current = polygon[i];
-      const float currentDistance = ClipDistance(current.c, plane);
-      const bool previousInside = previousDistance >= 0.0f;
-      const bool currentInside = currentDistance >= 0.0f;
-      if (previousInside != currentInside) {
-        const float t = previousDistance / (previousDistance - currentDistance);
-        ClipVertex intersection{};
-        for (int component = 0; component < 4; ++component) {
-          intersection.c[component] = previous.c[component] +
-                                      (current.c[component] -
-                                       previous.c[component]) *
-                                          t;
-        }
-        for (int component = 0; component < kAttr; ++component) {
-          intersection.a[component] = previous.a[component] +
-                                      (current.a[component] -
-                                       previous.a[component]) *
-                                          t;
-        }
-        if (clippedSize == clipped.size()) {
-          return;
-        }
-        clipped[clippedSize++] = intersection;
-      }
-      if (currentInside) {
-        if (clippedSize == clipped.size()) {
-          return;
-        }
-        clipped[clippedSize++] = current;
-      }
-      previous = current;
-      previousDistance = currentDistance;
-    }
-    polygon.swap(clipped);
-    polygonSize = clippedSize;
-  }
 
-  if (polygonSize < 3) {
+  const unsigned codeA = OutCode(a.c), codeB = OutCode(b.c), codeC = OutCode(c.c);
+  if (codeA & codeB & codeC) {  // entirely outside one plane
     ++m_Stats.trianglesClipped;
     return;
   }
@@ -1008,25 +1019,102 @@ void RageDisplay_Software::SubmitTriangle(
     return true;
   };
 
-  RasterVertex first{};
-  if (!toRasterVertex(polygon[0], first)) {
+  if ((codeA | codeB | codeC) == 0) {  // fully inside: no clipping needed
+    RasterVertex r0, r1, r2;
+    if (toRasterVertex(a, r0) && toRasterVertex(b, r1) && toRasterVertex(c, r2)) {
+      QueueTriangle(r0, r1, r2);
+    }
     return;
   }
+
+  std::array<ClipVertex, 16> polygon;
+  std::array<ClipVertex, 16> clipped;
+  polygon[0] = a;
+  polygon[1] = b;
+  polygon[2] = c;
+  size_t polygonSize = 3;
+  for (int plane = 0; plane < 6 && polygonSize > 0; ++plane) {
+    size_t clippedSize = 0;
+    ClipVertex previous = polygon[polygonSize - 1];
+    float previousDistance = ClipDistance(previous.c, plane);
+    for (size_t i = 0; i < polygonSize; ++i) {
+      const ClipVertex& current = polygon[i];
+      const float currentDistance = ClipDistance(current.c, plane);
+      const bool previousInside = previousDistance >= 0.0f;
+      const bool currentInside = currentDistance >= 0.0f;
+      if (previousInside != currentInside) {
+        const float t = previousDistance / (previousDistance - currentDistance);
+        ClipVertex intersection;
+        for (int component = 0; component < 4; ++component) {
+          intersection.c[component] =
+              previous.c[component] +
+              (current.c[component] - previous.c[component]) * t;
+        }
+        for (int component = 0; component < kAttr; ++component) {
+          intersection.a[component] =
+              previous.a[component] +
+              (current.a[component] - previous.a[component]) * t;
+        }
+        if (clippedSize == clipped.size()) return;
+        clipped[clippedSize++] = intersection;
+      }
+      if (currentInside) {
+        if (clippedSize == clipped.size()) return;
+        clipped[clippedSize++] = current;
+      }
+      previous = current;
+      previousDistance = currentDistance;
+    }
+    for (size_t i = 0; i < clippedSize; ++i) polygon[i] = clipped[i];
+    polygonSize = clippedSize;
+  }
+
+  if (polygonSize < 3) {
+    ++m_Stats.trianglesClipped;
+    return;
+  }
+
+  RasterVertex first;
+  if (!toRasterVertex(polygon[0], first)) return;
   for (size_t i = 1; i + 1 < polygonSize; ++i) {
-    RasterVertex second{}, third{};
+    RasterVertex second, third;
     if (toRasterVertex(polygon[i], second) &&
         toRasterVertex(polygon[i + 1], third)) {
-      RasterTriangle(
-          first, second, third,
-          m_pUnitTex[0] != nullptr || m_pUnitTex[1] != nullptr);
+      QueueTriangle(first, second, third);
     }
   }
 }
 
-void RageDisplay_Software::RasterTriangle(
-    RasterVertex v0, RasterVertex v1, RasterVertex v2, bool textured) {
-  const auto edge = [](const RasterVertex& a, const RasterVertex& b, float x,
-                       float y) {
+namespace {
+
+bool SameState(const SwState& a, const SwState& b) {
+  if (a.blend.src != b.blend.src || a.blend.dst != b.blend.dst ||
+      a.blend.eq != b.blend.eq || a.blend.separateAlpha != b.blend.separateAlpha ||
+      a.zwrite != b.zwrite || a.ztest != b.ztest || a.alphaTest != b.alphaTest) {
+    return false;
+  }
+  for (int u = 0; u < 2; ++u) {
+    if (a.tex[u] != b.tex[u] || a.mode[u] != b.mode[u] || a.wrap[u] != b.wrap[u] ||
+        a.filter[u] != b.filter[u]) {
+      return false;
+    }
+  }
+  return true;
+}
+
+uint32_t PackColor8(float r, float g, float b, float a) {
+  auto q = [](float x) {
+    int v = (int)(x * 255.0f + 0.5f);
+    return (uint32_t)(v < 0 ? 0 : (v > 255 ? 255 : v));
+  };
+  return q(r) | (q(g) << 8) | (q(b) << 16) | (q(a) << 24);
+}
+
+}  // namespace
+
+void RageDisplay_Software::QueueTriangle(
+    RasterVertex v0, RasterVertex v1, RasterVertex v2) {
+  const auto edge = [](const RasterVertex& a, const RasterVertex& b, float x, float y) {
     return (b.x - a.x) * (y - a.y) - (b.y - a.y) * (x - a.x);
   };
   const float area = edge(v0, v1, v2.x, v2.y);
@@ -1040,7 +1128,6 @@ void RageDisplay_Software::RasterTriangle(
     ++m_Stats.trianglesCulled;
     return;
   }
-  ++m_Stats.trianglesRastered;
   if (m_PolyMode == POLYGON_LINE) {
     DrawScreenLine(v0, v1, m_fLineWidth);
     DrawScreenLine(v1, v2, m_fLineWidth);
@@ -1049,175 +1136,545 @@ void RageDisplay_Software::RasterTriangle(
   }
 
   SwSurface& target = Target();
-  const bool depthTest = !target.depth.empty() && m_ZTest != ZTEST_OFF;
-  const bool depthWrite =
-      !target.depth.empty() && m_bZWrite && m_ZTest != ZTEST_OFF;
-  const int minX = std::max(
-      0, FloorToInt(std::min({v0.x, v1.x, v2.x})));
-  const int minY = std::max(
-      0, FloorToInt(std::min({v0.y, v1.y, v2.y})));
-  const int maxX = std::min(
-      target.w - 1, FloorToInt(std::max({v0.x, v1.x, v2.x})));
-  const int maxY = std::min(
-      target.h - 1, FloorToInt(std::max({v0.y, v1.y, v2.y})));
+  const int minX = std::max(0, FloorToInt(std::min({v0.x, v1.x, v2.x})));
+  const int minY = std::max(0, FloorToInt(std::min({v0.y, v1.y, v2.y})));
+  const int maxX = std::min(target.w - 1, FloorToInt(std::max({v0.x, v1.x, v2.x})));
+  const int maxY = std::min(target.h - 1, FloorToInt(std::max({v0.y, v1.y, v2.y})));
   if (minX > maxX || minY > maxY) {
     return;
   }
+  ++m_Stats.trianglesRastered;
 
-  const bool standardAlphaBlend =
-      m_Blend.eq == SwBlendEq::Add &&
-      m_Blend.src == SwBlendFactor::SrcAlpha &&
-      m_Blend.dst == SwBlendFactor::OneMinusSrcAlpha &&
-      m_Blend.separateAlpha;
-  auto blendPixel = [this, standardAlphaBlend](float source[4],
-                                               uint32_t destination) {
-    if (standardAlphaBlend) {
-      if (source[3] >= 1.0f) {
-        return Pack(source);
-      }
-      if (source[3] <= 0.0f) {
-        return destination;
-      }
-      float dest[4];
-      Unpack(destination, dest);
-      const float inverseAlpha = 1.0f - source[3];
-      float result[4];
-      for (int channel = 0; channel < 3; ++channel) {
-        result[channel] =
-            source[channel] * source[3] + dest[channel] * inverseAlpha;
-      }
-      result[3] = source[3] + dest[3] * inverseAlpha;
-      return Pack(result);
+  // Pending triangles all belong to one target.
+  if (!m_Tris.empty() && m_pPendingTarget != &target) Flush();
+  m_pPendingTarget = &target;
+
+  // Capture the live state (merge with the previous batch if identical).
+  SwState st;
+  st.blend = m_Blend;
+  st.zwrite = m_bZWrite;
+  st.ztest = m_ZTest;
+  st.alphaTest = m_bAlphaTest;
+  for (int u = 0; u < kNumUnits; ++u) {
+    st.tex[u] = m_pUnitTex[u];
+    st.mode[u] = m_UnitMode[u];
+    if (m_pUnitTex[u]) {
+      st.wrap[u] = m_pUnitTex[u]->wrap;
+      st.filter[u] = m_pUnitTex[u]->filter;
     }
-
-    float dest[4];
-    Unpack(destination, dest);
-    float result[4];
-    for (int channel = 0; channel < 4; ++channel) {
-      float sourceFactor = BlendFactor(
-          m_Blend.src, source, dest, channel);
-      float destinationFactor = BlendFactor(
-          m_Blend.dst, source, dest, channel);
-      if (channel == 3 && m_Blend.separateAlpha) {
-        sourceFactor = 1.0f;
-        destinationFactor = 1.0f - source[3];
-      }
-      result[channel] = Clamp01(Combine(
-          m_Blend.eq, source[channel], sourceFactor, dest[channel],
-          destinationFactor));
+  }
+  using F = SwBlendFactor;
+  if (m_Blend.eq == SwBlendEq::Add) {
+    if (m_Blend.src == F::SrcAlpha && m_Blend.dst == F::OneMinusSrcAlpha &&
+        m_Blend.separateAlpha) {
+      st.blendKind = 1;
+    } else if (m_Blend.src == F::SrcAlpha && m_Blend.dst == F::One &&
+               !m_Blend.separateAlpha) {
+      st.blendKind = 2;
+    } else if (m_Blend.src == F::One && m_Blend.dst == F::Zero &&
+               !m_Blend.separateAlpha) {
+      st.blendKind = 3;
     }
-    return Pack(result);
-  };
+  }
+  if (m_States.empty() || !SameState(m_States.back(), st)) m_States.push_back(st);
 
-  /* Evaluate the three edge functions directly (not incrementally) so pixel
-   * centers that lie exactly on an edge give exactly 0, then apply the
-   * top-left rule so shared edges (e.g. a quad's diagonal) are drawn once.
-   * Without it, translucent sprites get a double-blended seam. */
-  const float inverseArea = 1.0f / area;
-  const float orient = area > 0.0f ? 1.0f : -1.0f;
-  const auto topLeft = [orient](const RasterVertex& a, const RasterVertex& b) {
-    const float dx = (b.x - a.x) * orient;
-    const float dy = (b.y - a.y) * orient;
+  SwTri t;
+  t.x[0] = v0.x; t.x[1] = v1.x; t.x[2] = v2.x;
+  t.y[0] = v0.y; t.y[1] = v1.y; t.y[2] = v2.y;
+  t.invArea = 1.0f / area;
+  t.orient = area > 0.0f ? 1.0f : -1.0f;
+  const RasterVertex* v[3] = {&v0, &v1, &v2};
+  const auto topLeft = [&](int a, int b) {
+    const float dx = (v[b]->x - v[a]->x) * t.orient;
+    const float dy = (v[b]->y - v[a]->y) * t.orient;
     return dy < 0.0f || (dy == 0.0f && dx > 0.0f);
   };
-  const bool tl0 = topLeft(v1, v2);
-  const bool tl1 = topLeft(v2, v0);
-  const bool tl2 = topLeft(v0, v1);
-  for (int y = minY; y <= maxY; ++y) {
-    for (int x = minX; x <= maxX; ++x) {
-      const float px = x + 0.5f, py = y + 0.5f;
-      const float e0 = edge(v1, v2, px, py) * orient;
-      const float e1 = edge(v2, v0, px, py) * orient;
-      const float e2 = edge(v0, v1, px, py) * orient;
-      if (e0 < 0.0f || e1 < 0.0f || e2 < 0.0f) {
-        continue;
-      }
-      if ((e0 == 0.0f && !tl0) || (e1 == 0.0f && !tl1) ||
-          (e2 == 0.0f && !tl2)) {
-        continue;
-      }
-      const float weight0 = e0 * orient * inverseArea;
-      const float weight1 = e1 * orient * inverseArea;
-      const float weight2 = e2 * orient * inverseArea;
+  t.tl[0] = topLeft(1, 2);
+  t.tl[1] = topLeft(2, 0);
+  t.tl[2] = topLeft(0, 1);
+  t.xmin = minX; t.xmax = maxX; t.ymin = minY; t.ymax = maxY;
+  t.state = (uint32_t)(m_States.size() - 1);
 
-      const float depth =
-          weight0 * v0.z + weight1 * v1.z + weight2 * v2.z;
-      const size_t pixelIndex = static_cast<size_t>(y) * target.w + x;
-      if (depthTest) {
-        const float oldDepth = target.depth[pixelIndex];
-        const bool depthPass = m_ZTest == ZTEST_WRITE_ON_PASS
-                                   ? depth <= oldDepth
-                                   : depth > oldDepth;
-        if (!depthPass) {
-          continue;
+  // Perspective-correct only when 1/w actually varies (it doesn't in 2D).
+  const float wMin = std::min({v0.invw, v1.invw, v2.invw});
+  const float wMax = std::max({v0.invw, v1.invw, v2.invw});
+  t.affine = (wMax - wMin) <= 1e-6f * std::max(std::abs(wMax), 1e-12f);
+
+  for (int i = 0; i < 3; ++i) {
+    const float m = t.affine ? 1.0f : v[i]->invw;
+    for (int k = 0; k < kAttr; ++k) t.f[k][i] = v[i]->a[k] * m;
+    t.f[8][i] = v[i]->z;
+    t.f[9][i] = v[i]->invw;
+  }
+  // Barycentric gradients: w0<-edge(v1,v2), w1<-edge(v2,v0), w2<-edge(v0,v1).
+  const float dwdx[3] = {-(v2.y - v1.y) * t.invArea, -(v0.y - v2.y) * t.invArea,
+                         -(v1.y - v0.y) * t.invArea};
+  for (int k = 0; k < SwTri::kPlanes; ++k) {
+    t.gx[k] = t.f[k][0] * dwdx[0] + t.f[k][1] * dwdx[1] + t.f[k][2] * dwdx[2];
+  }
+
+  t.constColor = true;
+  for (int k = 0; k < 4; ++k) {
+    if (v0.a[k] != v1.a[k] || v0.a[k] != v2.a[k]) t.constColor = false;
+  }
+  t.constColor8 = PackColor8(v0.a[0], v0.a[1], v0.a[2], v0.a[3]);
+
+  m_Tris.push_back(t);
+}
+
+/* ------------------------------------------------------------------------ */
+/* Band rasterizer + thread pool                                            */
+/* ------------------------------------------------------------------------ */
+namespace {
+
+struct LocalStats {
+  long long tested = 0, written = 0;
+};
+
+inline uint32_t Mul8(uint32_t x, uint32_t y) {
+  const uint32_t t = x * y + 128u;
+  return (t + (t >> 8)) >> 8;
+}
+
+/* Per-channel lerp of two packed RGBA8 values, t in [0,255]. */
+inline uint32_t Lerp8(uint32_t a, uint32_t b, uint32_t t) {
+  const uint32_t it = 256u - t;
+  const uint32_t rb = (((a & 0x00FF00FFu) * it + (b & 0x00FF00FFu) * t) >> 8) & 0x00FF00FFu;
+  const uint32_t ga = (((a >> 8) & 0x00FF00FFu) * it + ((b >> 8) & 0x00FF00FFu) * t) & 0xFF00FF00u;
+  return rb | ga;
+}
+
+/* dst*(255-sa) + src*sa for all four channels at once; src alpha must be
+ * forced to 255 so the alpha channel becomes sa + da*(1-sa). */
+inline uint32_t BlendNormal(uint32_t src, uint32_t dst, uint32_t sa) {
+  const uint32_t isa = 255u - sa;
+  src |= 0xFF000000u;
+  uint32_t rb = (src & 0x00FF00FFu) * sa + (dst & 0x00FF00FFu) * isa + 0x00800080u;
+  uint32_t ga = ((src >> 8) & 0x00FF00FFu) * sa + ((dst >> 8) & 0x00FF00FFu) * isa + 0x00800080u;
+  rb = ((rb + ((rb >> 8) & 0x00FF00FFu)) >> 8) & 0x00FF00FFu;
+  ga = ((ga + ((ga >> 8) & 0x00FF00FFu)) >> 8) & 0x00FF00FFu;
+  return rb | (ga << 8);
+}
+
+inline int FastFloor(float f) {
+  if (!(f > -1e9f)) f = -1e9f;
+  if (f > 1e9f) f = 1e9f;
+  const int i = (int)f;
+  return i - (f < (float)i);
+}
+
+inline int WrapCoord(int x, int n, bool wrap) {
+  if ((unsigned)x < (unsigned)n) return x;
+  if (wrap) {
+    x %= n;
+    return x < 0 ? x + n : x;
+  }
+  return x < 0 ? 0 : n - 1;
+}
+
+uint32_t SampleTexel(
+    const SwTexture& t, bool wrap, bool filter, float u, float v) {
+  const int W = t.w, H = t.h;
+  const uint32_t* px = t.color.data();
+  if (!filter) {
+    const int x = WrapCoord(FastFloor(u * (float)W), W, wrap);
+    const int y = WrapCoord(FastFloor(v * (float)H), H, wrap);
+    return px[(size_t)y * W + x];
+  }
+  const float fu = u * (float)W - 0.5f, fv = v * (float)H - 0.5f;
+  const int x0 = FastFloor(fu), y0 = FastFloor(fv);
+  const uint32_t tx = std::min(255u, (uint32_t)((fu - (float)x0) * 256.0f));
+  const uint32_t ty = std::min(255u, (uint32_t)((fv - (float)y0) * 256.0f));
+  const int xa = WrapCoord(x0, W, wrap), xb = WrapCoord(x0 + 1, W, wrap);
+  const int ya = WrapCoord(y0, H, wrap), yb = WrapCoord(y0 + 1, H, wrap);
+  const uint32_t* r0 = px + (size_t)ya * W;
+  const uint32_t top = tx ? Lerp8(r0[xa], r0[xb], tx) : r0[xa];
+  if (!ty) return top;
+  const uint32_t* r1 = px + (size_t)yb * W;
+  const uint32_t bot = tx ? Lerp8(r1[xa], r1[xb], tx) : r1[xa];
+  return Lerp8(top, bot, ty);
+}
+
+inline uint32_t ApplyTextureMode(TextureMode mode, uint32_t c, uint32_t t) {
+  switch (mode) {
+    case TextureMode_Modulate:
+      if (c == 0xFFFFFFFFu) return t;
+      if ((c & 0x00FFFFFFu) == 0x00FFFFFFu) {  // white tint, only alpha varies
+        return (t & 0x00FFFFFFu) | (Mul8(t >> 24, c >> 24) << 24);
+      }
+      return Mul8(c & 255u, t & 255u) | (Mul8((c >> 8) & 255u, (t >> 8) & 255u) << 8) |
+             (Mul8((c >> 16) & 255u, (t >> 16) & 255u) << 16) |
+             (Mul8(c >> 24, t >> 24) << 24);
+    case TextureMode_Glow:  // rgb from vertex color, alpha from texture
+      return (c & 0x00FFFFFFu) | (Mul8(c >> 24, t >> 24) << 24);
+    case TextureMode_Add: {  // rgb = vertex + texture (saturating), alpha modulated
+      uint32_t out = 0;
+      for (int s = 0; s < 24; s += 8) {
+        out |= std::min(255u, ((c >> s) & 255u) + ((t >> s) & 255u)) << s;
+      }
+      return out | (Mul8(c >> 24, t >> 24) << 24);
+    }
+    default:
+      return c;
+  }
+}
+
+/* Blend colour c over dst according to the captured state. Returns false if
+ * the pixel was skipped (nothing written). */
+inline bool BlendPixel(const SwState& s, uint32_t& dst, uint32_t c) {
+  const uint32_t sa = c >> 24;
+  if (s.alphaTest && sa == 0) return false;
+  switch (s.blendKind) {
+    case 1:  // normal alpha
+      if (sa == 255) {
+        dst = c;
+      } else if (sa == 0) {
+        return false;
+      } else {
+        dst = BlendNormal(c, dst, sa);
+      }
+      return true;
+    case 2: {  // additive: dst + src*alpha
+      if (sa == 0) return false;
+      uint32_t out = 0;
+      for (int sh = 0; sh < 32; sh += 8) {
+        out |= std::min(255u, ((dst >> sh) & 255u) + Mul8((c >> sh) & 255u, sa)) << sh;
+      }
+      dst = out;
+      return true;
+    }
+    case 3:  // copy
+      dst = c;
+      return true;
+    default: {  // generic (rare modes)
+      float src[4], d[4], res[4];
+      Unpack(c, src);
+      Unpack(dst, d);
+      for (int ch = 0; ch < 4; ++ch) {
+        float sf = BlendFactor(s.blend.src, src, d, ch);
+        float df = BlendFactor(s.blend.dst, src, d, ch);
+        if (ch == 3 && s.blend.separateAlpha) {
+          sf = 1.0f;
+          df = 1.0f - src[3];
         }
+        res[ch] = Clamp01(Combine(s.blend.eq, src[ch], sf, d[ch], df));
       }
-
-      const float reciprocalW = weight0 * v0.invw + weight1 * v1.invw +
-                                weight2 * v2.invw;
-      if (reciprocalW <= 1e-12f) {
-        continue;
-      }
-      const float inverseReciprocalW = 1.0f / reciprocalW;
-      const float p0 = weight0 * v0.invw * inverseReciprocalW;
-      const float p1 = weight1 * v1.invw * inverseReciprocalW;
-      const float p2 = weight2 * v2.invw * inverseReciprocalW;
-      float color[4];
-      for (int channel = 0; channel < 4; ++channel) {
-        color[channel] = p0 * v0.a[channel] + p1 * v1.a[channel] +
-                         p2 * v2.a[channel];
-      }
-
-      if (textured) {
-        for (int unit = 0; unit < kNumUnits; ++unit) {
-          const SwTexture* texture = m_pUnitTex[unit];
-          if (texture == nullptr) {
-            continue;
-          }
-          float sample[4];
-          const int uvOffset = 4 + unit * 2;
-          const float u = p0 * v0.a[uvOffset] + p1 * v1.a[uvOffset] +
-                          p2 * v2.a[uvOffset];
-          const float v = p0 * v0.a[uvOffset + 1] +
-                          p1 * v1.a[uvOffset + 1] +
-                          p2 * v2.a[uvOffset + 1];
-          SampleTexture(*texture, u, v, sample);
-          switch (m_UnitMode[unit]) {
-            case TextureMode_Modulate:
-              for (int channel = 0; channel < 4; ++channel) {
-                color[channel] *= sample[channel];
-              }
-              break;
-            case TextureMode_Glow:
-              color[0] = color[1] = color[2] = 1.0f;
-              color[3] *= sample[3];
-              break;
-            case TextureMode_Add:
-              for (int channel = 0; channel < 4; ++channel) {
-                color[channel] += sample[channel];
-              }
-              break;
-            default:
-              break;
-          }
-        }
-      }
-
-      if (m_bAlphaTest && color[3] <= 1.0f / 256.0f) {
-        continue;
-      }
-
-      target.color[pixelIndex] = blendPixel(color, target.color[pixelIndex]);
-      ++m_Stats.pixelsWritten;
-      if (depthWrite) {
-        target.depth[pixelIndex] = depth;
-      }
+      dst = Pack(res);
+      return true;
     }
   }
 }
 
+/* Fast path: affine triangle, exactly one texture. Texture coordinates step in
+ * 16.16 fixed point so the inner loop has no floor/clamp/float conversion. */
+bool AffineTexturedSpan(
+    const SwTri& t, const SwState& s, SwSurface& target, int y, int xlo, int xhi,
+    const float* cur, LocalStats& ls, bool depthTest, bool depthWrite,
+    bool writeOnPass) {
+  const SwTexture& tex = *s.tex[0];
+  const int W = tex.w, H = tex.h;
+  const bool filter = s.filter[0], wrap = s.wrap[0];
+  const float off = filter ? 0.5f : 0.0f;
+  const float n = (float)(xhi - xlo);
+  const float uTex0 = cur[4] * W - off, uTex1 = (cur[4] + t.gx[4] * n) * W - off;
+  const float vTex0 = cur[5] * H - off, vTex1 = (cur[5] + t.gx[5] * n) * H - off;
+  const float kLimit = 16000.0f;  // keep 16.16 inside int32
+  if (std::abs(uTex0) > kLimit || std::abs(uTex1) > kLimit ||
+      std::abs(vTex0) > kLimit || std::abs(vTex1) > kLimit) {
+    return false;  // caller falls back to the generic loop
+  }
+  int U = (int)(uTex0 * 65536.0f), V = (int)(vTex0 * 65536.0f);
+  const int dU = (int)(t.gx[4] * W * 65536.0f), dV = (int)(t.gx[5] * H * 65536.0f);
+  float z = cur[8];
+  const float dz = t.gx[8];
+  float col[4] = {cur[0], cur[1], cur[2], cur[3]};
+  const int width = target.w;
+  uint32_t* colorRow = target.color.data() + (size_t)y * width;
+  float* depthRow = depthTest ? target.depth.data() + (size_t)y * width : nullptr;
+  const uint32_t* texels = tex.color.data();
+  const TextureMode mode = s.mode[0];
+
+  for (int x = xlo; x <= xhi; ++x, U += dU, V += dV, z += dz) {
+    if (!t.constColor) {
+      for (int k = 0; k < 4; ++k) col[k] += t.gx[k];
+    }
+    ++ls.tested;
+    if (depthTest) {
+      const float old = depthRow[x];
+      if (writeOnPass ? !(z <= old) : !(z > old)) continue;
+    }
+
+    uint32_t texel;
+    if (!filter) {
+      int xi = U >> 16, yi = V >> 16;
+      if ((unsigned)xi >= (unsigned)W) xi = WrapCoord(xi, W, wrap);
+      if ((unsigned)yi >= (unsigned)H) yi = WrapCoord(yi, H, wrap);
+      texel = texels[(size_t)yi * W + xi];
+    } else {
+      const int x0 = U >> 16, y0 = V >> 16;
+      const uint32_t tx = (U >> 8) & 255, ty = (V >> 8) & 255;
+      int xa = x0, xb = x0 + 1, ya = y0, yb = y0 + 1;
+      if ((unsigned)x0 >= (unsigned)(W - 1)) {
+        xa = WrapCoord(x0, W, wrap);
+        xb = WrapCoord(x0 + 1, W, wrap);
+      }
+      if ((unsigned)y0 >= (unsigned)(H - 1)) {
+        ya = WrapCoord(y0, H, wrap);
+        yb = WrapCoord(y0 + 1, H, wrap);
+      }
+      const uint32_t* r0 = texels + (size_t)ya * W;
+      const uint32_t top = tx ? Lerp8(r0[xa], r0[xb], tx) : r0[xa];
+      if (!ty) {
+        texel = top;
+      } else {
+        const uint32_t* r1 = texels + (size_t)yb * W;
+        const uint32_t bot = tx ? Lerp8(r1[xa], r1[xb], tx) : r1[xa];
+        texel = Lerp8(top, bot, ty);
+      }
+    }
+
+    // Transparent texel under normal alpha: nothing to do, skip colour math.
+    if (s.blendKind == 1 && (texel >> 24) == 0 && mode == TextureMode_Modulate) continue;
+
+    const uint32_t c0 = t.constColor ? t.constColor8
+                                     : PackColor8(col[0], col[1], col[2], col[3]);
+    const uint32_t c = ApplyTextureMode(mode, c0, texel);
+    if (BlendPixel(s, colorRow[x], c)) {
+      ++ls.written;
+      if (depthWrite) depthRow[x] = z;
+    }
+  }
+  return true;
+}
+
+void RasterTriBand(
+    const SwTri& t, const SwState& s, SwSurface& target, int y0, int y1,
+    LocalStats& ls) {
+  const int ys = std::max(t.ymin, y0), ye = std::min(t.ymax, y1 - 1);
+  const bool depthTest = !target.depth.empty() && s.ztest != ZTEST_OFF;
+  const bool depthWrite = depthTest && s.zwrite;
+  const bool writeOnPass = s.ztest == ZTEST_WRITE_ON_PASS;
+  const int W = target.w;
+
+  for (int y = ys; y <= ye; ++y) {
+    const float py = y + 0.5f;
+
+    // Exact edge test (same arithmetic for bounds and interior => no cracks).
+    const auto inside = [&](int x) {
+      const float px = x + 0.5f;
+      for (int i = 0; i < 3; ++i) {
+        const int a = (i + 1) % 3, b = (i + 2) % 3;
+        const float e = ((t.x[b] - t.x[a]) * (py - t.y[a]) -
+                         (t.y[b] - t.y[a]) * (px - t.x[a])) * t.orient;
+        if (e < 0.0f || (e == 0.0f && !t.tl[i])) return false;
+      }
+      return true;
+    };
+
+    // Analytic span bounds per edge, widened by a pixel, then trimmed exactly.
+    int xlo = t.xmin, xhi = t.xmax;
+    bool empty = false;
+    for (int i = 0; i < 3 && !empty; ++i) {
+      const int a = (i + 1) % 3, b = (i + 2) % 3;
+      const float dxe = t.x[b] - t.x[a], dye = t.y[b] - t.y[a];
+      const float c = -dye * t.orient;
+      const float d = (dxe * (py - t.y[a]) + dye * t.x[a]) * t.orient;
+      if (c > 1e-9f) {
+        const float xb = std::min(std::max(-d / c - 0.5f, -2.0f), (float)W + 2.0f);
+        xlo = std::max(xlo, FastFloor(xb) - 1);
+      } else if (c < -1e-9f) {
+        const float xb = std::min(std::max(-d / c - 0.5f, -2.0f), (float)W + 2.0f);
+        xhi = std::min(xhi, FastFloor(xb) + 1);
+      } else if (d < 0.0f || (d == 0.0f && !t.tl[i])) {
+        empty = true;
+      }
+    }
+    if (empty || xlo > xhi) continue;
+    while (xlo <= xhi && !inside(xlo)) ++xlo;
+    while (xhi >= xlo && !inside(xhi)) --xhi;
+    if (xlo > xhi) continue;
+
+    // Plane values at the span start.
+    float cur[SwTri::kPlanes];
+    {
+      const float px = xlo + 0.5f;
+      float w[3];
+      for (int i = 0; i < 3; ++i) {
+        const int a = (i + 1) % 3, b = (i + 2) % 3;
+        w[i] = ((t.x[b] - t.x[a]) * (py - t.y[a]) - (t.y[b] - t.y[a]) * (px - t.x[a])) *
+               t.invArea;
+      }
+      for (int k = 0; k < SwTri::kPlanes; ++k) {
+        cur[k] = w[0] * t.f[k][0] + w[1] * t.f[k][1] + w[2] * t.f[k][2];
+      }
+    }
+
+    uint32_t* colorRow = target.color.data() + (size_t)y * W;
+    float* depthRow = depthTest ? target.depth.data() + (size_t)y * W : nullptr;
+
+    if (t.affine && s.tex[0] && !s.tex[1] &&
+        AffineTexturedSpan(
+            t, s, target, y, xlo, xhi, cur, ls, depthTest, depthWrite,
+            writeOnPass)) {
+      continue;
+    }
+
+    for (int x = xlo; x <= xhi; ++x) {
+      ++ls.tested;
+      do {
+        const float z = cur[8];
+        if (depthTest) {
+          const float old = depthRow[x];
+          if (writeOnPass ? !(z <= old) : !(z > old)) break;
+        }
+
+        float q = 1.0f;
+        if (!t.affine) {
+          if (cur[9] <= 1e-12f) break;
+          q = 1.0f / cur[9];
+        }
+        uint32_t c = t.constColor
+                         ? t.constColor8
+                         : PackColor8(cur[0] * q, cur[1] * q, cur[2] * q, cur[3] * q);
+
+        for (int u = 0; u < 2; ++u) {
+          if (!s.tex[u]) continue;
+          const uint32_t texel = SampleTexel(
+              *s.tex[u], s.wrap[u], s.filter[u], cur[4 + 2 * u] * q, cur[5 + 2 * u] * q);
+          c = ApplyTextureMode(s.mode[u], c, texel);
+        }
+
+        if (BlendPixel(s, colorRow[x], c)) {
+          ++ls.written;
+          if (depthWrite) depthRow[x] = z;
+        }
+      } while (false);
+      for (int k = 0; k < SwTri::kPlanes; ++k) cur[k] += t.gx[k];
+    }
+  }
+}
+
+}  // namespace
+
+class SwThreadPool {
+ public:
+  explicit SwThreadPool(int threads) : m_n(std::max(1, threads)) {
+    for (int i = 1; i < m_n; ++i) {
+      m_workers.emplace_back([this] { Loop(); });
+    }
+  }
+  ~SwThreadPool() {
+    {
+      std::lock_guard<std::mutex> lock(m_mutex);
+      m_quit = true;
+    }
+    m_wake.notify_all();
+    for (auto& w : m_workers) w.join();
+  }
+  int Size() const { return m_n; }
+
+  /* Run fn on every thread (including the caller); returns when all finish. */
+  void Run(const std::function<void()>& fn) {
+    if (m_workers.empty()) {
+      fn();
+      return;
+    }
+    {
+      std::lock_guard<std::mutex> lock(m_mutex);
+      m_job = &fn;
+      ++m_generation;
+      m_pending = (int)m_workers.size();
+    }
+    m_wake.notify_all();
+    fn();
+    std::unique_lock<std::mutex> lock(m_mutex);
+    m_done.wait(lock, [this] { return m_pending == 0; });
+  }
+
+ private:
+  void Loop() {
+    uint64_t seen = 0;
+    for (;;) {
+      const std::function<void()>* job = nullptr;
+      {
+        std::unique_lock<std::mutex> lock(m_mutex);
+        m_wake.wait(lock, [&] { return m_quit || m_generation != seen; });
+        if (m_quit) return;
+        seen = m_generation;
+        job = m_job;
+      }
+      (*job)();
+      {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        if (--m_pending == 0) m_done.notify_one();
+      }
+    }
+  }
+
+  int m_n;
+  std::vector<std::thread> m_workers;
+  std::mutex m_mutex;
+  std::condition_variable m_wake, m_done;
+  const std::function<void()>* m_job = nullptr;
+  uint64_t m_generation = 0;
+  int m_pending = 0;
+  bool m_quit = false;
+};
+
+RageDisplay_Software::~RageDisplay_Software() {}
+
+namespace {
+double NowMs() {
+  using namespace std::chrono;
+  return duration<double, std::milli>(steady_clock::now().time_since_epoch()).count();
+}
+}  // namespace
+
+void RageDisplay_Software::Flush() {
+  if (m_Tris.empty()) return;
+  const double t0 = NowMs();
+  SwSurface& target = *m_pPendingTarget;
+
+  if (!m_pPool) {
+    int threads = (int)std::thread::hardware_concurrency();
+    threads = std::max(1, std::min(threads, 16));
+    if (const char* env = std::getenv("SW_RENDER_THREADS")) {
+      threads = std::max(1, std::min(atoi(env), 64));
+    }
+    m_pPool = std::make_unique<SwThreadPool>(threads);
+    m_iThreads = threads;
+  }
+
+  constexpr int kBandRows = 16;
+  const int bands = (target.h + kBandRows - 1) / kBandRows;
+  std::atomic<int> nextBand{0};
+  std::atomic<long long> tested{0}, written{0};
+  const std::function<void()> work = [&] {
+    LocalStats ls;
+    for (int b = nextBand.fetch_add(1); b < bands; b = nextBand.fetch_add(1)) {
+      const int y0 = b * kBandRows, y1 = std::min(target.h, y0 + kBandRows);
+      for (const SwTri& tri : m_Tris) {  // submission order => correct blending
+        if (tri.ymax < y0 || tri.ymin >= y1) continue;
+        RasterTriBand(tri, m_States[tri.state], target, y0, y1, ls);
+      }
+    }
+    tested += ls.tested;
+    written += ls.written;
+  };
+  m_pPool->Run(work);
+
+  m_Stats.pixelsTested += tested;
+  m_Stats.pixelsWritten += written;
+  ++m_Stats.flushes;
+  m_Tris.clear();
+  m_States.clear();
+  m_pPendingTarget = nullptr;
+  m_Stats.msFlush += NowMs() - t0;
+}
+
 void RageDisplay_Software::DrawScreenLine(
     const RasterVertex& a, const RasterVertex& b, float width) {
+  Flush();  // lines are drawn immediately; keep submission order
   const float dx = b.x - a.x;
   const float dy = b.y - a.y;
   const int steps = std::max(1, FloorToInt(std::ceil(std::max(
