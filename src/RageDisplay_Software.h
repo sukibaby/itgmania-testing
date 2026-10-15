@@ -83,6 +83,11 @@ struct SwTexture : SwSurface {
   bool filter = true;
 };
 
+/* Column-major 4x4, same memory layout as RageMatrix / OpenGL. */
+struct SwMat4 {
+  float m[16];
+};
+
 class RageCompiledGeometrySoftware;
 
 class RageDisplay_Software : public RageDisplay {
@@ -166,6 +171,8 @@ class RageDisplay_Software : public RageDisplay {
   RageSurface* CreateScreenshot() override;
   RageSurface* GetTexture(uintptr_t iTexture) override;
   std::string GetTextureDiagnostics(uintptr_t id) const override;
+  void ResetStats() override;
+  std::string GetStats() const override;
 
  protected:
   void DrawQuadsInternal(const RageSpriteVertex v[], int iNumVerts) override;
@@ -188,9 +195,7 @@ class RageDisplay_Software : public RageDisplay {
   static constexpr int kAttr = 8;  // r g b a  u0 v0  u1 v1
   static constexpr int kMaxLights = 8;
 
-  struct Mat4 {
-    float m[16];  // column-major, same layout as RageMatrix / OpenGL
-  };
+  using Mat4 = SwMat4;
   struct ClipVertex {
     float c[4];
     float a[kAttr];
@@ -263,6 +268,15 @@ class RageDisplay_Software : public RageDisplay {
   PolygonMode m_PolyMode = POLYGON_FILL;
   float m_fLineWidth = 1.0f;
   int m_iCelStage = -1;  // TODO: cel shading not implemented
+
+  // Diagnostics, reset every frame (shown via GetStats / the debug overlay).
+  struct FrameStats {
+    int trianglesSubmitted = 0;  // reached SubmitTriangle
+    int trianglesClipped = 0;    // removed entirely by clipping
+    int trianglesRastered = 0;   // reached the rasterizer
+    int trianglesCulled = 0;
+    int pixelsWritten = 0;
+  } m_Stats;
 
   DrawContext m_Ctx;
   std::vector<ClipVertex> m_Shaded;  // scratch
