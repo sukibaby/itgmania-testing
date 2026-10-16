@@ -29,6 +29,16 @@
 /* ------------------------------------------------------------------------ */
 namespace {
 double NowMs();
+
+/* Accumulates wall time spent in a scope, minus time spent flushing inside it. */
+struct ScopedDrawTimer {
+  double& total;
+  const double& flushed;
+  double t0, f0;
+  ScopedDrawTimer(double& acc, const double& flushAcc)
+      : total(acc), flushed(flushAcc), t0(NowMs()), f0(flushAcc) {}
+  ~ScopedDrawTimer() { total += (NowMs() - t0) - (flushed - f0); }
+};
 }  // namespace
 
 namespace {
@@ -39,15 +49,17 @@ static_assert(
 
 inline float Clamp01(float x) { return x < 0.f ? 0.f : (x > 1.f ? 1.f : x); }
 
+/* Pixel layout is 0xAARRGGBB (bytes B,G,R,A in memory) - exactly what GDI's
+ * BI_RGB 32-bit DIBs want, so Present() needs no per-pixel conversion. */
 inline uint32_t Pack(const float c[4]) {
   auto q = [](float x) { return (uint32_t)(Clamp01(x) * 255.0f + 0.5f); };
-  return q(c[0]) | (q(c[1]) << 8) | (q(c[2]) << 16) | (q(c[3]) << 24);
+  return q(c[2]) | (q(c[1]) << 8) | (q(c[0]) << 16) | (q(c[3]) << 24);
 }
 inline void Unpack(uint32_t p, float out[4]) {
   const float k = 1.0f / 255.0f;
-  out[0] = (float)(p & 0xFF) * k;
+  out[0] = (float)((p >> 16) & 0xFF) * k;
   out[1] = (float)((p >> 8) & 0xFF) * k;
-  out[2] = (float)((p >> 16) & 0xFF) * k;
+  out[2] = (float)(p & 0xFF) * k;
   out[3] = (float)((p >> 24) & 0xFF) * k;
 }
 
@@ -215,19 +227,19 @@ class SoftwarePresenterNative final : public SoftwarePresenter {
       return;
     }
 
-    m_dibPixels.resize(static_cast<size_t>(width) * height);
-    for (int y = 0; y < height; ++y) {
-      const auto* source = reinterpret_cast<const uint32_t*>(
-          reinterpret_cast<const uint8_t*>(pixels) +
-          static_cast<size_t>(y) * pitchBytes);
-      uint32_t* destination =
-          m_dibPixels.data() + static_cast<size_t>(y) * width;
-      for (int x = 0; x < width; ++x) {
-        const uint32_t pixel = source[x];
-        destination[x] = 0xFF000000u | (pixel & 0x0000FF00u) |
-                          ((pixel & 0x000000FFu) << 16) |
-                          ((pixel & 0x00FF0000u) >> 16);
+    /* The back buffer is already 0xAARRGGBB: hand it straight to GDI. Only
+     * repack if the source rows are padded. */
+    const uint32_t* blitPixels = pixels;
+    if (pitchBytes != width * static_cast<int>(sizeof(uint32_t))) {
+      m_dibPixels.resize(static_cast<size_t>(width) * height);
+      for (int y = 0; y < height; ++y) {
+        std::memcpy(
+            m_dibPixels.data() + static_cast<size_t>(y) * width,
+            reinterpret_cast<const uint8_t*>(pixels) +
+                static_cast<size_t>(y) * pitchBytes,
+            static_cast<size_t>(width) * sizeof(uint32_t));
       }
+      blitPixels = m_dibPixels.data();
     }
 
     BITMAPINFO bitmapInfo{};
@@ -240,7 +252,7 @@ class SoftwarePresenterNative final : public SoftwarePresenter {
     SetStretchBltMode(GraphicsWindow::GetHDC(), COLORONCOLOR);
     StretchDIBits(
         GraphicsWindow::GetHDC(), 0, 0, width, height, 0, 0, width, height,
-        m_dibPixels.data(), &bitmapInfo, DIB_RGB_COLORS, SRCCOPY);
+        blitPixels, &bitmapInfo, DIB_RGB_COLORS, SRCCOPY);
   }
   void Update() override { GraphicsWindow::Update(); }
 
@@ -423,20 +435,24 @@ bool RageDisplay_Software::SupportsTextureFormat(
 /* ------------------------------------------------------------------------ */
 std::string RageDisplay_Software::GetStats() const {
   const FrameStats& f = m_Last;
-  char buf[640];
+  const double other = f.msRender - f.msDraw - f.msFlush - f.msClear;
+  char buf[900];
   snprintf(
       buf, sizeof(buf),
       "\nSW tris sub/clip/cull/queued: %d/%d/%d/%d  px tested/written: %lld/%lld"
-      "\nSW ms: render %.1f (raster %.1f in %d flush, clear %.1f)  present %.1f  wait %.1f  threads %d"
+      "\nSW ms: render %.1f = draw %.1f + raster %.1f + clear %.1f + engine/other %.1f;  present %.1f  wait %.1f"
+      "\nSW flushes %d (end/begin/rt/updTex/delTex/clrZ/line/capture: %d/%d/%d/%d/%d/%d/%d/%d)  threads %d (max used %d)"
       "\nSW blend norm/add/sub/mod/copy/amask/ako/amul/wmul/inv/none: %d/%d/%d/%d/%d/%d/%d/%d/%d/%d/%d"
       "\nSW texmode mod/glow/add: %d/%d/%d  2tex %d  persp %d  lit %d",
       f.trianglesSubmitted, f.trianglesClipped, f.trianglesCulled,
-      f.trianglesRastered, f.pixelsTested, f.pixelsWritten, f.msRender, f.msFlush,
-      f.flushes, f.msClear, f.msPresent, f.msLimiter, m_iThreads, f.blendUse[0],
-      f.blendUse[1], f.blendUse[2], f.blendUse[3], f.blendUse[4], f.blendUse[5],
-      f.blendUse[6], f.blendUse[7], f.blendUse[8], f.blendUse[9], f.blendUse[10],
-      f.texModeUse[0], f.texModeUse[1], f.texModeUse[2], f.twoTexture, f.perspective,
-      f.lit);
+      f.trianglesRastered, f.pixelsTested, f.pixelsWritten, f.msRender, f.msDraw,
+      f.msFlush, f.msClear, other, f.msPresent, f.msLimiter, f.flushes,
+      f.flushReason[0], f.flushReason[1], f.flushReason[2], f.flushReason[3],
+      f.flushReason[4], f.flushReason[5], f.flushReason[6], f.flushReason[7],
+      m_iThreads, f.threadsUsedMax, f.blendUse[0], f.blendUse[1], f.blendUse[2],
+      f.blendUse[3], f.blendUse[4], f.blendUse[5], f.blendUse[6], f.blendUse[7],
+      f.blendUse[8], f.blendUse[9], f.blendUse[10], f.texModeUse[0],
+      f.texModeUse[1], f.texModeUse[2], f.twoTexture, f.perspective, f.lit);
   return RageDisplay::GetStats() + buf;
 }
 
@@ -446,7 +462,7 @@ void RageDisplay_Software::ResetStats() {
 }
 
 bool RageDisplay_Software::BeginFrame() {
-  Flush();
+  Flush(kFlushBegin);
   m_Stats = FrameStats();
   m_dFrameStartMs = NowMs();
   m_pTarget = nullptr;
@@ -462,7 +478,7 @@ bool RageDisplay_Software::BeginFrame() {
 void RageDisplay_Software::EndFrame() {
   m_pTarget = nullptr;
   m_hTarget = 0;
-  Flush();
+  Flush(kFlushEnd);
   const double tRendered = NowMs();
   m_Stats.msRender = tRendered - m_dFrameStartMs;
 
@@ -559,7 +575,7 @@ void RageDisplay_Software::SetZBias(float f) {
 }
 
 void RageDisplay_Software::ClearZBuffer() {
-  Flush();
+  Flush(kFlushClearZ);
   SwSurface& t = Target();
   std::fill(t.depth.begin(), t.depth.end(), 1.0f);
 }
@@ -639,14 +655,14 @@ void ConvertSurfaceRegion(
       const uint8_t* px = row + (size_t)x * bpp;
       if (paletted) {
         const auto& c = f.palette->colors[px[0]];
-        out[x] = (uint32_t)c.r | ((uint32_t)c.g << 8) | ((uint32_t)c.b << 16) |
+        out[x] = (uint32_t)c.b | ((uint32_t)c.g << 8) | ((uint32_t)c.r << 16) |
                  ((uint32_t)c.a << 24);
         continue;
       }
       uint32_t pix = 0;
       for (int b = 0; b < bpp && b < 4; ++b) pix |= (uint32_t)px[b] << (8 * b);
-      out[x] = (uint32_t)ch[0].Get(pix, 0) | ((uint32_t)ch[1].Get(pix, 0) << 8) |
-               ((uint32_t)ch[2].Get(pix, 0) << 16) |
+      out[x] = (uint32_t)ch[2].Get(pix, 0) | ((uint32_t)ch[1].Get(pix, 0) << 8) |
+               ((uint32_t)ch[0].Get(pix, 0) << 16) |
                ((uint32_t)ch[3].Get(pix, 255) << 24);
     }
   }
@@ -669,7 +685,7 @@ uintptr_t RageDisplay_Software::CreateTexture(
 void RageDisplay_Software::UpdateTexture(
     uintptr_t iTexHandle, RageSurface* img, int xoffset, int yoffset, int width,
     int height) {
-  Flush();  // queued triangles may still sample the old texels
+  Flush(kFlushUpdateTexture);  // queued triangles may still sample the old texels
   auto it = m_Textures.find(iTexHandle);
   if (it == m_Textures.end() || !img) return;
   SwTexture& t = *it->second;
@@ -684,7 +700,7 @@ void RageDisplay_Software::UpdateTexture(
 }
 
 void RageDisplay_Software::DeleteTexture(uintptr_t iTexHandle) {
-  Flush();
+  Flush(kFlushDeleteTexture);
   auto it = m_Textures.find(iTexHandle);
   if (it == m_Textures.end()) return;
   SwTexture* p = it->second.get();
@@ -722,7 +738,7 @@ void RageDisplay_Software::SetTextureFiltering(TextureUnit tu, bool b) {
 }
 
 RageSurface* RageDisplay_Software::GetTexture(uintptr_t iTexture) {
-  Flush();
+  Flush(kFlushCapture);
   auto it = m_Textures.find(iTexture);
   if (it == m_Textures.end()) return nullptr;
   const SwTexture& t = *it->second;
@@ -733,8 +749,8 @@ RageSurface* RageDisplay_Software::GetTexture(uintptr_t iTexture) {
     uint32_t* dst = (uint32_t*)(s->pixels + (size_t)y * s->pitch);
     for (int x = 0; x < t.w; ++x) {
       uint32_t p = t.color[(size_t)y * t.w + x];
-      dst[x] = ((p & 0xFF) << 24) | (((p >> 8) & 0xFF) << 16) |
-               (((p >> 16) & 0xFF) << 8) | ((p >> 24) & 0xFF);
+      dst[x] = (((p >> 16) & 0xFF) << 24) | (((p >> 8) & 0xFF) << 16) |
+               ((p & 0xFF) << 8) | ((p >> 24) & 0xFF);
     }
   }
   return s;
@@ -767,7 +783,7 @@ uintptr_t RageDisplay_Software::CreateRenderTarget(
 
 void RageDisplay_Software::SetRenderTarget(
     uintptr_t iHandle, bool bPreserveTexture) {
-  Flush();  // finish the previous target before switching
+  Flush(kFlushRenderTarget);  // finish the previous target before switching
   if (iHandle == 0) {
     m_pTarget = nullptr;
     m_hTarget = 0;
@@ -785,7 +801,7 @@ void RageDisplay_Software::SetRenderTarget(
 }
 
 RageSurface* RageDisplay_Software::CreateScreenshot() {
-  Flush();
+  Flush(kFlushCapture);
   const SwSurface& s = m_Back;
   /* 32bpp, no alpha: R in the top byte. */
   RageSurface* out = CreateSurface(s.w, s.h, 32, 0xFF000000u, 0x00FF0000u, 0x0000FF00u, 0u);
@@ -793,8 +809,8 @@ RageSurface* RageDisplay_Software::CreateScreenshot() {
     uint32_t* dst = (uint32_t*)(out->pixels + (size_t)y * out->pitch);
     for (int x = 0; x < s.w; ++x) {
       uint32_t p = s.color[(size_t)y * s.w + x];
-      dst[x] = ((p & 0xFF) << 24) | (((p >> 8) & 0xFF) << 16) |
-               (((p >> 16) & 0xFF) << 8);
+      dst[x] = (((p >> 16) & 0xFF) << 24) | (((p >> 8) & 0xFF) << 16) |
+               ((p & 0xFF) << 8);
     }
   }
   return out;
@@ -1130,7 +1146,7 @@ uint32_t PackColor8(float r, float g, float b, float a) {
     int v = (int)(x * 255.0f + 0.5f);
     return (uint32_t)(v < 0 ? 0 : (v > 255 ? 255 : v));
   };
-  return q(r) | (q(g) << 8) | (q(b) << 16) | (q(a) << 24);
+  return q(b) | (q(g) << 8) | (q(r) << 16) | (q(a) << 24);
 }
 
 }  // namespace
@@ -1478,6 +1494,59 @@ bool AffineTexturedSpan(
   return true;
 }
 
+/* Fast path: affine triangle whose source colour is constant over the whole
+ * triangle (flat vertex colour, no texture or a 1x1 texture). Covers solid
+ * rectangles, dim overlays and fades - the bulk of 2D UI overdraw. */
+void SolidSpan(
+    const SwTri& t, const SwState& s, SwSurface& target, int y, int xlo, int xhi,
+    uint32_t c, const float* cur, LocalStats& ls, bool depthTest, bool depthWrite,
+    bool writeOnPass) {
+  const int width = target.w;
+  uint32_t* row = target.color.data() + (size_t)y * width;
+  const uint32_t sa = c >> 24;
+
+  if (!depthTest) {
+    const int n = xhi - xlo + 1;
+    if (s.blendKind == 3) {
+      std::fill(row + xlo, row + xhi + 1, c);
+    } else if (s.blendKind == 1) {
+      if (sa == 255) {
+        std::fill(row + xlo, row + xhi + 1, c);
+      } else {
+        const uint32_t isa = 255u - sa;
+        const uint32_t srcRB = (c & 0x00FF00FFu) * sa + 0x00800080u;
+        const uint32_t srcGA = (((c | 0xFF000000u) >> 8) & 0x00FF00FFu) * sa + 0x00800080u;
+        for (int x = xlo; x <= xhi; ++x) {
+          const uint32_t d = row[x];
+          uint32_t rb = srcRB + (d & 0x00FF00FFu) * isa;
+          uint32_t ga = srcGA + ((d >> 8) & 0x00FF00FFu) * isa;
+          rb = ((rb + ((rb >> 8) & 0x00FF00FFu)) >> 8) & 0x00FF00FFu;
+          ga = ((ga + ((ga >> 8) & 0x00FF00FFu)) >> 8) & 0x00FF00FFu;
+          row[x] = rb | (ga << 8);
+        }
+      }
+    } else {
+      for (int x = xlo; x <= xhi; ++x) BlendPixel(s, row[x], c);
+    }
+    ls.tested += n;
+    ls.written += n;
+    return;
+  }
+
+  float* depthRow = target.depth.data() + (size_t)y * width;
+  float z = cur[8];
+  const float dz = t.gx[8];
+  for (int x = xlo; x <= xhi; ++x, z += dz) {
+    ++ls.tested;
+    const float old = depthRow[x];
+    if (writeOnPass ? !(z <= old) : !(z > old)) continue;
+    if (BlendPixel(s, row[x], c)) {
+      ++ls.written;
+      if (depthWrite) depthRow[x] = z;
+    }
+  }
+}
+
 void RasterTriBand(
     const SwTri& t, const SwState& s, SwSurface& target, int y0, int y1,
     LocalStats& ls) {
@@ -1486,6 +1555,20 @@ void RasterTriBand(
   const bool depthWrite = depthTest && s.zwrite;
   const bool writeOnPass = s.ztest == ZTEST_WRITE_ON_PASS;
   const int W = target.w;
+
+  // Constant source colour over the whole triangle? (flat colour, and no
+  // texture or a 1x1 texture)
+  const bool solid =
+      t.affine && t.constColor && !s.tex[1] &&
+      (!s.tex[0] || (s.tex[0]->w == 1 && s.tex[0]->h == 1));
+  uint32_t solidColor = 0;
+  if (solid) {
+    solidColor = s.tex[0]
+                     ? ApplyTextureMode(s.mode[0], t.constColor8, s.tex[0]->color[0])
+                     : t.constColor8;
+    const uint32_t a = solidColor >> 24;
+    if ((s.blendKind == 1 && a == 0) || (s.alphaTest && a == 0)) return;
+  }
 
   for (int y = ys; y <= ye; ++y) {
     const float py = y + 0.5f;
@@ -1543,6 +1626,12 @@ void RasterTriBand(
     uint32_t* colorRow = target.color.data() + (size_t)y * W;
     float* depthRow = depthTest ? target.depth.data() + (size_t)y * W : nullptr;
 
+    if (solid) {
+      SolidSpan(
+          t, s, target, y, xlo, xhi, solidColor, cur, ls, depthTest, depthWrite,
+          writeOnPass);
+      continue;
+    }
     if (t.affine && s.tex[0] && !s.tex[1] &&
         AffineTexturedSpan(
             t, s, target, y, xlo, xhi, cur, ls, depthTest, depthWrite,
@@ -1591,7 +1680,7 @@ class SwThreadPool {
  public:
   explicit SwThreadPool(int threads) : m_n(std::max(1, threads)) {
     for (int i = 1; i < m_n; ++i) {
-      m_workers.emplace_back([this] { Loop(); });
+      m_workers.emplace_back([this, i] { Loop(i - 1); });
     }
   }
   ~SwThreadPool() {
@@ -1605,8 +1694,9 @@ class SwThreadPool {
   int Size() const { return m_n; }
 
   /* Run fn on every thread (including the caller); returns when all finish. */
-  void Run(const std::function<void()>& fn) {
-    if (m_workers.empty()) {
+  void Run(const std::function<void()>& fn, int active) {
+    active = std::max(1, std::min(active, m_n));
+    if (m_workers.empty() || active == 1) {
       fn();
       return;
     }
@@ -1614,7 +1704,8 @@ class SwThreadPool {
       std::lock_guard<std::mutex> lock(m_mutex);
       m_job = &fn;
       ++m_generation;
-      m_pending = (int)m_workers.size();
+      m_active = active - 1;  // workers that take part (besides the caller)
+      m_pending = m_active;
     }
     m_wake.notify_all();
     fn();
@@ -1623,7 +1714,7 @@ class SwThreadPool {
   }
 
  private:
-  void Loop() {
+  void Loop(int index) {
     uint64_t seen = 0;
     for (;;) {
       const std::function<void()>* job = nullptr;
@@ -1633,6 +1724,7 @@ class SwThreadPool {
         if (m_quit) return;
         seen = m_generation;
         job = m_job;
+        if (index >= m_active) continue;  // not needed for this job
       }
       (*job)();
       {
@@ -1649,6 +1741,7 @@ class SwThreadPool {
   const std::function<void()>* m_job = nullptr;
   uint64_t m_generation = 0;
   int m_pending = 0;
+  int m_active = 0;
   bool m_quit = false;
 };
 
@@ -1661,8 +1754,9 @@ double NowMs() {
 }
 }  // namespace
 
-void RageDisplay_Software::Flush() {
+void RageDisplay_Software::Flush(FlushReason reason) {
   if (m_Tris.empty()) return;
+  ++m_Stats.flushReason[reason];
   const double t0 = NowMs();
   SwSurface& target = *m_pPendingTarget;
 
@@ -1692,7 +1786,14 @@ void RageDisplay_Software::Flush() {
     tested += ls.tested;
     written += ls.written;
   };
-  m_pPool->Run(work);
+  // Waking threads costs more than a small flush is worth: scale to the work.
+  long long area = 0;
+  for (const SwTri& tri : m_Tris) {
+    area += (long long)(tri.xmax - tri.xmin + 1) * (tri.ymax - tri.ymin + 1);
+  }
+  const int active = (int)std::max(1LL, std::min((long long)m_iThreads, area / 120000));
+  m_Stats.threadsUsedMax = std::max(m_Stats.threadsUsedMax, active);
+  m_pPool->Run(work, active);
 
   m_Stats.pixelsTested += tested;
   m_Stats.pixelsWritten += written;
@@ -1705,7 +1806,7 @@ void RageDisplay_Software::Flush() {
 
 void RageDisplay_Software::DrawScreenLine(
     const RasterVertex& a, const RasterVertex& b, float width) {
-  Flush();  // lines are drawn immediately; keep submission order
+  Flush(kFlushLine);  // lines are drawn immediately; keep submission order
   const float dx = b.x - a.x;
   const float dy = b.y - a.y;
   const int steps = std::max(1, FloorToInt(std::ceil(std::max(
@@ -1782,6 +1883,7 @@ void RageDisplay_Software::DrawSpriteIndexed(
   if (vertices == nullptr || numVertices <= 0) {
     return;
   }
+  ScopedDrawTimer timer(m_Stats.msDraw, m_Stats.msFlush);
   PrepareDraw();
   ShadeSpriteVertices(vertices, numVertices);
   for (size_t i = 0; i + 2 < indices.size(); i += 3) {
@@ -1896,6 +1998,7 @@ void RageDisplay_Software::DrawMesh(
   const size_t firstIndex = static_cast<size_t>(mesh.iTriangleStart) * 3;
   const size_t endIndex =
       firstIndex + static_cast<size_t>(mesh.iTriangleCount) * 3;
+  ScopedDrawTimer timer(m_Stats.msDraw, m_Stats.msFlush);
   PrepareDraw();
   // Lit: ShadeVertex derives colour from the material. Unlit: use the
   // material colour directly (see SetMaterial).
