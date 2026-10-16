@@ -411,8 +411,8 @@ bool RageDisplay_Software::SupportsTextureFormat(
     case RagePixelFormat_RGB5A1:
     case RagePixelFormat_RGB5:
     case RagePixelFormat_RGB8:
-    case RagePixelFormat_PAL:
       return true;
+    case RagePixelFormat_PAL:  // engine converts paletted images to RGBA8, as on GL
     default:
       return false;
   }
@@ -423,14 +423,20 @@ bool RageDisplay_Software::SupportsTextureFormat(
 /* ------------------------------------------------------------------------ */
 std::string RageDisplay_Software::GetStats() const {
   const FrameStats& f = m_Last;
-  char buf[320];
-  snprintf(
+  char buf[640];
+  std::snprintf(
       buf, sizeof(buf),
       "\nSW tris sub/clip/cull/queued: %d/%d/%d/%d  px tested/written: %lld/%lld"
-      "\nSW ms: render %.1f (raster %.1f in %d flush, clear %.1f)  present %.1f  wait %.1f  threads %d",
+      "\nSW ms: render %.1f (raster %.1f in %d flush, clear %.1f)  present %.1f  wait %.1f  threads %d"
+      "\nSW blend norm/add/sub/mod/copy/amask/ako/amul/wmul/inv/none: %d/%d/%d/%d/%d/%d/%d/%d/%d/%d/%d"
+      "\nSW texmode mod/glow/add: %d/%d/%d  2tex %d  persp %d  lit %d",
       f.trianglesSubmitted, f.trianglesClipped, f.trianglesCulled,
       f.trianglesRastered, f.pixelsTested, f.pixelsWritten, f.msRender, f.msFlush,
-      f.flushes, f.msClear, f.msPresent, f.msLimiter, m_iThreads);
+      f.flushes, f.msClear, f.msPresent, f.msLimiter, m_iThreads, f.blendUse[0],
+      f.blendUse[1], f.blendUse[2], f.blendUse[3], f.blendUse[4], f.blendUse[5],
+      f.blendUse[6], f.blendUse[7], f.blendUse[8], f.blendUse[9], f.blendUse[10],
+      f.texModeUse[0], f.texModeUse[1], f.texModeUse[2], f.twoTexture, f.perspective,
+      f.lit);
   return RageDisplay::GetStats() + buf;
 }
 
@@ -510,7 +516,7 @@ void RageDisplay_Software::SetBlendMode(BlendMode mode) {
       b.src = F::DstColor;
       b.dst = F::SrcColor;
       break;
-    case BLEND_INVERT_DEST:  // UNVERIFIED against RageDisplay_OGL.cpp
+    case BLEND_INVERT_DEST:  // verified vs D3D: (ONE, ONE) with subtract
       b.src = F::One;
       b.dst = F::One;
       b.eq = SwBlendEq::Subtract;
@@ -519,28 +525,37 @@ void RageDisplay_Software::SetBlendMode(BlendMode mode) {
       b.src = F::Zero;
       b.dst = F::One;
       break;
-    case BLEND_ALPHA_MASK:  // UNVERIFIED
+    case BLEND_ALPHA_MASK:  // RGB verified vs D3D; alpha factors from its comments
       b.src = F::Zero;
-      b.dst = F::SrcAlpha;
+      b.dst = F::One;
+      b.separateAlpha = true;
+      b.srcA = F::Zero;
+      b.dstA = F::SrcAlpha;
       break;
-    case BLEND_ALPHA_KNOCK_OUT:  // UNVERIFIED
+    case BLEND_ALPHA_KNOCK_OUT:  // RGB verified vs D3D; alpha factors from its comments
       b.src = F::Zero;
-      b.dst = F::OneMinusSrcAlpha;
+      b.dst = F::One;
+      b.separateAlpha = true;
+      b.srcA = F::Zero;
+      b.dstA = F::OneMinusSrcAlpha;
       break;
-    case BLEND_ALPHA_MULTIPLY:  // UNVERIFIED
-      b.src = F::DstColor;
+    case BLEND_ALPHA_MULTIPLY:  // verified vs RageDisplay_D3D.cpp: (SRC_ALPHA, ZERO)
+      b.src = F::SrcAlpha;
       b.dst = F::Zero;
       break;
     default:
       break;
   }
   m_Blend = b;
+  m_iBlendId = (int)mode;
 }
 
 void RageDisplay_Software::SetZBias(float f) {
   /* Same range squeeze the OpenGL backend applies via glDepthRange. */
-  m_ZNear = f * 0.05f;
-  m_ZFar = 1.0f - f * 0.05f;
+  /* Verified against RageDisplay_D3D::SetZBias (viewport MinZ/MaxZ). Higher
+   * bias pulls geometry toward the camera. */
+  m_ZNear = 0.05f * (1.0f - f);
+  m_ZFar = 1.0f - 0.05f * f;
 }
 
 void RageDisplay_Software::ClearZBuffer() {
@@ -1144,6 +1159,13 @@ void RageDisplay_Software::QueueTriangle(
     return;
   }
   ++m_Stats.trianglesRastered;
+  if (m_iBlendId >= 0 && m_iBlendId < 11) ++m_Stats.blendUse[m_iBlendId];
+  if (m_pUnitTex[0]) {
+    const int tm = (int)m_UnitMode[0];
+    if (tm >= 0 && tm < 3) ++m_Stats.texModeUse[tm];
+  }
+  if (m_pUnitTex[0] && m_pUnitTex[1]) ++m_Stats.twoTexture;
+  if (m_bLighting) ++m_Stats.lit;
 
   // Pending triangles all belong to one target.
   if (!m_Tris.empty() && m_pPendingTarget != &target) Flush();
@@ -1199,6 +1221,7 @@ void RageDisplay_Software::QueueTriangle(
   const float wMin = std::min({v0.invw, v1.invw, v2.invw});
   const float wMax = std::max({v0.invw, v1.invw, v2.invw});
   t.affine = (wMax - wMin) <= 1e-6f * std::max(std::abs(wMax), 1e-12f);
+  if (!t.affine) ++m_Stats.perspective;
 
   for (int i = 0; i < 3; ++i) {
     const float m = t.affine ? 1.0f : v[i]->invw;
@@ -1354,8 +1377,8 @@ inline bool BlendPixel(const SwState& s, uint32_t& dst, uint32_t c) {
         float sf = BlendFactor(s.blend.src, src, d, ch);
         float df = BlendFactor(s.blend.dst, src, d, ch);
         if (ch == 3 && s.blend.separateAlpha) {
-          sf = 1.0f;
-          df = 1.0f - src[3];
+          sf = BlendFactor(s.blend.srcA, src, d, 3);
+          df = BlendFactor(s.blend.dstA, src, d, 3);
         }
         res[ch] = Clamp01(Combine(s.blend.eq, src[ch], sf, d[ch], df));
       }
