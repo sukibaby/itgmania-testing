@@ -572,6 +572,14 @@ void RageDisplay_Software::SetMaterial(
   ColorToFloat4(diffuse, m_Material.diffuse);
   ColorToFloat4(specular, m_Material.specular);
   m_Material.shininess = shininess;
+  /* Models have no vertex colours. With lighting off the material colour is
+   * what tints them (RageDisplay_D3D does the same via D3DTA_TFACTOR):
+   * rgb = diffuse + emissive + ambient, alpha = diffuse alpha. */
+  for (int k = 0; k < 3; ++k) {
+    m_ModelColor[k] = Clamp01(
+        m_Material.diffuse[k] + m_Material.emissive[k] + m_Material.ambient[k]);
+  }
+  m_ModelColor[3] = Clamp01(m_Material.diffuse[3]);
 }
 
 void RageDisplay_Software::SetLightOff(int index) {
@@ -1889,7 +1897,10 @@ void RageDisplay_Software::DrawMesh(
   const size_t endIndex =
       firstIndex + static_cast<size_t>(mesh.iTriangleCount) * 3;
   PrepareDraw();
-  const float color[4] = {1.0f, 1.0f, 1.0f, 1.0f};
+  // Lit: ShadeVertex derives colour from the material. Unlit: use the
+  // material colour directly (see SetMaterial).
+  const float white[4] = {1.0f, 1.0f, 1.0f, 1.0f};
+  const float* color = m_bLighting ? white : m_ModelColor;
 
   for (size_t index = firstIndex; index + 2 < endIndex; index += 3) {
     ClipVertex triangle[3]{};
