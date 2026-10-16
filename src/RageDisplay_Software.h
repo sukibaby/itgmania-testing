@@ -35,7 +35,8 @@ class SoftwarePresenter {
   }
 
   /* Pixels are tightly-rowed 32-bit values, top row first. Byte order in
-   * memory is R, G, B, A (i.e. 0xAABBGGRR as a little-endian uint32_t). */
+   * memory is B, G, R, A (i.e. 0xAARRGGBB as a little-endian uint32_t, the
+   * native layout of a 32-bit GDI DIB). */
   virtual void Present(
       const uint32_t* pixels, int width, int height, int pitchBytes) = 0;
 
@@ -69,8 +70,8 @@ struct SwBlend {
 };
 
 /* A color buffer (+ optional depth). Used for the back buffer, textures and
- * render targets alike. Pixels are packed R | G<<8 | B<<16 | A<<24, row 0 =
- * top of the image (v = 0 when sampled, y = +1 in NDC when rendered to). */
+ * render targets alike. Pixels are packed B | G<<8 | R<<16 | A<<24 (0xAARRGGBB),
+ * row 0 = top of the image (v = 0 when sampled, y = +1 in NDC when rendered to). */
 struct SwSurface {
   int w = 0, h = 0;
   std::vector<uint32_t> color;
@@ -272,7 +273,11 @@ class RageDisplay_Software : public RageDisplay {
   /* Rasterize everything queued so far (parallel, in screen-space bands).
    * Must be called before anything reads or invalidates the pixels/textures
    * the queued triangles depend on. */
-  void Flush();
+  enum FlushReason {
+    kFlushEnd, kFlushBegin, kFlushRenderTarget, kFlushUpdateTexture,
+    kFlushDeleteTexture, kFlushClearZ, kFlushLine, kFlushCapture, kNumFlushReasons
+  };
+  void Flush(FlushReason reason = kFlushEnd);
 
   SwSurface& Target() { return m_pTarget ? *m_pTarget : m_Back; }
 
@@ -315,6 +320,9 @@ class RageDisplay_Software : public RageDisplay {
     long long pixelsTested = 0;  // pixels inside a triangle (before z/alpha)
     long long pixelsWritten = 0;
     int flushes = 0;
+    int flushReason[8] = {};
+    int threadsUsedMax = 0;
+    double msDraw = 0;  // time inside our Draw*Internal (shade+clip+setup)
     int blendUse[11] = {};   // triangles queued per BlendMode enum value
     int texModeUse[3] = {};  // per TextureMode, unit 0 textured tris
     int twoTexture = 0, perspective = 0, lit = 0;
