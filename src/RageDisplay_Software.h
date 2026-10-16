@@ -63,7 +63,9 @@ struct SwBlend {
   SwBlendFactor src = SwBlendFactor::SrcAlpha;
   SwBlendFactor dst = SwBlendFactor::OneMinusSrcAlpha;
   SwBlendEq eq = SwBlendEq::Add;
-  bool separateAlpha = true;  // alpha channel uses (One, OneMinusSrcAlpha)
+  bool separateAlpha = true;  // alpha channel uses (srcA, dstA) below
+  SwBlendFactor srcA = SwBlendFactor::One;
+  SwBlendFactor dstA = SwBlendFactor::OneMinusSrcAlpha;
 };
 
 /* A color buffer (+ optional depth). Used for the back buffer, textures and
@@ -159,7 +161,7 @@ class RageDisplay_Software : public RageDisplay {
   void SetTexture(TextureUnit tu, uintptr_t iTexture) override;
   void SetTextureMode(TextureUnit tu, TextureMode tm) override;
   void SetTextureWrapping(TextureUnit tu, bool b) override;
-  int GetMaxTextureSize() const override { return 8192; }
+  int GetMaxTextureSize() const override { return 2048; }
   void SetTextureFiltering(TextureUnit tu, bool b) override;
 
   bool SupportsRenderToTexture() const override { return true; }
@@ -289,6 +291,7 @@ class RageDisplay_Software : public RageDisplay {
   bool m_bUnitEnv[kNumUnits] = {false, false};
 
   SwBlend m_Blend;
+  int m_iBlendId = 0;
   bool m_bZWrite = true;
   ZTestMode m_ZTest = ZTEST_OFF;
   float m_ZNear = 0.0f, m_ZFar = 1.0f;
@@ -311,6 +314,9 @@ class RageDisplay_Software : public RageDisplay {
     long long pixelsTested = 0;  // pixels inside a triangle (before z/alpha)
     long long pixelsWritten = 0;
     int flushes = 0;
+    int blendUse[11] = {};   // triangles queued per BlendMode enum value
+    int texModeUse[3] = {};  // per TextureMode, unit 0 textured tris
+    int twoTexture = 0, perspective = 0, lit = 0;
     double msFlush = 0, msPresent = 0, msClear = 0, msRender = 0, msLimiter = 0;
   } m_Stats, m_Last;  // m_Last = the previous complete frame
   double m_dFrameStartMs = 0;
