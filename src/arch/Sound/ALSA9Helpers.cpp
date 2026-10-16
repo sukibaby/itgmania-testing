@@ -14,15 +14,19 @@
 #include "global.h"
 
 /* int err; must be defined before using this macro */
-#define ALSA_CHECK(x)                                 \
-  if (err < 0) {                                      \
-    LOG->Info("ALSA: %s: %s", x, dsnd_strerror(err)); \
-    return false;                                     \
-  }
-#define ALSA_ASSERT(x)                                \
-  if (err < 0) {                                      \
-    LOG->Warn("ALSA: %s: %s", x, dsnd_strerror(err)); \
-  }
+#define ALSA_CHECK(x)                                   \
+  do {                                                  \
+    if (err < 0) {                                      \
+      LOG->Info("ALSA: %s: %s", x, dsnd_strerror(err)); \
+      return false;                                     \
+    }                                                   \
+  } while (0)
+#define ALSA_ASSERT(x)                                  \
+  do {                                                  \
+    if (err < 0) {                                      \
+      LOG->Warn("ALSA: %s: %s", x, dsnd_strerror(err)); \
+    }                                                   \
+  } while (0)
 
 bool Alsa9Buf::SetHWParams() {
   int err;
