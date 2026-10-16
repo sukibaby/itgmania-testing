@@ -424,7 +424,7 @@ bool RageDisplay_Software::SupportsTextureFormat(
 std::string RageDisplay_Software::GetStats() const {
   const FrameStats& f = m_Last;
   char buf[640];
-  std::snprintf(
+  snprintf(
       buf, sizeof(buf),
       "\nSW tris sub/clip/cull/queued: %d/%d/%d/%d  px tested/written: %lld/%lld"
       "\nSW ms: render %.1f (raster %.1f in %d flush, clear %.1f)  present %.1f  wait %.1f  threads %d"
