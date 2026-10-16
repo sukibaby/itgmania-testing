@@ -299,6 +299,7 @@ class RageDisplay_Software : public RageDisplay {
   bool m_bAlphaTest = false;
   bool m_bLighting = false;
   Material m_Material;
+  float m_ModelColor[4] = {1, 1, 1, 1};  // material colour used when lighting is off
   Light m_Lights[kMaxLights];
   float m_SceneAmbient[3] = {0.2f, 0.2f, 0.2f};
   PolygonMode m_PolyMode = POLYGON_FILL;
