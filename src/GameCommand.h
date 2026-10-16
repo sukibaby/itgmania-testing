@@ -34,7 +34,6 @@ class GameCommand {
         m_bInvalid(true),
         m_sInvalidReason(""),
         m_iIndex(-1),
-        m_MultiPlayer(MultiPlayer_Invalid),
         m_pStyle(nullptr),
         m_pm(PlayMode_Invalid),
         m_dc(Difficulty_Invalid),
@@ -59,7 +58,6 @@ class GameCommand {
         m_iGoalCalories(-1),
         m_GoalType(GoalType_Invalid),
         m_sProfileID(""),
-        m_bUrlExits(true),
         m_bInsertCredit(false),
         m_bClearCredits(false),
         m_bStopMusic(false),
@@ -101,7 +99,6 @@ class GameCommand {
   bool m_bInvalid;
   std::string m_sInvalidReason;
   int m_iIndex;
-  MultiPlayer m_MultiPlayer;
   const Style* m_pStyle;
   PlayMode m_pm;
   Difficulty m_dc;
@@ -130,8 +127,6 @@ class GameCommand {
   int m_iGoalCalories;  // -1 == none specified
   GoalType m_GoalType;
   std::string m_sProfileID;
-  // sm-ssc adds:
-  bool m_bUrlExits;  // for making stepmania not exit on url
 
   bool m_bInsertCredit;
   bool m_bClearCredits;

@@ -9,7 +9,6 @@
 struct lua_State;
 class Group {
  public:
-  Group();
   Group(
       const std::string& sDir, const std::string& sGroupDirName,
       bool bFromProfile = false);
@@ -89,11 +88,6 @@ class Group {
   const std::string GetSeriesBannerPath() const { return m_sSeriesBannerPath; };
 
   /**
-   * @brief Get the songs in the group.
-   * @return the songs that belong in the group. */
-  const std::vector<Song*>& GetSongs() const;
-
-  /**
    * @brief The year the group was released
    *
    * @return int
@@ -133,9 +127,6 @@ class Group {
 
   /** @brief The year the group was released */
   int m_iYearReleased;
-
-  /** @brief The version of the Pack.ini info */
-  int m_iVersion;
 
   /** @brief The path to the group's series banner. */
   std::string m_sSeriesBannerPath;

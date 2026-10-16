@@ -146,12 +146,10 @@ void ScoreKeeperNormal::Load(
   m_iMaxScoreSoFar = 0;
   m_iPointBonus = 0;
   m_iNumTapsAndHolds = 0;
-  m_iNumNotesHitThisRow = 0;
   m_bIsLastSongInCourse = false;
 
   Message msg("ScoreChanged");
   msg.SetParam("PlayerNumber", m_pPlayerState->m_PlayerNumber);
-  msg.SetParam("MultiPlayer", m_pPlayerState->m_mp);
   MESSAGEMAN->Broadcast(msg);
 
   memset(m_ComboBonusFactor, 0, sizeof(m_ComboBonusFactor));
@@ -433,7 +431,6 @@ void ScoreKeeperNormal::HandleTapScore(const TapNote& tn) {
 
     Message msg("ScoreChanged");
     msg.SetParam("PlayerNumber", m_pPlayerState->m_PlayerNumber);
-    msg.SetParam("MultiPlayer", m_pPlayerState->m_mp);
     MESSAGEMAN->Broadcast(msg);
   }
 
@@ -558,8 +555,6 @@ void ScoreKeeperNormal::HandleTapRowScore(const NoteData& nd, int iRow) {
     return;
   }
 
-  m_iNumNotesHitThisRow = iNumTapsInRow;
-
   TapNoteScore scoreOfLastTap =
       NoteDataWithScoring::LastTapNoteWithResult(nd, iRow).result.tns;
   HandleTapNoteScoreInternal(scoreOfLastTap, TNS_W1, iRow);
@@ -627,7 +622,6 @@ void ScoreKeeperNormal::HandleTapRowScore(const NoteData& nd, int iRow) {
                      .result.fTapNoteOffset;
   Message msg("ScoreChanged");
   msg.SetParam("PlayerNumber", m_pPlayerState->m_PlayerNumber);
-  msg.SetParam("MultiPlayer", m_pPlayerState->m_mp);
   msg.SetParam("ToastyCombo", m_cur_toasty_combo);
   MESSAGEMAN->Broadcast(msg);
 }
@@ -651,7 +645,6 @@ void ScoreKeeperNormal::HandleHoldScore(const TapNote& tn) {
   PlayerNumber pn = m_pPlayerState->m_PlayerNumber;
   Message msg("ScoreChanged");
   msg.SetParam("PlayerNumber", m_pPlayerState->m_PlayerNumber);
-  msg.SetParam("MultiPlayer", m_pPlayerState->m_mp);
   MESSAGEMAN->Broadcast(msg);
 }
 
@@ -731,13 +724,6 @@ int ScoreKeeperNormal::TapNoteScoreToDancePoints(TapNoteScore tns) const {
 
 int ScoreKeeperNormal::HoldNoteScoreToDancePoints(HoldNoteScore hns) const {
   return HoldNoteScoreToDancePoints(hns, m_bIsBeginner);
-}
-
-int ScoreKeeperNormal::TapNoteScoreToGradePoints(TapNoteScore tns) const {
-  return TapNoteScoreToGradePoints(tns, m_bIsBeginner);
-}
-int ScoreKeeperNormal::HoldNoteScoreToGradePoints(HoldNoteScore hns) const {
-  return HoldNoteScoreToGradePoints(hns, m_bIsBeginner);
 }
 
 int ScoreKeeperNormal::TapNoteScoreToDancePoints(

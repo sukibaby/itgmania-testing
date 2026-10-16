@@ -267,7 +267,6 @@ ScreenManager::ScreenManager() {
   m_bReloadOverlayScreensAfterInput = false;
   m_bZeroNextUpdate = false;
   m_PopTopScreen = SM_Invalid;
-  m_OnDonePreparingScreen = SM_Invalid;
 }
 
 ScreenManager::~ScreenManager() {
@@ -846,10 +845,6 @@ void ScreenManager::SystemMessageNoAnimate(const std::string& sMessage) {
   msg.SetParam("Message", sMessage);
   msg.SetParam("NoAnimate", true);
   MESSAGEMAN->Broadcast(msg);
-}
-
-void ScreenManager::HideSystemMessage() {
-  MESSAGEMAN->Broadcast("HideSystemMessage");
 }
 
 void ScreenManager::RefreshCreditsMessages() {

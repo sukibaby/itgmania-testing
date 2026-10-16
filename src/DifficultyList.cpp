@@ -60,7 +60,6 @@ void StepsDisplayList::LoadFromNode(const XNode* pNode) {
   MOVE_COMMAND.Load(m_sName, "MoveCommand");
 
   m_Lines.resize(MAX_METERS);
-  m_CurSong = nullptr;
 
   FOREACH_ENUM(PlayerNumber, pn) {
     const XNode* pChild = pNode->GetChild(ssprintf("CursorP%i", pn + 1));
@@ -307,56 +306,6 @@ void StepsDisplayList::SetFromGameState() {
   for (size_t m = 0; m < MAX_METERS; ++m) {
     m_Lines[m].m_Meter.FinishTweening();
   }
-}
-
-void StepsDisplayList::HideRows() {
-  for (unsigned m = 0; m < m_Rows.size(); ++m) {
-    Line& l = m_Lines[m];
-
-    l.m_Meter.FinishTweening();
-    l.m_Meter.SetDiffuseAlpha(0);
-  }
-}
-
-void StepsDisplayList::TweenOnScreen() {
-  FOREACH_HumanPlayer(pn) ON_COMMAND(m_Cursors[pn]);
-
-  for (size_t m = 0; m < MAX_METERS; ++m) {
-    ON_COMMAND(m_Lines[m].m_Meter);
-  }
-
-  this->SetHibernate(0.5f);
-  m_bShown = true;
-  for (unsigned m = 0; m < m_Rows.size(); ++m) {
-    Line& l = m_Lines[m];
-
-    l.m_Meter.FinishTweening();
-  }
-
-  HideRows();
-  PositionItems();
-
-  FOREACH_HumanPlayer(pn) COMMAND(m_Cursors[pn], "TweenOn");
-}
-
-void StepsDisplayList::TweenOffScreen() {}
-
-void StepsDisplayList::Show() {
-  m_bShown = true;
-
-  SetFromGameState();
-
-  HideRows();
-  PositionItems();
-
-  FOREACH_HumanPlayer(pn) COMMAND(m_Cursors[pn], "Show");
-}
-
-void StepsDisplayList::Hide() {
-  m_bShown = false;
-  PositionItems();
-
-  FOREACH_HumanPlayer(pn) COMMAND(m_Cursors[pn], "Hide");
 }
 
 void StepsDisplayList::HandleMessage(const Message& msg) {

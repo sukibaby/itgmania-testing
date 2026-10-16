@@ -46,7 +46,6 @@ class ScreenManager {
   // System messages
   void SystemMessage(const std::string& sMessage);
   void SystemMessageNoAnimate(const std::string& sMessage);
-  void HideSystemMessage();
 
   // Screen messages
   void PostMessageToTopScreen(ScreenMessage SM, float fDelay);
@@ -81,7 +80,6 @@ class ScreenManager {
   // Screen loads, removals, and concurrent prepares are delayed until the next
   // update.
   std::string m_sDelayedScreen;
-  ScreenMessage m_OnDonePreparingScreen;
   ScreenMessage m_PopTopScreen;
 
   // Set this to true anywhere we create of delete objects.  These

@@ -24,12 +24,6 @@ static struct FileDriverEntry_ZIP : public FileDriverEntry {
   }
 } const g_RegisterDriver;
 
-RageFileDriverZip::RageFileDriverZip()
-    : RageFileDriver(new NullFilenameDB), m_Mutex("RageFileDriverZip") {
-  m_bFileOwned = false;
-  m_pZip = nullptr;
-}
-
 RageFileDriverZip::RageFileDriverZip(const std::string& sPath)
     : RageFileDriver(new NullFilenameDB), m_Mutex("RageFileDriverZip") {
   m_bFileOwned = false;
@@ -52,16 +46,6 @@ bool RageFileDriverZip::Load(const std::string& sPath) {
     delete pFile;
     return false;
   }
-
-  m_pZip = pFile;
-
-  return ParseZipfile();
-}
-
-bool RageFileDriverZip::Load(RageFileBasic* pFile) {
-  ASSERT(m_pZip == nullptr); /* don't load twice */
-  m_sPath = ssprintf("%p", static_cast<void*>(pFile));
-  m_Mutex.SetName(ssprintf("RageFileDriverZip(%p)", static_cast<void*>(pFile)));
 
   m_pZip = pFile;
 
@@ -177,8 +161,8 @@ int RageFileDriverZip::ProcessCdirFileHdr(FileInfo& info) {
     return -1;
   }
 
-  FileReading::read_8(*m_pZip, sError); /* skip version made by */
-  int iOSMadeBy = FileReading::read_8(*m_pZip, sError);
+  FileReading::read_8(*m_pZip, sError);     /* skip version made by */
+  FileReading::read_8(*m_pZip, sError);     /* skip OS made by */
   FileReading::read_16_le(*m_pZip, sError); /* skip version needed to extract */
   int iGeneralPurpose = FileReading::read_16_le(*m_pZip, sError);
   info.m_iCompressionMethod =
@@ -226,14 +210,6 @@ int RageFileDriverZip::ProcessCdirFileHdr(FileInfo& info) {
   /* Skip directories. */
   if (iExternalFileAttributes & (1 << 4)) {
     return 0;
-  }
-
-  info.m_iFilePermissions = 0;
-  enum { MADE_BY_UNIX = 3 };
-  switch (iOSMadeBy) {
-    case MADE_BY_UNIX:
-      info.m_iFilePermissions = (iExternalFileAttributes >> 16) & 0x1FF;
-      break;
   }
 
   if (info.m_iCompressionMethod != STORED &&

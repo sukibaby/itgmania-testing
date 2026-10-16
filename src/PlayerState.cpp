@@ -20,7 +20,6 @@
 
 PlayerState::PlayerState() {
   m_PlayerNumber = PLAYER_INVALID;
-  m_mp = MultiPlayer_Invalid;
   Reset();
 }
 
@@ -48,10 +47,6 @@ void PlayerState::Reset() {
 
   m_fSuperMeter = 0;  // between 0 and NUM_ATTACK_LEVELS
   m_fSuperMeterGrowthScale = 1;
-
-  for (int i = 0; i < NUM_INVENTORY_SLOTS; i++) {
-    m_Inventory[i].MakeBlank();
-  }
 }
 
 void PlayerState::Update(float fDelta) {
@@ -157,13 +152,6 @@ void PlayerState::EndActiveAttacks() {
   }
 }
 
-void PlayerState::RemoveAllInventory() {
-  for (int s = 0; s < NUM_INVENTORY_SLOTS; s++) {
-    m_Inventory[s].fSecsRemaining = 0;
-    m_Inventory[s].sModifiers = "";
-  }
-}
-
 void PlayerState::RebuildPlayerOptionsFromActiveAttacks() {
   // rebuild player options
   PlayerOptions po = m_PlayerOptions.GetStage();
@@ -235,7 +223,6 @@ class LunaPlayerState : public Luna<PlayerState> {
     p->m_Position.PushSelf(L);
     return 1;
   }
-  DEFINE_METHOD(GetMultiPlayerNumber, m_mp);
   DEFINE_METHOD(GetPlayerController, m_PlayerController);
   static int SetPlayerOptions(T* p, lua_State* L) {
     ModsLevel m = Enum::Check<ModsLevel>(L, 1);
@@ -272,7 +259,6 @@ class LunaPlayerState : public Luna<PlayerState> {
   LunaPlayerState() {
     ADD_METHOD(ApplyPreferredOptionsToOtherLevels);
     ADD_METHOD(GetPlayerNumber);
-    ADD_METHOD(GetMultiPlayerNumber);
     ADD_METHOD(GetPlayerController);
     ADD_METHOD(SetPlayerOptions);
     ADD_METHOD(GetPlayerOptions);

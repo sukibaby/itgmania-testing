@@ -52,9 +52,7 @@ Grade GetGradeFromPercent(float fPercent);
 
 void PlayerStageStats::InternalInit() {
   m_pStyle = nullptr;
-  m_for_multiplayer = false;
   m_player_number = PLAYER_1;
-  m_multiplayer_number = MultiPlayer_P1;
 
   m_bPlayerCanAchieveFullCombo = true;
   m_bJoined = false;
@@ -96,15 +94,7 @@ void PlayerStageStats::InternalInit() {
   m_HighScore = HighScore();
 }
 
-void PlayerStageStats::Init(PlayerNumber pn) {
-  m_for_multiplayer = false;
-  m_player_number = pn;
-}
-
-void PlayerStageStats::Init(MultiPlayer pn) {
-  m_for_multiplayer = true;
-  m_multiplayer_number = pn;
-}
+void PlayerStageStats::Init(PlayerNumber pn) { m_player_number = pn; }
 
 void PlayerStageStats::AddStats(const PlayerStageStats& other) {
   m_pStyle = other.m_pStyle;
@@ -314,21 +304,6 @@ std::string PlayerStageStats::FormatPercentScore(float fPercentDancePoints) {
 
 float PlayerStageStats::GetPercentDancePoints() const {
   return MakePercentScore(m_iActualDancePoints, m_iPossibleDancePoints);
-}
-
-float PlayerStageStats::GetCurMaxPercentDancePoints() const {
-  if (m_iPossibleDancePoints == 0) {
-    return 0;  // div/0
-  }
-
-  if (m_iCurPossibleDancePoints == m_iPossibleDancePoints) {
-    return 1;  // correct for rounding error
-  }
-
-  float fCurMaxPercentDancePoints =
-      m_iCurPossibleDancePoints / (float)m_iPossibleDancePoints;
-
-  return fCurMaxPercentDancePoints;
 }
 
 // TODO: Make this use lua. Let more judgments be possible. -Wolfman2000

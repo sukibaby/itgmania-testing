@@ -49,12 +49,6 @@ class PlayerState {
    * in PlayerState and callers should not use PlayerNumber to index into
    * GameState. */
   PlayerNumber m_PlayerNumber;
-  /**
-   * @brief The MultiPlayer number assigned to this Player, typically 1-32.
-   *
-   * This is only used if GAMESTATE->m_bMultiplayer is true.
-   */
-  MultiPlayer m_mp;
 
   // This is used by ArrowEffects and the NoteField to zoom both appropriately
   // to fit in the space available. -Kyz
@@ -135,9 +129,6 @@ class PlayerState {
   // Used in Rave
   float m_fSuperMeter;  // between 0 and NUM_ATTACK_LEVELS
   float m_fSuperMeterGrowthScale;
-  // Used in Battle
-  void RemoveAllInventory();
-  Attack m_Inventory[NUM_INVENTORY_SLOTS];
 
   // Lua
   void PushSelf(lua_State* L);

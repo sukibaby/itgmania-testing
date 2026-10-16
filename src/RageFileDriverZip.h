@@ -10,10 +10,8 @@
 /** @brief A read-only file driver for ZIPs. */
 class RageFileDriverZip : public RageFileDriver {
  public:
-  RageFileDriverZip();
   RageFileDriverZip(const std::string& sPath);
   bool Load(const std::string& sPath);
-  bool Load(RageFileBasic* pFile);
 
   virtual ~RageFileDriverZip();
 
@@ -32,9 +30,6 @@ class RageFileDriverZip : public RageFileDriver {
     ZipCompressionMethod m_iCompressionMethod;
     int m_iCRC32;
     int m_iCompressedSize, m_iUncompressedSize;
-
-    /* If 0, unknown. */
-    int m_iFilePermissions;
   };
 
  private:

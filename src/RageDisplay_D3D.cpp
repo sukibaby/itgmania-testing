@@ -40,7 +40,6 @@ LPDIRECT3DDEVICE9 g_pd3dDevice = nullptr;
 D3DCAPS9 g_DeviceCaps;
 D3DDISPLAYMODE g_DesktopMode;
 D3DPRESENT_PARAMETERS g_d3dpp;
-int g_ModelMatrixCnt = 0;
 static bool g_bSphereMapping[NUM_TextureUnit] = {false, false};
 
 // TODO: Instead of defining this here, enumerate the possible formats and
@@ -632,8 +631,6 @@ bool RageDisplay_D3D::SupportsTextureFormat(
 
   return SUCCEEDED(hr);
 }
-
-bool RageDisplay_D3D::SupportsThreadedRendering() { return true; }
 
 RageSurface* RageDisplay_D3D::CreateScreenshot() {
   RageSurface* result = nullptr;

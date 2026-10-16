@@ -407,8 +407,6 @@ enum StageResult {
 LuaDeclareType(StageResult);
 
 // Battle stuff
-/** @brief The number of inventory slots available for attacks. */
-const int NUM_INVENTORY_SLOTS = 3;
 enum AttackLevel {
   ATTACK_LEVEL_1,
   ATTACK_LEVEL_2,
@@ -645,17 +643,6 @@ enum ProfileLoadResult {
   ProfileLoadResult_FailedNoProfile,
   ProfileLoadResult_FailedTampered
 };
-
-/** @brief The different statuses for multiplayer. */
-enum MultiPlayerStatus {
-  MultiPlayerStatus_Joined,
-  MultiPlayerStatus_NotJoined,
-  MultiPlayerStatus_Unplugged,
-  MultiPlayerStatus_MissingMultitap,
-  NUM_MultiPlayerStatus,
-  MultiPlayerStatus_Invalid
-};
-const std::string& MultiPlayerStatusToString(MultiPlayerStatus i);
 
 /** @brief The different course types. */
 enum CourseType {

@@ -61,19 +61,6 @@ void Model::Clear() {
   }
 }
 
-void Model::Load(const std::string& sFile) {
-  if (sFile == "") {
-    return;
-  }
-
-  std::string sExt = GetExtension(sFile);
-  MakeLower(sExt);
-  if (sExt == "txt") {
-    LoadMilkshapeAscii(sFile);
-  }
-  RecalcAnimationLengthSeconds();
-}
-
 #define THROW                                                               \
   RageException::Throw(                                                     \
       "Parse error in \"%s\" at line %d: \"%s\".", sPath.c_str(), iLineNum, \
@@ -118,7 +105,7 @@ void Model::LoadPieces(
   if (m_pGeometry->HasAnyPerVertexBones()) {
     m_vTempMeshes = m_pGeometry->m_Meshes;
     m_pTempGeometry = DISPLAY->CreateCompiledGeometry();
-    m_pTempGeometry->Set(m_vTempMeshes, this->MaterialsNeedNormals());
+    m_pTempGeometry->Set(m_vTempMeshes);
   }
   RecalcAnimationLengthSeconds();
 }

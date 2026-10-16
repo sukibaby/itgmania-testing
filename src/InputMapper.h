@@ -17,18 +17,16 @@ const int NUM_USER_GAME_TO_DEVICE_SLOTS = 2;
 extern const std::string DEVICE_INPUT_SEPARATOR;
 
 struct AutoMappingEntry {
-  AutoMappingEntry(int i, DeviceButton db, GameButton gb, bool b)
-      : m_iSlotIndex(i), m_deviceButton(db), m_gb(gb), m_bSecondController(b) {}
+  AutoMappingEntry(int, DeviceButton db, GameButton gb, bool b)
+      : m_deviceButton(db), m_gb(gb), m_bSecondController(b) {}
   AutoMappingEntry()
-      : m_iSlotIndex(-1),
-        m_deviceButton(DeviceButton_Invalid),
+      : m_deviceButton(DeviceButton_Invalid),
         m_gb(GameButton_Invalid),
         m_bSecondController(false) {}
   bool IsEmpty() const {
     return m_deviceButton == DeviceButton_Invalid && m_gb == GameButton_Invalid;
   }
 
-  int m_iSlotIndex;
   DeviceButton m_deviceButton;
   GameButton m_gb;  // GameButton_Invalid means unmap this button
   /* If this is true, this is an auxilliary mapping assigned to the second
@@ -227,15 +225,14 @@ class InputMapper {
       std::vector<GameInput>& GameIout) const;
   PlayerNumber ControllerToPlayerNumber(GameController controller) const;
 
-  float GetSecsHeld(
-      const GameInput& GameI, MultiPlayer mp = MultiPlayer_Invalid) const;
+  float GetSecsHeld(const GameInput& GameI) const;
 
   bool IsBeingPressed(
-      const GameInput& GameI, MultiPlayer mp = MultiPlayer_Invalid,
+      const GameInput& GameI,
       const DeviceInputList* pButtonState = nullptr) const;
   bool IsBeingPressed(GameButton MenuI, PlayerNumber pn) const;
   bool IsBeingPressed(
-      const std::vector<GameInput>& GameI, MultiPlayer mp = MultiPlayer_Invalid,
+      const std::vector<GameInput>& GameI,
       const DeviceInputList* pButtonState = nullptr) const;
 
   void ResetKeyRepeat(const GameInput& GameI);
@@ -246,9 +243,6 @@ class InputMapper {
 
   float GetLevel(const GameInput& GameI) const;
   float GetLevel(GameButton MenuI, PlayerNumber pn) const;
-
-  static InputDevice MultiPlayerToInputDevice(MultiPlayer mp);
-  static MultiPlayer InputDeviceToMultiPlayer(InputDevice id);
 
   void Unmap(InputDevice device);
   void ApplyMapping(

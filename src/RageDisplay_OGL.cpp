@@ -62,9 +62,6 @@ static bool g_bColorIndexTableWorks = true;
 static float g_line_range[2];
 static float g_point_range[2];
 
-/* OpenGL version * 10: */
-static int g_glVersion;
-
 /* GLU version * 10: */
 static int g_gluVersion;
 
@@ -713,9 +710,6 @@ static void CheckReversePackedPixels() {
 }
 
 void SetupExtensions() {
-  const float fGLVersion = StringToFloat((const char*)glGetString(GL_VERSION));
-  g_glVersion = std::lrint(fGLVersion * 10);
-
   const float fGLUVersion =
       StringToFloat((const char*)gluGetString(GLU_VERSION));
   g_gluVersion = std::lrint(fGLUVersion * 10);
@@ -2082,27 +2076,6 @@ const RageDisplay::RagePixelFormatDesc* RageDisplay_Legacy::GetPixelFormatDesc(
     RagePixelFormat pf) const {
   ASSERT(pf < NUM_RagePixelFormat);
   return &PIXEL_FORMAT_DESC[pf];
-}
-
-bool RageDisplay_Legacy::SupportsThreadedRendering() {
-  return g_pWind->SupportsThreadedRendering();
-}
-
-void RageDisplay_Legacy::BeginConcurrentRenderingMainThread() {
-  g_pWind->BeginConcurrentRenderingMainThread();
-}
-
-void RageDisplay_Legacy::EndConcurrentRenderingMainThread() {
-  g_pWind->EndConcurrentRenderingMainThread();
-}
-
-void RageDisplay_Legacy::BeginConcurrentRendering() {
-  g_pWind->BeginConcurrentRendering();
-  RageDisplay::BeginConcurrentRendering();
-}
-
-void RageDisplay_Legacy::EndConcurrentRendering() {
-  g_pWind->EndConcurrentRendering();
 }
 
 void RageDisplay_Legacy::DeleteTexture(uintptr_t iTexture) {

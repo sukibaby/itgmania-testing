@@ -22,20 +22,6 @@
 const std::string INI_FILE = "Pack.ini";
 const int INI_VERSION = 2;
 
-Group::Group() {
-  m_sDisplayTitle = "";
-  m_sSortTitle = "";
-  m_sPath = "";
-  m_sGroupName = "";
-  m_sTranslitTitle = "";
-  m_sSeries = "";
-  m_fSyncOffset = 0.0f;
-  m_bHasPackIni = false;
-  m_iYearReleased = 0;
-  m_sBannerPath = "";
-  m_sSeriesBannerPath = "";
-}
-
 Group::Group(
     const std::string& sDir, const std::string& sGroupDirName,
     bool bFromProfile) {
@@ -73,7 +59,6 @@ Group::Group(
   m_iYearReleased = 0;
   m_sBannerPath = "";
   m_sSeriesBannerPath = "";
-  m_iVersion = INI_VERSION;
 
   if (FILEMAN->DoesFileExist(sPackIniPath)) {
     IniFile ini;
@@ -92,7 +77,6 @@ Group::Group(
     // Otherwise log a warning and use default Pack.ini values
     if (!sVersion.empty()) {
       m_bHasPackIni = true;
-      m_iVersion = StringToInt(sVersion);
 
       // Define a vector of key-value pairs to cleanly iterate
       std::vector<std::pair<std::string, std::string&>> vPackfields = {
@@ -146,10 +130,6 @@ Group::Group(
           sPackIniPath.c_str());
     }
   }
-}
-
-const std::vector<Song*>& Group::GetSongs() const {
-  return SONGMAN->GetSongs(m_sGroupName);
 }
 
 #include "LuaBinding.h"

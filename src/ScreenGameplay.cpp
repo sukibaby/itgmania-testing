@@ -33,7 +33,6 @@
 #include "GameplayHelpers.h"
 #include "InputFilter.h"
 #include "InputMapper.h"
-#include "Inventory.h"
 #include "LifeMeter.h"
 #include "LifeMeterBar.h"
 #include "LightsManager.h"
@@ -124,20 +123,14 @@ AutoScreenMessage(SM_StartLoadingNextSong);
 AutoScreenMessage(SM_DoPrevScreen);
 AutoScreenMessage(SM_DoNextScreen);
 
-AutoScreenMessage(SM_BattleTrickLevel1);
-AutoScreenMessage(SM_BattleTrickLevel2);
-AutoScreenMessage(SM_BattleTrickLevel3);
-
 static Preference<bool> g_bCenter1Player("Center1Player", false);
 static Preference<bool> g_bShowLyrics("ShowLyrics", true);
 static Preference<bool> g_bEasterEggs("EasterEggs", true);
 
 PlayerInfo::PlayerInfo()
     : m_pn(PLAYER_INVALID),
-      m_mp(MultiPlayer_Invalid),
       m_bIsDummy(false),
       m_iDummyIndex(0),
-      m_iAddToDifficulty(0),
       m_bPlayerEnabled(false),
       m_PlayerStateDummy(),
       m_PlayerStageStatsDummy(),
@@ -155,48 +148,41 @@ PlayerInfo::PlayerInfo()
       m_pActiveAttackList(nullptr),
       m_NoteData(),
       m_pPlayer(nullptr),
-      m_pInventory(nullptr),
       m_pStepsDisplay(nullptr),
       m_sprOniGameOver() {}
 
-void PlayerInfo::Load(
-    PlayerNumber pn, MultiPlayer mp, bool bShowNoteField,
-    int iAddToDifficulty) {
+void PlayerInfo::Load(PlayerNumber pn, bool bShowNoteField) {
   m_pn = pn;
-  m_mp = mp;
   m_bPlayerEnabled = IsEnabled();
   m_bIsDummy = false;
-  m_iAddToDifficulty = iAddToDifficulty;
   m_pLifeMeter = nullptr;
   m_ptextCourseSongNumber = nullptr;
   m_ptextStepsDescription = nullptr;
 
-  if (!IsMultiPlayer()) {
-    PlayMode mode = GAMESTATE->m_PlayMode;
-    switch (mode) {
-      case PLAY_MODE_REGULAR:
-      case PLAY_MODE_NONSTOP:
-      case PLAY_MODE_BATTLE:
-      case PLAY_MODE_RAVE:
-        if (PREFSMAN->m_bPercentageScoring) {
-          m_pPrimaryScoreDisplay = new ScoreDisplayPercentage;
-        } else {
-          m_pPrimaryScoreDisplay = new ScoreDisplayNormal;
-        }
-        break;
-      case PLAY_MODE_ONI:
-      case PLAY_MODE_ENDLESS:
-        if (GAMESTATE->m_pPlayerState[pn]
-                ->m_PlayerOptions.GetStage()
-                .m_LifeType == LifeType_Time) {
-          m_pPrimaryScoreDisplay = new ScoreDisplayLifeTime;
-        } else {
-          m_pPrimaryScoreDisplay = new ScoreDisplayOni;
-        }
-        break;
-      default:
-        FAIL_M(ssprintf("Invalid PlayMode: %i", mode));
-    }
+  PlayMode mode = GAMESTATE->m_PlayMode;
+  switch (mode) {
+    case PLAY_MODE_REGULAR:
+    case PLAY_MODE_NONSTOP:
+    case PLAY_MODE_BATTLE:
+    case PLAY_MODE_RAVE:
+      if (PREFSMAN->m_bPercentageScoring) {
+        m_pPrimaryScoreDisplay = new ScoreDisplayPercentage;
+      } else {
+        m_pPrimaryScoreDisplay = new ScoreDisplayNormal;
+      }
+      break;
+    case PLAY_MODE_ONI:
+    case PLAY_MODE_ENDLESS:
+      if (GAMESTATE->m_pPlayerState[pn]
+              ->m_PlayerOptions.GetStage()
+              .m_LifeType == LifeType_Time) {
+        m_pPrimaryScoreDisplay = new ScoreDisplayLifeTime;
+      } else {
+        m_pPrimaryScoreDisplay = new ScoreDisplayOni;
+      }
+      break;
+    default:
+      FAIL_M(ssprintf("Invalid PlayMode: %i", mode));
   }
 
   PlayerState* const pPlayerState = GetPlayerState();
@@ -240,13 +226,7 @@ void PlayerInfo::Load(
   m_ptextPlayerOptions = nullptr;
   m_pActiveAttackList = nullptr;
   m_pPlayer = new Player(m_NoteData, bShowNoteField);
-  m_pInventory = nullptr;
   m_pStepsDisplay = nullptr;
-
-  if (IsMultiPlayer()) {
-    pPlayerState->m_PlayerOptions =
-        GAMESTATE->m_pPlayerState[PLAYER_1]->m_PlayerOptions;
-  }
 }
 
 PlayerInfo::~PlayerInfo() {
@@ -260,7 +240,6 @@ PlayerInfo::~PlayerInfo() {
   RageUtil::SafeDelete(m_ptextPlayerOptions);
   RageUtil::SafeDelete(m_pActiveAttackList);
   RageUtil::SafeDelete(m_pPlayer);
-  RageUtil::SafeDelete(m_pInventory);
   RageUtil::SafeDelete(m_pStepsDisplay);
 }
 
@@ -270,16 +249,11 @@ PlayerState* PlayerInfo::GetPlayerState() {
   if (m_bIsDummy) {
     return &m_PlayerStateDummy;
   }
-  return IsMultiPlayer()
-             ? GAMESTATE
-                   ->m_pMultiPlayerState[GetPlayerStateAndStageStatsIndex()]
-             : GAMESTATE->m_pPlayerState[GetPlayerStateAndStageStatsIndex()];
+  return GAMESTATE->m_pPlayerState[GetPlayerStateAndStageStatsIndex()];
 }
 
 PlayerStageStats* PlayerInfo::GetPlayerStageStats() {
-  // multiplayer chooses the PlayerStageStats with the highest score on
-  // StageFinalized
-  if (m_bIsDummy || IsMultiPlayer()) {
+  if (m_bIsDummy) {
     return &m_PlayerStageStatsDummy;
   }
   return &STATSMAN->m_CurStageStats
@@ -289,9 +263,6 @@ PlayerStageStats* PlayerInfo::GetPlayerStageStats() {
 bool PlayerInfo::IsEnabled() {
   if (m_pn != PLAYER_INVALID) {
     return GAMESTATE->IsPlayerEnabled(m_pn);
-  }
-  if (m_mp != MultiPlayer_Invalid) {
-    return GAMESTATE->IsMultiPlayerEnabled(m_mp);
   } else if (m_bIsDummy) {
     return true;
   }
@@ -330,9 +301,6 @@ std::vector<PlayerInfo>::iterator GetNextEnabledPlayerNumberInfo(
       continue;
     }
     if (!iter->m_bPlayerEnabled) {
-      continue;
-    }
-    if (iter->m_mp != MultiPlayer_Invalid) {
       continue;
     }
     return iter;
@@ -534,10 +502,6 @@ void ScreenGameplay::Init() {
   if (bSharedSidesStyle) {
     STATSMAN->m_CurStageStats.m_RoutinePlayer.m_pStyle = pMasterStyle;
   }
-  FOREACH_MultiPlayer(pn) {
-    STATSMAN->m_CurStageStats.m_multiPlayer[pn].m_pStyle =
-        GAMESTATE->GetCurrentStyle(PLAYER_INVALID);
-  }
 
   /* Record combo rollover. */
   FOREACH_EnabledPlayerInfoNotDummy(m_vPlayerInfo, pi) pi->GetPlayerStageStats()
@@ -603,20 +567,15 @@ void ScreenGameplay::Init() {
   }
     // If pi->m_pn is set, then the player will be visible.  If not, then it's
     // not visible and don't bother setting its position.
-    if (GAMESTATE->m_bMultiplayer && !pi->m_bIsDummy) {
+    screen_space = SCREEN_WIDTH / 2.0f;
+    left_marge = margins[pi->m_pn].left;
+    right_marge = margins[pi->m_pn].right;
+    field_space = screen_space - left_marge - right_marge;
+    if (Center1Player() ||
+        style->m_StyleType == StyleType_TwoPlayersSharedSides ||
+        (style_width > field_space && GAMESTATE->GetNumPlayersEnabled() == 1 &&
+         (bool)ALLOW_CENTER_1_PLAYER)) {
       CENTER_PLAYER_BLOCK
-    } else {
-      screen_space = SCREEN_WIDTH / 2.0f;
-      left_marge = margins[pi->m_pn].left;
-      right_marge = margins[pi->m_pn].right;
-      field_space = screen_space - left_marge - right_marge;
-      if (Center1Player() ||
-          style->m_StyleType == StyleType_TwoPlayersSharedSides ||
-          (style_width > field_space &&
-           GAMESTATE->GetNumPlayersEnabled() == 1 &&
-           (bool)ALLOW_CENTER_1_PLAYER)) {
-        CENTER_PLAYER_BLOCK
-      }
     }
 #undef CENTER_PLAYER_BLOCK
     float player_x = edge + left_marge + (field_space / 2.0f);
@@ -793,17 +752,6 @@ void ScreenGameplay::Init() {
     }
     LOAD_ALL_COMMANDS_AND_SET_XY(pi->m_pStepsDisplay);
     this->AddChild(pi->m_pStepsDisplay);
-
-    /*
-                    switch( GAMESTATE->m_PlayMode )
-                    {
-                    case PLAY_MODE_BATTLE:
-                            pi->m_pInventory = new Inventory;
-                            pi->m_pInventory->Load( p );
-                            this->AddChild( pi->m_pInventory );
-                            break;
-                    }
-    */
   }
 
   m_textSongOptions.LoadFromFont(THEME->GetPathF(m_sName, "song options"));
@@ -866,18 +814,6 @@ void ScreenGameplay::Init() {
       m_textSurviveTime.SetDiffuse(RageColor(1, 1, 1, 0));
       this->AddChild(&m_textSurviveTime);
     }
-
-    switch (GAMESTATE->m_PlayMode) {
-      case PLAY_MODE_BATTLE:
-        m_soundBattleTrickLevel1.Load(
-            THEME->GetPathS(m_sName, "battle trick level1"), true);
-        m_soundBattleTrickLevel2.Load(
-            THEME->GetPathS(m_sName, "battle trick level2"), true);
-        m_soundBattleTrickLevel3.Load(
-            THEME->GetPathS(m_sName, "battle trick level3"), true);
-      default:
-        break;
-    }
   }
 
   if (m_pSongBackground) {
@@ -892,8 +828,8 @@ void ScreenGameplay::Init() {
     pi->m_pPlayer->Init(
         sType, pi->GetPlayerState(), pi->GetPlayerStageStats(),
         pi->m_pLifeMeter, m_pCombinedLifeMeter, pi->m_pPrimaryScoreDisplay,
-        pi->m_pSecondaryScoreDisplay, pi->m_pInventory,
-        pi->m_pPrimaryScoreKeeper, pi->m_pSecondaryScoreKeeper);
+        pi->m_pSecondaryScoreDisplay, pi->m_pPrimaryScoreKeeper,
+        pi->m_pSecondaryScoreKeeper);
   }
 
   // fill in m_apSongsQueue, m_vpStepsQueue, m_asModifiersQueue
@@ -1026,35 +962,6 @@ void ScreenGameplay::InitSongQueues() {
       } else {
         AttackArray aa;
         pi->m_asModifiersQueue.push_back(aa);
-      }
-    }
-  }
-
-  if (GAMESTATE->m_bMultiplayer) {
-    for (int i = 0; i < (int)m_apSongsQueue.size(); i++) {
-      Song* pSong = m_apSongsQueue[i];
-
-      FOREACH_EnabledPlayerInfo(m_vPlayerInfo, pi) {
-        Steps* pOldSteps = pi->m_vpStepsQueue[i];
-
-        std::vector<Steps*> vpSteps;
-        SongUtil::GetSteps(pSong, vpSteps, pOldSteps->m_StepsType);
-        StepsUtil::SortNotesArrayByDifficulty(vpSteps);
-        std::vector<Steps*>::iterator iter =
-            find(vpSteps.begin(), vpSteps.end(), pOldSteps);
-        int iIndexBase = 0;
-        if (iter != vpSteps.end()) {
-          iIndexBase = iter - vpSteps.begin();
-          rage_clamp(
-              iIndexBase, 0,
-              vpSteps.size() - GAMESTATE->m_iNumMultiplayerNoteFields);
-        }
-
-        int iIndexToUse = iIndexBase + pi->m_iAddToDifficulty;
-        rage_clamp(iIndexToUse, 0, vpSteps.size() - 1);
-
-        Steps* pSteps = vpSteps[iIndexToUse];
-        pi->m_vpStepsQueue[i] = pSteps;
       }
     }
   }
@@ -1239,11 +1146,6 @@ void ScreenGameplay::LoadNextSong() {
           SONG_NUMBER_FORMAT.GetValue().c_str(),
           pi->GetPlayerStageStats()->m_iSongsPassed + 1));
     }
-  }
-
-  if (GAMESTATE->m_bMultiplayer) {
-    FOREACH_ENUM(MultiPlayer, mp)
-    this->UpdateStageStats(mp);
   }
 
   int iPlaySongIndex = GAMESTATE->GetCourseSongIndex();
@@ -2690,22 +2592,10 @@ bool ScreenGameplay::Input(const InputEventPlus& input) {
       return false;
   }
 
-  if (GAMESTATE->m_bMultiplayer) {
-    if (input.mp != MultiPlayer_Invalid &&
-        GAMESTATE->IsMultiPlayerEnabled(input.mp) && iCol != -1) {
-      for (const PlayerInfo& pi : m_vPlayerInfo) {
-        if (input.mp == pi.m_mp) {
-          pi.m_pPlayer->Step(iCol, -1, input.DeviceI.ts, false, bRelease);
-        }
-      }
-      return true;
-    }
-  }
   // If we are in routine mode, two players share sides so a step could
   // correspond to either P1 or P2, we don't really know Let's just send it to
   // both players and let them decide what to do with it.
-  else if (
-      GAMESTATE->GetCurrentStyle(GAMESTATE->GetMasterPlayerNumber())
+  if (GAMESTATE->GetCurrentStyle(GAMESTATE->GetMasterPlayerNumber())
           ->m_StyleType == StyleType_TwoPlayersSharedSides) {
     if (GAMESTATE->IsHumanPlayer(input.pn)) {
       if (GamePreferences::m_AutoPlay == PC_HUMAN &&
@@ -3112,19 +3002,6 @@ void ScreenGameplay::HandleScreenMessage(const ScreenMessage SM) {
     PlayAnnouncer("gameplay combo stopped", 2);
   } else if (SM == SM_ComboContinuing) {
     PlayAnnouncer("gameplay combo overflow", 2);
-  } else if (SM >= SM_BattleTrickLevel1 && SM <= SM_BattleTrickLevel3) {
-    int iTrickLevel = SM.c_str() - SM_BattleTrickLevel1.c_str() + 1;
-    PlayAnnouncer(ssprintf("gameplay battle trick level%d", iTrickLevel), 3);
-    if (SM == SM_BattleTrickLevel1) {
-      m_soundBattleTrickLevel1.Play(false);
-    } else if (SM == SM_BattleTrickLevel2) {
-      m_soundBattleTrickLevel2.Play(false);
-    } else if (SM == SM_BattleTrickLevel3) {
-      m_soundBattleTrickLevel3.Play(false);
-    }
-  } else if (SM >= SM_BattleDamageLevel1 && SM <= SM_BattleDamageLevel3) {
-    int iDamageLevel = SM.c_str() - SM_BattleDamageLevel1.c_str() + 1;
-    PlayAnnouncer(ssprintf("gameplay battle damage level%d", iDamageLevel), 3);
   } else if (SM == SM_DoPrevScreen) {
     SongFinished();
     this->StageFinished(true);
