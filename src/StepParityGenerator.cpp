@@ -16,6 +16,16 @@
 
 using namespace StepParity;
 
+namespace {
+constexpr uint16_t LEFT_HEEL_MOVE_MASK = 1u << (Foot_LeftHeel - 1);
+constexpr uint16_t LEFT_TOE_MOVE_MASK = 1u << (Foot_LeftToe - 1);
+constexpr uint16_t RIGHT_HEEL_MOVE_MASK = 1u << (Foot_RightHeel - 1);
+constexpr uint16_t RIGHT_TOE_MOVE_MASK = 1u << (Foot_RightToe - 1);
+constexpr uint16_t FOOT_RETENTION_MOVE_MASKS[NUM_Foot] = {
+    0, LEFT_HEEL_MOVE_MASK, LEFT_HEEL_MOVE_MASK | LEFT_TOE_MOVE_MASK,
+    RIGHT_HEEL_MOVE_MASK, RIGHT_HEEL_MOVE_MASK | RIGHT_TOE_MOVE_MASK};
+}  // namespace
+
 bool StepParityGenerator::analyzeNoteData(const NoteData& in) {
   columnCount_ = in.GetNumTracks();
 
@@ -207,7 +217,7 @@ void StepParityGenerator::mergeInitialAndResultPosition(
     int columnCount) {
   // Merge initial + result position
   for (int i = 0; i < columnCount; i++) {
-    // copy in data from columns over the top which overrides it, as long as
+    /* copy in data from columns over the top which overrides it, as long as
     // it's not nothing
     if (columns[i] != Foot_None) {
       resultState->combinedColumns[i] = columns[i];
@@ -230,7 +240,17 @@ void StepParityGenerator::mergeInitialAndResultPosition(
           !resultState->didTheFootMove[Foot_RightHeel]) {
         resultState->combinedColumns[i] = initialState->combinedColumns[i];
       }
-    }
+    } */
+
+    const uint32_t shift = i * 3;
+    const uint32_t initialFoot = (initialState->combined_mask >> shift) & 0x7;
+    const uint32_t placedFoot = static_cast<uint32_t>(columns[i]);
+    const uint32_t retainInitial = static_cast<uint32_t>(
+        placedFoot == Foot_None && (FOOT_RETENTION_MOVE_MASKS[initialFoot] &
+                                    resultState->moved_mask) == 0);
+    const uint32_t retainMask = 0u - retainInitial;
+    resultState->combinedColumns[i] =
+        static_cast<Foot>(placedFoot | (initialFoot & retainMask));
   }
 
   for (int i = 0; i < columnCount; i++) {

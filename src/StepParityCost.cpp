@@ -34,22 +34,33 @@ float StepParityCost::getActionCost(
   int rightHeel = resultState->whatNoteTheFootIsHitting[Foot_RightHeel];
   int rightToe = resultState->whatNoteTheFootIsHitting[Foot_RightToe];
 
-  bool movedLeft = resultState->didTheFootMove[Foot_LeftHeel] ||
+  const uint16_t leftFootMask =
+      FOOT_MASKS[Foot_LeftHeel] | FOOT_MASKS[Foot_LeftToe];
+  const uint16_t rightFootMask =
+      FOOT_MASKS[Foot_RightHeel] | FOOT_MASKS[Foot_RightToe];
+
+  /* bool movedLeft = resultState->didTheFootMove[Foot_LeftHeel] ||
                    resultState->didTheFootMove[Foot_LeftToe];
 
   bool movedRight = resultState->didTheFootMove[Foot_RightHeel] ||
-                    resultState->didTheFootMove[Foot_RightToe];
+                    resultState->didTheFootMove[Foot_RightToe]; */
+  bool movedLeft = (resultState->moved_mask & leftFootMask) != 0;
+  bool movedRight = (resultState->moved_mask & rightFootMask) != 0;
 
   // Note that this is checking whether the previous state was a jump, not
   // whether the current state is
-  bool didJump = ((initialState->didTheFootMove[Foot_LeftHeel] &&
+  /* bool didJump = ((initialState->didTheFootMove[Foot_LeftHeel] &&
                    !initialState->isTheFootHolding[Foot_LeftHeel]) ||
                   (initialState->didTheFootMove[Foot_LeftToe] &&
                    !initialState->isTheFootHolding[Foot_LeftToe])) &&
                  ((initialState->didTheFootMove[Foot_RightHeel] &&
                    !initialState->isTheFootHolding[Foot_RightHeel]) ||
                   (initialState->didTheFootMove[Foot_RightToe] &&
-                   !initialState->isTheFootHolding[Foot_RightToe]));
+                   !initialState->isTheFootHolding[Foot_RightToe])); */
+  const uint16_t nonHoldingMoves =
+      initialState->moved_mask & ~initialState->holding_mask;
+  bool didJump = (nonHoldingMoves & leftFootMask) != 0 &&
+                 (nonHoldingMoves & rightFootMask) != 0;
 
   bool jackedLeft = didJackLeft(
       initialState, resultState, leftHeel, leftToe, movedLeft, didJump);
