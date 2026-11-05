@@ -142,10 +142,8 @@ void Alsa9Buf::InitializeErrorHandler() {
 }
 
 static std::string DeviceName() {
-  if (!PREFSMAN->m_iSoundDevice.Get().empty()) {
-    return PREFSMAN->m_iSoundDevice;
-  }
-  return "default";
+  const std::string device = PREFSMAN->m_iSoundDevice.Get();
+  return device.empty() ? "default" : device;
 }
 
 void Alsa9Buf::GetSoundCardDebugInfo() {
@@ -221,10 +219,9 @@ void Alsa9Buf::GetSoundCardDebugInfo() {
     LOG->Info("No ALSA sound cards were found.");
   }
 
-  if (!PREFSMAN->m_iSoundDevice.Get().empty()) {
-    LOG->Info(
-        "ALSA device overridden to \"%s\"",
-        PREFSMAN->m_iSoundDevice.Get().c_str());
+  const std::string detected_device = PREFSMAN->m_iSoundDevice.Get();
+  if (!detected_device.empty()) {
+    LOG->Info("ALSA device overridden to \"%s\"", detected_device.c_str());
   }
 }
 
