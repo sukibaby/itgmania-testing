@@ -274,6 +274,7 @@ void GameLoop::UpdateAllButDraw() {
   LIGHTSMAN->Update(delta_time);
 }
 
+static auto input_check_wait_timer = std::chrono::steady_clock::now();
 void GameLoop::RunGameLoop() {
   /* People may want to do something else while songs are loading, so do
    * this after loading songs. */
@@ -291,10 +292,11 @@ void GameLoop::RunGameLoop() {
 
     CheckFocus();
 
+    const auto tick = std::chrono::milliseconds(200);
     float quit_idle_seconds = g_iQuitAfterIdleSeconds.Get();
+    const auto this_point_in_time = std::chrono::steady_clock::now();
     const float input_idle_seconds =
-        std::chrono::duration<float>(
-            std::chrono::steady_clock::now() - last_input_timer)
+        std::chrono::duration<float>(this_point_in_time - last_input_timer)
             .count();
     if (quit_idle_seconds > 0 && input_idle_seconds > quit_idle_seconds) {
       ArchHooks::SetUserQuit();
@@ -302,7 +304,10 @@ void GameLoop::RunGameLoop() {
 
     UpdateAllButDraw();
 
-    CallEveryNFrames(500, CheckInputDevices);
+    if (this_point_in_time - input_check_wait_timer >= tick) {
+      CheckInputDevices();
+      input_check_wait_timer = this_point_in_time;
+    }
 
     SCREENMAN->Draw();
   }
