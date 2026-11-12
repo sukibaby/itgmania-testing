@@ -49,7 +49,7 @@ double RageTimer::GetTimeSinceStart() {
 
 int RageTimer::GetTimeSinceStartSeconds() {
   const auto diff = std::chrono::steady_clock::now() - g_iStartTime;
-  return std::chrono::duration<int>(diff).count();
+  return std::chrono::duration_cast<std::chrono::seconds>(diff).count();
 }
 
 uint64_t RageTimer::GetTimeSinceStartMicroseconds() {
@@ -58,14 +58,13 @@ uint64_t RageTimer::GetTimeSinceStartMicroseconds() {
 }
 
 void RageTimer::Touch() {
-auto now = std::chrono::steady_clock::now();
-auto dur = now - std::chrono::steady_clock::epoch;
+  const auto dur = std::chrono::steady_clock::now().time_since_epoch();
 
-auto secs = std::chrono::duration_cast<std::chrono::seconds>(dur);
+  const auto secs = std::chrono::duration_cast<std::chrono::seconds>(dur);
 
-this->secs_ = static_cast<uint64_t>(secs.count());
-this->us_   = static_cast<uint64_t>(
-    std::chrono::duration_cast<std::chrono::microseconds>(dur - secs).count());   
+  this->secs_ = static_cast<uint64_t>(secs.count());
+  this->us_ = static_cast<uint64_t>(
+      std::chrono::duration_cast<std::chrono::microseconds>(dur - secs).count());
 }
 
 float RageTimer::Ago() const {
