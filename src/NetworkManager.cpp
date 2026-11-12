@@ -24,7 +24,6 @@
 #include "RageFile.h"
 #include "RageFileManager.h"
 #include "RageLog.h"
-#include "RageTimer.h"
 #include "RageUtil.h"
 #include "SpecialFiles.h"
 #include "StdString.h"
@@ -79,7 +78,6 @@ static const char* WebSocketMessageTypeNames[] = {
 };
 
 static constexpr int kMaxMainThreadTasksPerUpdate = 32;
-static constexpr float kMaxMainThreadTaskSecondsPerUpdate = 0.001f;
 
 // The most requests either pool runs at once, whatever the preferences say.
 static constexpr int kMaxConcurrencyLimit = 32;
@@ -337,7 +335,8 @@ void NetworkManager::EnqueueMainThreadTask(std::function<void()> task) {
 }
 
 void NetworkManager::Update() {
-  RageTimer timer;
+  const auto tick = std::chrono::milliseconds(1);
+  auto next_tick = std::chrono::steady_clock::now();
   int tasks_processed = 0;
 
   while (tasks_processed < kMaxMainThreadTasksPerUpdate) {
@@ -355,9 +354,8 @@ void NetworkManager::Update() {
     task();
     ++tasks_processed;
 
-    if (timer.Ago() >= kMaxMainThreadTaskSecondsPerUpdate) {
-      break;
-    }
+    next_tick += tick;
+    std::this_thread::sleep_until(next_tick);
   }
 }
 
