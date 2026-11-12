@@ -69,59 +69,6 @@ static bool EmergencyShutdown(int signal, siginfo_t* si, const ucontext_t* uc) {
   return false;
 }
 
-#if 1
-/* If librt is available, use CLOCK_MONOTONIC to implement
- * GetSystemTimeInMicroseconds, if supported, so changes to the system clock
- * don't cause problems. */
-namespace {
-clockid_t g_Clock = CLOCK_REALTIME;
-void OpenGetTime() {
-  static bool initialized = false;
-
-  if (initialized) {
-    return;
-  }
-  initialized = true;
-
-  /* Check whether CLOCK_MONOTONIC is supported.
-   * If it isn't available, use CLOCK_REALTIME.*/
-  timespec ts;
-  if (clock_gettime(CLOCK_MONOTONIC, &ts) == -1) {
-    return;
-  }
-
-  g_Clock = CLOCK_MONOTONIC;
-}
-};  // namespace
-
-clockid_t ArchHooks_Unix::GetClock() {
-  OpenGetTime();
-  return g_Clock;
-}
-
-int64_t ArchHooks::GetSystemTimeInMicroseconds() {
-  OpenGetTime();
-
-  timespec ts;
-  clock_gettime(g_Clock, &ts);
-
-  int64_t ret = int64_t(ts.tv_sec) * 1000000 + int64_t(ts.tv_nsec) / 1000;
-  if (g_Clock != CLOCK_MONOTONIC) {
-    ret = ArchHooks::FixupTimeIfBackwards(ret);
-  }
-  return ret;
-}
-#else
-int64_t ArchHooks::GetSystemTimeInMicroseconds() {
-  struct timeval tv;
-  gettimeofday(&tv, nullptr);
-
-  int64_t ret = int64_t(tv.tv_sec) * 1000000 + int64_t(tv.tv_usec);
-  ret = FixupTimeIfBackwards(ret);
-  return ret;
-}
-#endif
-
 std::string ArchHooks::GetPreferredLanguage() {
   std::string locale;
 

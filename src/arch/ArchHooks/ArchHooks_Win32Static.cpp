@@ -1,5 +1,5 @@
-#include <cstdint>
-#include <mutex>  // for call_once
+#include <windows.h>
+
 #include <string>
 #include <vector>
 
@@ -11,49 +11,9 @@
 #include "archutils/Win32/SpecialDirs.h"
 #include "global.h"
 
-// clang-format off
-// for QueryPerformanceCounter
-#include <windows.h>
-#include <mmsystem.h>
-// clang-format on
 #if defined(_MSC_VER)
 #pragma comment(lib, "winmm.lib")
 #endif
-
-static std::once_flag g_timerInitFlag;
-
-/* QueryPerformanceCounter variables below.
- * QueryPerformanceCounter and QueryPerformanceFrequency expect
- * a LARGE_INTEGER, which is a union. These functions store data
- * in the QuadPart of the LARGE_INTEGER, which is a 64-bit integer. */
-namespace {
-LARGE_INTEGER g_liFrequency;
-}  // namespace
-
-static void InitTimer() {
-  // Set the thread scheduler to let us update every 1ms.
-  timeBeginPeriod(1);
-
-  // Retrieve the number of ticks per second.
-  QueryPerformanceFrequency(&g_liFrequency);
-}
-
-int64_t ArchHooks::GetSystemTimeInMicroseconds() {
-  // Make sure the timer is initialized.
-  std::call_once(g_timerInitFlag, InitTimer);
-
-  // Get the current time.
-  LARGE_INTEGER current_time;
-  QueryPerformanceCounter(&current_time);
-
-  // Convert to microseconds without overflowing: QuadPart * 1000000 passes
-  // INT64_MAX once the counter reaches 9.22e12 ticks, which is 10.7 days of
-  // uptime at the usual 10 MHz (and a Fast Startup shutdown doesn't reset
-  // uptime), after which the clock jumps by days in the middle of a session.
-  const int64_t ticks = current_time.QuadPart;
-  const int64_t freq = g_liFrequency.QuadPart;
-  return (ticks / freq) * 1000000LL + (ticks % freq) * 1000000LL / freq;
-}
 
 static std::string GetMountDir(const std::string& dir_of_executable) {
   /* All Windows data goes in the directory one level above the executable. */

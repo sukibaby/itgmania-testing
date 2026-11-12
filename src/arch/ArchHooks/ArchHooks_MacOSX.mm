@@ -244,19 +244,6 @@ std::string ArchHooks::GetPreferredLanguage() {
   return ret;
 }
 
-int64_t ArchHooks::GetSystemTimeInMicroseconds() {
-  // http://developer.apple.com/qa/qa2004/qa1398.html
-  static double factor = 0.0;
-
-  if (unlikely(factor == 0.0)) {
-    mach_timebase_info_data_t time_base;
-
-    mach_timebase_info(&time_base);
-    factor = time_base.numer / (1000.0 * time_base.denom);
-  }
-  return int64_t(mach_absolute_time() * factor);
-}
-
 #include "RageFileManager.h"
 
 void MountDirectories(const std::string& base_dir) {
