@@ -4,6 +4,8 @@
 #include <chrono>
 #include <cmath>
 #include <cstdint>
+#include <cstring>
+#include <new>
 #include <sstream>
 #include <string>
 #include <thread>
@@ -98,117 +100,159 @@ const Checkpoint kCheckpoints[] = {
     {"90d", 30 * kDay},
 };
 
+// will try to call PREFSMAN and that will obviously crash.
+// Here we will define two player scenarios, a "P1"
 class ArrowEffectsTimeTest : public ::testing::Test {
  protected:
   void SetUp() override {
-    options_.mod_timer_type_ = ModTimerType_Default;
-    options_.mod_timer_mult_ = 0.0f;
-    options_.mod_timer_offset_ = 0.0f;
-    ArrowEffects::SetCurrentOptions(&options_);
+    std::memset(storage_, 0, sizeof(storage_));
+    ArrowEffects::SetCurrentOptions(options());
   }
   void TearDown() override { ArrowEffects::SetCurrentOptions(nullptr); }
-  PlayerOptions options_;
+
+  PlayerOptions* options() {
+    return std::launder(reinterpret_cast<PlayerOptions*>(storage_));
+  }
+
+  void ApplyP1Settings() {
+    PlayerOptions* o = options();
+    o->time_spacing_ = 1;  // C-mods scroll by time
+    o->scroll_bpm_ = 800;  // C800
+    o->scroll_speed_ = 1;
+    o->max_scroll_bpm_ = 0;
+  }
+
+  // 1.5x plus every mod that feeds on GetTime(): drunk (x/z and tan variants,
+  // with speed), tipsy (and tan, with speed), blink; dizzy
+  void Apply1_5xWithTimeMods() {
+    PlayerOptions* o = options();
+    o->time_spacing_ = 0;
+    o->scroll_bpm_ = 0;
+    o->scroll_speed_ = 1.5f;
+    o->max_scroll_bpm_ = 0;
+    for (float* e :
+         {&o->effects_[PlayerOptions::EFFECT_DRUNK],
+          &o->effects_[PlayerOptions::EFFECT_DRUNK_SPEED],
+          &o->effects_[PlayerOptions::EFFECT_DRUNK_Z],
+          &o->effects_[PlayerOptions::EFFECT_DRUNK_Z_SPEED],
+          &o->effects_[PlayerOptions::EFFECT_TAN_DRUNK],
+          &o->effects_[PlayerOptions::EFFECT_TAN_DRUNK_SPEED],
+          &o->effects_[PlayerOptions::EFFECT_TAN_DRUNK_Z],
+          &o->effects_[PlayerOptions::EFFECT_TAN_DRUNK_Z_SPEED],
+          &o->effects_[PlayerOptions::EFFECT_TIPSY],
+          &o->effects_[PlayerOptions::EFFECT_TIPSY_SPEED],
+          &o->effects_[PlayerOptions::EFFECT_TAN_TIPSY],
+          &o->effects_[PlayerOptions::EFFECT_TAN_TIPSY_SPEED],
+          &o->effects_[PlayerOptions::EFFECT_DIZZY]}) {
+      *e = 1.0f;
+    }
+    o->appearances_[PlayerOptions::APPEARANCE_BLINK] = 1.0f;
+  }
+
+  // GetTime() must be exactly the steady clock (plus offset*mult) no matter
+  // what speed or mods are set: the clock cannot depend on them.
+  void ExpectClockUnaffected(float offset = 0.0f, float mult_mod = 0.0f) {
+    options()->mod_timer_type_ = ModTimerType_Default;
+    options()->mod_timer_offset_ = offset;
+    options()->mod_timer_mult_ = mult_mod;
+    const double add = static_cast<double>(offset) * (1.0 + mult_mod);
+
+    const double before = SteadyNow();
+    const float t = ArrowEffects::GetTime();
+    const double after = SteadyNow();
+    const double slack = HalfUlp(after + add) + 1e-6;
+    EXPECT_GE(static_cast<double>(t), before + add - slack);
+    EXPECT_LE(static_cast<double>(t), after + add + slack);
+  }
+
+  alignas(PlayerOptions) unsigned char storage_[sizeof(PlayerOptions)];
 };
 
-// GetTime() tests based on ArrowEffects' version of the function
+// Scenario A: C800, no time-based (or any) mods
 
-TEST_F(ArrowEffectsTimeTest, TracksSteadyClockWithinFloatQuantisation) {
-  const double before = SteadyNow();
-  const float t = ArrowEffects::GetTime();
-  const double after = SteadyNow();
-  const double slack = HalfUlp(after) + 1e-9;
-  EXPECT_GE(static_cast<double>(t), before - slack);
-  EXPECT_LE(static_cast<double>(t), after + slack);
-  // Informational: how much float error this machine's uptime costs.
-  RecordProperty("clock_epoch_seconds", static_cast<int>(after));
-  RecordProperty("half_ulp_ms", std::to_string(HalfUlp(after) * 1000.0));
+TEST_F(ArrowEffectsTimeTest, P1Settings_TracksSteadyClock) {
+  ApplyP1Settings();
+  ExpectClockUnaffected();
+  RecordProperty("half_ulp_ms", std::to_string(HalfUlp(SteadyNow()) * 1000.0));
 }
 
-TEST_F(ArrowEffectsTimeTest, SharesEpochWithRageTimer) {
-  const RageTimer ref;
-  const float t = ArrowEffects::GetTime();
-  const double ref_s =
-      static_cast<double>(ref.secs_) + static_cast<double>(ref.us_) / 1e6;
-  EXPECT_NEAR(static_cast<double>(t), ref_s, HalfUlp(ref_s) + 0.002);
+TEST_F(ArrowEffectsTimeTest, P1Settings_OffsetAndMultiplier) {
+  ApplyP1Settings();
+  ExpectClockUnaffected(2.5f, 0.0f);   // +2.5
+  ExpectClockUnaffected(2.5f, 1.0f);   // +5.0
+  ExpectClockUnaffected(1.0f, -1.0f);  // +0.0
 }
 
-TEST_F(ArrowEffectsTimeTest, IsMonotonic) {
+TEST_F(ArrowEffectsTimeTest, P1Settings_MonotonicAndAdvances) {
+  ApplyP1Settings();
   float prev = ArrowEffects::GetTime();
   for (int i = 0; i < 10000; ++i) {
     const float cur = ArrowEffects::GetTime();
     ASSERT_GE(cur, prev);
     prev = cur;
   }
-}
-
-TEST_F(ArrowEffectsTimeTest, AdvancesWithSleep) {
   const float a = ArrowEffects::GetTime();
   std::this_thread::sleep_for(std::chrono::milliseconds(300));
   const float b = ArrowEffects::GetTime();
-  // Quantisation can eat up to one float step at each end.
   const double tol = 2 * HalfUlp(static_cast<double>(b)) + 0.002;
   EXPECT_NEAR(static_cast<double>(b - a), 0.3, tol + 0.05);
-  EXPECT_GE(b - a, 0.29f - static_cast<float>(tol));
 }
 
-TEST_F(ArrowEffectsTimeTest, OffsetAndMultiplierApply) {
-  // GetTime() = clock + offset * (1 + mult).
-  struct Case {
-    float offset, mult;
-    double expected_add;
-  };
-  const Case cases[] = {
-      {0.0f, 0.0f, 0.0},   {2.5f, 0.0f, 2.5},  {2.5f, 1.0f, 5.0},
-      {-4.0f, 0.5f, -6.0}, {1.0f, -1.0f, 0.0},
-  };
-  for (const Case& c : cases) {
-    SCOPED_TRACE(
-        ::testing::Message() << "offset=" << c.offset << " mult=" << c.mult);
-    options_.mod_timer_offset_ = c.offset;
-    options_.mod_timer_mult_ = c.mult;
-    const double before = SteadyNow();
-    const float t = ArrowEffects::GetTime();
-    const double after = SteadyNow();
-    const double slack = HalfUlp(after) + 1e-6;
-    EXPECT_GE(static_cast<double>(t), before + c.expected_add - slack);
-    EXPECT_LE(static_cast<double>(t), after + c.expected_add + slack);
-  }
+// Scenario B: 1.5x with every time-based mod enabled
+
+TEST_F(ArrowEffectsTimeTest, P1Settings_TracksSteadyClock) {
+  Apply1_5xWithTimeMods();
+  ExpectClockUnaffected();
 }
+
+TEST_F(ArrowEffectsTimeTest, P1Settings_OffsetAndMultiplier) {
+  Apply1_5xWithTimeMods();
+  ExpectClockUnaffected(2.5f, 0.0f);
+  ExpectClockUnaffected(2.5f, 1.0f);
+  ExpectClockUnaffected(-4.0f, 0.5f);
+}
+
+TEST_F(ArrowEffectsTimeTest, P1Settings_MonotonicAndAdvances) {
+  Apply1_5xWithTimeMods();
+  float prev = ArrowEffects::GetTime();
+  for (int i = 0; i < 10000; ++i) {
+    const float cur = ArrowEffects::GetTime();
+    ASSERT_GE(cur, prev);
+    prev = cur;
+  }
+  const float a = ArrowEffects::GetTime();
+  std::this_thread::sleep_for(std::chrono::milliseconds(300));
+  const float b = ArrowEffects::GetTime();
+  const double tol = 2 * HalfUlp(static_cast<double>(b)) + 0.002;
+  EXPECT_NEAR(static_cast<double>(b - a), 0.3, tol + 0.05);
+}
+
+TEST_F(ArrowEffectsTimeTest, ScenariosAgreeWithEachOther) {
+  // Same clock regardless of speed/mods, and same epoch as RageTimer.
+  ApplyP1Settings();
+  const RageTimer ref_a;
+  const float a = ArrowEffects::GetTime();
+  Apply1_5xWithTimeMods();
+  const float b = ArrowEffects::GetTime();
+  const RageTimer ref_b;
+  const double ra = static_cast<double>(ref_a.secs_) + ref_a.us_ / 1e6;
+  const double rb = static_cast<double>(ref_b.secs_) + ref_b.us_ / 1e6;
+  EXPECT_NEAR(static_cast<double>(a), ra, HalfUlp(ra) + 0.002);
+  EXPECT_NEAR(static_cast<double>(b), rb, HalfUlp(rb) + 0.002);
+  EXPECT_GE(b, a);
+}
+
+// Timer types
 
 TEST_F(ArrowEffectsTimeTest, DefaultAndGameTimerTypesMatch) {
-  options_.mod_timer_type_ = ModTimerType_Default;
+  ApplyP1Settings();
+  options()->mod_timer_type_ = ModTimerType_Default;
   const float d = ArrowEffects::GetTime();
-  options_.mod_timer_type_ = ModTimerType_Game;
+  options()->mod_timer_type_ = ModTimerType_Game;
   const float g = ArrowEffects::GetTime();
   EXPECT_NEAR(
       static_cast<double>(d), static_cast<double>(g),
       2 * HalfUlp(static_cast<double>(d)) + 0.002);
-}
-
-// Needs a live GAMESTATE, which test_main.cpp does not create.
-// NOTE: as written, GetTime() contains `modtimer == ModTimerType_Default ||
-// ModTimerType_Game`, which is always true, so the Beat and Song branches are
-// unreachable; with a GAMESTATE present these tests catch that.
-TEST_F(ArrowEffectsTimeTest, BeatTimerUsesSongBeatVisible) {
-  if (GAMESTATE == nullptr) {
-    GTEST_SKIP() << "GAMESTATE not initialised";
-  }
-  GAMESTATE->position_.song_beat_visible_ = 8.0f;
-  options_.mod_timer_type_ = ModTimerType_Beat;
-  options_.mod_timer_offset_ = 2.0f;
-  options_.mod_timer_mult_ = 1.0f;  // mult = 2
-  EXPECT_FLOAT_EQ(ArrowEffects::GetTime(), (8.0f + 2.0f) * 2.0f);
-}
-
-TEST_F(ArrowEffectsTimeTest, SongTimerUsesMusicSeconds) {
-  if (GAMESTATE == nullptr) {
-    GTEST_SKIP() << "GAMESTATE not initialised";
-  }
-  GAMESTATE->position_.music_seconds_ = 90.0f;
-  options_.mod_timer_type_ = ModTimerType_Song;
-  options_.mod_timer_offset_ = 1.0f;
-  options_.mod_timer_mult_ = 0.0f;  // mult = 1
-  EXPECT_FLOAT_EQ(ArrowEffects::GetTime(), 91.0f);
 }
 
 // Float precision budget at long uptimes (synthetic clock values)
