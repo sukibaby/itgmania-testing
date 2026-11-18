@@ -176,13 +176,13 @@ class ArrowEffectsTimeTest : public ::testing::Test {
 
 // Scenario A: C800, no time-based (or any) mods
 
-TEST_F(ArrowEffectsTimeTest, P1Settings_TracksSteadyClock) {
+TEST_F(ArrowEffectsTimeTest, NoTimeBasedMods_TracksSteadyClock) {
   ApplyP1Settings();
   ExpectClockUnaffected();
   RecordProperty("half_ulp_ms", std::to_string(HalfUlp(SteadyNow()) * 1000.0));
 }
 
-TEST_F(ArrowEffectsTimeTest, P1Settings_OffsetAndMultiplier) {
+TEST_F(ArrowEffectsTimeTest, NoTimeBasedMods_OffsetAndMultiplier) {
   ApplyP1Settings();
   ExpectClockUnaffected(2.5f, 0.0f);   // +2.5
   ExpectClockUnaffected(2.5f, 1.0f);   // +5.0
@@ -190,7 +190,7 @@ TEST_F(ArrowEffectsTimeTest, P1Settings_OffsetAndMultiplier) {
   ExpectClockUnaffected(1.0f, -1.0f);  // +0.0
 }
 
-TEST_F(ArrowEffectsTimeTest, P1Settings_MonotonicAndAdvances) {
+TEST_F(ArrowEffectsTimeTest, NoTimeBasedMods_MonotonicAndAdvances) {
   ApplyP1Settings();
   float prev = ArrowEffects::GetTime();
   for (int i = 0; i < 10000; ++i) {
@@ -207,19 +207,19 @@ TEST_F(ArrowEffectsTimeTest, P1Settings_MonotonicAndAdvances) {
 
 // Scenario B: 1.5x with every time-based mod enabled
 
-TEST_F(ArrowEffectsTimeTest, P1Settings_TracksSteadyClock) {
+TEST_F(ArrowEffectsTimeTest, WithTimeBasedMods_TracksSteadyClock) {
   Apply1_5xWithTimeMods();
   ExpectClockUnaffected();
 }
 
-TEST_F(ArrowEffectsTimeTest, P1Settings_OffsetAndMultiplier) {
+TEST_F(ArrowEffectsTimeTest, WithTimeBasedMods_OffsetAndMultiplier) {
   Apply1_5xWithTimeMods();
   ExpectClockUnaffected(2.5f, 0.0f);
   ExpectClockUnaffected(2.5f, 1.0f);
   ExpectClockUnaffected(-4.0f, 0.5f);
 }
 
-TEST_F(ArrowEffectsTimeTest, P1Settings_MonotonicAndAdvances) {
+TEST_F(ArrowEffectsTimeTest, WithTimeBasedMods_MonotonicAndAdvances) {
   Apply1_5xWithTimeMods();
   float prev = ArrowEffects::GetTime();
   for (int i = 0; i < 10000; ++i) {
