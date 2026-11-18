@@ -100,8 +100,13 @@ const Checkpoint kCheckpoints[] = {
     {"90d", 30 * kDay},
 };
 
+// We have to hardcode our own player options here since otherwise ArrowEffects
 // will try to call PREFSMAN and that will obviously crash.
 // Here we will define two player scenarios, a "P1"
+// which is using the settings of C800 with no unusual time based modifiers
+// (e.g. drunk, dizzy, etc) and another "P2" which is using 1.5X for speed mod
+// and all of the time-based visual mods. Zero is a valid value for every field
+// here (floats == 0, enums == first value, i.e. ModTimerType_Default).
 class ArrowEffectsTimeTest : public ::testing::Test {
  protected:
   void SetUp() override {
@@ -114,6 +119,7 @@ class ArrowEffectsTimeTest : public ::testing::Test {
     return std::launder(reinterpret_cast<PlayerOptions*>(storage_));
   }
 
+  // C800, no time based mods.
   void ApplyP1Settings() {
     PlayerOptions* o = options();
     o->time_spacing_ = 1;  // C-mods scroll by time
@@ -180,6 +186,7 @@ TEST_F(ArrowEffectsTimeTest, P1Settings_OffsetAndMultiplier) {
   ApplyP1Settings();
   ExpectClockUnaffected(2.5f, 0.0f);   // +2.5
   ExpectClockUnaffected(2.5f, 1.0f);   // +5.0
+  ExpectClockUnaffected(-4.0f, 0.5f);  // -6.0
   ExpectClockUnaffected(1.0f, -1.0f);  // +0.0
 }
 
