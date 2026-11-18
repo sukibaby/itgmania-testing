@@ -120,7 +120,7 @@ class ArrowEffectsTimeTest : public ::testing::Test {
   }
 
   // C800, no time based mods.
-  void ApplyP1Settings() {
+  void ApplySettingsWithoutTimeBasedMods() {
     PlayerOptions* o = options();
     o->time_spacing_ = 1;  // C-mods scroll by time
     o->scroll_bpm_ = 800;  // C800
@@ -130,7 +130,7 @@ class ArrowEffectsTimeTest : public ::testing::Test {
 
   // 1.5x plus every mod that feeds on GetTime(): drunk (x/z and tan variants,
   // with speed), tipsy (and tan, with speed), blink; dizzy
-  void Apply1_5xWithTimeMods() {
+  void ApplySettingsWithTimeBasedMods() {
     PlayerOptions* o = options();
     o->time_spacing_ = 0;
     o->scroll_bpm_ = 0;
@@ -177,13 +177,13 @@ class ArrowEffectsTimeTest : public ::testing::Test {
 // Scenario A: C800, no time-based (or any) mods
 
 TEST_F(ArrowEffectsTimeTest, NoTimeBasedMods_TracksSteadyClock) {
-  ApplyP1Settings();
+  ApplySettingsWithoutTimeBasedMods();
   ExpectClockUnaffected();
   RecordProperty("half_ulp_ms", std::to_string(HalfUlp(SteadyNow()) * 1000.0));
 }
 
 TEST_F(ArrowEffectsTimeTest, NoTimeBasedMods_OffsetAndMultiplier) {
-  ApplyP1Settings();
+  ApplySettingsWithoutTimeBasedMods();
   ExpectClockUnaffected(2.5f, 0.0f);   // +2.5
   ExpectClockUnaffected(2.5f, 1.0f);   // +5.0
   ExpectClockUnaffected(-4.0f, 0.5f);  // -6.0
@@ -191,7 +191,7 @@ TEST_F(ArrowEffectsTimeTest, NoTimeBasedMods_OffsetAndMultiplier) {
 }
 
 TEST_F(ArrowEffectsTimeTest, NoTimeBasedMods_MonotonicAndAdvances) {
-  ApplyP1Settings();
+  ApplySettingsWithoutTimeBasedMods();
   float prev = ArrowEffects::GetTime();
   for (int i = 0; i < 10000; ++i) {
     const float cur = ArrowEffects::GetTime();
@@ -208,19 +208,19 @@ TEST_F(ArrowEffectsTimeTest, NoTimeBasedMods_MonotonicAndAdvances) {
 // Scenario B: 1.5x with every time-based mod enabled
 
 TEST_F(ArrowEffectsTimeTest, WithTimeBasedMods_TracksSteadyClock) {
-  Apply1_5xWithTimeMods();
+  ApplySettingsWithTimeBasedMods();
   ExpectClockUnaffected();
 }
 
 TEST_F(ArrowEffectsTimeTest, WithTimeBasedMods_OffsetAndMultiplier) {
-  Apply1_5xWithTimeMods();
+  ApplySettingsWithTimeBasedMods();
   ExpectClockUnaffected(2.5f, 0.0f);
   ExpectClockUnaffected(2.5f, 1.0f);
   ExpectClockUnaffected(-4.0f, 0.5f);
 }
 
 TEST_F(ArrowEffectsTimeTest, WithTimeBasedMods_MonotonicAndAdvances) {
-  Apply1_5xWithTimeMods();
+  ApplySettingsWithTimeBasedMods();
   float prev = ArrowEffects::GetTime();
   for (int i = 0; i < 10000; ++i) {
     const float cur = ArrowEffects::GetTime();
@@ -234,12 +234,12 @@ TEST_F(ArrowEffectsTimeTest, WithTimeBasedMods_MonotonicAndAdvances) {
   EXPECT_NEAR(static_cast<double>(b - a), 0.3, tol + 0.05);
 }
 
-TEST_F(ArrowEffectsTimeTest, ScenariosAgreeWithEachOther) {
+TEST_F(ArrowEffectsTimeTest, DoBothPlayersTimeValuesAgree) {
   // Same clock regardless of speed/mods, and same epoch as RageTimer.
-  ApplyP1Settings();
+  ApplySettingsWithoutTimeBasedMods();
   const RageTimer ref_a;
   const float a = ArrowEffects::GetTime();
-  Apply1_5xWithTimeMods();
+  ApplySettingsWithTimeBasedMods();
   const float b = ArrowEffects::GetTime();
   const RageTimer ref_b;
   const double ra = static_cast<double>(ref_a.secs_) + ref_a.us_ / 1e6;
@@ -252,7 +252,7 @@ TEST_F(ArrowEffectsTimeTest, ScenariosAgreeWithEachOther) {
 // Timer types
 
 TEST_F(ArrowEffectsTimeTest, DefaultAndGameTimerTypesMatch) {
-  ApplyP1Settings();
+  ApplySettingsWithoutTimeBasedMods();
   options()->mod_timer_type_ = ModTimerType_Default;
   const float d = ArrowEffects::GetTime();
   options()->mod_timer_type_ = ModTimerType_Game;
