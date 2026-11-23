@@ -538,6 +538,31 @@ TEST_P(ResampleMiscTest, SetPositionScalesToSourceRate) {
   EXPECT_NEAR(out[2000], 10000 + (2000 - 8) / 2.0, 200);
 }
 
+TEST_P(ResampleMiscTest, VerifyConsumptionAndRatioWithoutRateMod) {
+  RageSoundReader_Resample_Good rs(
+      new FrameIdReader(44100, 1, 44100 * 4), 44100);
+
+  // Something is super ultra broken if this fails.
+  rs.SetRate(1.0f);
+  EXPECT_EQ(rs.GetRate(), 1.0f);
+  EXPECT_EQ(rs.GetStreamToSourceRatio(), 1.0f);
+
+  // The new sample rate rate ramps in across the first block read after
+  // SetRate() is called. Needed behavior to emulate the actual behavior
+  std::vector<float> warmup(4096);
+  ASSERT_EQ(ReadFrames(rs, warmup.data(), 4096), 4096);
+  const int pos_before = rs.GetNextSourceFrame();
+
+  std::vector<float> out(10000);
+  ASSERT_EQ(ReadFrames(rs, out.data(), 10000), 10000);
+  const int pos_after = rs.GetNextSourceFrame();
+
+  EXPECT_EQ(pos_after - pos_before, 10000);
+
+  // Tolerate being one frame off, no more
+  EXPECT_NEAR(pos_after, out.back(), 1);
+}
+
 TEST_P(ResampleMiscTest, SetRateChangesConsumptionAndRatio) {
   RageSoundReader_Resample_Good rs(
       new FrameIdReader(44100, 1, 44100 * 4), 44100);

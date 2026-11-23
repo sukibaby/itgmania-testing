@@ -19,16 +19,16 @@
  *  - libsamplerate compensates for its own filter delay, so output frame 0 is
  *    aligned with input frame 0 and the tail is flushed at end of input.
  *  - Rate changes (SetRate) are exact; there is no 1/100 quantisation, so
- *    GetRate() returns exactly what was set.
+ *    GetRate() returns exactly what was set. They take effect as a step on the
+ *    next Read() (src_set_ratio), not as libsamplerate's default smooth ramp.
  *  - Reads never use alloca(); arbitrarily large requests are safe.
  */
 
 namespace {
 
 // SRC_SINC_FASTEST / MEDIUM_QUALITY / BEST_QUALITY. MEDIUM is a good balance
-// for real-time playback with 90% bandwidth but FASTEST is almost as good (80%
-// bandwidth) and is the least CPU heavy as the name implies.
-constexpr int kConverterType = SRC_SINC_FASTEST;
+// for real-time playback.
+constexpr int kConverterType = SRC_SINC_MEDIUM_QUALITY;
 
 // Extra input requested beyond the strict minimum, so lookahead needs are met.
 constexpr int kExtraInputFrames = 8;
@@ -55,11 +55,13 @@ RageSoundReader_Resample_Good::RageSoundReader_Resample_Good(
       rate_(-1),
       source_eof_(false),
       consumed_input_frames_(0),
-      emitted_input_time_(0) {
+      emitted_input_time_(0),
+      last_ratio_(1.0) {
   int error = 0;
   state_ = src_new(kConverterType, channels_, &error);
   ASSERT(state_ != nullptr);
-  src_set_ratio(state_, GetConversionRatio());
+  last_ratio_ = GetConversionRatio();
+  src_set_ratio(state_, last_ratio_);
 }
 
 RageSoundReader_Resample_Good::RageSoundReader_Resample_Good(
@@ -72,7 +74,8 @@ RageSoundReader_Resample_Good::RageSoundReader_Resample_Good(
       pending_(cpy.pending_),
       source_eof_(cpy.source_eof_),
       consumed_input_frames_(cpy.consumed_input_frames_),
-      emitted_input_time_(cpy.emitted_input_time_) {
+      emitted_input_time_(cpy.emitted_input_time_),
+      last_ratio_(cpy.last_ratio_) {
   int error = 0;
   state_ = src_clone(cpy.state_, &error);  // copies the full filter state
   ASSERT(state_ != nullptr);
@@ -88,7 +91,8 @@ RageSoundReader_Resample_Good* RageSoundReader_Resample_Good::Copy() const {
 
 void RageSoundReader_Resample_Good::Reset() {
   src_reset(state_);
-  src_set_ratio(state_, GetConversionRatio());
+  last_ratio_ = GetConversionRatio();
+  src_set_ratio(state_, last_ratio_);
   pending_.clear();
   source_eof_ = false;
   consumed_input_frames_ = 0;
@@ -177,6 +181,16 @@ int RageSoundReader_Resample_Good::Read(float* buf, int frames) {
       got = 0;  // still have buffered input to work with
     }
     pending_.resize(old_size + static_cast<size_t>(got) * channels_);
+  }
+
+  /* By default libsamplerate ramps smoothly from the previous call's ratio to
+   * the new one across the block. Step to the new ratio instead, so a rate
+   * change takes effect immediately (and in lock-step with the speed changer
+   * PitchChange drives alongside this). src_ratio below must still be set to
+   * the same value. */
+  if (ratio != last_ratio_) {
+    src_set_ratio(state_, ratio);
+    last_ratio_ = ratio;
   }
 
   static const float kNoInput = 0.0f;
