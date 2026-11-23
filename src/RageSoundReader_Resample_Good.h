@@ -1,4 +1,4 @@
-/* RageSoundReader_Resample_Good - audio resampling, backed by libsamplerate. */
+/* RageSoundReader_Resample_Good - libsamplerate wrapper. */
 
 #ifndef RAGE_SOUND_READER_RESAMPLE_GOOD_H
 #define RAGE_SOUND_READER_RESAMPLE_GOOD_H
@@ -61,8 +61,6 @@ class RageSoundReader_Resample_Good : public RageSoundReader_Filter {
   // difference is what it is holding internally (its filter lookahead).
   double consumed_input_frames_;
   double emitted_input_time_;
-  // Conversion ratio libsamplerate is currently set to; when
-  // GetConversionRatio() differs, Read() steps it with src_set_ratio().
   double last_ratio_;
 };
 

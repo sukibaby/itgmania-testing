@@ -1,4 +1,6 @@
 #include "RageSoundReader_Resample_Good.h"
+// todo: rename this to RageSoundReader_Resample_SRC
+// (to match the project's URL https://mega-nerd.com/SRC/)
 
 #include <samplerate.h>
 
@@ -11,26 +13,18 @@
 #include "RageSoundReader_Filter.h"
 #include "global.h"
 
-/*
- * Resampling is done by libsamplerate
- * (https://github.com/libsndfile/libsamplerate).
- *
- * Differences from the previous polyphase implementation worth knowing about:
- *  - libsamplerate compensates for its own filter delay, so output frame 0 is
- *    aligned with input frame 0 and the tail is flushed at end of input.
- *  - Rate changes (SetRate) are exact; there is no 1/100 quantisation, so
- *    GetRate() returns exactly what was set. They take effect as a step on the
- *    next Read() (src_set_ratio), not as libsamplerate's default smooth ramp.
- *  - Reads never use alloca(); arbitrarily large requests are safe.
- */
-
 namespace {
 
-// SRC_SINC_FASTEST / MEDIUM_QUALITY / BEST_QUALITY. MEDIUM is a good balance
-// for real-time playback.
-constexpr int kConverterType = SRC_SINC_MEDIUM_QUALITY;
+// Refer to libsamplerate/blob/master/docs/api_misc.md. libsamplerate has five
+// possible options here, but two require an external anti-aliasing filter, so
+// we would really only consider FASTEST, MEDIUM_QUALITY, or BEST_QUALITY for
+// use here. MEDIUM_QUALITY seems fast enough to be perfectly usable, even on a
+// Core 2 Quad Q6600 I have, but I would prefer to err on the side of
+// performance here for any really low-end machines. End users with nice
+// hardware specs can always recompile with BEST_QUALITY here!
+constexpr int kConverterType = SRC_SINC_FASTEST;
 
-// Extra input requested beyond the strict minimum, so lookahead needs are met.
+// Lookahead, in frames
 constexpr int kExtraInputFrames = 8;
 
 }  // namespace
@@ -135,12 +129,6 @@ bool RageSoundReader_Resample_Good::SetProperty(
   return source_->SetProperty(property, value);
 }
 
-/*
- * SetRate() changes the speed (and pitch) of the audio without changing the
- * sample rate: the stream consumes `ratio` source frames per output frame. The
- * new ratio is handed to libsamplerate on the next Read(), which ramps to it
- * smoothly across that block.
- */
 void RageSoundReader_Resample_Good::SetRate(float ratio) {
   ASSERT(ratio > 0);
   rate_ = ratio;
@@ -154,8 +142,8 @@ float RageSoundReader_Resample_Good::GetRate() const {
 int RageSoundReader_Resample_Good::Read(float* buf, int frames) {
   const double ratio = GetConversionRatio();
 
-  /* If the ratio is 1:1 and nothing has been buffered, we're effectively
-   * disabled, and can read directly into the caller's buffer. */
+  /* If the ratio is 1:1, then we're effectively disabled, and we can read
+   * directly into the buffer. */
   if (ratio == 1.0 && IsPristine()) {
     return source_->Read(buf, frames);
   }
@@ -183,11 +171,6 @@ int RageSoundReader_Resample_Good::Read(float* buf, int frames) {
     pending_.resize(old_size + static_cast<size_t>(got) * channels_);
   }
 
-  /* By default libsamplerate ramps smoothly from the previous call's ratio to
-   * the new one across the block. Step to the new ratio instead, so a rate
-   * change takes effect immediately (and in lock-step with the speed changer
-   * PitchChange drives alongside this). src_ratio below must still be set to
-   * the same value. */
   if (ratio != last_ratio_) {
     src_set_ratio(state_, ratio);
     last_ratio_ = ratio;
