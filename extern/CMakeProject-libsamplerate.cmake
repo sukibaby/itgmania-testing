@@ -1,6 +1,6 @@
 set(LIBSAMPLERATE_DIR "libsamplerate")
 
-# Detect version string
+# Attempt to detect version string
 file(STRINGS "${LIBSAMPLERATE_DIR}/CMakeLists.txt" LIBSAMPLERATE_PROJECT_LINE
      REGEX "^[ \t]*project[ \t]*\\([ \t]*libsamplerate[ \t]+VERSION[ \t]+[0-9]+(\\.[0-9]+)*"
      LIMIT_COUNT 1)
@@ -8,8 +8,9 @@ string(REGEX MATCH "VERSION[ \t]+([0-9]+(\\.[0-9]+)*)" _ "${LIBSAMPLERATE_PROJEC
 set(LIBSAMPLERATE_VERSION "${CMAKE_MATCH_1}")
 if(NOT LIBSAMPLERATE_VERSION)
   message(WARNING "Could not read the libsamplerate version from ${LIBSAMPLERATE_DIR}/CMakeLists.txt")
-  set(LIBSAMPLERATE_VERSION "unknown")
+  set(LIBSAMPLERATE_VERSION "0.2.2")
 endif()
+
 set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
              "${LIBSAMPLERATE_DIR}/CMakeLists.txt")
 
@@ -32,14 +33,15 @@ set_property(TARGET "libsamplerate" PROPERTY FOLDER "External Libraries")
 
 disable_project_warnings("libsamplerate")
 
-# Required overrides.
-# RageSoundReader defines which converter we use, not these (we use the fastest one)
+# ITGmania defaults to using the fast sinc converter SRC_SINC_FASTEST.
+# We don't build the others here to keep the binary size down.
+# So, if you want to build with a higher quality resampler, be sure to
+# enable it here as well as RageSoundReader_Resample_Good.cpp.
+# See extern/libsamplerate/src/CMakeLists.txt for those options.
 target_compile_definitions("libsamplerate" PRIVATE PACKAGE="libsamplerate"
                                                    VERSION="${LIBSAMPLERATE_VERSION}"
                                                    HAVE_STDBOOL_H
                                                    ENABLE_SINC_FAST_CONVERTER
-                                                   ENABLE_SINC_MEDIUM_CONVERTER
-                                                   ENABLE_SINC_BEST_CONVERTER
                                                    CPU_CLIPS_POSITIVE=0
                                                    CPU_CLIPS_NEGATIVE=0)
 

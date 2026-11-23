@@ -18,10 +18,11 @@ namespace {
 // Refer to libsamplerate/blob/master/docs/api_misc.md. libsamplerate has five
 // possible options here, but two require an external anti-aliasing filter, so
 // we would really only consider FASTEST, MEDIUM_QUALITY, or BEST_QUALITY for
-// use here. MEDIUM_QUALITY seems fast enough to be perfectly usable, even on a
-// Core 2 Quad Q6600 I have, but I would prefer to err on the side of
-// performance here for any really low-end machines. End users with nice
-// hardware specs can always recompile with BEST_QUALITY here!
+// use here. Realistically, any of these is likely fast enough for any
+// compatible hardware. With that said, I'm going with FASTEST here because I am
+// hesitant to run this resampler slower in the name of audio fidelity. End
+// users compiling for themselves can always set a higher quality here to trade
+// some CPU time for higher quality audio.
 constexpr int kConverterType = SRC_SINC_FASTEST;
 
 // Lookahead, in frames
@@ -108,7 +109,7 @@ int RageSoundReader_Resample_Good::GetNextSourceFrame() const {
   double position =
       static_cast<double>(source_->GetNextSourceFrame()) - buffered;
   position = position * sample_rate_ / source_->GetSampleRate();
-  return position < 0 ? 0 : static_cast<int>(position);
+  return static_cast<int>(std::floor(position));
 }
 
 float RageSoundReader_Resample_Good::GetStreamToSourceRatio() const {
