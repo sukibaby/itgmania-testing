@@ -568,10 +568,10 @@ TEST_P(ResampleMiscTest, VerifyConsumptionAndRatioWithoutRateMod) {
       out.back() + static_cast<double>(kSourceRate) / kTargetRate;
   const double expected_reported =
       next_source_frame * kTargetRate / kSourceRate;
-  EXPECT_NEAR(pos_after, expected_reported, 1.0);
+  EXPECT_NEAR(pos_after, expected_reported, 0.1);
 }
 
-TEST_P(ResampleMiscTest, SetRateChangesConsumptionAndRatio) {
+TEST_P(ResampleMiscTest, VerifyConsumptionAndRatioWithRateMod) {
   RageSoundReader_Resample_Good rs(
       new FrameIdReader(44100, 1, 44100 * 4), 44100);
   rs.SetRate(2.0f);
