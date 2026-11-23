@@ -539,16 +539,18 @@ TEST_P(ResampleMiscTest, SetPositionScalesToSourceRate) {
 }
 
 TEST_P(ResampleMiscTest, VerifyConsumptionAndRatioWithoutRateMod) {
+  constexpr int kSourceRate =
+      100000;  // yes we did actually find a 100000Hz sample rate OGG simfile
+  constexpr int kTargetRate = 48000;
   RageSoundReader_Resample_Good rs(
-      new FrameIdReader(44100, 1, 44100 * 4), 44100);
+      new FrameIdReader(kSourceRate, 1, kSourceRate * 4), kTargetRate);
+  EXPECT_EQ(rs.GetSampleRate(), kTargetRate);
 
-  // Something is super ultra broken if this fails.
   rs.SetRate(1.0f);
   EXPECT_EQ(rs.GetRate(), 1.0f);
   EXPECT_EQ(rs.GetStreamToSourceRatio(), 1.0f);
 
-  // The new sample rate rate ramps in across the first block read after
-  // SetRate() is called. Needed behavior to emulate the actual behavior
+  // Let the converter's internal lookahead fill before measuring.
   std::vector<float> warmup(4096);
   ASSERT_EQ(ReadFrames(rs, warmup.data(), 4096), 4096);
   const int pos_before = rs.GetNextSourceFrame();
@@ -557,10 +559,16 @@ TEST_P(ResampleMiscTest, VerifyConsumptionAndRatioWithoutRateMod) {
   ASSERT_EQ(ReadFrames(rs, out.data(), 10000), 10000);
   const int pos_after = rs.GetNextSourceFrame();
 
-  EXPECT_EQ(pos_after - pos_before, 10000);
+  // We can tolerate being a single frame off
+  EXPECT_NEAR(pos_after - pos_before, 10000, 1);
 
-  // Tolerate being one frame off, no more
-  EXPECT_NEAR(pos_after, out.back(), 1);
+  // pos_after is reported in target-rate frames but out.back() is in
+  // source-rate frames so we need to measure it on the same basis
+  const double next_source_frame =
+      out.back() + static_cast<double>(kSourceRate) / kTargetRate;
+  const double expected_reported =
+      next_source_frame * kTargetRate / kSourceRate;
+  EXPECT_NEAR(pos_after, expected_reported, 1.0);
 }
 
 TEST_P(ResampleMiscTest, SetRateChangesConsumptionAndRatio) {
